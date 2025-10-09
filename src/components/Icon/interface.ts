@@ -11,9 +11,6 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Octicons from 'react-native-vector-icons/Octicons';
 import SimpleLineIcons from 'react-native-vector-icons/SimpleLineIcons';
 import Zocial from 'react-native-vector-icons/Zocial';
-import MaterialDesignIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-
-
 
 export const iconMap: any = {
   AntDesign,
@@ -29,7 +26,6 @@ export const iconMap: any = {
   Octicons,
   SimpleLineIcons,
   Zocial,
-  MaterialDesignIcons,
 };
 
 type IconType = keyof typeof iconMap;

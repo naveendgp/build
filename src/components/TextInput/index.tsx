@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import styles from './styles';
 import SfIcon from '../Icon';
-import { COLORS } from '../../constants';
 
 type Props = TextInputProps & {
   containerStyle?: ViewStyle;
@@ -33,13 +32,13 @@ const CustomTextInput: React.FC<Props> = ({
 }) => {
   const inputComponent = (
     <>
-      <View style={[styles.container, containerStyle, ]}>
+      <View style={[styles.container, containerStyle]}>
         <TextInput
           allowFontScaling={false}
           style={[styles.input, style]}
-          placeholderTextColor="#af6666ff"
+          placeholderTextColor="#9AA0A6"
           numberOfLines={1}
-          autoCapitalize='words'
+          autoCapitalize="words"
           {...rest}
         />
         {icon && (
@@ -48,7 +47,7 @@ const CustomTextInput: React.FC<Props> = ({
               type={icon.type}
               name={icon.name}
               size={16}
-              color={COLORS.BACKGROUND}
+              color={'#fff'}
             />
           </View>
         )}
@@ -65,7 +64,7 @@ const CustomTextInput: React.FC<Props> = ({
     <View>
       <Text style={styles.labelText}>
         {label}
-        {required && <Text style={{color: COLORS.TEXT}}> *</Text>}
+        {required && <Text style={{ color: '#000000' }}> *</Text>}
       </Text>
       {inputComponent}
     </View>

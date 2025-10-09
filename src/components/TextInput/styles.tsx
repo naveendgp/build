@@ -1,36 +1,39 @@
-import { theme } from '../../utils/theme';
-import {StyleSheet} from 'react-native';
-import { COLORS,NAVIGATION_COLORS } from '../../constants/colors';
-const { fontFamily: FONT_FAMILY, fontSize: FONT_SIZE, fontWeight: FONT_WEIGHT } = theme.typography;
+import { StyleSheet } from 'react-native';
 
+// Explicit colors and fonts (use direct values instead of theme/constants)
 export default StyleSheet.create({
   container: {
     marginTop: 10,
     marginBottom: 4,
+    borderWidth: 1,
+    borderColor: '#CED4DA',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#FFFFFF',
   },
   input: {
     borderBottomWidth: 0,
     borderBottomColor: '#aaa',
-    fontSize: FONT_SIZE.md,
-    fontFamily: FONT_FAMILY.REGULAR,
-    fontWeight: FONT_WEIGHT.normal,
-    paddingVertical: 10,
-    color: NAVIGATION_COLORS.textPrimary,
+    fontSize: 16,
+    fontFamily: 'Poppins-Regular',
+    fontWeight: '400',
+    paddingVertical: 12,
+    color: '#1B2A4A',
   },
   placeholderTextColor: {
-    color: NAVIGATION_COLORS.inactiveTab,
+    color: '#9AA0A6',
   },
   labelText: {
-    fontSize: FONT_SIZE.md,
-    fontWeight: FONT_WEIGHT.medium,
-    fontFamily: FONT_FAMILY.MEDIUM,
-    color: COLORS.INPUT.BORDER,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Poppins-Medium',
+    color: '#1B2A4A',
     marginVertical: 4,
   },
   errorText: {
-    color: NAVIGATION_COLORS.activeTab,
-    fontSize: FONT_SIZE.sm,
-    fontFamily: FONT_FAMILY.REGULAR,
+    color: '#FF3B30',
+    fontSize: 12,
+    fontFamily: 'Poppins-Regular',
     marginBottom: 8,
   },
 });
