@@ -7,7 +7,7 @@ interface ApiState {
   data: any;
   loading: boolean;
   error: string | null;
-  status: boolean | null; // ✅ renamed from success → status
+  status: boolean | null;
   request: (config: AxiosRequestConfig) => Promise<void>;
   reset: () => void;
 }
