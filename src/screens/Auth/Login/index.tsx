@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
-  Alert,
   SafeAreaView,
   TouchableOpacity,
   ActivityIndicator,
@@ -15,49 +14,70 @@ import { useUserStore } from '../../../store/useStore';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomText from '../../../components/Text';
 import styles from './styles.ts';
-import { useAuthApi } from '../../../api/authApi.ts';
+import { useAuthStore } from '../../../store/useAuthStore.ts';
+import { shallow } from 'zustand/shallow';
+import CustomToast from '../../../components/CustomToast.tsx';
+import { COLORS } from '../../../constants/colors.ts';
 
 type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
   const navigation = useNavigation<LoginNavProp>();
+
+  const login = useAuthStore(state => state.login);
+  const isLoading = useAuthStore(state => state.isLoading);
+  const error = useAuthStore(state => state.error);
+  const signupData = useAuthStore(state => state.signupData);
+  const clearError = useAuthStore(state => state.clearError);
+
   const setMobile = useUserStore(state => state.setMobile);
-  const { login, data, loading: authApiLoading, error, status } = useAuthApi();
   const [mobile, setLocalMobile] = useState('');
+  const [hasNavigated, setHasNavigated] = useState(false);
 
-  const handleSendOTP = async () => {
-    const digitsOnly = mobile.replace(/\D/g, '');
-
-    // Validate 10-digit mobile number
-    if (!/^\d{10}$/.test(digitsOnly)) {
-      Alert.alert(
-        'Invalid number',
-        'Please enter a valid 10-digit mobile number',
-      );
-      return;
-    }
-
-    try {
-      // Call login API with sanitized number
-      await login('+91' + digitsOnly);
-    } catch (err) {
-      console.error('Login error:', err);
-      Alert.alert('Error', 'Failed to send OTP. Please try again.');
-    }
-  };
-
+  // Show alert for API errors
   useEffect(() => {
-    if (status === true) {
-      const digitsOnly = mobile.replace(/\D/g, '');
+    if (error) {
+      clearError();
+    }
+  }, [error]);
+
+  // // Navigate to OTP screen only once after successful login/signup
+  useEffect(() => {
+    if (signupData && !hasNavigated) {
+      const digitsOnly = signupData.phone.replace(/\D/g, '');
       setMobile(digitsOnly);
       navigation.navigate('OTPVerification', {
         mobile: digitsOnly,
-        isRegister: false,
+        isRegister: signupData.isNewUser,
       });
-    } else if (status === false) {
-      Alert.alert('Error', error?.toString());
+      setHasNavigated(true); // Prevent repeated navigation
     }
-  }, [status, error]);
+  }, [signupData, hasNavigated]);
+
+  const handleSendOTP = async () => {
+    const digitsOnly = mobile.replace(/\D/g, '');
+    if (!/^\d{10}$/.test(digitsOnly)) {
+      CustomToast.show({
+        msg: 'Please enter a valid 10-digit mobile number',
+        bgColor: COLORS.ERROR,
+        textColor: COLORS.WHITE,
+      });
+      return;
+    }
+
+    console.log('Sending OTP to', digitsOnly);
+
+    try {
+      await login('+919844556677');
+    } catch (err) {
+      console.error('Login error:', err);
+      CustomToast.show({
+        msg: 'Failed to send OTP. Please try again.',
+        bgColor: COLORS.ERROR,
+        textColor: COLORS.WHITE,
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -70,7 +90,7 @@ const LoginScreen: React.FC = () => {
           <View style={styles.card}>
             <CustomText style={styles.title}>Login</CustomText>
             <CustomText style={styles.subtitle}>
-              Welcome back you're been missed
+              Welcome back, you've been missed
             </CustomText>
 
             <View style={styles.inputRow}>
@@ -89,15 +109,13 @@ const LoginScreen: React.FC = () => {
             </View>
 
             <CustomBtn
-              title={authApiLoading ? 'Please wait...' : 'Login'}
+              title={isLoading ? 'Please wait...' : 'Login'}
               onPress={handleSendOTP}
-              disabled={authApiLoading}
+              disabled={isLoading}
             />
 
             <View
               style={{
-                alignItems: 'center',
-                alignContent: 'center',
                 flexDirection: 'row',
                 justifyContent: 'center',
                 marginTop: 20,
@@ -117,7 +135,8 @@ const LoginScreen: React.FC = () => {
           </View>
         </View>
       </ImageBackground>
-      {authApiLoading && (
+
+      {isLoading && (
         <View style={styles.loadingOverlay} pointerEvents="none">
           <ActivityIndicator size="large" color="#fff" />
         </View>

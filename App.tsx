@@ -7,6 +7,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
+import CustomToast from './src/components/CustomToast';
 // import { useNotifications } from './src/services/Notification/useNotifications';
 
 const App = () => {
@@ -19,6 +20,7 @@ const App = () => {
       <GestureHandlerRootView style={styles.container}>
         <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
         <AppNavigator />
+        <CustomToast />
       </GestureHandlerRootView>
     </SafeAreaView>
   );

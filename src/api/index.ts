@@ -1,24 +1,81 @@
-// src/api/index.ts
-import axios from 'axios';
-import { useAuthStore } from '../store/useAuthStore';
+import CustomToast from '../components/CustomToast';
+import { API_HEADERS, COLORS, HTTP_METHODS } from '../constants';
 
-// export const apiClient = axios.create({
-//   baseURL: 'http://13.204.157.24:3000/vendor/', // common base URL
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// });
+export interface ApiOptions {
+  url: string;
+  method?: string;
+  body?: object;
+  headers?: Record<string, string>;
+  timeout?: number;
+  handleSessionExpired?: () => void;
+}
 
-const apiClient = axios.create({
-  baseURL: 'https://your.api.url',
-});
+function showToast(msg: string = 'Unknown error') {
+  CustomToast.show({
+    msg,
+    bgColor: COLORS.ERROR,
+    textColor: COLORS.WHITE,
+  });
+}
 
-apiClient.interceptors.request.use(async config => {
-  const token = useAuthStore.getState().token;
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+export async function callApi<T>({
+  url,
+  method = HTTP_METHODS.POST,
+  body,
+  headers = API_HEADERS.JSON,
+  timeout = 10000,
+  handleSessionExpired,
+}: ApiOptions): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    const responseText = await response.text();
+    const data = responseText ? JSON.parse(responseText) : {};
+
+    if (response.ok) {
+      if (data.status === false || data.status === 'false') {
+        showToast(data.message || 'Operation failed');
+      }
+      return data as T;
+    }
+
+    // Handle specific HTTP errors
+    const msg = data?.message;
+
+    switch (response.status) {
+      case 400:
+      case 401:
+      case 404:
+      case 500:
+        showToast(msg);
+        break;
+      case 403:
+        showToast(msg || 'Forbidden / Session expired');
+        if (handleSessionExpired) handleSessionExpired();
+        break;
+      default:
+        showToast(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    throw new Error(msg || `HTTP ${response.status}`);
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      showToast('Request timed out');
+      throw new Error('Request timed out');
+    }
+
+    showToast(error?.message || 'Network error');
+    throw error;
   }
-  return config;
-});
-
-export default apiClient;
+}

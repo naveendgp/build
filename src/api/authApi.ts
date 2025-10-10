@@ -1,25 +1,24 @@
-// src/api/authApi.ts
-import { ENDPOINTS } from './endpoints';
-import { useApiStore } from './apiStore';
+import { LoginRequestModel, LoginResponseModel } from '../types/auth/auth';
+import { API_ENDPOINTS } from '../constants';
+import { retryWithNetworkCheck } from '../utils/network';
+import { callApi } from '.';
 
-export const useAuthApi = () => {
-  const { request, reset, data, loading, error, status } = useApiStore();
+class AuthService {
+  private baseUrl = API_ENDPOINTS.BASE_URL;
 
-  const login = (phone: string) => {
-    return request({
-      url: ENDPOINTS.LOGIN,
-      method: 'POST',
-      data: { phone },
-    });
-  };
+  async login(phone: string): Promise<LoginResponseModel> {
+    const requestBody = new LoginRequestModel(phone).toJson();
+    const url = `${this.baseUrl}${API_ENDPOINTS.LOGIN}`;
 
-  const verifyOtp = (phone: string, otp: string) => {
-    return request({
-      url: ENDPOINTS.OTP_VERIFY,
-      method: 'POST',
-      data: { phone, otp },
-    });
-  };
+    const apiCall = async () => {
+      const responseData = await callApi<any>({ url, body: requestBody });
+      console.log('Login API response:', responseData); // Log the full response
+      // Return the response regardless of status, store previous response if needed
+      return responseData;
+    };
 
-  return { login, verifyOtp, data, loading, error, reset, status };
-};
+    return retryWithNetworkCheck(apiCall, 3, 2000);
+  }
+}
+
+export const authService = new AuthService();
