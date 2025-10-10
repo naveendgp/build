@@ -21,5 +21,5 @@ export const useAuthApi = () => {
     });
   };
 
-  return { login, data, loading, error, reset, status };
+  return { login, verifyOtp, data, loading, error, reset, status };
 };
