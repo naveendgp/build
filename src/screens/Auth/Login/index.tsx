@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   TextInput,
@@ -10,74 +10,16 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
-import { useUserStore } from '../../../store/useStore';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomText from '../../../components/Text';
 import styles from './styles.ts';
-import { useAuthStore } from '../../../store/useAuthStore.ts';
-import { shallow } from 'zustand/shallow';
-import CustomToast from '../../../components/CustomToast.tsx';
-import { COLORS } from '../../../constants/colors.ts';
+import { useLogin } from './hooks/useLogin.ts';
 
 type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
+  const { mobile, setLocalMobile, handleSendOTP, isLoading } = useLogin();
   const navigation = useNavigation<LoginNavProp>();
-
-  const login = useAuthStore(state => state.login);
-  const isLoading = useAuthStore(state => state.isLoading);
-  const error = useAuthStore(state => state.error);
-  const signupData = useAuthStore(state => state.signupData);
-  const clearError = useAuthStore(state => state.clearError);
-
-  const setMobile = useUserStore(state => state.setMobile);
-  const [mobile, setLocalMobile] = useState('');
-  const [hasNavigated, setHasNavigated] = useState(false);
-
-  // Show alert for API errors
-  useEffect(() => {
-    if (error) {
-      clearError();
-    }
-  }, [error]);
-
-  // // Navigate to OTP screen only once after successful login/signup
-  useEffect(() => {
-    if (signupData && !hasNavigated) {
-      const digitsOnly = signupData.phone.replace(/\D/g, '');
-      setMobile(digitsOnly);
-      navigation.navigate('OTPVerification', {
-        mobile: digitsOnly,
-        isRegister: signupData.isNewUser,
-      });
-      setHasNavigated(true); // Prevent repeated navigation
-    }
-  }, [signupData, hasNavigated]);
-
-  const handleSendOTP = async () => {
-    const digitsOnly = mobile.replace(/\D/g, '');
-    if (!/^\d{10}$/.test(digitsOnly)) {
-      CustomToast.show({
-        msg: 'Please enter a valid 10-digit mobile number',
-        bgColor: COLORS.ERROR,
-        textColor: COLORS.WHITE,
-      });
-      return;
-    }
-
-    console.log('Sending OTP to', digitsOnly);
-
-    try {
-      await login('+919844556677');
-    } catch (err) {
-      console.error('Login error:', err);
-      CustomToast.show({
-        msg: 'Failed to send OTP. Please try again.',
-        bgColor: COLORS.ERROR,
-        textColor: COLORS.WHITE,
-      });
-    }
-  };
 
   return (
     <SafeAreaView style={styles.safe}>

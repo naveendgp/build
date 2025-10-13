@@ -86,7 +86,7 @@ export const isNetworkAvailable = async (): Promise<boolean> => {
  */
 export const retryWithNetworkCheck = async <T>(
   apiCall: () => Promise<T>,
-  maxRetries: number = 3,
+  maxRetries: number = 1,
   delayMs: number = 1000,
 ): Promise<T> => {
   let lastError: Error | undefined;

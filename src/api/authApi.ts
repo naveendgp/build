@@ -1,4 +1,9 @@
-import { LoginRequestModel, LoginResponseModel } from '../types/auth/auth';
+import {
+  LoginRequestModel,
+  LoginResponseModel,
+  OtpRequestModel,
+  OtpVerificationResponseModel,
+} from '../types/auth/auth';
 import { API_ENDPOINTS } from '../constants';
 import { retryWithNetworkCheck } from '../utils/network';
 import { callApi } from '.';
@@ -17,7 +22,24 @@ class AuthService {
       return responseData;
     };
 
-    return retryWithNetworkCheck(apiCall, 3, 2000);
+    return retryWithNetworkCheck(apiCall, 1, 2000);
+  }
+
+  async verifyOtp(
+    phone: string,
+    otp: string,
+  ): Promise<OtpVerificationResponseModel> {
+    const requestBody = new OtpRequestModel(phone, otp).toJson();
+    const url = `${this.baseUrl}${API_ENDPOINTS.OTPVERIFY}`;
+
+    const apiCall = async () => {
+      const responseData = await callApi<any>({ url, body: requestBody });
+      console.log('Login API response:', responseData); // Log the full response
+      // Return the response regardless of status, store previous response if needed
+      return responseData;
+    };
+
+    return retryWithNetworkCheck(apiCall, 1, 2000);
   }
 }
 
