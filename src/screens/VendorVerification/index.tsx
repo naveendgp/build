@@ -14,11 +14,11 @@ import {
 import styles from './styles';
 import CustomText from '../../components/Text';
 import CustomBtn from '../../components/CustomBtn';
-import { useUserStore } from '../../store/useStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
 import CustomTextInput from '../../components/TextInput';
+import { useAuthStore } from '../../apiService/store/useAuthStore';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,7 +27,7 @@ type VendorNavProp = NativeStackNavigationProp<
 
 const VendorVerificationScreen: React.FC = () => {
   const navigation = useNavigation<VendorNavProp>();
-  const setLoggedIn = useUserStore(state => state.setLoggedIn);
+  const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
 
   const [step, setStep] = useState<number>(1);
 

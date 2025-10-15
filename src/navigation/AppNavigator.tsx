@@ -5,9 +5,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/Login';
 import RegisterScreen from '../screens/Auth/Register';
 import OTPVerificationScreen from '../screens/Auth/OTPVerification';
-import { useUserStore } from '../store/useStore';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FilePickerScreen from '../utils/FilePicker';
+import VendorVerificationScreen from '../screens/VendorVerification';
+import HomeScreen from '../screens/Home';
+import { useAuthStore } from '../apiService/store/useAuthStore';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -25,49 +27,42 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
-  const isLoggedIn = useUserStore(state => state.isLoggedIn);
+  const isLoggedIn = useAuthStore(state => state.isLoggedIn);
 
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator>
-          {isLoggedIn ? (
-            <>
-              <Stack.Screen
-                name="Home"
-                component={require('../screens/Home').default}
-                options={{ headerShown: false }}
-              />
-            </>
-          ) : (
-            <>
-              <Stack.Screen
-                name="Login"
-                component={LoginScreen}
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                options={{ headerShown: false }}
-                name="Register"
-                component={RegisterScreen}
-              />
-              <Stack.Screen
-                options={{ headerShown: false }}
-                name="OTPVerification"
-                component={OTPVerificationScreen}
-              />
-              <Stack.Screen
-                options={{ headerShown: false }}
-                name="VendorVerification"
-                component={require('../screens/VendorVerification').default}
-              />
-              <Stack.Screen
-                name="FilePicker"
-                component={FilePickerScreen}
-                options={{ title: 'Pick a File' }}
-              />
-            </>
-          )}
+        <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'}>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="Register"
+            component={RegisterScreen}
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="OTPVerification"
+            component={OTPVerificationScreen}
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="VendorVerification"
+            component={VendorVerificationScreen}
+          />
+          <Stack.Screen
+            name="FilePicker"
+            component={FilePickerScreen}
+            options={{ title: 'Pick a File' }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

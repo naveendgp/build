@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   TextInput,
@@ -13,13 +13,48 @@ import { useNavigation } from '@react-navigation/native';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomText from '../../../components/Text';
 import styles from './styles.ts';
-import { useLogin } from './hooks/useLogin.ts';
+import { useMutation } from '@tanstack/react-query';
+import { login } from '../../../apiService/api/authApi.ts';
+import {
+  ErrorResponse as LoginErrorResponse,
+  LoginPayload,
+  LoginResponse,
+} from '../../../apiService/types/types.ts';
+import { AxiosError } from 'axios';
+import { validateMobile } from '../../../utils/Validation.ts';
+import { showErrorToast, showSuccessToast } from '../../../utils/Toast.ts';
 
 type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 const LoginScreen: React.FC = () => {
-  const { mobile, setLocalMobile, handleSendOTP, isLoading } = useLogin();
+  // const { mobile, setLocalMobile, handleSendOTP, isLoading } = useLogin();
   const navigation = useNavigation<LoginNavProp>();
+
+  const [mobile, setLocalMobile] = useState('');
+
+  const mutation = useMutation<
+    LoginResponse,
+    AxiosError<LoginErrorResponse>,
+    LoginPayload
+  >({
+    mutationFn: payload => login(payload),
+    onSuccess: data => {
+      console.log('Login API response:', data.message);
+      showSuccessToast(data?.message);
+      navigation.navigate('OTPVerification', { mobile, isRegister: false });
+    },
+    onError: error => {
+      const msg = error.response?.data?.message || error.message;
+      console.log('Login API error:', msg);
+      showErrorToast(msg);
+    },
+  });
+
+  const handleLogin = () => {
+    if (!validateMobile(mobile)) return;
+
+    mutation.mutate({ phone: mobile }); // your API payload
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -51,9 +86,9 @@ const LoginScreen: React.FC = () => {
             </View>
 
             <CustomBtn
-              title={isLoading ? 'Please wait...' : 'Login'}
-              onPress={handleSendOTP}
-              disabled={isLoading}
+              title={mutation.isPending ? 'Please wait...' : 'Login'}
+              onPress={() => handleLogin()} // handleSendOTP}
+              disabled={mutation.isPending}
             />
 
             <View
@@ -78,7 +113,7 @@ const LoginScreen: React.FC = () => {
         </View>
       </ImageBackground>
 
-      {isLoading && (
+      {mutation.isPending && (
         <View style={styles.loadingOverlay} pointerEvents="none">
           <ActivityIndicator size="large" color="#fff" />
         </View>

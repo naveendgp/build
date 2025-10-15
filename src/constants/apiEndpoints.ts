@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
 
   LOGIN: '/login',
   OTPVERIFY: '/verify-otp',
+  REGISTER: '/register',
 } as const;
 
 // HTTP Methods

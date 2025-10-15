@@ -72,3 +72,31 @@ export class OtpVerificationResponseModel {
     };
   }
 }
+
+/////Register Response
+
+export class RegisterRequestModel {
+  phone: string;
+
+  constructor(phone: string) {
+    this.phone = phone;
+  }
+
+  toJson() {
+    return {
+      phone: this.phone,
+    };
+  }
+}
+
+export class RegisterResponseModel {
+  status?: boolean;
+  message?: string;
+
+  static fromJson(json: any): RegisterResponseModel {
+    const instance = new RegisterResponseModel();
+    instance.status = json.status;
+    instance.message = json.message;
+    return instance;
+  }
+}
