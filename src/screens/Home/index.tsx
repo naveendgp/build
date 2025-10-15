@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, SafeAreaView, ImageBackground } from 'react-native';
 import CustomText from '../../components/Text';
 import styles from './styles';
@@ -7,6 +7,11 @@ import { useAuthStore } from '../../apiService/store/useAuthStore';
 
 const HomeScreen: React.FC = () => {
   const token = useAuthStore(state => state.token);
+  const setLogin = useAuthStore(state => state.setIsLoggedIn);
+
+  useEffect(() => {
+    setLogin(false);
+  }, []);
 
   return (
     <SafeAreaView style={styles.safe}>

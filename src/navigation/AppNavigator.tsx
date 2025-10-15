@@ -32,7 +32,11 @@ const AppNavigator = () => {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName={isLoggedIn ? 'Home' : 'Login'}>
+        <Stack.Navigator
+          initialRouteName={
+            isLoggedIn ? 'VendorVerification' : 'VendorVerification'
+          }
+        >
           <Stack.Screen
             name="Login"
             component={LoginScreen}

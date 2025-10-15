@@ -17,8 +17,10 @@ import CustomBtn from '../../components/CustomBtn';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
-import CustomTextInput from '../../components/TextInput';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
+import VendorDetailsStep from './VendorDetailsStep';
+import ShopDetailsStep from './ShopDetailsStep';
+import BankDetailsStep from './BankDetailsStep';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -28,6 +30,7 @@ type VendorNavProp = NativeStackNavigationProp<
 const VendorVerificationScreen: React.FC = () => {
   const navigation = useNavigation<VendorNavProp>();
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
+  // const [currentStep, setCurrentStep] = useState<number>(1);
 
   const [step, setStep] = useState<number>(1);
 
@@ -35,22 +38,28 @@ const VendorVerificationScreen: React.FC = () => {
     owner_name: '',
     phone: '',
     email: '',
-    shop_name: '',
+    address: '',
+    profile_pic: '',
+    aadhaar_no: '',
   });
 
   const [shopDetails, setShopDetails] = useState({
     gst_number: '',
-    pan_number: '',
     shop_license_number: '',
     address: '',
-    city: '',
-    state: '',
-    pincode: '',
+    shop_time: '',
     landmark: '',
   });
 
+  const [bankDetails, setBankDetails] = useState({
+    account_number: '',
+    account_holder_name: '',
+    bank_branch: '',
+    ifsc_code: '',
+  });
+
   const scrollRef = useRef<ScrollView | null>(null);
-  const shopNameRef = useRef<View | null>(null);
+  const vendorAddressRef = useRef<View | null>(null);
   const pincodeRef = useRef<View | null>(null);
 
   const handleFocusScroll = (ref: any) => {
@@ -73,6 +82,15 @@ const VendorVerificationScreen: React.FC = () => {
     }, 60);
   };
 
+  const pickProfilePic = () => {
+    const options = {
+      mediaType: 'photo' as const,
+      includeBase64: false,
+      maxHeight: 2000,
+      maxWidth: 2000,
+    };
+  };
+
   const validateVendor = () => {
     if (!vendorDetails.owner_name.trim()) {
       Alert.alert('Required', 'Owner name is required');
@@ -82,8 +100,12 @@ const VendorVerificationScreen: React.FC = () => {
       Alert.alert('Invalid', 'Please enter a valid 10-digit phone number');
       return false;
     }
-    if (!vendorDetails.shop_name.trim()) {
-      Alert.alert('Required', 'Shop name is required');
+    if (!/^[0-9]{12}$/.test(vendorDetails.aadhaar_no)) {
+      Alert.alert('Invalid', 'Please enter a valid 12-digit Aadhaar number');
+      return false;
+    }
+    if (!vendorDetails.address.trim()) {
+      Alert.alert('Required', 'Address is required');
       return false;
     }
     return true;
@@ -94,30 +116,57 @@ const VendorVerificationScreen: React.FC = () => {
       Alert.alert('Required', 'Address is required');
       return false;
     }
-    if (!shopDetails.city.trim()) {
-      Alert.alert('Required', 'City is required');
+    if (!shopDetails.gst_number.trim()) {
+      Alert.alert('Required', 'GST is required');
       return false;
     }
-    if (!shopDetails.state.trim()) {
-      Alert.alert('Required', 'State is required');
+    if (!shopDetails.shop_time.trim()) {
+      Alert.alert('Required', 'SHOP TIME is required');
       return false;
     }
-    if (!/^[0-9]{6}$/.test(shopDetails.pincode)) {
-      Alert.alert('Invalid', 'Please enter a valid 6-digit pincode');
+
+    return true;
+  };
+
+  const validateBank = () => {
+    if (!bankDetails.account_number.trim()) {
+      Alert.alert('Required', 'Account number is required');
+      return false;
+    }
+    if (!bankDetails.bank_branch.trim()) {
+      Alert.alert('Required', 'Bank branch is required');
+      return false;
+    }
+    if (!bankDetails.ifsc_code.trim()) {
+      Alert.alert('Required', 'IFSC code is required');
       return false;
     }
     return true;
   };
 
   const handleNext = () => {
-    if (validateVendor()) {
+    if (
+      step === 1
+      //  && validateVendor()
+    ) {
       setStep(2);
+    } else if (
+      step === 2
+      //  && validateShop()
+    ) {
+      setStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
     }
   };
 
   const handleComplete = () => {
-    if (!validateShop()) return;
-    // TODO: Submit vendorDetails and shopDetails to backend
+    if (!validateBank()) return;
+    // TODO: Submit vendorDetails, shopDetails, and bankDetails to backend
     setLoggedIn(true);
     navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
   };
@@ -149,18 +198,14 @@ const VendorVerificationScreen: React.FC = () => {
           >
             <View style={{ padding: 20, flexShrink: 1 }}>
               <View style={styles.stepIndicatorRow}>
-                {[1, 2].map((s, idx, arr) => {
-                  const completed = s < step;
-                  const active = s === step;
+                {[1, 2, 3].map((stepNum, idx, arr) => {
+                  const completed = stepNum < step;
+                  const active = stepNum === step;
                   return (
-                    <React.Fragment key={s}>
+                    <React.Fragment key={stepNum}>
                       <TouchableOpacity
                         onPress={() => {
-                          if (s < step) setStep(s);
-                          if (s > step) {
-                            // user tries to jump forward; only allow if current step valid
-                            if (step === 1 && validateVendor()) setStep(s);
-                          }
+                          if (completed) setStep(stepNum);
                         }}
                         style={[
                           styles.stepIndicator,
@@ -168,16 +213,14 @@ const VendorVerificationScreen: React.FC = () => {
                           completed && styles.stepIndicatorCompleted,
                         ]}
                       >
-                        <CustomText style={styles.stepIndicatorText}>
-                          {s}
-                        </CustomText>
+                        {active && <View style={styles.dot} />}
                       </TouchableOpacity>
 
                       {idx < arr.length - 1 && (
                         <View
                           style={[
                             styles.connector,
-                            s < step && styles.connectorCompleted,
+                            stepNum < step && styles.connectorCompleted,
                           ]}
                         />
                       )}
@@ -185,55 +228,20 @@ const VendorVerificationScreen: React.FC = () => {
                   );
                 })}
               </View>
+
               <CustomText style={styles.title}>Vendor verification</CustomText>
               <CustomText style={styles.subtitle}>
                 Please complete your vendor verification.
               </CustomText>
 
               {step === 1 && (
-                <View style={{ marginTop: 18 }}>
-                  <CustomTextInput
-                    label="Owner name"
-                    placeholder="Enter owner name"
-                    value={vendorDetails.owner_name}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, owner_name: val }))
-                    }
+                <View>
+                  <VendorDetailsStep
+                    vendorDetails={vendorDetails}
+                    setVendorDetails={setVendorDetails}
+                    handleFocusScroll={handleFocusScroll}
+                    vendorAddressRef={vendorAddressRef}
                   />
-
-                  <CustomTextInput
-                    label="Phone"
-                    placeholder="Enter phone"
-                    keyboardType="number-pad"
-                    value={vendorDetails.phone}
-                    maxLength={10}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, phone: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Email (optional)"
-                    placeholder="Enter email"
-                    keyboardType="email-address"
-                    value={vendorDetails.email}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, email: val }))
-                    }
-                  />
-
-                  <View ref={shopNameRef as any}>
-                    <CustomTextInput
-                      label="Shop name"
-                      placeholder="Enter shop name"
-                      value={vendorDetails.shop_name}
-                      onFocus={() => handleFocusScroll(shopNameRef)}
-                      onChangeText={val =>
-                        setVendorDetails(d => ({ ...d, shop_name: val }))
-                      }
-                    />
-                  </View>
-
                   <View style={{ marginTop: 14 }}>
                     <CustomBtn title="Next" onPress={handleNext} />
                   </View>
@@ -241,91 +249,34 @@ const VendorVerificationScreen: React.FC = () => {
               )}
 
               {step === 2 && (
-                <View style={{ marginTop: 18 }}>
-                  <CustomTextInput
-                    label="GST Number"
-                    placeholder="Enter GST number"
-                    value={shopDetails.gst_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, gst_number: val }))
-                    }
+                <View>
+                  <ShopDetailsStep
+                    shopDetails={shopDetails}
+                    setShopDetails={setShopDetails}
+                    handleFocusScroll={handleFocusScroll}
+                    pincodeRef={pincodeRef}
                   />
-
-                  <CustomTextInput
-                    label="PAN Number"
-                    placeholder="Enter PAN number"
-                    value={shopDetails.pan_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, pan_number: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Shop License Number"
-                    placeholder="Enter license number"
-                    value={shopDetails.shop_license_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, shop_license_number: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Address"
-                    placeholder="Enter address"
-                    value={shopDetails.address}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, address: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="City"
-                    placeholder="Enter city"
-                    value={shopDetails.city}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, city: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="State"
-                    placeholder="Enter state"
-                    value={shopDetails.state}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, state: val }))
-                    }
-                  />
-
-                  <View ref={pincodeRef as any}>
-                    <CustomTextInput
-                      label="Pincode"
-                      placeholder="Enter pincode"
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      value={shopDetails.pincode}
-                      onFocus={() => handleFocusScroll(pincodeRef)}
-                      onChangeText={val =>
-                        setShopDetails(s => ({ ...s, pincode: val }))
-                      }
-                    />
+                  <View style={{ marginTop: 14 }}>
+                    <CustomBtn title="Next" onPress={handleNext} />
+                    <View style={{ height: 8 }} />
+                    <CustomBtn title="Back" onPress={handleBack} />
                   </View>
+                </View>
+              )}
 
-                  <CustomTextInput
-                    label="Landmark"
-                    placeholder="Enter landmark"
-                    value={shopDetails.landmark}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, landmark: val }))
-                    }
+              {step === 3 && (
+                <View>
+                  <BankDetailsStep
+                    bankDetails={bankDetails}
+                    setBankDetails={setBankDetails}
                   />
-
                   <View style={{ marginTop: 14 }}>
                     <CustomBtn
                       title="Submit verification"
                       onPress={handleComplete}
                     />
                     <View style={{ height: 8 }} />
-                    <CustomBtn title="Back" onPress={() => setStep(1)} />
+                    <CustomBtn title="Back" onPress={handleBack} />
                   </View>
                 </View>
               )}
