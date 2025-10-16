@@ -1,104 +1,31 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import {
-  View,
   SafeAreaView,
+  View,
   TextInput,
-  ActivityIndicator,
   ImageBackground,
+  ActivityIndicator,
 } from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../navigation/AppNavigator';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import styles from './styles';
+import { useRoute } from '@react-navigation/native';
 import CustomBtn from '../../../components/CustomBtn';
-import styles from './styles.ts';
 import CustomText from '../../../components/Text';
-import { useMutation } from '@tanstack/react-query';
-import {
-  ErrorResponse,
-  OtpPayload,
-  OtpResponse,
-} from '../../../apiService/types/types.ts';
-import { AxiosError } from 'axios';
-import { verifyOtp } from '../../../apiService/api/authApi.ts';
-import { useAuthStore } from '../../../apiService/store/useAuthStore.ts';
-import { isValidateOTP } from '../../../utils/Validation.ts';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast.ts';
-
-type OTPNavProp = NativeStackNavigationProp<
-  RootStackParamList,
-  'OTPVerification'
->;
-type OTPRouteProp = RouteProp<RootStackParamList, 'OTPVerification'>;
+import { isValidateOTP } from '../../../utils/Validation';
+import { useOtpInput } from './hooks/useOtpInput';
+import { useOtpVerification } from './hooks/useOtpVerification';
 
 const OTPVerificationScreen: React.FC = () => {
-  const navigation = useNavigation<OTPNavProp>();
-  const route = useRoute<OTPRouteProp>();
+  const route = useRoute<any>();
   const { mobile, isRegister } = route.params;
-  const setToken = useAuthStore(state => state.setToken);
-  const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
-  const fcm = useAuthStore(state => state.fcmToken);
 
-  console.log('Mobile number:', mobile);
-
-  const [digits, setDigits] = useState<string[]>(['', '', '', '']);
-  const inputsRef = useRef<Array<TextInput | null>>([]);
-  const handleChange = (index: number, value: string) => {
-    if (!/^[0-9]*$/.test(value)) return;
-    const next = [...digits];
-    next[index] = value.slice(-1);
-    setDigits(next);
-
-    if (value && index < inputsRef.current.length - 1) {
-      inputsRef.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyPress = (index: number, e: any) => {
-    if (
-      e.nativeEvent.key === 'Backspace' &&
-      digits[index] === '' &&
-      index > 0
-    ) {
-      inputsRef.current[index - 1]?.focus();
-    }
-  };
+  const { digits, otp, handleChange, handleKeyPress, inputsRef } =
+    useOtpInput(4);
+  const mutation = useOtpVerification(mobile, isRegister);
 
   const handleVerifyOtp = () => {
-    if (!isValidateOTP(digits.join(''))) return;
-
-    mutation.mutate({
-      phone: mobile,
-      otp: digits.join(''),
-      fcm_token: fcm,
-    });
+    if (!isValidateOTP(otp)) return;
+    mutation.mutate(otp);
   };
-
-  const mutation = useMutation<
-    OtpResponse,
-    AxiosError<ErrorResponse>,
-    OtpPayload
-  >({
-    mutationFn: payload => verifyOtp(payload),
-    onSuccess: data => {
-      console.log('Login API response:', data.data.token);
-      setToken(data.data.token);
-      setLoggedIn(true);
-      showSuccessToast(data?.message);
-      if (isRegister) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'VendorVerification' }],
-        });
-      } else {
-        navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
-      }
-    },
-    onError: error => {
-      const msg = error.response?.data?.message || error.message;
-      showErrorToast(msg);
-      console.log('Login API error:', msg);
-    },
-  });
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -126,7 +53,6 @@ const OTPVerificationScreen: React.FC = () => {
                   onChangeText={val => handleChange(i, val)}
                   onKeyPress={e => handleKeyPress(i, e)}
                   textAlign="center"
-                  importantForAutofill="no"
                   placeholder="-"
                 />
               ))}
@@ -134,7 +60,7 @@ const OTPVerificationScreen: React.FC = () => {
 
             <CustomBtn
               title={mutation.isPending ? 'Verifying...' : 'Verify'}
-              onPress={() => handleVerifyOtp()}
+              onPress={handleVerifyOtp}
               disabled={mutation.isPending}
             />
 

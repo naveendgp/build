@@ -27,7 +27,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         style={styles.iconButton}
         onPress={onBackPress || (() => navigation.goBack())}
       >
-        <Ionicons name="chevron-back" size={26} color="#000" />
+        <Ionicons name="arrow-back" size={26} color="#000" />
       </TouchableOpacity>
 
       {/* Title */}

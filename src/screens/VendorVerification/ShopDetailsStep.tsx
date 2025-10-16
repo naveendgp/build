@@ -2,70 +2,50 @@ import React from 'react';
 import { View } from 'react-native';
 import CustomTextInput from '../../components/TextInput';
 
-interface ShopDetailsStepProps {
-  shopDetails: {
-    gst_number: string;
-    shop_license_number: string;
-    address: string;
-    shop_time: string;
-    landmark: string;
-  };
-  setShopDetails: React.Dispatch<
-    React.SetStateAction<{
-      gst_number: string;
-      shop_license_number: string;
-      address: string;
-      shop_time: string;
-      landmark: string;
-    }>
-  >;
+interface Props {
+  shop: any;
+  setShop: (s: any) => void;
   handleFocusScroll: (ref: any) => void;
   pincodeRef: React.RefObject<View | null>;
 }
 
-const ShopDetailsStep: React.FC<ShopDetailsStepProps> = ({
-  shopDetails,
-  setShopDetails,
-  handleFocusScroll,
-  pincodeRef,
-}) => {
+const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
   return (
-    <View style={{ marginTop: 18 }}>
+    <View>
       <CustomTextInput
         label="GST Number"
-        placeholder="Enter GST number"
-        value={shopDetails.gst_number}
-        onChangeText={val => setShopDetails(s => ({ ...s, gst_number: val }))}
+        value={shop.gst_number}
+        onChangeText={val => setShop({ ...shop, gst_number: val })}
       />
-
       <CustomTextInput
         label="Shop License Number"
-        placeholder="Enter license number"
-        value={shopDetails.shop_license_number}
-        onChangeText={val =>
-          setShopDetails(s => ({ ...s, shop_license_number: val }))
-        }
+        value={shop.shop_license_number}
+        onChangeText={val => setShop({ ...shop, shop_license_number: val })}
       />
-
       <CustomTextInput
         label="Address"
-        placeholder="Enter address"
-        value={shopDetails.address}
-        onChangeText={val => setShopDetails(s => ({ ...s, address: val }))}
+        value={shop.address}
+        onChangeText={val => setShop({ ...shop, address: val })}
       />
-
       <CustomTextInput
         label="Shop Time"
-        placeholder="Enter Shop Time"
-        value={shopDetails.shop_time}
-        onChangeText={val => setShopDetails(s => ({ ...s, shop_time: val }))}
+        value={shop.shop_time}
+        onChangeText={val => setShop({ ...shop, shop_time: val })}
       />
-
       <CustomTextInput
         label="Landmark"
-        placeholder="Enter landmark"
-        value={shopDetails.landmark}
-        onChangeText={val => setShopDetails(s => ({ ...s, landmark: val }))}
+        value={shop.landmark}
+        onChangeText={val => setShop({ ...shop, landmark: val })}
+      />
+      <CustomTextInput
+        label="Latitude"
+        value={shop.latitude}
+        onChangeText={val => setShop({ ...shop, latitude: val })}
+      />
+      <CustomTextInput
+        label="Longitude"
+        value={shop.longitude}
+        onChangeText={val => setShop({ ...shop, longitude: val })}
       />
     </View>
   );

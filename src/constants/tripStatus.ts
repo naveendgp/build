@@ -1,4 +1,3 @@
-
 // Flow 1: User → Driver → Vendor
 export enum UserToVendorStatus {
   ACCEPTED = 1,
@@ -38,3 +37,12 @@ export const VendorToUserStatusMap: Record<VendorToUserStatus, string> = {
   [VendorToUserStatus.REACHED]: 'Reached User Location',
   [VendorToUserStatus.DELIVERED]: 'OTP Verification & Order Delivered',
 };
+
+export enum LoginUserStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  BLOCKED = 'blocked',
+  DOC_PENDING_UPLOAD = 'pending',
+  DOC_UNDER_REVIEW = 'upload',
+  DOC_REUPLOAD_REQUIRED = 'retry',
+}
