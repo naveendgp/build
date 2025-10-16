@@ -12,13 +12,16 @@ import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
 import { LoginUserStatus } from '../constants/tripStatus';
+import BottomTabNavigator from './BottomTabNavigator';
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
   VendorVerification: undefined;
-  Home: undefined;
+  MainTabs: undefined;
+  Orders: undefined;
+  Profile: undefined;
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
   OrderDetails: { order: any } | undefined;
@@ -43,7 +46,7 @@ const AppNavigator = () => {
     switch (documentState) {
       case LoginUserStatus.ACTIVE:
       case LoginUserStatus.DOC_UNDER_REVIEW:
-        return 'Home';
+        return 'MainTabs';
       
       case LoginUserStatus.DOC_PENDING_UPLOAD:
       case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
@@ -68,8 +71,8 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="Home"
-            component={HomeScreen}
+            name="MainTabs"
+            component={BottomTabNavigator}
             options={{ headerShown: false }}
           />
           <Stack.Screen
