@@ -55,8 +55,6 @@ const AppNavigator = () => {
         return 'Login';
     }
   };
-
-  console.log('AppNavigator - isLoggedIn:', isLoggedIn, 'documentState:', documentState);
   
   return (
     <SafeAreaProvider>
