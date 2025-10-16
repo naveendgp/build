@@ -9,13 +9,14 @@ import {
   ErrorResponse,
   OtpPayload,
   OtpResponse,
-} from '../../../../apiService/types/types';
+} from '../../../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 
 export const useOtpVerification = (mobile: string, isRegister: boolean) => {
   const navigation = useNavigation<any>();
   const setToken = useAuthStore(state => state.setToken);
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
+  const setDocumentState = useAuthStore(state => state.setDocumentState);
   const fcm = useAuthStore(state => state.fcmToken);
 
   const mutation = useMutation<
@@ -27,7 +28,8 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
       verifyOtp({ phone: mobile, otp, fcm_token: fcm }),
     onSuccess: data => {
       setToken(data.data.token);
-      setLoggedIn(true);
+
+      setDocumentState(data.data.status); // Store document state
       showSuccessToast(data?.message);
 
       if (isRegister) {
@@ -38,8 +40,11 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
         return;
       }
 
+      console.log('User status:', data?.data.status);
+
       switch (data?.data.status) {
         case LoginUserStatus.ACTIVE:
+          setLoggedIn(true);
           navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
           break;
 
@@ -57,6 +62,7 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
           break;
 
         case LoginUserStatus.DOC_UNDER_REVIEW:
+          setLoggedIn(true);
           navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
           break;
       }

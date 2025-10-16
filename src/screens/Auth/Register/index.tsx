@@ -21,7 +21,7 @@ import {
   ErrorResponse,
   RegisterPayload,
   RegisterResponse,
-} from '../../../apiService/types/types.ts';
+} from '../../../apiService/types/authTypes.ts';
 import { AxiosError } from 'axios';
 import { register } from '../../../apiService/api/authApi.ts';
 import { validateMobile } from '../../../utils/Validation.ts';

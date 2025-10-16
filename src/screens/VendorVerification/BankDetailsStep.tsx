@@ -29,6 +29,11 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => (
       value={bank.ifsc_code}
       onChangeText={val => setBank({ ...bank, ifsc_code: val })}
     />
+    <CustomTextInput
+      label="Bank Name"
+      value={bank.bank_name}
+      onChangeText={val => setBank({ ...bank, bank_name: val })}
+    />
   </View>
 );
 

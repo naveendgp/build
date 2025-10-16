@@ -10,6 +10,8 @@ import FilePickerScreen from '../utils/FilePicker';
 import VendorVerificationScreen from '../screens/VendorVerification';
 import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
+import MapScreen from '../screens/VendorVerification/map/MapScreen';
+import { LoginUserStatus } from '../constants/tripStatus';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -22,20 +24,45 @@ export type RootStackParamList = {
   OrderDetails: { order: any } | undefined;
   UserProfile: undefined;
   FilePicker: undefined;
+  MapScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator = () => {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn);
+  const documentState = useAuthStore(state => state.documentState);
+  
+  // Determine initial route based on login status and document state
+  const getInitialRoute = () => {
+    if (!isLoggedIn) {
+      return 'Login';
+    }
+    
+    // If logged in, check document state
+    switch (documentState) {
+      case LoginUserStatus.ACTIVE:
+      case LoginUserStatus.DOC_UNDER_REVIEW:
+        return 'Home';
+      
+      case LoginUserStatus.DOC_PENDING_UPLOAD:
+      case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
+        return 'VendorVerification';
+      
+      case LoginUserStatus.INACTIVE:
+      case LoginUserStatus.BLOCKED:
+      default:
+        return 'Login';
+    }
+  };
 
+  console.log('AppNavigator - isLoggedIn:', isLoggedIn, 'documentState:', documentState);
+  
   return (
     <SafeAreaProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName={
-            isLoggedIn ? 'VendorVerification' : 'VendorVerification'
-          }
+          initialRouteName={getInitialRoute()}
         >
           <Stack.Screen
             name="Login"
@@ -66,6 +93,11 @@ const AppNavigator = () => {
             name="FilePicker"
             component={FilePickerScreen}
             options={{ title: 'Pick a File' }}
+          />
+          <Stack.Screen
+            name="MapScreen"
+            component={MapScreen}
+            options={{ headerShown: false }}
           />
         </Stack.Navigator>
       </NavigationContainer>

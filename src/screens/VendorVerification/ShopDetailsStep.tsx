@@ -1,17 +1,31 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, TouchableOpacity } from 'react-native';
 import CustomTextInput from '../../components/TextInput';
+import { useNavigation } from '@react-navigation/native';
 
 interface Props {
   shop: any;
   setShop: (s: any) => void;
-  handleFocusScroll: (ref: any) => void;
-  pincodeRef: React.RefObject<View | null>;
 }
 
 const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
+  const navigation = useNavigation<any>();
+
+  const handleLocationPress = () => {
+    navigation.navigate('MapScreen', {
+      onLocationSelect: (lat: number, lng: number) => {
+        setShop({
+          ...shop,
+          latitude: lat.toString(),
+          longitude: lng.toString(),
+        });
+      },
+    });
+  };
+
   return (
     <View>
+      {/* Other shop fields */}
       <CustomTextInput
         label="GST Number"
         value={shop.gst_number}
@@ -28,6 +42,23 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
         onChangeText={val => setShop({ ...shop, address: val })}
       />
       <CustomTextInput
+        label="City"
+        value={shop.city}
+        onChangeText={val => setShop({ ...shop, city: val })}
+      />
+      <CustomTextInput
+        label="State"
+        value={shop.state}
+        onChangeText={val => setShop({ ...shop, state: val })}
+      />
+      <CustomTextInput
+        label="Pincode"
+        value={shop.pincode}
+        keyboardType="number-pad"
+        maxLength={6}
+        onChangeText={val => setShop({ ...shop, pincode: val })}
+      />
+      <CustomTextInput
         label="Shop Time"
         value={shop.shop_time}
         onChangeText={val => setShop({ ...shop, shop_time: val })}
@@ -37,16 +68,24 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
         value={shop.landmark}
         onChangeText={val => setShop({ ...shop, landmark: val })}
       />
-      <CustomTextInput
-        label="Latitude"
-        value={shop.latitude}
-        onChangeText={val => setShop({ ...shop, latitude: val })}
-      />
-      <CustomTextInput
-        label="Longitude"
-        value={shop.longitude}
-        onChangeText={val => setShop({ ...shop, longitude: val })}
-      />
+
+      <TouchableOpacity onPress={handleLocationPress}>
+        <CustomTextInput
+          label="Latitude"
+          value={shop.latitude}
+          editable={false}
+          pointerEvents="none"
+        />
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={handleLocationPress}>
+        <CustomTextInput
+          label="Longitude"
+          value={shop.longitude}
+          editable={false}
+          pointerEvents="none"
+        />
+      </TouchableOpacity>
     </View>
   );
 };

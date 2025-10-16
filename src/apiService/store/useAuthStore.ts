@@ -6,10 +6,12 @@ interface AuthState {
   token: string | null;
   fcmToken: string;
   isLoggedIn: boolean;
+  documentState:string;
   setToken: (token: string) => void;
   logout: () => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   setFcmToken: (fcmToken: string) => void;
+  setDocumentState: (documentState: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -18,9 +20,11 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       fcmToken: '',
       isLoggedIn: false,
+      documentState:'',
+      setDocumentState: documentState => set({ documentState }),
       setToken: token => set({ token }),
       setFcmToken: fcmToken => set({ fcmToken }),
-      logout: () => set({ token: null, isLoggedIn: false, fcmToken: '' }),
+      logout: () => set({ token: null, isLoggedIn: false, fcmToken: '', documentState: '' }),
       setIsLoggedIn: isLoggedIn => set({ isLoggedIn }),
     }),
     {

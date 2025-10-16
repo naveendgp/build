@@ -19,7 +19,7 @@ import {
   ErrorResponse as LoginErrorResponse,
   LoginPayload,
   LoginResponse,
-} from '../../../apiService/types/types.ts';
+} from '../../../apiService/types/authTypes.ts';
 import { AxiosError } from 'axios';
 import { validateMobile } from '../../../utils/Validation.ts';
 import { showErrorToast, showSuccessToast } from '../../../utils/Toast.ts';

@@ -7,7 +7,7 @@ import {
   OtpResponse,
   RegisterPayload,
   RegisterResponse,
-} from '../types/types';
+} from '../types/authTypes';
 
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
   const response = await api.post('/vendor/login', payload);

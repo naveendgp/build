@@ -7,19 +7,15 @@ import CustomTextInput from '../../components/TextInput';
 interface VendorDetailsStepProps {
   vendorDetails: {
     owner_name: string;
-    phone: string;
     email: string;
     address: string;
-    profile_pic: string;
     aadhaar_no: string;
   };
   setVendorDetails: React.Dispatch<
     React.SetStateAction<{
       owner_name: string;
-      phone: string;
       email: string;
       address: string;
-      profile_pic: string;
       aadhaar_no: string;
     }>
   >;
@@ -53,20 +49,20 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.owner_name}
         onChangeText={val => setVendor({ ...vendor, owner_name: val })}
       />
-      <CustomTextInput
+      {/* <CustomTextInput
         label="Phone"
         value={vendor.phone}
         keyboardType="number-pad"
         maxLength={10}
         onChangeText={val => setVendor({ ...vendor, phone: val })}
-      />
+      /> */}
       <CustomTextInput
         label="Email (optional)"
         value={vendor.email}
         onChangeText={val => setVendor({ ...vendor, email: val })}
       />
 
-      <View style={{ marginTop: 14 }}>
+      {/* <View style={{ marginTop: 14 }}>
         <TouchableOpacity
           onPress={pickProfilePic}
           style={{
@@ -88,8 +84,13 @@ const VendorDetailsStep: React.FC<Props> = ({
             />
           ) : null}
         </TouchableOpacity>
-      </View>
+      </View> */}
 
+      <CustomTextInput
+        label="PAN Number"
+        value={vendor.pan_number}
+        onChangeText={val => setVendor({ ...vendor, pan_number: val })}
+      />
       <CustomTextInput
         label="Aadhaar Number"
         value={vendor.aadhaar_no}
