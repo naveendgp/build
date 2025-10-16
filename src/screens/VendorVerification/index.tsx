@@ -2,7 +2,6 @@ import React, { useState, useRef } from 'react';
 import {
   View,
   SafeAreaView,
-  Alert,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -10,15 +9,27 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import styles from './styles';
-import CustomText from '../../components/Text';
 import CustomBtn from '../../components/CustomBtn';
-import { useUserStore } from '../../store/useStore';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
-import CustomTextInput from '../../components/TextInput';
+import { useAuthStore } from '../../apiService/store/useAuthStore';
+import VendorDetailsStep from './VendorDetailsStep';
+import ShopDetailsStep from './ShopDetailsStep';
+import BankDetailsStep from './BankDetailsStep';
+import { useVendorValidation } from './useVendorValidation';
+import Toolbar from '../../components/Toolbar';
+import { useMutation } from '@tanstack/react-query';
+import { documentUploadApi } from '../../apiService/api/documentApi';
+import {
+  ShopDocumentUploadPayload,
+  ShopDocumentUploadResponse,
+} from '../../apiService/types/docTypes';
+import { AxiosError } from 'axios';
+import { showErrorToast, showSuccessToast } from '../../utils/Toast';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -27,99 +38,108 @@ type VendorNavProp = NativeStackNavigationProp<
 
 const VendorVerificationScreen: React.FC = () => {
   const navigation = useNavigation<VendorNavProp>();
-  const setLoggedIn = useUserStore(state => state.setLoggedIn);
+  const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
+  const [currentStep, setCurrentStep] = useState<number>(1);
 
-  const [step, setStep] = useState<number>(1);
+  const [step, setStep] = useState(1);
 
-  const [vendorDetails, setVendorDetails] = useState({
-    owner_name: '',
-    phone: '',
-    email: '',
-    shop_name: '',
-  });
-
-  const [shopDetails, setShopDetails] = useState({
-    gst_number: '',
-    pan_number: '',
-    shop_license_number: '',
-    address: '',
-    city: '',
-    state: '',
-    pincode: '',
-    landmark: '',
+  const [data, setData] = useState({
+    vendor: {
+      owner_name: '',
+      email: '',
+      address: '',
+      aadhaar_no: '',
+      pan_number: '',
+    },
+    shop: {
+      gst_number: '',
+      shop_license_number: '',
+      address: '',
+      city: '',
+      state: '',
+      pincode: '',
+      shop_time: '',
+      landmark: '',
+      latitude: '',
+      longitude: '',
+    },
+    bank: {
+      account_number: '',
+      account_holder_name: '',
+      bank_branch: '',
+      ifsc_code: '',
+      bank_name: '',
+    },
   });
 
   const scrollRef = useRef<ScrollView | null>(null);
-  const shopNameRef = useRef<View | null>(null);
-  const pincodeRef = useRef<View | null>(null);
+  const vendorAddressRef = useRef(null);
+  const pincodeRef = useRef(null);
 
-  const handleFocusScroll = (ref: any) => {
-    setTimeout(() => {
-      if (ref?.current && scrollRef?.current && ref.current.measure) {
-        ref.current.measure(
-          (
-            fx: number,
-            fy: number,
-            w: number,
-            h: number,
-            px: number,
-            py: number,
-          ) => {
-            // reduce offset to avoid over-scrolling
-            scrollRef.current?.scrollTo({ y: py - 10, animated: true });
-          },
-        );
-      }
-    }, 60);
-  };
+  const { validateStep } = useVendorValidation();
 
-  const validateVendor = () => {
-    if (!vendorDetails.owner_name.trim()) {
-      Alert.alert('Required', 'Owner name is required');
-      return false;
-    }
-    if (!/^[0-9]{10}$/.test(vendorDetails.phone)) {
-      Alert.alert('Invalid', 'Please enter a valid 10-digit phone number');
-      return false;
-    }
-    if (!vendorDetails.shop_name.trim()) {
-      Alert.alert('Required', 'Shop name is required');
-      return false;
-    }
-    return true;
-  };
-
-  const validateShop = () => {
-    if (!shopDetails.address.trim()) {
-      Alert.alert('Required', 'Address is required');
-      return false;
-    }
-    if (!shopDetails.city.trim()) {
-      Alert.alert('Required', 'City is required');
-      return false;
-    }
-    if (!shopDetails.state.trim()) {
-      Alert.alert('Required', 'State is required');
-      return false;
-    }
-    if (!/^[0-9]{6}$/.test(shopDetails.pincode)) {
-      Alert.alert('Invalid', 'Please enter a valid 6-digit pincode');
-      return false;
-    }
-    return true;
-  };
+  // Document upload mutation
+  const mutation = useMutation<
+    ShopDocumentUploadResponse,
+    AxiosError<{ message: string }>,
+    ShopDocumentUploadPayload
+  >({
+    mutationFn: payload => documentUploadApi(payload),
+    onSuccess: data => {
+      console.log('Document upload API response:', data.message);
+      showSuccessToast(data?.message || 'Document uploaded successfully!');
+      setLoggedIn(true);
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    },
+    onError: error => {
+      const msg = error.response?.data?.message || error.message;
+      console.log('Document upload API error:', msg);
+      showErrorToast(msg);
+    },
+  });
 
   const handleNext = () => {
-    if (validateVendor()) {
-      setStep(2);
+    if (validateStep(step, data)) {
+      setStep(prev => prev + 1);
+      setCurrentStep(prev => prev + 1);
     }
   };
 
-  const handleComplete = () => {
-    if (!validateShop()) return;
-    // TODO: Submit vendorDetails and shopDetails to backend
-    setLoggedIn(true);
-    navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+  const handleBack = () => {
+    setStep(prev => Math.max(prev - 1, 1));
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleSubmit = () => {
+    if (!validateStep(step, data)) return;
+
+    // Transform data to match API payload structure
+    const payload: ShopDocumentUploadPayload = {
+      shop_name: data.shop.shop_license_number, // Using shop license as shop name for now
+      owner_name: data.vendor.owner_name,
+      email: data.vendor.email,
+      gst_number: data.shop.gst_number,
+      pan_number: data.vendor.pan_number,
+      shop_license_number: data.shop.shop_license_number,
+      address_line1: data.shop.address,
+      address_line2: data.shop.landmark,
+      city: data.shop.city,
+      state: data.shop.state,
+      pincode: data.shop.pincode,
+      landmark: data.shop.landmark,
+      latitude: parseFloat(data.shop.latitude) || 0,
+      longitude: parseFloat(data.shop.longitude) || 0,
+      account_holder_name: data.bank.account_holder_name,
+      account_number: data.bank.account_number,
+      ifsc_code: data.bank.ifsc_code,
+      bank_name: data.bank.bank_name,
+      aadhaar_number: data.vendor.aadhaar_no,
+      branch: data.bank.bank_branch,
+    };
+
+    console.log('Submitting data:', payload);
+
+    mutation.mutate(payload);
   };
 
   return (
@@ -128,211 +148,101 @@ const VendorVerificationScreen: React.FC = () => {
         flex: 1,
         backgroundColor: '#F6F9FF',
         paddingTop: StatusBar.currentHeight,
-        paddingBlock: StatusBar.currentHeight,
+        paddingBottom: StatusBar.currentHeight,
       }}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 30 : 0}
       >
-        <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+        <Toolbar title="Vendor Verification" />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
-            ref={r => {
-              scrollRef.current = r;
-            }}
-            contentContainerStyle={{
-              paddingBottom: 10,
-              justifyContent: 'flex-start',
-            }}
+            ref={scrollRef}
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 20 }}
           >
-            <View style={{ padding: 20, flexShrink: 1 }}>
-              <View style={styles.stepIndicatorRow}>
-                {[1, 2].map((s, idx, arr) => {
-                  const completed = s < step;
-                  const active = s === step;
-                  return (
-                    <React.Fragment key={s}>
-                      <TouchableOpacity
-                        onPress={() => {
-                          if (s < step) setStep(s);
-                          if (s > step) {
-                            // user tries to jump forward; only allow if current step valid
-                            if (step === 1 && validateVendor()) setStep(s);
-                          }
-                        }}
+            <View style={styles.stepIndicatorRow}>
+              {[1, 2, 3].map((stepNum, idx, arr) => {
+                const completed = stepNum < currentStep;
+                const active = stepNum === currentStep;
+                return (
+                  <React.Fragment key={stepNum}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        if (completed || active) {
+                          setStep(stepNum);
+                          setCurrentStep(stepNum);
+                        }
+                      }}
+                      style={[
+                        styles.stepIndicator,
+                        active && styles.stepIndicatorActive,
+                        completed && styles.stepIndicatorCompleted,
+                      ]}
+                    >
+                      {active && <View style={styles.dot} />}
+                    </TouchableOpacity>
+
+                    {idx < arr.length - 1 && (
+                      <View
                         style={[
-                          styles.stepIndicator,
-                          active && styles.stepIndicatorActive,
-                          completed && styles.stepIndicatorCompleted,
+                          styles.connector,
+                          stepNum < currentStep && styles.connectorCompleted,
                         ]}
-                      >
-                        <CustomText style={styles.stepIndicatorText}>
-                          {s}
-                        </CustomText>
-                      </TouchableOpacity>
-
-                      {idx < arr.length - 1 && (
-                        <View
-                          style={[
-                            styles.connector,
-                            s < step && styles.connectorCompleted,
-                          ]}
-                        />
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </View>
-              <CustomText style={styles.title}>Vendor verification</CustomText>
-              <CustomText style={styles.subtitle}>
-                Please complete your vendor verification.
-              </CustomText>
-
-              {step === 1 && (
-                <View style={{ marginTop: 18 }}>
-                  <CustomTextInput
-                    label="Owner name"
-                    placeholder="Enter owner name"
-                    value={vendorDetails.owner_name}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, owner_name: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Phone"
-                    placeholder="Enter phone"
-                    keyboardType="number-pad"
-                    value={vendorDetails.phone}
-                    maxLength={10}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, phone: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Email (optional)"
-                    placeholder="Enter email"
-                    keyboardType="email-address"
-                    value={vendorDetails.email}
-                    onChangeText={val =>
-                      setVendorDetails(d => ({ ...d, email: val }))
-                    }
-                  />
-
-                  <View ref={shopNameRef as any}>
-                    <CustomTextInput
-                      label="Shop name"
-                      placeholder="Enter shop name"
-                      value={vendorDetails.shop_name}
-                      onFocus={() => handleFocusScroll(shopNameRef)}
-                      onChangeText={val =>
-                        setVendorDetails(d => ({ ...d, shop_name: val }))
-                      }
-                    />
-                  </View>
-
-                  <View style={{ marginTop: 14 }}>
-                    <CustomBtn title="Next" onPress={handleNext} />
-                  </View>
-                </View>
-              )}
-
-              {step === 2 && (
-                <View style={{ marginTop: 18 }}>
-                  <CustomTextInput
-                    label="GST Number"
-                    placeholder="Enter GST number"
-                    value={shopDetails.gst_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, gst_number: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="PAN Number"
-                    placeholder="Enter PAN number"
-                    value={shopDetails.pan_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, pan_number: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Shop License Number"
-                    placeholder="Enter license number"
-                    value={shopDetails.shop_license_number}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, shop_license_number: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="Address"
-                    placeholder="Enter address"
-                    value={shopDetails.address}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, address: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="City"
-                    placeholder="Enter city"
-                    value={shopDetails.city}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, city: val }))
-                    }
-                  />
-
-                  <CustomTextInput
-                    label="State"
-                    placeholder="Enter state"
-                    value={shopDetails.state}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, state: val }))
-                    }
-                  />
-
-                  <View ref={pincodeRef as any}>
-                    <CustomTextInput
-                      label="Pincode"
-                      placeholder="Enter pincode"
-                      keyboardType="number-pad"
-                      maxLength={6}
-                      value={shopDetails.pincode}
-                      onFocus={() => handleFocusScroll(pincodeRef)}
-                      onChangeText={val =>
-                        setShopDetails(s => ({ ...s, pincode: val }))
-                      }
-                    />
-                  </View>
-
-                  <CustomTextInput
-                    label="Landmark"
-                    placeholder="Enter landmark"
-                    value={shopDetails.landmark}
-                    onChangeText={val =>
-                      setShopDetails(s => ({ ...s, landmark: val }))
-                    }
-                  />
-
-                  <View style={{ marginTop: 14 }}>
-                    <CustomBtn
-                      title="Submit verification"
-                      onPress={handleComplete}
-                    />
-                    <View style={{ height: 8 }} />
-                    <CustomBtn title="Back" onPress={() => setStep(1)} />
-                  </View>
-                </View>
-              )}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
             </View>
+
+            {step === 1 && (
+              <VendorDetailsStep
+                vendor={data.vendor}
+                setVendor={val => setData(d => ({ ...d, vendor: val }))}
+                handleFocusScroll={() => {}}
+                vendorAddressRef={vendorAddressRef}
+              />
+            )}
+            {step === 2 && (
+              <ShopDetailsStep
+                shop={data.shop}
+                setShop={val => setData(d => ({ ...d, shop: val }))}
+              />
+            )}
+            {step === 3 && (
+              <BankDetailsStep
+                bank={data.bank}
+                setBank={val => setData(d => ({ ...d, bank: val }))}
+              />
+            )}
+
+            <CustomBtn
+              title={
+                step < 3
+                  ? 'Next'
+                  : mutation.isPending
+                  ? 'Submitting...'
+                  : 'Submit'
+              }
+              onPress={step < 3 ? handleNext : handleSubmit}
+              disabled={mutation.isPending}
+            />
+            {step > 1 && (
+              <View style={{ marginTop: 10 }}>
+                <CustomBtn title="Back" onPress={handleBack} />
+              </View>
+            )}
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      {mutation.isPending && (
+        <View style={styles.loadingOverlay} pointerEvents="none">
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
     </SafeAreaView>
   );
 };
