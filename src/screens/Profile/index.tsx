@@ -1,17 +1,44 @@
-import React from 'react';
-import { View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomText from '../../components/Text';
-import styles from './styles.ts';
+import styles from './styles';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
+import { useProfileStore } from '../../apiService/store/useProfileStore';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile } from '../../apiService/api/profileApi';
+import { showErrorToast } from '../../utils/Toast';
+import { ProfileResponse } from '../../apiService/types/profileTypes';
+import { ErrorResponse } from '../../apiService/types/authTypes';
+import { AxiosError } from 'axios';
 
 type ProfileNavProp = NativeStackNavigationProp<RootStackParamList, 'Profile'>;
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileNavProp>();
   const { logout, token, documentState } = useAuthStore();
+  const { profile, setProfile, setLoading, setError } = useProfileStore();
+
+  // Fetch profile data
+  const { data, isLoading, error, refetch } = useQuery<ProfileResponse, AxiosError<ErrorResponse>>({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+  });
+
+  // Handle success and error
+  useEffect(() => {
+    if (data) {
+      setProfile(data.data);
+    }
+    if (error) {
+      const msg = error.response?.data?.message || error.message;
+      setError(msg);
+      showErrorToast(msg);
+    }
+  }, [data, error, setProfile, setError]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -43,31 +70,59 @@ const ProfileScreen: React.FC = () => {
       title: 'Edit Profile',
       subtitle: 'Update your personal information',
       icon: '👤',
-      onPress: () => console.log('Edit Profile'),
+      onPress: () => navigation.navigate('EditProfile'),
     },
     {
       id: '2',
       title: 'Business Settings',
       subtitle: 'Manage your business details',
       icon: '🏪',
-      onPress: () => console.log('Business Settings'),
+      onPress: () => navigation.navigate('BusinessSettings'),
     },
     {
       id: '3',
+      title: 'Services',
+      subtitle: 'Select and configure services',
+      icon: '🧺',
+      onPress: () => navigation.navigate('Services'),
+    },
+    {
+      id: '3a',
+      title: 'Services & Pricing',
+      subtitle: 'Configure your services and pricing',
+      icon: '💰',
+      onPress: () => navigation.navigate('ServicesPricing'),
+    },
+    {
+      id: '4',
+      title: 'Shop Status',
+      subtitle: 'Manage your shop availability',
+      icon: '🕒',
+      onPress: () => navigation.navigate('ShopStatus'),
+    },
+    {
+      id: '5',
+      title: 'Wallet',
+      subtitle: 'View your wallet balance',
+      icon: '💳',
+      onPress: () => navigation.navigate('Wallet'),
+    },
+    {
+      id: '6',
       title: 'Notification Settings',
       subtitle: 'Configure your notifications',
       icon: '🔔',
       onPress: () => console.log('Notification Settings'),
     },
     {
-      id: '4',
+      id: '7',
       title: 'Help & Support',
       subtitle: 'Get help and contact support',
       icon: '❓',
       onPress: () => console.log('Help & Support'),
     },
     {
-      id: '5',
+      id: '8',
       title: 'About',
       subtitle: 'App version and information',
       icon: 'ℹ️',
@@ -106,13 +161,19 @@ const ProfileScreen: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <CustomText style={styles.title}>Profile</CustomText>
         <CustomText style={styles.subtitle}>Manage your account</CustomText>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#1B2A4A" />
+          <CustomText style={styles.loadingText}>Loading profile...</CustomText>
+        </View>
+      ) : (
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Profile Info Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
@@ -121,8 +182,12 @@ const ProfileScreen: React.FC = () => {
             </View>
           </View>
           <View style={styles.profileInfo}>
-            <CustomText style={styles.profileName}>Vendor Name</CustomText>
-            <CustomText style={styles.profileEmail}>vendor@example.com</CustomText>
+            <CustomText style={styles.profileName}>
+              {profile?.owner_name || 'Loading...'}
+            </CustomText>
+            <CustomText style={styles.profileEmail}>
+              {profile?.email || 'Loading...'}
+            </CustomText>
             <View style={[styles.statusBadge, { backgroundColor: getDocumentStatusColor() }]}>
               <CustomText style={styles.statusText}>{getDocumentStatusText()}</CustomText>
             </View>
@@ -154,7 +219,8 @@ const ProfileScreen: React.FC = () => {
           <CustomText style={styles.logoutText}>Logout</CustomText>
         </TouchableOpacity>
       </ScrollView>
-    </View>
+      )}
+    </SafeAreaView>
   );
 };
 

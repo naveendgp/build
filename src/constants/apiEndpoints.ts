@@ -2,7 +2,7 @@
 
 export const API_ENDPOINTS = {
   // Base URLs
-  BASE_URL: 'http://192.168.1.29:3000/vendor', //local
+  BASE_URL: 'cu/vendor', //local
   //BASE_URL: 'http://13.204.157.24:3000/vendor', // development http://192.168.1.29:3000/
 
   LOGIN: '/login',
