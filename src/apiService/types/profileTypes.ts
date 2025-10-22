@@ -91,3 +91,26 @@ export interface AppVersion {
   createdAt: string;
   updatedAt: string;
 }
+
+// API Input/Output Types for Services Update
+export interface UpdateServiceItem {
+  item_name: string;
+  item_price: number;
+  item_category: string;
+  express_price: number;
+  discount_percentage: number;
+  is_active: boolean;
+}
+
+export interface UpdateServiceInput {
+  service: {
+    service_name: string;
+    max_count_per_day: number;
+    items: UpdateServiceItem[];
+  };
+}
+
+export interface UpdateServicesResponse {
+  status: boolean;
+  message: string;
+}

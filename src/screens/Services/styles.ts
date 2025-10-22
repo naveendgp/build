@@ -76,6 +76,7 @@ export default StyleSheet.create({
     width: 16,
     height: 16,
     tintColor: colors.gray,
+    transform: [{ rotate: '90deg' }],
   },
   serviceIllustration: {
     width: 80,

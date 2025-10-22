@@ -10,7 +10,10 @@ import { RootStackParamList } from '../../navigation/AppNavigator';
 import { Service } from '../../apiService/types/profileTypes';
 import styles from './styles';
 
-type ServicesNavProp = NativeStackNavigationProp<RootStackParamList, 'Services'>;
+type ServicesNavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Services'
+>;
 
 const ServicesScreen: React.FC = () => {
   const navigation = useNavigation<ServicesNavProp>();
@@ -24,49 +27,34 @@ const ServicesScreen: React.FC = () => {
 
   const renderServiceCard = (service: Service, index: number) => {
     const isSelected = selectedService?.service_name === service.service_name;
-    
+
     return (
       <TouchableOpacity
         key={index}
-        style={[
-          styles.serviceCard,
-          isSelected && styles.selectedServiceCard
-        ]}
+        style={[styles.serviceCard]}
         onPress={() => handleServiceSelect(service)}
         activeOpacity={0.7}
       >
         <View style={styles.serviceCardContent}>
           <View style={styles.serviceInfo}>
-            <View style={styles.radioButtonContainer}>
-              <View style={[
-                styles.radioButton,
-                isSelected && styles.selectedRadioButton
-              ]}>
-                {isSelected && <View style={styles.radioButtonInner} />}
-              </View>
-            </View>
-            
             <View style={styles.serviceTextContainer}>
-              <CustomText style={[
-                styles.serviceName,
-                isSelected && styles.selectedServiceName
-              ]}>
+              <CustomText style={[styles.serviceName]}>
                 {service.service_name}
               </CustomText>
-              <View style={styles.arrowContainer}>
-                <Image 
-                  source={require('../../assets/icons/nav_arrow_straight.png')} 
-                  style={styles.arrowIcon}
-                />
-              </View>
             </View>
           </View>
-          
+
           <View style={styles.serviceIllustration}>
-            <Image 
-              source={{ uri: service.image_url }} 
+            <Image
+              source={{ uri: service.image_url }}
               style={styles.serviceImage}
               resizeMode="contain"
+            />
+          </View>
+          <View style={styles.arrowContainer}>
+            <Image
+              source={require('../../assets/icons/nav_arrow_straight.png')}
+              style={styles.arrowIcon}
             />
           </View>
         </View>
@@ -77,15 +65,15 @@ const ServicesScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Toolbar title="Services" />
-      
-      <ScrollView 
-        style={styles.content} 
+
+      <ScrollView
+        style={styles.content}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
         <View style={styles.servicesContainer}>
-          {profile?.services_offered?.map((service, index) => 
-            renderServiceCard(service, index)
+          {profile?.services_offered?.map((service, index) =>
+            renderServiceCard(service, index),
           )}
         </View>
       </ScrollView>
