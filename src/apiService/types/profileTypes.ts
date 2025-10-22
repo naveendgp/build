@@ -14,6 +14,7 @@ export interface VendorProfile {
   rating: Rating;
   wallet: Wallet;
   pickup_zones: any[];
+  operating_hours?: OperatingHoursInput;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -111,6 +112,21 @@ export interface UpdateServiceInput {
 }
 
 export interface UpdateServicesResponse {
+  status: boolean;
+  message: string;
+}
+
+// Operating Hours Types
+export interface DayHours {
+  open: string;
+  close: string;
+}
+
+export interface OperatingHoursInput {
+  [key: string]: DayHours;
+}
+
+export interface UpdateOperatingHoursResponse {
   status: boolean;
   message: string;
 }
