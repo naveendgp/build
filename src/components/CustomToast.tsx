@@ -7,7 +7,7 @@ import {
   Dimensions,
   StyleSheet,
 } from 'react-native';
-import { COLORS } from '../constants';
+import { colors } from '../constants';
 import { theme } from '../utils/theme';
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -110,7 +110,7 @@ const CustomToast: CustomToastComponent = () => {
       style={[
         styles.container,
         {
-          backgroundColor: options.bgColor || COLORS.BLACK,
+          backgroundColor: options.bgColor || colors.black,
           transform: [{ translateY: slideAnim }],
         },
       ]}
@@ -119,7 +119,7 @@ const CustomToast: CustomToastComponent = () => {
         <Text
           style={[
             styles.text,
-            { color: options.textColor || COLORS.WHITE },
+            { color: options.textColor || colors.white },
             options.textStyle,
           ]}
         >
@@ -130,7 +130,7 @@ const CustomToast: CustomToastComponent = () => {
             <Text
               style={[
                 styles.cancelIcon,
-                { color: options.textColor || COLORS.WHITE },
+                { color: options.textColor || colors.white },
               ]}
             >
               ×

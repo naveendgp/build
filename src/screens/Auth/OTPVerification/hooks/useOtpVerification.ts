@@ -45,7 +45,7 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
       switch (data?.data.status) {
         case LoginUserStatus.ACTIVE:
           setLoggedIn(true);
-          navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
           break;
 
         case LoginUserStatus.BLOCKED:
@@ -63,7 +63,7 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
 
         case LoginUserStatus.DOC_UNDER_REVIEW:
           setLoggedIn(true);
-          navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+          navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
           break;
       }
     },

@@ -12,13 +12,30 @@ import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
 import { LoginUserStatus } from '../constants/tripStatus';
+import BottomTabNavigator from './BottomTabNavigator';
+import EditProfileScreen from '../screens/Profile/EditProfileScreen';
+import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
+import ServicesPricingScreen from '../screens/Profile/ServicesPricingScreen';
+import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
+import WalletScreen from '../screens/Profile/WalletScreen';
+import ServicesScreen from '../screens/Services';
+import ShopListScreen from '../screens/ShopList';
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
   VendorVerification: undefined;
-  Home: undefined;
+  MainTabs: undefined;
+  Orders: undefined;
+  Profile: undefined;
+  EditProfile: undefined;
+  BusinessSettings: undefined;
+  ServicesPricing: undefined;
+  ShopStatus: undefined;
+  Wallet: undefined;
+  Services: undefined;
+  ShopList: { service: any };
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
   OrderDetails: { order: any } | undefined;
@@ -43,7 +60,7 @@ const AppNavigator = () => {
     switch (documentState) {
       case LoginUserStatus.ACTIVE:
       case LoginUserStatus.DOC_UNDER_REVIEW:
-        return 'Home';
+        return 'MainTabs';
       
       case LoginUserStatus.DOC_PENDING_UPLOAD:
       case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
@@ -68,8 +85,8 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="Home"
-            component={HomeScreen}
+            name="MainTabs"
+            component={BottomTabNavigator}
             options={{ headerShown: false }}
           />
           <Stack.Screen
@@ -95,6 +112,43 @@ const AppNavigator = () => {
           <Stack.Screen
             name="MapScreen"
             component={MapScreen}
+            options={{ headerShown: false }}
+          />
+          
+          {/* Profile Sub-screens */}
+          <Stack.Screen
+            name="EditProfile"
+            component={EditProfileScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="BusinessSettings"
+            component={BusinessSettingsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServicesPricing"
+            component={ServicesPricingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ShopStatus"
+            component={ShopStatusScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Wallet"
+            component={WalletScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Services"
+            component={ServicesScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ShopList"
+            component={ShopListScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

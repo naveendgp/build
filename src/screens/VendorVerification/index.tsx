@@ -89,7 +89,7 @@ const VendorVerificationScreen: React.FC = () => {
       console.log('Document upload API response:', data.message);
       showSuccessToast(data?.message || 'Document uploaded successfully!');
       setLoggedIn(true);
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     },
     onError: error => {
       const msg = error.response?.data?.message || error.message;

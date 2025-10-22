@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, SafeAreaView, ImageBackground } from 'react-native';
+import { View, ImageBackground } from 'react-native';
 import CustomText from '../../components/Text';
 import styles from './styles';
 import CustomeDialog from '../../components/Dialog';
@@ -9,8 +9,12 @@ const HomeScreen: React.FC = () => {
   const token = useAuthStore(state => state.token);
   const setLogin = useAuthStore(state => state.setIsLoggedIn);
 
+  useEffect(() => {
+    console.log('token', token);
+  }, [token]);
+
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.container}>
       <View style={styles.wrapper}>
         <CustomText style={styles.title}>Welcome Home</CustomText>
         <CustomText style={styles.subtitle}>
@@ -27,7 +31,7 @@ const HomeScreen: React.FC = () => {
           imageSource={require('../../assets/background/bg.png')}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
