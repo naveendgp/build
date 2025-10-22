@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
 const api = axios.create({
-  baseURL: 'http://192.168.1.29:3000', // replace with your API
+  baseURL: 'http://13.204.157.24:3000', // replace with your API
   timeout: 10000,
 });
 

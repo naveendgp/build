@@ -28,6 +28,7 @@ export default StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+    marginTop:15
   },
   section: {
     marginTop: 20,

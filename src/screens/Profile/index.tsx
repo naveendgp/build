@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomText from '../../components/Text';
 import styles from './styles';
@@ -23,7 +29,10 @@ const ProfileScreen: React.FC = () => {
   const { profile, setProfile, setLoading, setError } = useProfileStore();
 
   // Fetch profile data
-  const { data, isLoading, error, refetch } = useQuery<ProfileResponse, AxiosError<ErrorResponse>>({
+  const { data, isLoading, error, refetch } = useQuery<
+    ProfileResponse,
+    AxiosError<ErrorResponse>
+  >({
     queryKey: ['profile'],
     queryFn: getProfile,
   });
@@ -41,27 +50,23 @@ const ProfileScreen: React.FC = () => {
   }, [data, error, setProfile, setError]);
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          logout();
+          navigation.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
         },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Login' }],
-            });
-          },
-        },
-      ]
-    );
+      },
+    ]);
   };
 
   const profileOptions = [
@@ -86,13 +91,13 @@ const ProfileScreen: React.FC = () => {
       icon: '🧺',
       onPress: () => navigation.navigate('Services'),
     },
-    {
-      id: '3a',
-      title: 'Services & Pricing',
-      subtitle: 'Configure your services and pricing',
-      icon: '💰',
-      onPress: () => navigation.navigate('ServicesPricing'),
-    },
+    // {
+    //   id: '3a',
+    //   title: 'Services & Pricing',
+    //   subtitle: 'Configure your services and pricing',
+    //   icon: '💰',
+    //   onPress: () => navigation.navigate('ServicesPricing'),
+    // },
     {
       id: '4',
       title: 'Shop Status',
@@ -162,10 +167,10 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <CustomText style={styles.title}>Profile</CustomText>
         <CustomText style={styles.subtitle}>Manage your account</CustomText>
-      </View>
+      </View> */}
 
       {isLoading ? (
         <View style={styles.loadingContainer}>
@@ -174,51 +179,64 @@ const ProfileScreen: React.FC = () => {
         </View>
       ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Profile Info Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <CustomText style={styles.avatarText}>VD</CustomText>
-            </View>
-          </View>
-          <View style={styles.profileInfo}>
-            <CustomText style={styles.profileName}>
-              {profile?.owner_name || 'Loading...'}
-            </CustomText>
-            <CustomText style={styles.profileEmail}>
-              {profile?.email || 'Loading...'}
-            </CustomText>
-            <View style={[styles.statusBadge, { backgroundColor: getDocumentStatusColor() }]}>
-              <CustomText style={styles.statusText}>{getDocumentStatusText()}</CustomText>
-            </View>
-          </View>
-        </View>
-
-        {/* Profile Options */}
-        <View style={styles.optionsContainer}>
-          {profileOptions.map((option) => (
-            <TouchableOpacity
-              key={option.id}
-              style={styles.optionItem}
-              onPress={option.onPress}
-            >
-              <View style={styles.optionLeft}>
-                <CustomText style={styles.optionIcon}>{option.icon}</CustomText>
-                <View style={styles.optionTextContainer}>
-                  <CustomText style={styles.optionTitle}>{option.title}</CustomText>
-                  <CustomText style={styles.optionSubtitle}>{option.subtitle}</CustomText>
-                </View>
+          {/* Profile Info Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <View style={styles.avatar}>
+                <CustomText style={styles.avatarText}>VD</CustomText>
               </View>
-              <CustomText style={styles.optionArrow}>›</CustomText>
-            </TouchableOpacity>
-          ))}
-        </View>
+            </View>
+            <View style={styles.profileInfo}>
+              <CustomText style={styles.profileName}>
+                {profile?.owner_name || 'Loading...'}
+              </CustomText>
+              <CustomText style={styles.profileEmail}>
+                {profile?.email || 'Loading...'}
+              </CustomText>
+              <View
+                style={[
+                  styles.statusBadge,
+                  { backgroundColor: getDocumentStatusColor() },
+                ]}
+              >
+                <CustomText style={styles.statusText}>
+                  {getDocumentStatusText()}
+                </CustomText>
+              </View>
+            </View>
+          </View>
 
-        {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <CustomText style={styles.logoutText}>Logout</CustomText>
-        </TouchableOpacity>
-      </ScrollView>
+          {/* Profile Options */}
+          <View style={styles.optionsContainer}>
+            {profileOptions.map(option => (
+              <TouchableOpacity
+                key={option.id}
+                style={styles.optionItem}
+                onPress={option.onPress}
+              >
+                <View style={styles.optionLeft}>
+                  <CustomText style={styles.optionIcon}>
+                    {option.icon}
+                  </CustomText>
+                  <View style={styles.optionTextContainer}>
+                    <CustomText style={styles.optionTitle}>
+                      {option.title}
+                    </CustomText>
+                    <CustomText style={styles.optionSubtitle}>
+                      {option.subtitle}
+                    </CustomText>
+                  </View>
+                </View>
+                <CustomText style={styles.optionArrow}>›</CustomText>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <CustomText style={styles.logoutText}>Logout</CustomText>
+          </TouchableOpacity>
+        </ScrollView>
       )}
     </SafeAreaView>
   );
