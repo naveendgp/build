@@ -4,8 +4,7 @@ export default StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: '#F6F9FF',
-    paddingTop: StatusBar.currentHeight,
-    paddingBottom: StatusBar.currentHeight,
+    
   },
   background: {
     flex: 1,

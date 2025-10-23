@@ -268,9 +268,9 @@ const ShopListScreen: React.FC = () => {
         {/* Price Fields */}
         <View style={styles.editablePriceContainer}>
           {[
-            { label: 'Standard Price', key: 'item_price' as keyof ServiceItem },
+            { label: 'Standard', key: 'item_price' as keyof ServiceItem },
             {
-              label: 'Express Price',
+              label: 'Express',
               key: 'express_price' as keyof ServiceItem,
             },
             {

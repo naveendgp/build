@@ -45,21 +45,21 @@ const BottomTabNavigator = () => {
         ),
         tabBarActiveTintColor: '#1B2A4A',
         tabBarInactiveTintColor: '#7B869A',
-         tabBarStyle: {
-           backgroundColor: '#FFFFFF',
-           borderTopWidth: 1,
-           borderTopColor: '#E0E0E0',
-           paddingBottom: 10,
-           paddingTop: 10,
-           shadowColor: '#000',
-           shadowOffset: {
-             width: 0,
-             height: -2,
-           },
-           shadowOpacity: 0.1,
-           shadowRadius: 4,
-           elevation: 5,
-         },
+        tabBarStyle: {
+          backgroundColor: '#FFFFFF',
+          borderTopWidth: 1,
+          borderTopColor: '#E0E0E0',
+          height: 60,
+
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: -2,
+          },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 5,
+        },
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: '500',
@@ -67,22 +67,22 @@ const BottomTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name="Home"
         component={HomeScreen}
         options={{
           tabBarLabel: 'Home',
         }}
       />
-      <Tab.Screen 
-        name="Orders" 
+      <Tab.Screen
+        name="Orders"
         component={OrdersScreen}
         options={{
           tabBarLabel: 'Orders',
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={ProfileScreen}
         options={{
           tabBarLabel: 'Profile',

@@ -1,9 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6F9FF',
+    // paddingBottom:StatusBar.currentHeight,
   },
   header: {
     flexDirection: 'row',
@@ -28,8 +29,8 @@ export default StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
-    marginTop:15
-  },
+    
+   },
   section: {
     marginTop: 20,
   },
@@ -253,6 +254,7 @@ export default StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginBottom: 20,
     elevation: 3,
   },
   statItem: {
@@ -428,5 +430,194 @@ export default StyleSheet.create({
     fontSize: 16,
     color: '#7B869A',
     marginTop: 12,
+  },
+  
+  // Day Card Styles
+  dayCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  dayHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  dayName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1B2A4A',
+  },
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  timeButton: {
+    flex: 1,
+    backgroundColor: '#F6F9FF',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+  },
+  timeLabel: {
+    fontSize: 12,
+    color: '#7B869A',
+    marginBottom: 4,
+  },
+  timeValue: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1B2A4A',
+  },
+  timeSeparator: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#7B869A',
+    marginHorizontal: 16,
+  },
+  closedText: {
+    fontSize: 16,
+    color: '#FF3B30',
+    fontWeight: '500',
+    textAlign: 'center',
+    paddingVertical: 8,
+  },
+  
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxHeight: '70%',
+    overflow: 'hidden',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1B2A4A',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  timePickerContainer: {
+    height: 300,
+    marginBottom: 20,
+  },
+  hourRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  timeOption: {
+    flex: 1,
+    backgroundColor: '#F6F9FF',
+    borderRadius: 6,
+    padding: 8,
+    marginHorizontal: 1,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    minHeight: 40,
+    justifyContent: 'center',
+  },
+  selectedTimeOption: {
+    backgroundColor: '#1B2A4A',
+    borderColor: '#1B2A4A',
+  },
+  timeOptionText: {
+    fontSize: 12,
+    color: '#1B2A4A',
+    fontWeight: '500',
+  },
+  selectedTimeOptionText: {
+    color: '#FFFFFF',
+  },
+  closeButton: {
+    backgroundColor: '#1B2A4A',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  
+  // Bank Details Styles
+  bankDetailsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  bankDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  bankDetailLabel: {
+    fontSize: 14,
+    color: '#7B869A',
+    fontWeight: '500',
+    flex: 1,
+  },
+  bankDetailValue: {
+    fontSize: 14,
+    color: '#1B2A4A',
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  
+  // Editable Bank Details Styles
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  editButton: {
+    fontSize: 16,
+    color: '#1B2A4A',
+    fontWeight: '600',
+  },
+  bankDetailsActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 12,
   },
 });
