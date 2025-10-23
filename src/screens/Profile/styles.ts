@@ -4,7 +4,7 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F6F9FF',
-    paddingBottom:StatusBar.currentHeight,
+    // paddingBottom:StatusBar.currentHeight,
   },
   header: {
     flexDirection: 'row',
@@ -254,6 +254,7 @@ export default StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+    marginBottom: 20,
     elevation: 3,
   },
   statItem: {
@@ -562,5 +563,61 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
+  },
+  
+  // Bank Details Styles
+  bankDetailsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  bankDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  bankDetailLabel: {
+    fontSize: 14,
+    color: '#7B869A',
+    fontWeight: '500',
+    flex: 1,
+  },
+  bankDetailValue: {
+    fontSize: 14,
+    color: '#1B2A4A',
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
+  },
+  
+  // Editable Bank Details Styles
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  editButton: {
+    fontSize: 16,
+    color: '#1B2A4A',
+    fontWeight: '600',
+  },
+  bankDetailsActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    gap: 12,
   },
 });

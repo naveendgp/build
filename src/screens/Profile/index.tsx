@@ -21,7 +21,10 @@ import { ProfileResponse } from '../../apiService/types/profileTypes';
 import { ErrorResponse } from '../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 
-type ProfileNavProp = NativeStackNavigationProp<RootStackParamList, 'Profile'>;
+export type ProfileNavProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Profile'
+>;
 
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileNavProp>();

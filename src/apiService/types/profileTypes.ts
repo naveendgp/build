@@ -15,6 +15,7 @@ export interface VendorProfile {
   wallet: Wallet;
   pickup_zones: any[];
   operating_hours?: OperatingHoursInput;
+  bank_details?: BankDetails;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -127,6 +128,29 @@ export interface OperatingHoursInput {
 }
 
 export interface UpdateOperatingHoursResponse {
+  status: boolean;
+  message: string;
+}
+
+// Bank Details Types
+export interface BankDetails {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch: string;
+}
+
+// Bank Details API Types
+export interface UpdateBankDetailsInput {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch: string;
+}
+
+export interface UpdateBankDetailsResponse {
   status: boolean;
   message: string;
 }
