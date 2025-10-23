@@ -25,13 +25,20 @@ api.interceptors.response.use(
   async error => {
     if (error.response?.status === 401) {
       const { showDialog } = useDialogStore.getState();
+      const { logout } = useAuthStore.getState();
 
-      showDialog(
-        'Session Expired',
-        'Invalid or Token Expired',
-        'Close',
-        require('../../assets/background/bg.png')
-      );
+      // Use setTimeout to ensure this doesn't interfere with ongoing operations
+      setTimeout(() => {
+        showDialog(
+          'Session Expired',
+          'Your session has expired. Please login again.',
+          'OK',
+          require('../../assets/background/bg.png'),
+          () => {
+            logout();
+          }
+        );
+      }, 100);
     }
     return Promise.reject(error);
   }

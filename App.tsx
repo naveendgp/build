@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -12,15 +12,17 @@ import CustomToast from './src/components/CustomToast';
 // import { useNotifications } from './src/services/Notification/useNotifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useDialogStore } from './src/apiService/store/useDialogStore';
+import { useAuthStore } from './src/apiService/store/useAuthStore';
 import CustomeDialog from './src/components/Dialog';
 import {
   SafeAreaProvider,
   useSafeAreaInsets,
 } from 'react-native-safe-area-context';
+import { NavigationContainerRef } from '@react-navigation/native';
 
 const queryClient = new QueryClient();
 
-const ScreenWrapper = ({ children }) => {
+const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   const insets = useSafeAreaInsets();
   return (
     <View
@@ -38,9 +40,31 @@ const ScreenWrapper = ({ children }) => {
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-  const { visible, title, subtitle, buttonText, hideDialog, imageSource } =
-    useDialogStore();
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+  const { setNavigationRef } = useAuthStore();
+  const {
+    visible,
+    title,
+    subtitle,
+    buttonText,
+    hideDialog,
+    imageSource,
+    onClose,
+  } = useDialogStore();
   // useNotifications();
+
+  // Set navigation ref in auth store
+  useEffect(() => {
+    setNavigationRef(navigationRef);
+  }, [setNavigationRef]);
+
+  const handleDialogClose = () => {
+    hideDialog();
+    // Execute the onClose callback if it exists (this will call logout)
+    if (onClose) {
+      onClose();
+    }
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -50,14 +74,14 @@ const App = () => {
             <StatusBar
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}
             />
-            <AppNavigator />
+            <AppNavigator ref={navigationRef} />
             <CustomToast />
             <CustomeDialog
               visible={visible}
               title={title}
               subtitle={subtitle}
               buttonText={buttonText}
-              onButtonPress={hideDialog}
+              onButtonPress={handleDialogClose}
               btnVisible={true}
               imageSource={imageSource}
             />
