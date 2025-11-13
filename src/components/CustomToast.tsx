@@ -158,13 +158,12 @@ CustomToast.show = (options: ToastOptions) => {
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: 30,
+    top: 10,
     left: 0,
     right: 0,
     paddingVertical: 12,
     paddingHorizontal: 20,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    borderRadius: 10,
     elevation: 6,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },

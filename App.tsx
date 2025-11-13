@@ -1,5 +1,5 @@
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   StatusBar,
   StyleSheet,
@@ -12,6 +12,9 @@ import CustomToast from './src/components/CustomToast';
 // import { useNotifications } from './src/services/Notification/useNotifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { NavigationContainerRef } from '@react-navigation/native';
+import { useAuthStore } from './src/apiService/store/useAuthStore';
+import { useDialogStore } from './src/apiService/store/useDialogStore';
 
 const queryClient = new QueryClient();
 
@@ -32,11 +35,33 @@ const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
-
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
+  const { setNavigationRef } = useAuthStore();
+  const {
+    visible,
+    title,
+    subtitle,
+    buttonText,
+    hideDialog,
+    imageSource,
+    onClose,
+  } = useDialogStore();
   // useNotifications();
+
+  // Set navigation ref in auth store
+  useEffect(() => {
+    setNavigationRef(navigationRef);
+  }, [setNavigationRef]);
+
+  const handleDialogClose = () => {
+    hideDialog();
+    // Execute the onClose callback if it exists (this will call logout)
+    if (onClose) {
+      onClose();
+    }
+  };
 
   return (
     <QueryClientProvider client={queryClient}>

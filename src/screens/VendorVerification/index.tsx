@@ -147,8 +147,6 @@ const VendorVerificationScreen: React.FC = () => {
       style={{
         flex: 1,
         backgroundColor: '#F6F9FF',
-        paddingTop: StatusBar.currentHeight,
-        paddingBottom: StatusBar.currentHeight,
       }}
     >
       <KeyboardAvoidingView

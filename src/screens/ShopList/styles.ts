@@ -6,9 +6,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.BACKGROUND,
   },
-  content: {
-    flex: 1,
-  },
+  content: {},
   categoryTabsContainer: {
     backgroundColor: COLORS.WHITE,
     borderBottomWidth: 1,
@@ -16,7 +14,7 @@ export default StyleSheet.create({
   },
   categoryTabsContent: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    alignItems: 'center',
   },
   categoryTab: {
     paddingHorizontal: 16,
@@ -58,9 +56,23 @@ export default StyleSheet.create({
   },
   itemsList: {
     padding: 16,
-    paddingBottom: 100, // Space for submit button
+    paddingBottom: 100,
   },
+
+  // ---------- Improved Item Card Styles ----------
   itemCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 8,
+    marginHorizontal: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  itemHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -81,7 +93,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   itemName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: COLORS.TEXT,
     marginBottom: 8,
@@ -138,5 +150,37 @@ export default StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.LIGHT_GRAY_2,
   },
-});
 
+  // Others tab styles
+  othersTabContainer: {
+    flex: 1,
+    padding: 16,
+    minHeight: 200,
+    backgroundColor: COLORS.BACKGROUND,
+  },
+  maxCountContainer: {
+    marginTop: 20,
+  },
+  maxCountLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.PRIMARY,
+    marginBottom: 8,
+  },
+  maxCountInput: {
+    borderWidth: 1,
+    borderColor: COLORS.LIGHT_GRAY,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: COLORS.TEXT,
+    backgroundColor: COLORS.WHITE,
+  },
+  maxCountDescription: {
+    fontSize: 12,
+    color: COLORS.GRAY,
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+});

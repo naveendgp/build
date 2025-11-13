@@ -9,6 +9,10 @@ const HomeScreen: React.FC = () => {
   const token = useAuthStore(state => state.token);
   const setLogin = useAuthStore(state => state.setIsLoggedIn);
 
+  useEffect(() => {
+    console.log('token', token);
+  }, [token]);
+
   return (
     <View style={styles.container}>
       <View style={styles.wrapper}>

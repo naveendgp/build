@@ -14,6 +14,8 @@ export interface VendorProfile {
   rating: Rating;
   wallet: Wallet;
   pickup_zones: any[];
+  operating_hours?: OperatingHoursInput;
+  bank_details?: BankDetails;
   createdAt: string;
   updatedAt: string;
   __v: number;
@@ -90,4 +92,65 @@ export interface AppVersion {
   is_forceupdate: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+// API Input/Output Types for Services Update
+export interface UpdateServiceItem {
+  item_name: string;
+  item_price: number;
+  item_category: string;
+  express_price: number;
+  discount_percentage: number;
+  is_active: boolean;
+}
+
+export interface UpdateServiceInput {
+  service: {
+    service_name: string;
+    max_count_per_day: number;
+    items: UpdateServiceItem[];
+  };
+}
+
+export interface UpdateServicesResponse {
+  status: boolean;
+  message: string;
+}
+
+// Operating Hours Types
+export interface DayHours {
+  open: string;
+  close: string;
+}
+
+export interface OperatingHoursInput {
+  [key: string]: DayHours;
+}
+
+export interface UpdateOperatingHoursResponse {
+  status: boolean;
+  message: string;
+}
+
+// Bank Details Types
+export interface BankDetails {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch: string;
+}
+
+// Bank Details API Types
+export interface UpdateBankDetailsInput {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch: string;
+}
+
+export interface UpdateBankDetailsResponse {
+  status: boolean;
+  message: string;
 }
