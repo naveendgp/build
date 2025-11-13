@@ -1,6 +1,9 @@
 // src/navigation/AppNavigator.tsx
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { forwardRef } from 'react';
+import {
+  NavigationContainer,
+  NavigationContainerRef,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/Login';
 import RegisterScreen from '../screens/Auth/Register';
@@ -46,39 +49,37 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigator = () => {
+const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
   const isLoggedIn = useAuthStore(state => state.isLoggedIn);
   const documentState = useAuthStore(state => state.documentState);
-  
+
   // Determine initial route based on login status and document state
   const getInitialRoute = () => {
     if (!isLoggedIn) {
       return 'Login';
     }
-    
+
     // If logged in, check document state
     switch (documentState) {
       case LoginUserStatus.ACTIVE:
       case LoginUserStatus.DOC_UNDER_REVIEW:
         return 'MainTabs';
-      
+
       case LoginUserStatus.DOC_PENDING_UPLOAD:
       case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
         return 'VendorVerification';
-      
+
       case LoginUserStatus.INACTIVE:
       case LoginUserStatus.BLOCKED:
       default:
         return 'Login';
     }
   };
-  
+
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName={getInitialRoute()}
-        >
+      <NavigationContainer ref={ref}>
+        <Stack.Navigator initialRouteName={getInitialRoute()}>
           <Stack.Screen
             name="Login"
             component={LoginScreen}
@@ -114,7 +115,7 @@ const AppNavigator = () => {
             component={MapScreen}
             options={{ headerShown: false }}
           />
-          
+
           {/* Profile Sub-screens */}
           <Stack.Screen
             name="EditProfile"
@@ -155,6 +156,6 @@ const AppNavigator = () => {
       </NavigationContainer>
     </SafeAreaProvider>
   );
-};
+});
 
 export default AppNavigator;

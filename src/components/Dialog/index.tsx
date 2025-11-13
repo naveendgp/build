@@ -32,6 +32,8 @@ const CustomeDialog: React.FC<Props> = ({
   onButtonPress,
   btnVisible = true,
 }) => {
+  if (!visible) return null;
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>

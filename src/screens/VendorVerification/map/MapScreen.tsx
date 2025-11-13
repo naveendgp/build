@@ -48,7 +48,7 @@ const MapScreen: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1, paddingTop: StatusBar.currentHeight }}>
+    <View style={{ flex: 1 }}>
       {region && (
         <MapView
           ref={mapRef}

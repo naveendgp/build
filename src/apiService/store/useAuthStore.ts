@@ -7,8 +7,10 @@ interface AuthState {
   fcmToken: string;
   isLoggedIn: boolean;
   documentState:string;
+  navigationRef: any;
   setToken: (token: string) => void;
   logout: () => void;
+  setNavigationRef: (ref: any) => void;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
   setFcmToken: (fcmToken: string) => void;
   setDocumentState: (documentState: string) => void;
@@ -21,10 +23,22 @@ export const useAuthStore = create<AuthState>()(
       fcmToken: '',
       isLoggedIn: false,
       documentState:'',
+      navigationRef: null,
       setDocumentState: documentState => set({ documentState }),
       setToken: token => set({ token }),
       setFcmToken: fcmToken => set({ fcmToken }),
-      logout: () => set({ token: null, isLoggedIn: false, fcmToken: '', documentState: '' }),
+      setNavigationRef: ref => set({ navigationRef: ref }),
+      logout: () => {
+        set({ token: null, isLoggedIn: false, fcmToken: '', documentState: '' });
+        // Reset navigation to Login screen
+        const { navigationRef } = useAuthStore.getState();
+        if (navigationRef?.current) {
+          navigationRef.current.reset({
+            index: 0,
+            routes: [{ name: 'Login' }],
+          });
+        }
+      },
       setIsLoggedIn: isLoggedIn => set({ isLoggedIn }),
     }),
     {
