@@ -5,13 +5,33 @@ import {
   StyleSheet,
   useColorScheme,
   SafeAreaView,
+  View,
 } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import CustomToast from './src/components/CustomToast';
 // import { useNotifications } from './src/services/Notification/useNotifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const queryClient = new QueryClient();
+
+
+const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
+  const insets = useSafeAreaInsets();
+  return (
+    <View
+      style={{
+        flex: 1,
+        paddingTop: insets.top, // Need to adjust this based Gradient Bg req
+        paddingBottom: insets.bottom,
+        backgroundColor: "#74C38D",
+      }}
+    >
+      {children}
+    </View>
+  );
+};
+
 
 const App = () => {
   const isDarkMode = useColorScheme() === 'dark';
@@ -20,13 +40,17 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
+        <ScreenWrapper>
         <GestureHandlerRootView style={styles.container}>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           <AppNavigator />
           <CustomToast />
         </GestureHandlerRootView>
+        </ScreenWrapper>
       </SafeAreaView>
+      </SafeAreaProvider>
     </QueryClientProvider>
   );
 };

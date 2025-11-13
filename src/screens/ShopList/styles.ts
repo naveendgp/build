@@ -1,18 +1,18 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../constants/colors';
+import { COLORS } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.BACKGROUND,
   },
   content: {
     flex: 1,
   },
   categoryTabsContainer: {
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.WHITE,
     borderBottomWidth: 1,
-    borderBottomColor: colors.lightGray,
+    borderBottomColor: COLORS.LIGHT_GRAY_2,
   },
   categoryTabsContent: {
     paddingHorizontal: 16,
@@ -23,18 +23,18 @@ export default StyleSheet.create({
     paddingVertical: 8,
     marginRight: 8,
     borderRadius: 20,
-    backgroundColor: colors.lightGray,
+    backgroundColor: COLORS.LIGHT_GRAY_2,
   },
   selectedCategoryTab: {
-    backgroundColor: colors.lightGreen,
+    backgroundColor: COLORS.ONBOARDING_BG_LIGHT,
   },
   categoryTabText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text,
+    color: COLORS.TEXT,
   },
   selectedCategoryTabText: {
-    color: colors.primary,
+    color: COLORS.GREEN,
   },
   summaryBar: {
     flexDirection: 'row',
@@ -42,19 +42,19 @@ export default StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.WHITE,
     borderBottomWidth: 1,
-    borderBottomColor: colors.lightGray,
+    borderBottomColor: COLORS.LIGHT_GRAY_2,
   },
   totalItemsText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text,
+    color: COLORS.TEXT,
   },
   clearAllText: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.primary,
+    color: COLORS.GREEN,
   },
   itemsList: {
     padding: 16,
@@ -64,11 +64,11 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.WHITE,
     borderRadius: 8,
     padding: 16,
     marginBottom: 12,
-    shadowColor: colors.black,
+    shadowColor: COLORS.BLACK,
     shadowOffset: {
       width: 0,
       height: 1,
@@ -83,7 +83,7 @@ export default StyleSheet.create({
   itemName: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: COLORS.TEXT,
     marginBottom: 8,
   },
   priceContainer: {
@@ -92,11 +92,11 @@ export default StyleSheet.create({
   },
   standardPrice: {
     fontSize: 14,
-    color: colors.gray,
+    color: COLORS.GRAY,
   },
   expressPrice: {
     fontSize: 14,
-    color: colors.gray,
+    color: COLORS.GRAY,
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -107,17 +107,17 @@ export default StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: colors.lightGray,
+    backgroundColor: COLORS.LIGHT_GRAY_2,
     alignItems: 'center',
     justifyContent: 'center',
   },
   quantityButtonText: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.primary,
+    color: COLORS.GREEN,
   },
   disabledQuantityButton: {
-    color: colors.gray,
+    color: COLORS.GRAY,
   },
   quantityDisplay: {
     minWidth: 40,
@@ -126,17 +126,17 @@ export default StyleSheet.create({
   quantityText: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: COLORS.TEXT,
   },
   submitContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.white,
+    backgroundColor: COLORS.WHITE,
     padding: 16,
     borderTopWidth: 1,
-    borderTopColor: colors.lightGray,
+    borderTopColor: COLORS.LIGHT_GRAY_2,
   },
 });
 
