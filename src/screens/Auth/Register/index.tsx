@@ -15,7 +15,6 @@ import CustomBtn from '../../../components/CustomBtn';
 import CustomText from '../../../components/Text';
 import styles from './styles.ts';
 import CustomToast from '../../../components/CustomToast.tsx';
-import { colors } from '../../../constants/index.ts';
 import { useMutation } from '@tanstack/react-query';
 import {
   ErrorResponse,

@@ -1,10 +1,10 @@
 import { StyleSheet } from 'react-native';
-import { colors } from '../../constants/colors';
+import { COLORS } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: COLORS.BACKGROUND,
   },
   content: {
     flex: 1,
@@ -16,13 +16,13 @@ export default StyleSheet.create({
     gap: 12,
   },
   serviceCard: {
-    backgroundColor: colors.lightGray,
+    backgroundColor: COLORS.LIGHT_GRAY_2,
     borderRadius: 12,
     padding: 16,
     marginBottom: 8,
   },
   selectedServiceCard: {
-    backgroundColor: colors.lightGreen,
+    backgroundColor: COLORS.ONBOARDING_BG_LIGHT,
   },
   serviceCardContent: {
     flexDirection: 'row',
@@ -42,18 +42,18 @@ export default StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: colors.gray,
+    borderColor: COLORS.GRAY,
     alignItems: 'center',
     justifyContent: 'center',
   },
   selectedRadioButton: {
-    borderColor: colors.primary,
+    borderColor: COLORS.GREEN,
   },
   radioButtonInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: colors.primary,
+    backgroundColor: COLORS.GREEN,
   },
   serviceTextContainer: {
     flexDirection: 'row',
@@ -63,11 +63,11 @@ export default StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: COLORS.TEXT,
     flex: 1,
   },
   selectedServiceName: {
-    color: colors.primary,
+    color: COLORS.GREEN,
   },
   arrowContainer: {
     marginLeft: 8,
@@ -75,8 +75,7 @@ export default StyleSheet.create({
   arrowIcon: {
     width: 16,
     height: 16,
-    tintColor: colors.gray,
-    transform: [{ rotate: '90deg' }],
+    tintColor: COLORS.GRAY,
   },
   serviceIllustration: {
     width: 80,

@@ -11,16 +11,13 @@ import AppNavigator from './src/navigation/AppNavigator';
 import CustomToast from './src/components/CustomToast';
 // import { useNotifications } from './src/services/Notification/useNotifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useDialogStore } from './src/apiService/store/useDialogStore';
-import { useAuthStore } from './src/apiService/store/useAuthStore';
-import CustomeDialog from './src/components/Dialog';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainerRef } from '@react-navigation/native';
+import { useAuthStore } from './src/apiService/store/useAuthStore';
+import { useDialogStore } from './src/apiService/store/useDialogStore';
 
 const queryClient = new QueryClient();
+
 
 const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   const insets = useSafeAreaInsets();
@@ -28,9 +25,9 @@ const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
     <View
       style={{
         flex: 1,
-        paddingTop: insets.top,
+        paddingTop: insets.top, // Need to adjust this based Gradient Bg req
         paddingBottom: insets.bottom,
-        backgroundColor: '#ffffff',
+        backgroundColor: "#74C38D",
       }}
     >
       {children}
@@ -69,24 +66,15 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
         <ScreenWrapper>
-          <GestureHandlerRootView style={styles.container}>
-            <StatusBar
-              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-            />
-            <AppNavigator ref={navigationRef} />
-            <CustomToast />
-            <CustomeDialog
-              visible={visible}
-              title={title}
-              subtitle={subtitle}
-              buttonText={buttonText}
-              onButtonPress={handleDialogClose}
-              btnVisible={true}
-              imageSource={imageSource}
-            />
-          </GestureHandlerRootView>
+        <GestureHandlerRootView style={styles.container}>
+          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+          <AppNavigator />
+          <CustomToast />
+        </GestureHandlerRootView>
         </ScreenWrapper>
+      </SafeAreaView>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

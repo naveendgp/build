@@ -1,26 +1,26 @@
 import CustomToast from '../components/CustomToast';
-import { colors } from '../constants';
+import { COLORS } from '../constants';
 
 export const showToast = (msg: string) => {
   CustomToast.show({
     msg,
-    bgColor: colors.primary,
-    textColor: colors.white,
+    bgColor: COLORS.PRIMARY,
+    textColor: COLORS.WHITE,
   });
 };
 
 export const showErrorToast = (msg: string) => {
   CustomToast.show({
     msg,
-    bgColor: colors.error,
-    textColor: colors.white,
+    bgColor: COLORS.ERROR,
+    textColor: COLORS.WHITE,
   });
 };
 
 export const showSuccessToast = (msg: string) => {
   CustomToast.show({
     msg,
-    bgColor: colors.success,
-    textColor: colors.white,
+    bgColor: COLORS.SUCCESS,
+    textColor: COLORS.WHITE,
   });
 };

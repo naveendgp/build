@@ -12,21 +12,31 @@ type CustomBtnProps = {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
   disabled?: boolean;
+  loading?: boolean;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
 };
 
 const CustomBtn: React.FC<CustomBtnProps> = ({
   title,
   onPress,
   disabled = false,
+  loading = false,
+  style,
+  textStyle,
 }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
       onPress={onPress}
-      disabled={disabled}
-      style={[styles.button, disabled && styles.disabledButton]}
+      disabled={disabled || loading}
+      style={[
+        styles.button,
+        disabled && styles.disabledButton,
+        style,
+      ]}
     >
-      <Text style={[styles.text, disabled && styles.disabledText]}>
+      <Text style={[styles.text, disabled && styles.disabledText, textStyle]}>
         {title}
       </Text>
     </TouchableOpacity>

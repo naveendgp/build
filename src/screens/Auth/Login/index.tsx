@@ -1,36 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
-  TextInput,
-  SafeAreaView,
-  TouchableOpacity,
-  ActivityIndicator,
-  ImageBackground,
-} from 'react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../../navigation/AppNavigator';
-import { useNavigation } from '@react-navigation/native';
-import CustomBtn from '../../../components/CustomBtn';
-import CustomText from '../../../components/Text';
-import styles from './styles.ts';
-import { useMutation } from '@tanstack/react-query';
-import { login } from '../../../apiService/api/authApi.ts';
+  StatusBar,
+  ScrollView,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Keyboard,
+  Platform,
+  Dimensions,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../../navigation/AppNavigator";
+import { COLORS, FONTFAMILY } from "../../../constants/colors";
+import LoginIcon from "../../../assets/auto-generated-svg-icons/LoginIcon";
+import ProfileInput from "../../../components/ProfileInput";
+import CustomBtn from "../../../components/CustomBtn";
+import styles from "./styles";
+import BackgroundGradient from "../../../components/backgroundGradient";
+import { showErrorToast, showSuccessToast } from "../../../utils/Toast";
+import CustomText from "../../../components/Text";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "../../../apiService/api/authApi";
 import {
   ErrorResponse as LoginErrorResponse,
   LoginPayload,
   LoginResponse,
-} from '../../../apiService/types/authTypes.ts';
-import { AxiosError } from 'axios';
-import { validateMobile } from '../../../utils/Validation.ts';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast.ts';
+} from "../../../apiService/types/authTypes";
+import { AxiosError } from "axios";
 
-type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
+const { width } = Dimensions.get("window");
+
+type LoginNavProp = NativeStackNavigationProp<RootStackParamList, "Login">;
 
 const LoginScreen: React.FC = () => {
-  // const { mobile, setLocalMobile, handleSendOTP, isLoading } = useLogin();
   const navigation = useNavigation<LoginNavProp>();
-
-  const [mobile, setLocalMobile] = useState('');
+  const [mobile, setMobile] = useState("");
 
   const mutation = useMutation<
     LoginResponse,
@@ -38,87 +43,74 @@ const LoginScreen: React.FC = () => {
     LoginPayload
   >({
     mutationFn: payload => login(payload),
-    onSuccess: data => {
-      console.log('Login API response:', data.message);
-      showSuccessToast(data?.message);
-      navigation.navigate('OTPVerification', { mobile, isRegister: false });
+    onSuccess: (data, variables) => {
+      console.log("Login API response:", data.message);
+      showSuccessToast(data?.message || "OTP sent successfully");
+      navigation.navigate("OTPVerification", { 
+        mobile: variables.phone, 
+        isRegister: false 
+      });
     },
     onError: error => {
       const msg = error.response?.data?.message || error.message;
-      console.log('Login API error:', msg);
-      showErrorToast(msg);
+      console.log("Login API error:", msg);
+      showErrorToast(msg || "Failed to send OTP");
     },
   });
 
-  const handleLogin = () => {
-    if (!validateMobile(mobile)) return;
+  const handleContinue = async () => {
+    const digitsOnly = mobile.replace(/\D/g, "");
 
-    mutation.mutate({ phone: mobile }); // your API payload
+    if (!/^\d{10}$/.test(digitsOnly)) {
+      showErrorToast("Please enter a valid phone number");
+      return;
+    }
+
+    try {
+      console.log("digitsOnly", digitsOnly);
+      mutation.mutate({ phone: digitsOnly });
+    } catch {
+      showErrorToast("Network error occurred");
+    }
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ImageBackground
-        source={require('../../../assets/background/bg.png')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <View style={styles.wrapper}>
-          <View style={styles.card}>
-            <CustomText style={styles.title}>Login</CustomText>
-            <CustomText style={styles.subtitle}>
-              Welcome back, you've been missed
-            </CustomText>
+    <View style={{ flex: 1 }}>
+     
+      <BackgroundGradient />
 
-            <View style={styles.inputRow}>
-              <View style={styles.codeBox}>
-                <CustomText style={styles.codeText}>+91</CustomText>
+     
+            <View style={styles.gradientContainer}>
+              <View style={styles.iconContainer}>
+                <LoginIcon width={58} height={58} />
               </View>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter mobile number"
-                keyboardType="number-pad"
-                maxLength={10}
+
+              <CustomText style={styles.title}>Enter Mobile Number</CustomText>
+
+              <ProfileInput
+                inputType="phone"
                 value={mobile}
-                onChangeText={setLocalMobile}
-                placeholderTextColor="#9AA0A6"
+                onChangeText={setMobile}
+                countryCode="+91"
+                containerStyle={styles.profileInputContainer}
               />
-            </View>
 
-            <CustomBtn
-              title={mutation.isPending ? 'Please wait...' : 'Login'}
-              onPress={() => handleLogin()} // handleSendOTP}
-              disabled={mutation.isPending}
-            />
+              <CustomBtn
+                title={mutation.isPending ? "Please wait..." : "Continue"}
+                onPress={handleContinue}
+                disabled={mutation.isPending}
+                style={styles.continueButton}
+                textStyle={styles.continueText}
+              />
 
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'center',
-                marginTop: 20,
-              }}
-            >
-              <CustomText style={styles.forgot}>
-                Don't have an account?
+              <CustomText style={styles.footerText}>
+                By continuing, you agree to our
+                <CustomText style={styles.linkText}> T&C </CustomText> and
+                <CustomText style={styles.linkText}> Privacy policy.</CustomText>
               </CustomText>
-
-              <TouchableOpacity
-                style={styles.secondaryBtn}
-                onPress={() => navigation.navigate('Register')}
-              >
-                <CustomText style={styles.secondaryText}>Register</CustomText>
-              </TouchableOpacity>
             </View>
-          </View>
-        </View>
-      </ImageBackground>
-
-      {mutation.isPending && (
-        <View style={styles.loadingOverlay} pointerEvents="none">
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      )}
-    </SafeAreaView>
+          
+    </View>
   );
 };
 
