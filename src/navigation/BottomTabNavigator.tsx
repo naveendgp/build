@@ -17,8 +17,7 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
 const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
   const getIcon = () => {
     switch (name) {
-      case 'Home':
-        return focused ? '🏠' : '🏘️';
+      
       case 'Orders':
         return focused ? '📋' : '📄';
       case 'Profile':
@@ -67,13 +66,7 @@ const BottomTabNavigator = () => {
         },
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          tabBarLabel: 'Home',
-        }}
-      />
+     
       <Tab.Screen
         name="Orders"
         component={OrdersScreen}

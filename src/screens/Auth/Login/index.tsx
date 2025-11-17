@@ -105,8 +105,8 @@ const LoginScreen: React.FC = () => {
 
               <CustomText style={styles.footerText}>
                 By continuing, you agree to our
-                <CustomText style={styles.linkText}> T&C </CustomText> and
-                <CustomText style={styles.linkText}> Privacy policy.</CustomText>
+                <CustomText style={styles.linkText}>  T&C </CustomText> and
+                <CustomText style={styles.linkText}>  Privacy policy.</CustomText>
               </CustomText>
             </View>
           

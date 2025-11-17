@@ -1,20 +1,15 @@
 import { StatusBar, StyleSheet } from 'react-native';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F9FF',
-    // paddingBottom:StatusBar.currentHeight,
+    backgroundColor: COLORS.WHITE,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     padding: 20,
-    paddingTop: 10,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   backButton: {
     fontSize: 16,
@@ -22,15 +17,41 @@ export default StyleSheet.create({
     fontWeight: '500',
   },
   title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1B2A4A',
+    fontSize: 24,
+    fontWeight: '700',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_BOLD,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 20,
-    
-   },
+  },
+  summaryCard: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  summaryTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.TEXT_GRAY,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    marginBottom: 12,
+  },
+  summaryAmount: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_BOLD,
+    marginBottom: 20,
+  },
+  summaryStats: {
+     gap:16,
+    justifyContent: 'space-between',
+  },
   section: {
     marginTop: 20,
   },
@@ -40,7 +61,7 @@ export default StyleSheet.create({
     color: '#1B2A4A',
     marginBottom: 16,
   },
-  
+
   // Profile Card Styles
   profileCard: {
     backgroundColor: '#FFFFFF',
@@ -99,7 +120,7 @@ export default StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  
+
   // Service Card Styles
   serviceCard: {
     backgroundColor: '#FFFFFF',
@@ -171,7 +192,7 @@ export default StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 4,
   },
-  
+
   // Switch Row Styles
   switchRow: {
     flexDirection: 'row',
@@ -186,7 +207,7 @@ export default StyleSheet.create({
     color: '#1B2A4A',
     flex: 1,
   },
-  
+
   // Status Card Styles
   statusCard: {
     backgroundColor: '#FFFFFF',
@@ -212,7 +233,7 @@ export default StyleSheet.create({
     fontSize: 16,
     color: '#1B2A4A',
   },
-  
+
   // Hours Card Styles
   hoursCard: {
     backgroundColor: '#FFFFFF',
@@ -239,7 +260,7 @@ export default StyleSheet.create({
     color: '#7B869A',
     marginBottom: 4,
   },
-  
+
   // Stats Card Styles
   statsCard: {
     backgroundColor: '#FFFFFF',
@@ -258,20 +279,22 @@ export default StyleSheet.create({
     elevation: 3,
   },
   statItem: {
-    alignItems: 'center',
+    flex: 1,
   },
   statValue: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1B2A4A',
-    marginBottom: 4,
+    fontSize: 18,
+    fontWeight: '600',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    marginTop: 4,
   },
   statLabel: {
-    fontSize: 12,
-    color: '#7B869A',
-    textAlign: 'center',
+    fontSize: 14,
+    color: COLORS.TEXT_GRAY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
   },
-  
+
   // Balance Card Styles
   balanceCard: {
     backgroundColor: '#FFFFFF',
@@ -302,14 +325,14 @@ export default StyleSheet.create({
     fontSize: 14,
     color: '#7B869A',
   },
-  
+
   // Actions Container
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
   },
-  
+
   // Transaction Card Styles
   transactionCard: {
     backgroundColor: '#FFFFFF',
@@ -353,20 +376,16 @@ export default StyleSheet.create({
     fontSize: 12,
     color: '#7B869A',
   },
-  
+
   // Profile Options Styles
   optionsContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.WHITE,
     borderRadius: 16,
+    marginHorizontal: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    overflow: 'hidden',
   },
   optionItem: {
     flexDirection: 'row',
@@ -374,34 +393,22 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderBottomColor: COLORS.BORDER_INPUT,
+  },
+  optionItemLast: {
+    borderBottomWidth: 0,
   },
   optionLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-  optionIcon: {
-    fontSize: 24,
-    marginRight: 16,
-  },
-  optionTextContainer: {
-    flex: 1,
+    gap: 16,
   },
   optionTitle: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#1B2A4A',
-    marginBottom: 2,
-  },
-  optionSubtitle: {
-    fontSize: 14,
-    color: '#7B869A',
-  },
-  optionArrow: {
-    fontSize: 20,
-    color: '#7B869A',
-    fontWeight: 'bold',
+    fontWeight: '400',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
   },
   logoutButton: {
     backgroundColor: '#FF3B30',
@@ -431,7 +438,7 @@ export default StyleSheet.create({
     color: '#7B869A',
     marginTop: 12,
   },
-  
+
   // Day Card Styles
   dayCard: {
     backgroundColor: '#FFFFFF',
@@ -495,7 +502,7 @@ export default StyleSheet.create({
     textAlign: 'center',
     paddingVertical: 8,
   },
-  
+
   // Modal Styles
   modalOverlay: {
     flex: 1,
@@ -564,7 +571,7 @@ export default StyleSheet.create({
     fontWeight: '600',
     color: '#FFFFFF',
   },
-  
+
   // Bank Details Styles
   bankDetailsCard: {
     backgroundColor: '#FFFFFF',
@@ -601,7 +608,7 @@ export default StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
-  
+
   // Editable Bank Details Styles
   sectionHeader: {
     flexDirection: 'row',

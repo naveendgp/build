@@ -1,0 +1,379 @@
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import CustomText from '../../../components/Text';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { COLORS, FONTFAMILY } from '../../../constants/colors';
+import SwipeBtn from '../../../components/SwipeBtn';
+
+export interface ReceivedOrderCardProps {
+  orderId: string;
+  location: string;
+  orderType: 'standard' | 'express';
+  customerName: string;
+  orderNumber?: number;
+  time: string;
+  serviceQuantity?: string;
+  serviceWeight?: string;
+  serviceType: string;
+  customerNote: string;
+  totalBill?: string;
+  timer?: string;
+  onAccept?: () => void;
+  onViewDetails?: () => void;
+  onViewBill?: () => void;
+}
+
+const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
+  orderId,
+  location,
+  orderType,
+  customerName,
+  orderNumber,
+  time,
+  serviceQuantity,
+  serviceWeight,
+  serviceType,
+  customerNote,
+  totalBill,
+  timer = '00:04:59',
+  onAccept,
+  onViewDetails,
+  onViewBill,
+}) => {
+  const isExpress = orderType === 'express';
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <View
+        style={{
+          backgroundColor: COLORS.BUTTON_BACKGROUND,
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: COLORS.BORDER_INPUT,
+          padding: 10,
+          marginBottom: 8,
+
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          alignSelf: 'flex-start',
+        }}
+      >
+        <CustomText
+          style={{
+            fontSize: 16,
+            fontWeight: '400',
+            color: COLORS.INPUT_TEXT,
+            fontFamily: FONTFAMILY.INTER_REGULAR,
+          }}
+        >
+          #{orderId}
+        </CustomText>
+      </View>
+
+      <View style={[styles.card, isExpress && styles.cardExpress]}>
+        {/* Order Header */}
+        <View style={styles.header}>
+          <View>
+            <CustomText style={styles.orderId}>#{orderId}</CustomText>
+            <View style={styles.locationContainer}>
+              <Icon name="location-on" size={13} color="#7B869A" />
+              <CustomText style={styles.location}>{location}</CustomText>
+            </View>
+          </View>
+
+          <CustomText style={styles.orderTypeText}>
+            {isExpress ? 'Express' : 'Standard'}
+          </CustomText>
+        </View>
+
+        <View
+          style={{
+            width: '100%',
+            borderTopWidth: 1,
+            borderTopColor: COLORS.TEXT_MUTED,
+            borderStyle: 'dashed',
+            marginVertical: 12,
+          }}
+        />
+
+
+        {/* Customer Row */}
+        <View style={styles.customerRow}>
+          <CustomText style={styles.customerName}>
+            {isExpress && orderNumber
+              ? `${customerName}'s ${orderNumber}${getOrdinalSuffix(
+                  orderNumber,
+                )} Order`
+              : customerName}
+          </CustomText>
+          <CustomText style={styles.time}>{time}</CustomText>
+        </View>
+
+        <View
+          style={{
+            width: '100%',
+            height: 1,
+            backgroundColor: COLORS.SEPARATOR,
+            marginVertical: 16,
+          }}
+        ></View>
+
+        {/* Tag Row */}
+        <View style={styles.tagRow}>
+          <View style={styles.pillTag}>
+            <CustomText style={styles.pillText}>
+              {isExpress ? serviceWeight : serviceQuantity}
+            </CustomText>
+          </View>
+
+          <TouchableOpacity
+            onPress={onViewDetails}
+            style={styles.servicePill}
+            activeOpacity={0.7}
+          >
+            <CustomText style={styles.serviceTypeText}>
+              {serviceType}
+            </CustomText>
+            <Icon name="chevron-right" size={18} color={COLORS.THEME_GREEN} />
+          </TouchableOpacity>
+        </View>
+
+        <View
+          style={{
+            width: '100%',
+            borderTopWidth: 1,
+            borderTopColor: COLORS.SEPARATOR,
+            borderStyle: 'dashed',
+            marginVertical: 12,
+          }}
+        />
+
+
+        {/* Note */}
+        <View>
+          <CustomText style={styles.noteTitle}>Note from customer</CustomText>
+          <CustomText style={styles.noteText}>{customerNote}</CustomText>
+        </View>
+
+        <View
+          style={{
+            width: '100%',
+            height: 1,
+            backgroundColor: COLORS.SEPARATOR,
+            marginVertical: 16,
+          }}
+        /> 
+
+        {/* Bill Container */}
+        <TouchableOpacity
+          style={styles.billBox}
+          onPress={onViewBill}
+          activeOpacity={0.7}
+        >
+          <View style={styles.billCenter}>
+            <View
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            >
+              <Icon name="receipt-long" size={22} color="#7B869A" />
+              <CustomText style={styles.billMain}>
+                Total Bill {totalBill ? `₹${totalBill}` : '-'}
+              </CustomText>
+            </View>
+
+            <CustomText style={styles.billSub}>
+              Incl. All taxes & Charges
+            </CustomText>
+          </View>
+          <Icon name="chevron-right" size={22} color="#7B869A" />
+        </TouchableOpacity>
+
+        {/* Buttons */}
+        <View style={styles.actionRow}>
+          <SwipeBtn onComplete={() => {}} />
+            <View style={{backgroundColor: COLORS.LOGIN_SUBTITLE, height:48,
+            justifyContent: 'center', alignItems: 'center',
+              paddingHorizontal: 12, paddingVertical: 6, 
+              borderRadius: 12}}>
+              <CustomText style={styles.timerText}>{timer}</CustomText>
+            </View>
+        </View>
+      </View>
+    </View>
+  );
+};
+
+const getOrdinalSuffix = (n: number) => {
+  const j = n % 10,
+    k = n % 100;
+  if (j === 1 && k !== 11) return 'st';
+  if (j === 2 && k !== 12) return 'nd';
+  if (j === 3 && k !== 13) return 'rd';
+  return 'th';
+};
+
+const styles = StyleSheet.create({
+  card: {
+    borderRadius: 16,
+    padding: 16,
+    backgroundColor: COLORS.BUTTON_BACKGROUND,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  cardExpress: {
+    backgroundColor: COLORS.EXPRESS_BACKGROUND, // yellow from screenshot
+    borderColor: COLORS.EXPRESS_BORDER,
+    borderWidth: 1,
+  },
+
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  orderId: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+  },
+
+  locationContainer: { flexDirection: 'row', alignItems: 'center' },
+  location: {
+    marginLeft: 4,
+    fontSize: 12,
+    color: COLORS.TEXT_GRAY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+    marginTop: 4,
+  },
+
+  orderTypeText: {
+    fontSize: 18,
+    fontWeight: '400',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+  },
+
+  customerRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  customerName: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    flex: 1,
+  },
+  time: {
+    fontWeight: '400',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+  },
+
+  tagRow: { flexDirection: 'row', alignItems: 'center' },
+
+  pillTag: {
+    backgroundColor: COLORS.BORDER_INPUT,
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginRight: 6,
+    gap: 8,
+  },
+  pillText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.BOTTOM_BLACK,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
+
+  servicePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  serviceTypeText: {
+    color: COLORS.THEME_GREEN,
+    fontSize: 16,
+    fontWeight: '500',
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    marginRight: 4,
+  },
+
+  noteSection: { marginBottom: 12 },
+  noteTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: COLORS.INPUT_TEXT,
+    marginBottom: 8,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
+  noteText: {
+    fontSize: 14,
+    color: COLORS.NOTE_TEXT,
+    lineHeight: 18,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+  },
+
+  billBox: {
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 16,
+  },
+  billCenter: { flex: 1, marginLeft: 12 },
+  billMain: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.LOGIN_SUBTITLE,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
+  billSub: {
+    fontSize: 16,
+    color: COLORS.NOTE_TEXT,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+  },
+
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 , justifyContent: 'space-between'},
+
+  arrowBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: COLORS.THEME_GREEN,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  acceptBtn: {
+    flex: 1,
+    backgroundColor: COLORS.THEME_GREEN,
+    paddingVertical: 13,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  acceptText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+
+  timerBtn: {
+    backgroundColor: '#1B2A4A',
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timerText: { color: COLORS.WHITE, fontSize: 16,
+     fontWeight: '500', fontFamily: FONTFAMILY.INTER_MEDIUM },
+});
+
+export default ReceivedOrderCard;
