@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomText from '../../components/Text';
+import CustomIcon from '../../components/Icon';
 import styles from './styles';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
 import { useProfileStore } from '../../apiService/store/useProfileStore';
@@ -20,6 +21,7 @@ import { showErrorToast } from '../../utils/Toast';
 import { ProfileResponse } from '../../apiService/types/profileTypes';
 import { ErrorResponse } from '../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -75,66 +77,59 @@ const ProfileScreen: React.FC = () => {
   const profileOptions = [
     {
       id: '1',
-      title: 'Edit Profile',
-      subtitle: 'Update your personal information',
-      icon: '👤',
+      title: 'Profile',
+      icon: 'person',
+      iconType: 'MaterialIcons' as const,
       onPress: () => navigation.navigate('EditProfile'),
     },
     {
       id: '2',
-      title: 'Business Settings',
-      subtitle: 'Manage your business details',
-      icon: '🏪',
+      title: 'Shop Details',
+      icon: 'store',
+      iconType: 'MaterialIcons' as const,
       onPress: () => navigation.navigate('BusinessSettings'),
     },
     {
       id: '3',
-      title: 'Services',
-      subtitle: 'Select and configure services',
-      icon: '🧺',
-      onPress: () => navigation.navigate('Services'),
+      title: 'Bank Details',
+      icon: 'account-balance',
+      iconType: 'MaterialIcons' as const,
+      onPress: () => console.log('Bank Details'),
     },
-    // {
-    //   id: '3a',
-    //   title: 'Services & Pricing',
-    //   subtitle: 'Configure your services and pricing',
-    //   icon: '💰',
-    //   onPress: () => navigation.navigate('ServicesPricing'),
-    // },
     {
       id: '4',
-      title: 'Shop Status',
-      subtitle: 'Manage your shop availability',
-      icon: '🕒',
-      onPress: () => navigation.navigate('ShopStatus'),
+      title: 'Services & Offer Details',
+      icon: 'card-giftcard',
+      iconType: 'MaterialIcons' as const,
+      onPress: () => navigation.navigate('ServicesPricing'),
     },
     {
       id: '5',
-      title: 'Wallet',
-      subtitle: 'View your wallet balance',
-      icon: '💳',
-      onPress: () => navigation.navigate('Wallet'),
+      title: 'Shop Review',
+      icon: 'star',
+      iconType: 'MaterialIcons' as const,
+      onPress: () => console.log('Shop Review'),
     },
     {
       id: '6',
-      title: 'Notification Settings',
-      subtitle: 'Configure your notifications',
-      icon: '🔔',
-      onPress: () => console.log('Notification Settings'),
-    },
-    {
-      id: '7',
-      title: 'Help & Support',
-      subtitle: 'Get help and contact support',
-      icon: '❓',
+      title: 'Help & support',
+      icon: 'headset-mic',
+      iconType: 'MaterialIcons' as const,
       onPress: () => console.log('Help & Support'),
     },
     {
+      id: '7',
+      title: 'Privacy & Security',
+      icon: 'lock',
+      iconType: 'MaterialIcons' as const,
+      onPress: () => console.log('Privacy & Security'),
+    },
+    {
       id: '8',
-      title: 'About',
-      subtitle: 'App version and information',
-      icon: 'ℹ️',
-      onPress: () => console.log('About'),
+      title: 'Terms & Condition',
+      icon: 'description',
+      iconType: 'MaterialIcons' as const,
+      onPress: () => console.log('Terms & Condition'),
     },
   ];
 
@@ -170,75 +165,65 @@ const ProfileScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* <View style={styles.header}>
-        <CustomText style={styles.title}>Profile</CustomText>
-        <CustomText style={styles.subtitle}>Manage your account</CustomText>
-      </View> */}
-
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1B2A4A" />
+          <ActivityIndicator size="large" color={COLORS.TEXT_PRIMARY} />
           <CustomText style={styles.loadingText}>Loading profile...</CustomText>
         </View>
       ) : (
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Profile Info Card */}
-          <View style={styles.profileCard}>
-            <View style={styles.avatarContainer}>
-              <View style={styles.avatar}>
-                <CustomText style={styles.avatarText}>VD</CustomText>
-              </View>
-            </View>
-            <View style={styles.profileInfo}>
-              <CustomText style={styles.profileName}>
-                {profile?.owner_name || 'Loading...'}
-              </CustomText>
-              <CustomText style={styles.profileEmail}>
-                {profile?.email || 'Loading...'}
-              </CustomText>
-              <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: getDocumentStatusColor() },
-                ]}
-              >
-                <CustomText style={styles.statusText}>
-                  {getDocumentStatusText()}
+          {/* Title */}
+          <View style={styles.header}>
+            <CustomText style={styles.title}>Profile</CustomText>
+          </View>
+
+          {/* Summary Card */}
+          <View style={styles.summaryCard}>
+            <CustomText style={styles.summaryTitle}>To Be Received</CustomText>
+            <CustomText style={styles.summaryAmount}>₹5,000.00</CustomText>
+            <View style={styles.summaryStats}>
+              <View style={styles.statItem}>
+                <CustomText style={styles.statLabel}>
+                  Total Orders Received
                 </CustomText>
+                <CustomText style={styles.statValue}>100</CustomText>
+              </View>
+              <View style={styles.statItem}>
+                <CustomText style={styles.statLabel}>
+                  Accepted Orders
+                </CustomText>
+                <CustomText style={styles.statValue}>89</CustomText>
               </View>
             </View>
           </View>
 
           {/* Profile Options */}
           <View style={styles.optionsContainer}>
-            {profileOptions.map(option => (
+            {profileOptions.map((option, index) => (
               <TouchableOpacity
                 key={option.id}
-                style={styles.optionItem}
+                style={[
+                  styles.optionItem,
+                  index === profileOptions.length - 1 && styles.optionItemLast,
+                ]}
                 onPress={option.onPress}
+                activeOpacity={0.7}
               >
                 <View style={styles.optionLeft}>
-                  <CustomText style={styles.optionIcon}>
-                    {option.icon}
+                  <CustomIcon
+                    type={option.iconType}
+                    name={option.icon}
+                    size={22}
+                    color={COLORS.TEXT_PRIMARY}
+                  />
+                  <CustomText style={styles.optionTitle}>
+                    {option.title}
                   </CustomText>
-                  <View style={styles.optionTextContainer}>
-                    <CustomText style={styles.optionTitle}>
-                      {option.title}
-                    </CustomText>
-                    <CustomText style={styles.optionSubtitle}>
-                      {option.subtitle}
-                    </CustomText>
-                  </View>
                 </View>
-                <CustomText style={styles.optionArrow}>›</CustomText>
+                
               </TouchableOpacity>
             ))}
           </View>
-
-          {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <CustomText style={styles.logoutText}>Logout</CustomText>
-          </TouchableOpacity>
         </ScrollView>
       )}
     </SafeAreaView>

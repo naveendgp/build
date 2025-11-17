@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { COLORS } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F9FF',
+    backgroundColor: COLORS.CARD_BACKGROUND,
   },
   header: {
     padding: 20,
@@ -18,6 +19,55 @@ export default StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#7B869A',
+  },
+  tabContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 15,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E5E5',
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: 24,
+    paddingVertical: 8,
+    position: 'relative',
+  },
+  tabText: {
+    fontSize: 16,
+    color: '#7B869A',
+    fontWeight: '500',
+    marginRight: 8,
+  },
+  tabTextActive: {
+    color: '#1B2A4A',
+    fontWeight: '600',
+  },
+  tabUnderline: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#1B2A4A',
+  },
+  badge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#1B2A4A',
+    borderWidth: 1,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
   },
   content: {
     flex: 1,
