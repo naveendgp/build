@@ -30,6 +30,7 @@ import {
 } from '../../apiService/types/docTypes';
 import { AxiosError } from 'axios';
 import { showErrorToast, showSuccessToast } from '../../utils/Toast';
+import { COLORS } from '../../constants';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,6 +51,11 @@ const VendorVerificationScreen: React.FC = () => {
       address: '',
       aadhaar_no: '',
       pan_number: '',
+      mobile: '',
+      date_of_birth: '',
+      profile_pic: null,
+      aadhaar_file: null,
+      pan_file: null,
     },
     shop: {
       gst_number: '',
@@ -99,10 +105,10 @@ const VendorVerificationScreen: React.FC = () => {
   });
 
   const handleNext = () => {
-    if (validateStep(step, data)) {
+   // if (validateStep(step, data)) {
       setStep(prev => prev + 1);
       setCurrentStep(prev => prev + 1);
-    }
+  //  }
   };
 
   const handleBack = () => {
@@ -146,14 +152,14 @@ const VendorVerificationScreen: React.FC = () => {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: '#F6F9FF',
+        backgroundColor: COLORS.WHITE,
       }}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Toolbar title="Vendor Verification" />
+        <Toolbar title={step === 1 ? "Profile Details" : "Vendor Verification"} />
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             ref={scrollRef}
@@ -216,22 +222,29 @@ const VendorVerificationScreen: React.FC = () => {
               />
             )}
 
-            <CustomBtn
-              title={
-                step < 3
-                  ? 'Next'
-                  : mutation.isPending
-                  ? 'Submitting...'
-                  : 'Submit'
-              }
-              onPress={step < 3 ? handleNext : handleSubmit}
-              disabled={mutation.isPending}
-            />
-            {step > 1 && (
-              <View style={{ marginTop: 10 }}>
-                <CustomBtn title="Back" onPress={handleBack} />
-              </View>
-            )}
+            <View style={styles.buttonRow}>
+              {step > 1 && (
+                <CustomBtn
+                  title="Previous"
+                  onPress={handleBack}
+                  style={styles.previousButton}
+                  textStyle={styles.previousButtonText}
+                />
+              )}
+              <CustomBtn
+                title={
+                  step < 3
+                    ? 'Next'
+                    : mutation.isPending
+                    ? 'Submitting...'
+                    : 'Submit'
+                }
+                onPress={step < 3 ? handleNext : handleSubmit}
+                disabled={mutation.isPending}
+                style={step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton}
+                textStyle={styles.nextButtonText}
+              />
+            </View>
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

@@ -49,5 +49,46 @@ export default {
       alignSelf: 'center',
       marginHorizontal: 8,
     },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    previousButton: {
+      flex: 1,
+      backgroundColor: '#E0E0E0',
+      borderRadius: 16,
+      paddingVertical: 15,
+      alignItems: 'center',
+    },
+    previousButtonText: {
+      color: '#666666',
+      fontSize: 16,
+      fontFamily: 'Poppins-Medium',
+      fontWeight: '500',
+    },
+    nextButton: {
+      flex: 1,
+      backgroundColor: '#038203',
+      borderRadius: 16,
+      paddingVertical: 15,
+      alignItems: 'center',
+    },
+    nextButtonFullWidth: {
+      width: '100%',
+    },
+    nextButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontFamily: 'Poppins-Medium',
+      fontWeight: '500',
+    },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
   }),
 };

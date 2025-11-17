@@ -23,6 +23,7 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
+    height:40
   },
   inputRowDisabled: {
     opacity: 0.6,

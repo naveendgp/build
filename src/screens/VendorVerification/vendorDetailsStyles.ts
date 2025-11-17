@@ -1,0 +1,298 @@
+import { StyleSheet, Dimensions } from 'react-native';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
+
+const { width } = Dimensions.get('window');
+
+export default StyleSheet.create({
+  card: {
+    backgroundColor: COLORS.BUTTON_BACKGROUND,
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  profilePicContainer: {
+    alignItems: 'center',
+    marginBottom: 24,
+    position: 'relative',
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    width: 80,
+    height: 80,
+    borderRadius: 40, 
+  },
+  profilePicPlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.BOTTOM_BLACK,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  profilePic: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  plusIconContainer: {
+    position: 'absolute',
+     top:48,
+     left:48,
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
+  },
+  inputContainer: {
+    marginBottom: 16,
+  },
+  dateInputContainer: {
+    marginBottom: 16,
+    
+  },
+  dateLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.INPUT_TEXT,
+    marginBottom: 8,
+    
+  },
+  dateInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    gap: 4,
+  },
+  dateInputField: {
+    marginTop: 0,
+    marginBottom: 0,
+    borderWidth: 0,
+    flex: 1,
+    paddingHorizontal: 0,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+  },
+  dateTextInput: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.BLACK,
+    paddingVertical: 0,
+    flex: 1,
+  },
+  dateErrorText: {
+    fontSize: 12,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.ERROR,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  datePickerModal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  datePickerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  datePickerContainer: {
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 16,
+    width: width - 40,
+    maxWidth: 400,
+    maxHeight: '80%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  datePickerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.LIGHT_GRAY,
+  },
+  datePickerCloseButton: {
+    padding: 4,
+  },
+  datePickerTitle: {
+    fontSize: 18,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    color: COLORS.BLACK,
+    fontWeight: '600',
+    flex: 1,
+  },
+  datePickerFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.LIGHT_GRAY,
+    gap: 12,
+  },
+  datePickerCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: COLORS.LIGHT_GRAY_3,
+    alignItems: 'center',
+  },
+  datePickerCancelText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.LOGIN_SUBTITLE,
+    fontWeight: '500',
+  },
+  datePickerConfirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: COLORS.THEME_GREEN,
+    alignItems: 'center',
+  },
+  datePickerConfirmButtonDisabled: {
+    backgroundColor: COLORS.LIGHT_GRAY_3,
+    opacity: 0.6,
+  },
+  datePickerConfirmText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.WHITE,
+    fontWeight: '500',
+  },
+  datePickerConfirmTextDisabled: {
+    color: COLORS.LOGIN_SUBTITLE,
+  },
+  datePickerErrorContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    backgroundColor: '#FFF3F3',
+    marginHorizontal: 20,
+    marginTop: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.ERROR,
+  },
+  datePickerErrorText: {
+    fontSize: 14,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.ERROR,
+    textAlign: 'center',
+  },
+  datePickerContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  datePickerColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  datePickerLabel: {
+    fontSize: 14,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.LOGIN_SUBTITLE,
+    marginBottom: 12,
+    fontWeight: '500',
+  },
+  datePickerScrollView: {
+    flex: 1,
+    width: '100%',
+  },
+  datePickerItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  datePickerItemSelected: {
+    backgroundColor: COLORS.ICON_GREEN,
+  },
+  datePickerItemText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.BLACK,
+  },
+  datePickerItemTextSelected: {
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    color: COLORS.THEME_GREEN,
+    fontWeight: '600',
+  },
+  datePickerItemDisabled: {
+    opacity: 0.3,
+  },
+  datePickerItemTextDisabled: {
+    color: COLORS.LOGIN_SUBTITLE,
+  },
+  uploadSection: {
+    marginBottom: 20,
+  },
+  uploadLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: '#1B2A4A',
+    marginBottom: 12,
+  },
+  uploadButton: {
+     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    borderRadius: 16,
+    paddingVertical: 16,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    gap: 6,
+    height:80
+  },
+  uploadText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.INPUT_TEXT,
+    fontWeight:'400'
+  },
+  uploadedFileContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+  },
+  uploadedFileInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 8,
+  },
+  uploadedFileName: {
+    fontSize: 14,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: '#1B2A4A',
+    flex: 1,
+  },
+  removeButton: {
+    padding: 4,
+  },
+});
+
