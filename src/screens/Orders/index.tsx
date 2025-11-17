@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import CustomText from '../../components/Text';
 import { ReceivedOrderCardProps } from './CardComponents/RecivedOrderCard';
@@ -7,6 +7,8 @@ import AcceptedOrdersScreen from './TabScreens/AcceptedOrdersScreen';
 import styles from './styles.ts';
 import { COLORS, FONTFAMILY } from '../../constants/colors.ts';
 import CustomSwitch from '../../components/CustomSwitch/index.tsx';
+import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/DraggableSlider/index.tsx';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 type OrderStatus = 'received' | 'accepted';
 
@@ -88,7 +90,7 @@ const OrdersScreen: React.FC = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginTop:16
+            marginTop: 16
           }}
         >
           <CustomText
@@ -99,12 +101,14 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders 
+            Ready to accept orders
           </CustomText>
+
+          
           <CustomSwitch value={true} onValueChange={() => {}} />
         </View>
 
-<View
+        <View
           style={{
             backgroundColor: COLORS.EXPRESS_BACKGROUND,
             paddingVertical: 8,
@@ -113,7 +117,7 @@ const OrdersScreen: React.FC = () => {
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginTop:16,
+            marginTop: 16,
             borderWidth: 1,
             borderColor: COLORS.EXPRESS_BORDER,
           }}
@@ -126,11 +130,11 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders 
+            Ready to accept orders
           </CustomText>
-          <CustomSwitch value={true} onValueChange={() => {}} />
+          <CustomSwitch value={true} onValueChange={() => { }} />
         </View>
-        
+
       </View>
 
       {/* Tab Navigation */}
