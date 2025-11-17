@@ -1,5 +1,5 @@
 import { StyleSheet, Dimensions } from 'react-native';
-import { COLORS, FONTFAMILY } from '../../constants/colors';
+import { COLORS, FONTFAMILY } from '../../../constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -274,7 +274,7 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
-    borderRadius: 8,
+    borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 16,
     backgroundColor: COLORS.CARD_BACKGROUND,

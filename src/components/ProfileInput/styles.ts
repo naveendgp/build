@@ -3,7 +3,7 @@ import { COLORS, FONTFAMILY } from "../../constants";
 
 export default StyleSheet.create({
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,

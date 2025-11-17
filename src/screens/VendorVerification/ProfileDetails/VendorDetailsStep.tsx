@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Image, Platform, Alert } from 'react-native';
 import { launchImageLibrary, launchCamera, MediaType } from 'react-native-image-picker';
-import CustomText from '../../components/Text';
-import CustomTextInput from '../../components/TextInput';
-import ProfileInput from '../../components/ProfileInput';
+import CustomText from '../../../components/Text';
+import CustomTextInput from '../../../components/TextInput';
+import ProfileInput from '../../../components/ProfileInput';
 import styles from './vendorDetailsStyles';
-import PlusIcon from '../../assets/auto-generated-svg-icons/PlusIcon';
-import CalendarIcon from '../../assets/auto-generated-svg-icons/CalendarIcon';
-import UploadIcon from '../../assets/auto-generated-svg-icons/UploadIcon';
-import CheckIcon from '../../assets/auto-generated-svg-icons/CheckIcon';
-import CloseIcon from '../../assets/auto-generated-svg-icons/CloseIcon';
-import { COLORS } from '../../constants/colors';
+import PlusIcon from '../../../assets/auto-generated-svg-icons/PlusIcon';
+import CalendarIcon from '../../../assets/auto-generated-svg-icons/CalendarIcon';
+import UploadIcon from '../../../assets/auto-generated-svg-icons/UploadIcon';
+import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
+import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
+import { COLORS } from '../../../constants/colors';
 
 interface Props {
   vendor: any;

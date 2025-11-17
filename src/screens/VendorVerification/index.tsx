@@ -17,9 +17,9 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useNavigation } from '@react-navigation/native';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
-import VendorDetailsStep from './VendorDetailsStep';
-import ShopDetailsStep from './ShopDetailsStep';
-import BankDetailsStep from './BankDetailsStep';
+import VendorDetailsStep from './ProfileDetails/VendorDetailsStep';
+import ShopDetailsStep from './ShopDetails/ShopDetailsStep';
+import BankDetailsStep from './BankDetails/BankDetailsStep';
 import { useVendorValidation } from './useVendorValidation';
 import Toolbar from '../../components/Toolbar';
 import { useMutation } from '@tanstack/react-query';
@@ -31,6 +31,7 @@ import {
 import { AxiosError } from 'axios';
 import { showErrorToast, showSuccessToast } from '../../utils/Toast';
 import { COLORS } from '../../constants';
+import CustomText from '../../components/Text';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -58,6 +59,7 @@ const VendorVerificationScreen: React.FC = () => {
       pan_file: null,
     },
     shop: {
+      shop_name: '',
       gst_number: '',
       shop_license_number: '',
       address: '',
@@ -68,6 +70,11 @@ const VendorVerificationScreen: React.FC = () => {
       landmark: '',
       latitude: '',
       longitude: '',
+      contact_number: '',
+      shop_front_photo: null,
+      business_hours: '',
+      auto_receive_orders: false,
+      repeat_days: '',
     },
     bank: {
       account_number: '',
@@ -75,6 +82,8 @@ const VendorVerificationScreen: React.FC = () => {
       bank_branch: '',
       ifsc_code: '',
       bank_name: '',
+      upi_id: '',
+      cancelled_cheque: null,
     },
   });
 
@@ -159,14 +168,12 @@ const VendorVerificationScreen: React.FC = () => {
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <Toolbar title={step === 1 ? "Profile Details" : "Vendor Verification"} />
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView
-            ref={scrollRef}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: 20 }}
-          >
-            <View style={styles.stepIndicatorRow}>
+
+      <View style={{paddingHorizontal:12,gap:24,marginTop:24}}>
+        
+     
+     <CustomText style={styles.stepIndicatorText}>{step === 1 ? "Profile Details" : step === 2 ? "Shop Details" : "Bank Details"}</CustomText>
+       <View style={styles.stepIndicatorRow}>
               {[1, 2, 3].map((stepNum, idx, arr) => {
                 const completed = stepNum < currentStep;
                 const active = stepNum === currentStep;
@@ -185,7 +192,7 @@ const VendorVerificationScreen: React.FC = () => {
                         completed && styles.stepIndicatorCompleted,
                       ]}
                     >
-                      {active && <View style={styles.dot} />}
+                      {  <View style={[styles.dot, (active || completed) && styles.activeDot]} />}
                     </TouchableOpacity>
 
                     {idx < arr.length - 1 && (
@@ -200,6 +207,15 @@ const VendorVerificationScreen: React.FC = () => {
                 );
               })}
             </View>
+      </View>
+      
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <ScrollView
+            ref={scrollRef}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ padding: 20 }}
+          >
+          
 
             {step === 1 && (
               <VendorDetailsStep
@@ -233,11 +249,9 @@ const VendorVerificationScreen: React.FC = () => {
               )}
               <CustomBtn
                 title={
-                  step < 3
-                    ? 'Next'
-                    : mutation.isPending
-                    ? 'Submitting...'
-                    : 'Submit'
+                  
+                     'Next'
+                    
                 }
                 onPress={step < 3 ? handleNext : handleSubmit}
                 disabled={mutation.isPending}
