@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import CustomText from '../../../components/Text';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
-import SwipeBtn from '../../../components/SwipeBtn';
+import DraggableSlider, { BasicDraggableSliderHandle } from '../../../components/DraggableSlider';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import TimeLineCard from './TimeLineCard';
+import SvgRiderAcceptedIcon from '../../../assets/auto-generated-svg-icons/RiderAcceptedIcon';
 
 export interface ReceivedOrderCardProps {
   orderId: string;
@@ -41,6 +44,16 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   onViewBill,
 }) => {
   const isExpress = orderType === 'express';
+  const CONTAINER_WIDTH = 235;
+  const CONTAINER_HEIGHT = 48;
+
+  const sliderRef = useRef<BasicDraggableSliderHandle>(null);
+
+
+  const handleComplete = () => {
+    console.log('handleComplete');
+    sliderRef.current?.reset();
+  };
 
   return (
     <View style={{ marginBottom: 16 }}>
@@ -103,8 +116,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
           <CustomText style={styles.customerName}>
             {isExpress && orderNumber
               ? `${customerName}'s ${orderNumber}${getOrdinalSuffix(
-                  orderNumber,
-                )} Order`
+                orderNumber,
+              )} Order`
               : customerName}
           </CustomText>
           <CustomText style={styles.time}>{time}</CustomText>
@@ -163,7 +176,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             backgroundColor: COLORS.SEPARATOR,
             marginVertical: 16,
           }}
-        /> 
+        />
 
         {/* Bill Container */}
         <TouchableOpacity
@@ -190,14 +203,38 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
         {/* Buttons */}
         <View style={styles.actionRow}>
-          <SwipeBtn onComplete={() => {}} />
-            <View style={{backgroundColor: COLORS.LOGIN_SUBTITLE, height:48,
+          
+            <GestureHandlerRootView >
+              <DraggableSlider ref={sliderRef} onComplete={handleComplete} text="Accept Order" />
+            </GestureHandlerRootView>
+         
+
+          <View style={{
+            backgroundColor: COLORS.LOGIN_SUBTITLE, height: 48,
             justifyContent: 'center', alignItems: 'center',
-              paddingHorizontal: 12, paddingVertical: 6, 
-              borderRadius: 12}}>
-              <CustomText style={styles.timerText}>{timer}</CustomText>
-            </View>
+            paddingHorizontal: 12, paddingVertical: 6,
+            borderRadius: 12,
+            width:87
+          }}>
+            <CustomText style={styles.timerText}>{timer}</CustomText>
+          </View>
         </View>
+
+        <TimeLineCard
+          key={'1'}
+          date={'Today'}
+          time={'12:00 PM'}
+          title={' Order Accepted'}
+          icon={SvgRiderAcceptedIcon}
+          iconType={'svg'}
+          note={'Note: order cannot be canceled after accepted by the shop'}
+          showCallButton={true}
+          onCallPress={() => {}}
+          otp={''}
+          showTimelineLine={true}
+          riderName={'John Doe'}
+          riderPhone={'+91 9876543210'}
+        />
       </View>
     </View>
   );
@@ -213,6 +250,8 @@ const getOrdinalSuffix = (n: number) => {
 };
 
 const styles = StyleSheet.create({
+
+
   card: {
     borderRadius: 16,
     padding: 16,
@@ -344,7 +383,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10 , justifyContent: 'space-between'},
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' },
 
   arrowBtn: {
     width: 46,
@@ -372,8 +411,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  timerText: { color: COLORS.WHITE, fontSize: 16,
-     fontWeight: '500', fontFamily: FONTFAMILY.INTER_MEDIUM },
+  timerText: {
+    color: COLORS.WHITE, fontSize: 16,
+    fontWeight: '500', fontFamily: FONTFAMILY.INTER_MEDIUM
+  },
+
 });
 
 export default ReceivedOrderCard;

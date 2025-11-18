@@ -128,4 +128,5 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     color: '#1B2A4A',
   },
+ 
 });
