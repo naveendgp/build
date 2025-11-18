@@ -1,3 +1,4 @@
+<<<<<<< HEAD:src/assets/svg/otp_icon.svg
 <svg width="56" height="56" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M13.7881 5.16699H33.876C34.7249 5.16718 35.4218 5.8639 35.4219 6.71289V43.54C35.4219 44.389 34.7249 45.0857 33.876 45.0859H13.7881C12.939 45.0859 12.2422 44.3891 12.2422 43.54V6.71289C12.2422 5.8638 12.939 5.16702 13.7881 5.16699Z" fill="#86FF86" stroke="#1D1D1D"/>
 <path d="M9.37109 13.5371C10.3991 13.5371 11.243 14.3802 11.2432 15.4082V16.7109C11.243 17.7359 10.4039 18.5773 9.37988 18.582H9.3623C8.33835 18.577 7.50018 17.7358 7.5 16.7109V15.4082C7.50019 14.3803 8.34322 13.5373 9.37109 13.5371Z" fill="#FDBEB9" stroke="#1D1D1D"/>
@@ -21,4 +22,9 @@
 <path d="M20.1016 21.292H27.5662" stroke="#6864F7" stroke-miterlimit="22.9256" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M20.1016 25.3838H27.5662" stroke="#6864F7" stroke-miterlimit="22.9256" stroke-linecap="round" stroke-linejoin="round"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M15.8359 17.2012H31.8315V29.4769H20.1015L15.8359 32.3496V17.2012Z" stroke="#052A75" stroke-miterlimit="22.9256" stroke-linecap="round" stroke-linejoin="round"/>
+=======
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M17 2H7C5.89543 2 5 2.89543 5 4V20C5 21.1046 5.89543 22 7 22H17C18.1046 22 19 21.1046 19 20V4C19 2.89543 18.1046 2 17 2Z" stroke="#292929" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M12 18H12.01" stroke="#292929" stroke-linecap="round" stroke-linejoin="round"/>
+>>>>>>> 159481ab369b14ee57e69e79f5d43d1c43ec5527:src/assets/icons/svg/otp_icon.svg
 </svg>

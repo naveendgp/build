@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, FlatList, RefreshControl } from 'react-native';
 import ReceivedOrderCard, { ReceivedOrderCardProps } from '../../CardComponents/RecivedOrderCard';
 import CustomText from '../../../../components/Text';
 import styles from './style';
+import socket from '../../../../apiService/socket/socket';
+import { useFocusEffect } from '@react-navigation/native';
+import { SOCKET_ENDPOINTS } from '../../../../constants';
 
 interface ReceivedOrdersScreenProps {
   orders?: ReceivedOrderCardProps[];
@@ -50,6 +53,54 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
   ];
 
   const displayOrders = orders.length > 0 ? orders : defaultOrders;
+
+  useEffect(() => {
+    const connectSocket = async () => {
+      try {
+        await socket.connect();
+        console.log('Socket connected successfully');
+      } catch (err) {
+        console.error('Failed to connect socket:', err);
+      }
+    };
+    connectSocket();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let isMounted = true;
+      let handleData: ((data: any) => void) | null = null;
+
+      const setupSocketListeners = async () => {
+        try {
+          const sock = socket.getSocket();
+
+          if (!sock?.connected) {
+            await socket.connect();
+          }
+
+          if (!isMounted) return;
+
+          handleData = (data: any) => {
+            console.log('Received data:', data);
+          };
+
+          socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+        } catch (err) {
+          console.error('Failed to connect socket:', err);
+        }
+      };
+
+      setupSocketListeners();
+
+      return () => {
+        isMounted = false;
+        if (handleData) {
+          socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+        }
+      };
+    }, [])
+  );
 
   const renderOrderItem = ({ item, index }: { item: ReceivedOrderCardProps; index: number }) => (
     <ReceivedOrderCard

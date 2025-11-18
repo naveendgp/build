@@ -25,6 +25,11 @@ const styles = StyleSheet.create({
     color: '#7B869A',
     fontWeight: '500',
   },
+  sliderContainer: {
+        width: '100%',
+        alignItems: 'center',
+        paddingHorizontal: 15,
+    },
 });
 
 export default styles;
