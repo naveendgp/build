@@ -131,6 +131,14 @@ const ProfileScreen: React.FC = () => {
       iconType: 'MaterialIcons' as const,
       onPress: () => console.log('Terms & Condition'),
     },
+    {
+      id: '9',
+      title: 'Logout',
+      icon: 'logout',
+      iconType: 'MaterialIcons' as const,
+      onPress: handleLogout,
+      isLogout: true,
+    },
   ];
 
   const getDocumentStatusText = () => {
@@ -199,30 +207,38 @@ const ProfileScreen: React.FC = () => {
 
           {/* Profile Options */}
           <View style={styles.optionsContainer}>
-            {profileOptions.map((option, index) => (
-              <TouchableOpacity
-                key={option.id}
-                style={[
-                  styles.optionItem,
-                  index === profileOptions.length - 1 && styles.optionItemLast,
-                ]}
-                onPress={option.onPress}
-                activeOpacity={0.7}
-              >
-                <View style={styles.optionLeft}>
-                  <CustomIcon
-                    type={option.iconType}
-                    name={option.icon}
-                    size={22}
-                    color={COLORS.TEXT_PRIMARY}
-                  />
-                  <CustomText style={styles.optionTitle}>
-                    {option.title}
-                  </CustomText>
-                </View>
-                
-              </TouchableOpacity>
-            ))}
+            {profileOptions.map((option, index) => {
+              const isLogout = (option as any).isLogout;
+              return (
+                <TouchableOpacity
+                  key={option.id}
+                  style={[
+                    styles.optionItem,
+                    index === profileOptions.length - 1 && styles.optionItemLast,
+                    isLogout && styles.logoutOptionItem,
+                  ]}
+                  onPress={option.onPress}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.optionLeft}>
+                    <CustomIcon
+                      type={option.iconType}
+                      name={option.icon}
+                      size={22}
+                      color={isLogout ? '#FF3B30' : COLORS.TEXT_PRIMARY}
+                    />
+                    <CustomText
+                      style={[
+                        styles.optionTitle,
+                        isLogout && styles.logoutOptionTitle,
+                      ]}
+                    >
+                      {option.title}
+                    </CustomText>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </ScrollView>
       )}

@@ -39,11 +39,9 @@ export const useVendorValidation = () => {
     }
 
     if (step === 3) {
-      const { account_number, bank_branch, ifsc_code, bank_name } = data.bank;
+      const { account_number,   ifsc_code, bank_name } = data.bank;
       if (!account_number.trim())
         return Alert.alert('Required', 'Account number is required'), false;
-      if (!bank_branch.trim())
-        return Alert.alert('Required', 'Bank branch is required'), false;
       if (!ifsc_code.trim())
         return Alert.alert('Required', 'IFSC code is required'), false;
       if (!bank_name.trim())
