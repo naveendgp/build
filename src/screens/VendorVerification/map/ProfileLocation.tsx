@@ -191,7 +191,7 @@ const ProfileLocation: React.FC = () => {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
-    
+
     // TODO: Add API call to save address here
   };
 
@@ -291,7 +291,7 @@ const ProfileLocation: React.FC = () => {
               />
             </View> */}
 
-            <CustomText style={styles.label}>Address Name*</CustomText>
+            {/* <CustomText style={styles.label}>Address Name*</CustomText>
             <View style={styles.inputBox}>
               <TextInput
                 value={addressName}
@@ -299,7 +299,7 @@ const ProfileLocation: React.FC = () => {
                 placeholder="Home / Work / Other"
                 style={styles.input}
               />
-            </View>
+            </View> */}
 
             {isEditMode && !initialAddressData?.is_default && <View style={styles.switchBox}>
               <CustomText style={styles.label}>Make this my default address</CustomText>
@@ -317,13 +317,13 @@ const ProfileLocation: React.FC = () => {
         <View style={styles.saveWrapper}>
           <CustomBtn
             title={
-            
-                  "Save Address"
+
+              "Save Address"
             }
             onPress={handleSave}
             style={styles.saveBtn}
             textStyle={styles.saveBtnText}
-            
+
           />
         </View>
       </KeyboardAvoidingView>

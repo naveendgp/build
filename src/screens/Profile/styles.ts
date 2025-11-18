@@ -49,7 +49,7 @@ export default StyleSheet.create({
     marginBottom: 20,
   },
   summaryStats: {
-     gap:16,
+    gap: 16,
     justifyContent: 'space-between',
   },
   section: {

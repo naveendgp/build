@@ -31,18 +31,18 @@ const ReviewDetailsScreen: React.FC = () => {
   const navigation = useNavigation<ReviewDetailsNavProp>();
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
   const { validateStep } = useVendorValidation();
-  
+
   // Get data from store
   const { vendor, shop, bank, clearAll } = useVendorVerificationStore();
-  
+
   // Helper function to parse business hours and repeat days into operating_hours
   const parseOperatingHours = (): OperatingHours => {
     const operatingHours: OperatingHours = {};
-    
+
     // Parse business_hours (format: "10:00 AM - 08:00 PM" or "09:00 - 20:00")
     let openTime = '09:00';
     let closeTime = '20:00';
-    
+
     if (shop.business_hours) {
       const timeMatch = shop.business_hours.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
       if (timeMatch) {
@@ -53,15 +53,15 @@ const ReviewDetailsScreen: React.FC = () => {
         const endHour = parseInt(timeMatch[4]);
         const endMin = timeMatch[5];
         const endAmPm = timeMatch[6]?.toUpperCase();
-        
+
         let startHour24 = startHour;
         if (startAmPm === 'PM' && startHour !== 12) startHour24 = startHour + 12;
         if (startAmPm === 'AM' && startHour === 12) startHour24 = 0;
-        
+
         let endHour24 = endHour;
         if (endAmPm === 'PM' && endHour !== 12) endHour24 = endHour + 12;
         if (endAmPm === 'AM' && endHour === 12) endHour24 = 0;
-        
+
         openTime = `${startHour24.toString().padStart(2, '0')}:${startMin}`;
         closeTime = `${endHour24.toString().padStart(2, '0')}:${endMin}`;
       } else {
@@ -73,7 +73,7 @@ const ReviewDetailsScreen: React.FC = () => {
         }
       }
     }
-    
+
     // Parse repeat_days to determine which days are active
     // Format: "Mon, Tue, Wed, Thu And Fri" or similar
     const repeatDays = shop.repeat_days || 'Mon, Tue, Wed, Thu, Fri, Sat, Sun';
@@ -86,7 +86,7 @@ const ReviewDetailsScreen: React.FC = () => {
       'sat': 'saturday',
       'sun': 'sunday',
     };
-    
+
     // Check which days are mentioned in repeat_days
     const lowerRepeat = repeatDays.toLowerCase();
     Object.keys(dayMap).forEach(shortDay => {
@@ -97,7 +97,7 @@ const ReviewDetailsScreen: React.FC = () => {
         };
       }
     });
-    
+
     // If no days found, default to all weekdays
     if (Object.keys(operatingHours).length === 0) {
       operatingHours.monday = { open: openTime, close: closeTime };
@@ -108,7 +108,7 @@ const ReviewDetailsScreen: React.FC = () => {
       operatingHours.saturday = { open: openTime, close: closeTime };
       operatingHours.sunday = { open: openTime, close: closeTime };
     }
-    
+
     return operatingHours;
   };
 
@@ -186,7 +186,7 @@ const ReviewDetailsScreen: React.FC = () => {
       ...(vendor.profile_pic && { profile_pic: vendor.profile_pic }),
       ...(vendor.aadhaar_file && { aadhaar_card: vendor.aadhaar_file }),
       ...(vendor.pan_file && { pan_card: vendor.pan_file }),
-      ...(shop.shop_front_photo && { shop_front_photo: shop.shop_front_photo }),
+      ...(shop.shop_front_photo && { shop_image: shop.shop_front_photo }),
       ...(bank.cancelled_cheque && { cancelled_cheque: bank.cancelled_cheque }),
     };
 
@@ -228,9 +228,8 @@ const ReviewDetailsScreen: React.FC = () => {
         <DetailItem label="Full Name" value={vendor.owner_name} />
         <DetailItem label="Number" value={formatPhoneNumber(vendor.mobile)} />
         <DetailItem label="Mail ID" value={vendor.email} />
-        {vendor.gender && <DetailItem label="Gender" value={vendor.gender} />}
-        <DetailItem label="Date Of Birth" value={vendor.date_of_birth} />
-        
+
+
         {(vendor.aadhaar_file || vendor.pan_file) && (
           <View style={styles.detailItem}>
             <CustomText style={styles.label}>Government ID (Aadhar & PAN)</CustomText>

@@ -1,91 +1,101 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../../constants/colors';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.BACKGROUND,
+    backgroundColor: COLORS.WHITE,
   },
   content: {
     flex: 1,
   },
-  scrollContent: {
-    padding: 16,
+  section: {
+    marginTop: 24, marginHorizontal: 12
   },
-  servicesContainer: {
+  servicesList: {
+    backgroundColor: COLORS.BUTTON_BACKGROUND,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    padding: 16,
     gap: 12,
   },
-  serviceCard: {
-    backgroundColor: COLORS.LIGHT_GRAY_2,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-  },
-  selectedServiceCard: {
-    backgroundColor: COLORS.ONBOARDING_BG_LIGHT,
-  },
-  serviceCardContent: {
+  serviceOptionCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    borderWidth: 0.5,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  serviceOptionCardSelected: {
+    backgroundColor: COLORS.ICON_GREEN,
+    borderColor: COLORS.THEME_GREEN,
+  },
+  serviceOptionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
   },
   serviceInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
-  },
-  radioButtonContainer: {
-    marginRight: 12,
-  },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: COLORS.GRAY,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  selectedRadioButton: {
-    borderColor: COLORS.GREEN,
-  },
-  radioButtonInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.GREEN,
-  },
-  serviceTextContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 8
   },
-  serviceName: {
+  serviceOptionName: {
     fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.TEXT,
-    flex: 1,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.BOTTOM_BLACK,
+    fontWeight: '500',
   },
-  selectedServiceName: {
-    color: COLORS.GREEN,
+  serviceOptionNameSelected: {
+    color: COLORS.THEME_GREEN,
   },
-  arrowContainer: {
-    marginLeft: 8,
+  serviceOptionDescription: {
+    fontSize: 13,
+    color: COLORS.LOGIN_SUBTITLE,
+    marginTop: 4,
   },
-  arrowIcon: {
-    width: 16,
-    height: 16,
-    tintColor: COLORS.GRAY,
-  },
-  serviceIllustration: {
-    width: 80,
-    height: 60,
+  serviceOptionRight: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: 12,
   },
   serviceImage: {
-    width: '100%',
-    height: '100%',
+    width: 100,
+    height: 70,
+    bottom: 0
+  },
+  serviceImagePlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+  },
+  serviceCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    backgroundColor: COLORS.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  serviceCheckboxSelected: {
+    backgroundColor: COLORS.THEME_GREEN,
+    borderColor: COLORS.THEME_GREEN,
+  },
+  serviceNote: {
+    marginTop: 24,
+    fontSize: 14,
+    color: COLORS.NOTE_TEXT,
+    textAlign: 'left',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
   },
 });
 
