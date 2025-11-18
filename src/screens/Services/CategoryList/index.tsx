@@ -5,7 +5,6 @@ import {
     TouchableOpacity,
     FlatList,
     TextInput,
-    Switch,
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +25,8 @@ import {
 } from '../../../apiService/types/profileTypes';
 import { ErrorResponse } from '../../../apiService/types/authTypes';
 import { updateServicesOffered } from '../../../apiService/api/profileApi';
+import { COLORS, FONTFAMILY } from '../../../constants/colors';
+import ServiceItemCard from '../Components';
 import styles from './style';
 
 type CategoryListNavProp = NativeStackNavigationProp<
@@ -37,22 +38,28 @@ type CategoryListRouteProp = RouteProp<RootStackParamList, 'CategoryListScreen'>
 const CategoryListScreen: React.FC = () => {
     const navigation = useNavigation<CategoryListNavProp>();
     const route = useRoute<CategoryListRouteProp>();
-    const { service } = route.params;
+    const { service, category } = route.params;
     const queryClient = useQueryClient();
 
-    // Direct state management - no hooks
-    const [selectedCategory, setSelectedCategory] = useState<string>('');
-    const [categories, setCategories] = useState<string[]>([]);
+    // Get items for the selected category
+    const categoryItems = category
+        ? service?.items_by_category?.[category] || []
+        : [];
+
     const [editableItems, setEditableItems] = useState<{
         [key: string]: ServiceItem;
     }>({});
-    const [maxCountPerDay, setMaxCountPerDay] = useState<number>(
-        service?.max_count_per_day || 0,
-    );
-    const [originalMaxCount, setOriginalMaxCount] = useState<number>(
-        service?.max_count_per_day || 0,
-    );
     const [hasChanges, setHasChanges] = useState<boolean>(false);
+
+    // Initialize editable items from category items
+    useEffect(() => {
+        const items: { [key: string]: ServiceItem } = {};
+        categoryItems.forEach((item: ServiceItem) => {
+            const itemKey = `${item.item_name}_${item.category}`;
+            items[itemKey] = { ...item };
+        });
+        setEditableItems(items);
+    }, [categoryItems]);
 
     // React Query mutation for updating services
     const updateServicesMutation = useMutation<
@@ -62,7 +69,6 @@ const CategoryListScreen: React.FC = () => {
     >({
         mutationFn: updateServicesOffered,
         onSuccess: (response: UpdateServicesResponse) => {
-            // Invalidate and refetch profile data
             queryClient.invalidateQueries({ queryKey: ['profile'] });
             Alert.alert(
                 'Success',
@@ -85,56 +91,11 @@ const CategoryListScreen: React.FC = () => {
         },
     });
 
-    useEffect(() => {
-        console.log('Service data:', service);
-        console.log('Items by category:', service?.items_by_category);
-
-        if (service?.items_by_category) {
-            const allKeys = Object.keys(service.items_by_category);
-            console.log('All category keys:', allKeys);
-
-            // Show all categories including undefined ones
-            const categoryKeys = allKeys.filter(key => key !== null);
-            console.log('All category keys (including undefined):', categoryKeys);
-
-            // Initialize editable items
-            const items: { [key: string]: ServiceItem } = {};
-            Object.values(service.items_by_category).forEach(categoryItems => {
-                (categoryItems as ServiceItem[]).forEach((item: ServiceItem) => {
-                    const itemKey = `${item.item_name}_${item.category}`;
-                    items[itemKey] = { ...item };
-                });
-            });
-            setEditableItems(items);
-
-            // If we have categories, use them; otherwise just show Others
-            if (categoryKeys.length > 0) {
-                const allCategories = [...categoryKeys, 'Others'];
-                setCategories(allCategories);
-                setSelectedCategory(allCategories[0]);
-            } else {
-                setCategories(['Others']);
-                setSelectedCategory('Others');
-            }
-        } else {
-            // Fallback when no categories are available
-            setCategories(['Others']);
-            setSelectedCategory('Others');
-        }
-    }, [service]);
-
-    const handleCategorySelect = (category: string) => {
-        console.log('Selecting category:', category);
-        console.log('Current selected category:', selectedCategory);
-        setSelectedCategory(category);
-    };
-
     const updateItemField = (
         itemKey: string,
         field: keyof ServiceItem,
         value: any,
     ) => {
-        console.log('updateItemField called:', { itemKey, field, value });
         setEditableItems(prev => {
             const updated = {
                 ...prev,
@@ -143,25 +104,42 @@ const CategoryListScreen: React.FC = () => {
                     [field]: value,
                 },
             };
-            console.log('Updated editableItems:', updated);
             return updated;
         });
         setHasChanges(true);
     };
 
-    const updateMaxCount = (value: number) => {
-        console.log('updateMaxCount called:', value);
-        setMaxCountPerDay(value);
-        setHasChanges(true);
+    const handleClearAll = () => {
+        Alert.alert(
+            'Clear All',
+            'Are you sure you want to deselect all items?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Clear',
+                    style: 'destructive',
+                    onPress: () => {
+                        const updated: { [key: string]: ServiceItem } = {};
+                        Object.keys(editableItems).forEach(key => {
+                            updated[key] = {
+                                ...editableItems[key],
+                                is_active: false,
+                            };
+                        });
+                        setEditableItems(updated);
+                        setHasChanges(true);
+                    },
+                },
+            ],
+        );
     };
 
     const convertToApiFormat = (): UpdateServiceInput => {
-        // Get only changed items
         const changedItems = Object.values(editableItems).filter(item => {
             const originalItem = service?.items?.find(
                 (orig: ServiceItem) => orig.item_name === item.item_name,
             );
-            if (!originalItem) return true; // New item
+            if (!originalItem) return true;
 
             return (
                 originalItem.item_price !== item.item_price ||
@@ -171,13 +149,10 @@ const CategoryListScreen: React.FC = () => {
             );
         });
 
-        // Only include max_count_per_day if it changed
-        const includeMaxCount = maxCountPerDay !== originalMaxCount;
-
         const apiInput: UpdateServiceInput = {
             service: {
                 service_name: service?.service_name || '',
-                max_count_per_day: includeMaxCount ? maxCountPerDay : originalMaxCount,
+                max_count_per_day: service?.max_count_per_day || 0,
                 items: changedItems.map(item => ({
                     item_name: item.item_name,
                     item_price: item.item_price,
@@ -198,179 +173,57 @@ const CategoryListScreen: React.FC = () => {
         }
 
         const apiInput = convertToApiFormat();
-        console.log('=== API INPUT BODY ===');
-        console.log('API Input:', JSON.stringify(apiInput, null, 2));
-
         updateServicesMutation.mutate(apiInput);
     };
 
-    const getCurrentCategoryItems = () => {
-        if (selectedCategory === 'Others') {
-            // Others tab is for settings (max count per day), not for listing items
-            return [];
-        }
-        return service?.items_by_category?.[selectedCategory] || [];
-    };
+    const selectedItemsCount = Object.values(editableItems).filter(
+        item => item.is_active,
+    ).length;
 
-    const renderCategoryTab = (category: string) => {
-        const isSelected = selectedCategory === category;
-        console.log(`Rendering tab: ${category}, isSelected: ${isSelected}`);
-        return (
-            <TouchableOpacity
-                key={category}
-                style={[styles.categoryTab, isSelected && styles.selectedCategoryTab]}
-                onPress={() => handleCategorySelect(category)}
-                activeOpacity={0.7}
-            >
-                <CustomText
-                    fontWeight={isSelected ? 'Bold' : 'Medium'}
-                    style={[
-                        styles.categoryTabText,
-                        isSelected && styles.selectedCategoryTabText,
-                    ]}
-                >
-                    {category === 'undefined' ? 'General' : category}
-                </CustomText>
-            </TouchableOpacity>
-        );
-    };
-
-    const renderItemCardComponent = ({ item }: { item: ServiceItem }) => {
+    const renderItemCard = ({ item }: { item: ServiceItem }) => {
         const itemKey = `${item.item_name}_${item.category}`;
         const editableItem = editableItems[itemKey] || item;
 
-        console.log('Rendering item card:', {
-            itemName: item.item_name,
-            itemKey,
-            editableItem,
-            hasEditableItem: !!editableItems[itemKey],
-        });
-
         return (
-            <View style={styles.itemCard}>
-                {/* Item Header */}
-                <View style={styles.itemHeader}>
-                    <CustomText style={styles.itemName}>{item.item_name}</CustomText>
-                    <View style={styles.activeContainer}>
-                        <CustomText style={styles.activeLabel}>Active</CustomText>
-                        <Switch
-                            value={editableItem.is_active}
-                            onValueChange={value => {
-                                console.log('Switch changed:', value);
-                                updateItemField(itemKey, 'is_active', value);
-                            }}
-                            trackColor={{ false: '#E0E0E0', true: '#4CAF50' }}
-                            thumbColor={'#FFFFFF'}
-                        />
-                    </View>
-                </View>
-
-                {/* Price Fields */}
-                <View style={styles.editablePriceContainer}>
-                    {[
-                        { label: 'Standard', key: 'item_price' as keyof ServiceItem },
-                        {
-                            label: 'Express',
-                            key: 'express_price' as keyof ServiceItem,
-                        },
-                        {
-                            label: 'Discount %',
-                            key: 'discount_percentage' as keyof ServiceItem,
-                        },
-                    ].map(({ label, key }) => (
-                        <View key={key} style={styles.priceInputContainer}>
-                            <CustomText style={styles.priceLabel}>{label}</CustomText>
-                            <TextInput
-                                style={styles.priceInput}
-                                value={editableItem[key]?.toString() || ''}
-                                onChangeText={text => {
-                                    console.log('TextInput changed:', { key, text, itemKey });
-                                    updateItemField(itemKey, key, parseInt(text) || 0);
-                                }}
-                                keyboardType="numeric"
-                                placeholder="0"
-                                onFocus={() => console.log('TextInput focused:', key)}
-                                onBlur={() => console.log('TextInput blurred:', key)}
-                            />
-                        </View>
-                    ))}
-                </View>
-            </View>
-        );
-    };
-
-    const renderOthersTabComponent = () => {
-        console.log('Rendering Others tab, maxCountPerDay:', maxCountPerDay);
-
-        return (
-            <View style={styles.othersTabContainer}>
-                <View style={styles.maxCountContainer}>
-                    <CustomText style={styles.maxCountLabel}>
-                        Max Count Per Day:
-                    </CustomText>
-                    <TextInput
-                        style={styles.maxCountInput}
-                        value={maxCountPerDay.toString()}
-                        onChangeText={text => {
-                            console.log('Max count changed:', text);
-                            updateMaxCount(parseInt(text) || 0);
-                        }}
-                        keyboardType="numeric"
-                        placeholder="0"
-                    />
-                    <CustomText style={styles.maxCountDescription}>
-                        Maximum number of orders that can be accepted per day for this
-                        service
-                    </CustomText>
-                </View>
-            </View>
+            <ServiceItemCard
+                item={item}
+                editableItem={editableItem}
+                onUpdateField={(field, value) => {
+                    updateItemField(itemKey, field, value);
+                }}
+            />
         );
     };
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            <Toolbar title={service?.service_name || 'Service List'} />
+            <Toolbar title={category || 'Category'} />
 
-            <View style={styles.content}>
-                {/* Category Tabs */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoryTabsContainer}
-                    contentContainerStyle={styles.categoryTabsContent}
-                >
-                    {categories.map(renderCategoryTab)}
-                </ScrollView>
-
-                {/* Items List or Others Tab Content */}
-                {(() => {
-                    console.log('Current selectedCategory:', selectedCategory);
-                    console.log('Is Others selected?', selectedCategory === 'Others');
-                    return selectedCategory === 'Others' ? (
-                        <View style={{ flex: 1, padding: 16 }}>
-                            {renderOthersTabComponent()}
-                        </View>
-                    ) : (
-                        <FlatList
-                            data={getCurrentCategoryItems()}
-                            renderItem={renderItemCardComponent}
-                            keyExtractor={(item, index) => `${item.item_name}_${index}`}
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{ padding: 16, paddingBottom: 120 }}
-                            ListFooterComponent={() => <View style={{ height: 150 }} />}
-                        />
-                    );
-                })()}
+            <View style={styles.summaryBar}>
+                <CustomText style={styles.totalItemsText}>
+                    Total Items Selected ({selectedItemsCount})
+                </CustomText>
+                <TouchableOpacity onPress={handleClearAll}>
+                    <CustomText style={styles.clearAllText}>Clear All</CustomText>
+                </TouchableOpacity>
             </View>
 
-            {/* Submit Button */}
+            <FlatList
+                data={categoryItems}
+                renderItem={renderItemCard}
+                keyExtractor={(item, index) => `${item.item_name}_${index}`}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.itemsList}
+                ListFooterComponent={() => <View style={{ height: 100 }} />}
+            />
+
             <View style={styles.submitContainer}>
                 <CustomBtn
-                    title={
-                        updateServicesMutation.isPending ? 'Updating...' : 'Update Service'
-                    }
+                    title={updateServicesMutation.isPending ? 'Saving...' : 'Save'}
                     onPress={handleSubmit}
                     disabled={updateServicesMutation.isPending || !hasChanges}
+                    style={styles.confirmButton}
+                    textStyle={styles.continueText}
                 />
             </View>
         </SafeAreaView>
@@ -378,4 +231,3 @@ const CategoryListScreen: React.FC = () => {
 };
 
 export default CategoryListScreen;
-

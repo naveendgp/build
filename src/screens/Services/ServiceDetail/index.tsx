@@ -9,13 +9,17 @@ import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomSwitch from '../../../components/CustomSwitch';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
-import { Service, ServiceItem } from '../../../apiService/types/profileTypes';
+import { ItemsByCategory, Service, ServiceItem } from '../../../apiService/types/profileTypes';
 import styles from './style';
 import RightArrowIcon from '../../../assets/auto-generated-svg-icons/RightArrowIcon';
 import EditIcon from '../../../assets/auto-generated-svg-icons/EditIcon';
 import TimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
 import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
+import { PRICING_TYPES } from '../../../constants';
+import { showSuccessToast } from '../../../utils/Toast';
+import ServiceItemCard from '../Components';
+import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
 
 type ServiceDetailNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -33,6 +37,58 @@ const ServiceDetailScreen: React.FC = () => {
     const [maxItemsPerDay, setMaxItemsPerDay] = useState<string>(
         service?.max_count_per_day?.toString() || '100',
     );
+    const [editableItems, setEditableItems] = useState<{
+        [key: string]: ServiceItem;
+    }>({});
+
+    // Dialog states
+    const [showServiceTimeDialog, setShowServiceTimeDialog] = useState(false);
+    const [showOfferDialog, setShowOfferDialog] = useState(false);
+
+    // Service time and offer data
+    const [serviceTimeData, setServiceTimeData] = useState<ServiceTimeData>({
+        standardTime: '48 Hours',
+        expressTime: '8 Hours',
+    });
+    const [offerData, setOfferData] = useState<OfferData>({
+        offerPercentage: '50',
+        maxCap: '100',
+    });
+
+    // Initialize editable items from service items
+    React.useEffect(() => {
+        const items: { [key: string]: ServiceItem } = {};
+        // Handle items_by_category structure
+        if (service?.items_by_category) {
+            Object.values(service.items_by_category)
+                .flat()
+                .forEach((item: ServiceItem) => {
+                    const itemKey = `${item.item_name}_${item.category}`;
+                    items[itemKey] = { ...item };
+                });
+        } else if (service?.items) {
+            // Fallback to items array if items_by_category is not available
+            service.items.forEach((item: ServiceItem) => {
+                const itemKey = `${item.item_name}_${item.category}`;
+                items[itemKey] = { ...item };
+            });
+        }
+        setEditableItems(items);
+    }, [service]);
+
+    const updateItemField = (
+        itemKey: string,
+        field: keyof ServiceItem,
+        value: any,
+    ) => {
+        setEditableItems(prev => ({
+            ...prev,
+            [itemKey]: {
+                ...prev[itemKey],
+                [field]: value,
+            },
+        }));
+    };
 
     // Get categories from service items
     const categories = service?.items_by_category
@@ -51,6 +107,7 @@ const ServiceDetailScreen: React.FC = () => {
         navigation.goBack();
     };
 
+
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Toolbar title={service?.service_name || 'Service Details'} />
@@ -68,37 +125,41 @@ const ServiceDetailScreen: React.FC = () => {
                                 onValueChange={setExpressServiceEnabled}
                             />
                         </View>
-                        {expressServiceEnabled && (
-                            <View style={styles.subOptionsContainer}>
+
+                        <View style={styles.subOptionsContainer}>
+                            <View style={styles.subOptionsContent}>
                                 <View style={styles.subOptionRow}>
                                     <View style={styles.subOptionLeft}>
                                         <TimerIcon width={20} height={20} color={COLORS.INPUT_TEXT} />
                                         <CustomText style={styles.subOptionText}>
-                                            Standard 48 Hours
+                                            Standard {serviceTimeData.standardTime}
                                         </CustomText>
                                     </View>
-                                    <TouchableOpacity style={styles.editButton}>
-                                        <CustomText style={styles.editText}>Edit</CustomText>
-                                        <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
-                                    </TouchableOpacity>
                                 </View>
                                 <View style={styles.subOptionRow}>
                                     <View style={styles.subOptionLeft}>
-                                        <CustomText style={styles.lightningIcon}>⚡</CustomText>
-                                        <CustomText style={styles.subOptionText}>Express 8 hours</CustomText>
+                                        <TimerIcon width={20} height={20} color={COLORS.INPUT_TEXT} />
+                                        <CustomText style={styles.subOptionText}>
+                                            Express {serviceTimeData.expressTime}
+                                        </CustomText>
                                     </View>
-                                    <TouchableOpacity style={styles.editButton}>
-                                        <CustomText style={styles.editText}>Edit</CustomText>
-                                        <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
-                                    </TouchableOpacity>
                                 </View>
                             </View>
-                        )}
+                            <TouchableOpacity
+                                style={styles.editButton}
+                                onPress={() => setShowServiceTimeDialog(true)}
+                            >
+                                <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+
+                                <CustomText style={styles.editText}>Edit</CustomText>
+                            </TouchableOpacity>
+                        </View>
+
                     </View>
 
                     {/* Offer Card */}
                     <View style={[styles.toggleCard, styles.offerCard]}>
-                        <View style={styles.toggleCardHeader}>
+                        <View style={[styles.toggleCardHeader, { backgroundColor: COLORS.OFFER_BACKGROUND, borderColor: COLORS.OFFER_BORDER }]}>
                             <CustomText style={styles.toggleCardTitle}>Offer for this service</CustomText>
                             <CustomSwitch value={offerEnabled} onValueChange={setOfferEnabled} />
                         </View>
@@ -107,9 +168,14 @@ const ServiceDetailScreen: React.FC = () => {
                                 <View style={styles.subOptionRow}>
                                     <View style={styles.subOptionLeft}>
                                         <CheckIcon width={20} height={20} color={COLORS.THEME_GREEN} />
-                                        <CustomText style={styles.subOptionText}>Flat 50 % Off</CustomText>
+                                        <CustomText style={styles.subOptionText}>
+                                            Flat {offerData.offerPercentage} % Off
+                                        </CustomText>
                                     </View>
-                                    <TouchableOpacity style={styles.editButton}>
+                                    <TouchableOpacity
+                                        style={styles.editButton}
+                                        onPress={() => setShowOfferDialog(true)}
+                                    >
                                         <CustomText style={styles.editText}>Edit</CustomText>
                                         <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
                                     </TouchableOpacity>
@@ -139,35 +205,91 @@ const ServiceDetailScreen: React.FC = () => {
                         </CustomText>
                     </View>
 
-                    {/* Category Section */}
-                    <View style={styles.categorySection}>
-                        <CustomText style={styles.categoryTitle}>Category</CustomText>
-                        <CustomText style={styles.categorySubtitle}>
-                            Selected Items - {selectedItems}/{totalItems}
-                        </CustomText>
+                    {service?.pricing_type === PRICING_TYPES.PER_PC
+                        ?
+                        <View style={styles.categorySection}>
+                            <CustomText style={styles.categoryTitle}>Category</CustomText>
 
-                        <View style={styles.categoryList}>
-                            {categories.map((category, index) => (
-                                <TouchableOpacity
-                                    key={index}
-                                    style={styles.categoryItem}
-                                    onPress={() => {
-                                        // Navigate to CategoryList (ShopList) with service
-                                        navigation.navigate('CategoryListScreen', { service });
-                                    }}
-                                >
-                                    <CustomText style={styles.categoryItemText}>{category}</CustomText>
-                                    <RightArrowIcon width={20} height={20} color={COLORS.INPUT_TEXT} />
-                                </TouchableOpacity>
-                            ))}
+
+                            <View style={styles.categoryList}>
+                                {categories.map((category, index) => (
+                                    <View>
+                                        <TouchableOpacity
+                                            key={index}
+                                            style={styles.categoryItem}
+                                            onPress={() => {
+                                                // Navigate to CategoryList with service and selected category
+                                                navigation.navigate('CategoryListScreen', { service, category });
+                                            }}
+                                        >
+                                            <CustomText style={styles.categoryItemText}>{category}</CustomText>
+                                            <RightArrowIcon width={24} height={24} color={COLORS.INPUT_TEXT} />
+                                        </TouchableOpacity>
+                                        <CustomText style={styles.categorySubtitle}>
+                                            Selected Items - {selectedItems}/{totalItems}
+                                        </CustomText>
+                                    </View>
+                                ))}
+                            </View>
                         </View>
-                    </View>
+                        :
+                        <View>
+                            <CustomText style={styles.categoryTitle}>Price</CustomText>
+
+                            {service?.items_by_category &&
+                                Object.values(service.items_by_category)
+                                    .flat()
+                                    .map((item: ServiceItem, index: number) => {
+                                        const itemKey = `${item.item_name}_${item.category}`;
+                                        const editableItem = editableItems[itemKey] || item;
+                                        return (
+                                            <ServiceItemCard
+                                                key={`${item.item_name}_${item.category}_${index}`}
+                                                item={item}
+                                                editableItem={editableItem}
+                                                onUpdateField={(field, value) => {
+                                                    updateItemField(itemKey, field, value);
+                                                }}
+                                            />
+                                        );
+                                    })}
+
+                            <CustomText style={[styles.inputNote, { marginBottom: 24 }]}>Note: Clothes will be weighed during pickup and the bill will be generated accordingly.</CustomText>
+                        </View>
+
+                    }
+
+
+                    <CustomBtn title="Confirm" onPress={handleConfirm}
+                        style={styles.confirmButton}
+                        textStyle={styles.continueText}
+                    />
                 </View>
             </ScrollView>
 
-            <View style={styles.footer}>
-                <CustomBtn title="Confirm" onPress={handleConfirm} />
-            </View>
+            {/* Service Time Dialog */}
+            <PricingDialog
+                visible={showServiceTimeDialog}
+                onClose={() => setShowServiceTimeDialog(false)}
+                type="serviceTime"
+                title={`${service?.service_name || 'Service'} Service Time`}
+                onConfirm={(data) => {
+                    setServiceTimeData(data as ServiceTimeData);
+                }}
+                initialData={serviceTimeData}
+            />
+
+            {/* Offer Dialog */}
+            <PricingDialog
+                visible={showOfferDialog}
+                onClose={() => setShowOfferDialog(false)}
+                type="offer"
+                title={`${service?.service_name || 'Service'} Offer`}
+                onConfirm={(data) => {
+                    setOfferData(data as OfferData);
+                }}
+                initialData={offerData}
+            />
         </SafeAreaView>
     );
 };
