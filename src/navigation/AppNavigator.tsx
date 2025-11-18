@@ -11,9 +11,11 @@ import OTPVerificationScreen from '../screens/Auth/OTPVerification';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FilePickerScreen from '../utils/FilePicker';
 import VendorVerificationScreen from '../screens/VendorVerification';
+import ReviewDetailsScreen from '../screens/VendorVerification/ReviewDetails';
 import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
+import ProfileLocation from '../screens/VendorVerification/map/ProfileLocation';
 import { LoginUserStatus } from '../constants/tripStatus';
 import BottomTabNavigator from './BottomTabNavigator';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
@@ -28,7 +30,8 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
-  VendorVerification: undefined;
+  VendorVerification: { step?: number } | undefined;
+  ReviewDetails: undefined;
   MainTabs: undefined;
   Orders: undefined;
   Profile: undefined;
@@ -45,6 +48,7 @@ export type RootStackParamList = {
   UserProfile: undefined;
   FilePicker: undefined;
   MapScreen: undefined;
+  ProfileLocation: { onSelect?: (data: { address: string; latitude: number; longitude: number }) => void } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -56,7 +60,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
   // Determine initial route based on login status and document state
   const getInitialRoute = () => {
     if (!isLoggedIn) {
-      return 'VendorVerification';
+      return 'Login';
     }
 
     // If logged in, check document state
@@ -106,6 +110,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={VendorVerificationScreen}
           />
           <Stack.Screen
+            options={{ headerShown: false }}
+            name="ReviewDetails"
+            component={ReviewDetailsScreen}
+          />
+          <Stack.Screen
             name="FilePicker"
             component={FilePickerScreen}
             options={{ title: 'Pick a File' }}
@@ -113,6 +122,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
           <Stack.Screen
             name="MapScreen"
             component={MapScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ProfileLocation"
+            component={ProfileLocation}
             options={{ headerShown: false }}
           />
 

@@ -42,3 +42,47 @@ export interface ErrorResponse {
   message: string;
   error: string;
 }
+
+export interface DayHours {
+  open: string;
+  close: string;
+}
+
+export interface OperatingHours {
+  monday?: DayHours;
+  tuesday?: DayHours;
+  wednesday?: DayHours;
+  thursday?: DayHours;
+  friday?: DayHours;
+  saturday?: DayHours;
+  sunday?: DayHours;
+}
+
+export interface RegisterCompletePayload {
+  shop_name: string;
+  owner_name: string;
+  email: string;
+  gst_number: string;
+  pan_number: string;
+  shop_license_number: string;
+  aadhaar_number: string;
+  address_line1: string;
+  pincode: string;
+  landmark: string;
+  latitude: number;
+  longitude: number;
+  contactNum: string;
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch?: string;
+  upi_id: string;
+  operating_hours: OperatingHours;
+}
+
+export interface RegisterCompleteResponse {
+  status: boolean;
+  message: string;
+  data?: any;
+}

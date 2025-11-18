@@ -5,7 +5,8 @@ import { showErrorToast } from '../../utils/Toast';
 import { useDialogStore } from '../store/useDialogStore';
 
 const api = axios.create({
-  baseURL: 'http://13.204.157.24:3000',
+ // baseURL: 'http://13.204.157.24:3000',
+  baseURL: 'http://192.168.0.107:3000',
   timeout: 10000,
 });
 
@@ -19,7 +20,7 @@ api.interceptors.request.use(config => {
 
   // 🔥 LOG REQUEST
   console.log(
-    `%c[API REQUEST] ${config.method?.toUpperCase()} ${config.url}`,
+    `%c[API REQUEST]  ${config.baseURL} ${config.method?.toUpperCase()} ${config.url}  ${token ? 'Token Present' : 'Token Absent'}`,
     "color: #3498db; font-weight: bold;"
   );
   console.log("➡ Payload:", config.data);

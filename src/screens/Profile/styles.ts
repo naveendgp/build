@@ -410,6 +410,16 @@ export default StyleSheet.create({
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
+  logoutOptionItem: {
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_INPUT,
+    marginTop: 8,
+    paddingTop: 16,
+  },
+  logoutOptionTitle: {
+    color: '#FF3B30',
+    fontWeight: '500',
+  },
   logoutButton: {
     backgroundColor: '#FF3B30',
     borderRadius: 12,

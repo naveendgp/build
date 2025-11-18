@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   SafeAreaView,
@@ -15,11 +15,13 @@ import styles from './styles';
 import CustomBtn from '../../components/CustomBtn';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
+import { useVendorVerificationStore } from '../../apiService/store/useVendorVerificationStore';
 import VendorDetailsStep from './ProfileDetails/VendorDetailsStep';
 import ShopDetailsStep from './ShopDetails/ShopDetailsStep';
 import BankDetailsStep from './BankDetails/BankDetailsStep';
+import ReviewDetailsScreen from './ReviewDetails';
 import { useVendorValidation } from './useVendorValidation';
 import Toolbar from '../../components/Toolbar';
 import { useMutation } from '@tanstack/react-query';
@@ -40,10 +42,44 @@ type VendorNavProp = NativeStackNavigationProp<
 
 const VendorVerificationScreen: React.FC = () => {
   const navigation = useNavigation<VendorNavProp>();
+  const route = useRoute();
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
-  const [currentStep, setCurrentStep] = useState<number>(1);
+  const mobileNumber = useAuthStore(state => state.mobileNumber);
+  const routeParams = route.params as { step?: number } | undefined;
+  const initialStep = routeParams?.step || 1;
+  
+  const [currentStep, setCurrentStep] = useState<number>(initialStep);
+  const [step, setStep] = useState(initialStep);
+  
+  // Store methods
+  const { vendor: storeVendor, shop: storeShop, bank: storeBank, setVendorData, setShopData, setBankData } = useVendorVerificationStore();
 
-  const [step, setStep] = useState(1);
+  // Load data from store when navigating to a step
+  useEffect(() => {
+    if (step === 1 && storeVendor.owner_name) {
+      setData(prev => ({ ...prev, vendor: storeVendor }));
+    } else if (step === 2 && storeShop.shop_name) {
+      setData(prev => ({ ...prev, shop: storeShop }));
+    } else if (step === 3 && storeBank.account_holder_name) {
+      setData(prev => ({ ...prev, bank: storeBank }));
+    }
+  }, [step, storeVendor, storeShop, storeBank]);
+
+  // Set mobile number from auth store when available
+  useEffect(() => {
+    if (mobileNumber) {
+      setData(prev => {
+        // Only update if mobile is not already set
+        if (!prev.vendor.mobile) {
+          return {
+            ...prev,
+            vendor: { ...prev.vendor, mobile: mobileNumber },
+          };
+        }
+        return prev;
+      });
+    }
+  }, [mobileNumber]);
 
   const [data, setData] = useState({
     vendor: {
@@ -52,7 +88,7 @@ const VendorVerificationScreen: React.FC = () => {
       address: '',
       aadhaar_no: '',
       pan_number: '',
-      mobile: '',
+      mobile: mobileNumber || '', // Set mobile from auth store if available
       date_of_birth: '',
       profile_pic: null,
       aadhaar_file: null,
@@ -79,7 +115,7 @@ const VendorVerificationScreen: React.FC = () => {
     bank: {
       account_number: '',
       account_holder_name: '',
-      bank_branch: '',
+    
       ifsc_code: '',
       bank_name: '',
       upi_id: '',
@@ -115,8 +151,20 @@ const VendorVerificationScreen: React.FC = () => {
 
   const handleNext = () => {
    // if (validateStep(step, data)) {
-      setStep(prev => prev + 1);
-      setCurrentStep(prev => prev + 1);
+      // Save current step data to store before moving to next step
+      if (step === 1) {
+        setVendorData(data.vendor);
+        setStep(prev => prev + 1);
+        setCurrentStep(prev => prev + 1);
+      } else if (step === 2) {
+        setShopData(data.shop);
+        setStep(prev => prev + 1);
+        setCurrentStep(prev => prev + 1);
+      } else if (step === 3) {
+        setBankData(data.bank);
+        // Navigate to ReviewDetails screen after step 3
+        navigation.navigate('ReviewDetails');
+      }
   //  }
   };
 
@@ -149,7 +197,7 @@ const VendorVerificationScreen: React.FC = () => {
       ifsc_code: data.bank.ifsc_code,
       bank_name: data.bank.bank_name,
       aadhaar_number: data.vendor.aadhaar_no,
-      branch: data.bank.bank_branch,
+    
     };
 
     console.log('Submitting data:', payload);
@@ -213,7 +261,7 @@ const VendorVerificationScreen: React.FC = () => {
           <ScrollView
             ref={scrollRef}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: 20 }}
+            contentContainerStyle={step === 4 ? { paddingBottom: 20 } : { padding: 20 }}
           >
           
 
@@ -223,6 +271,7 @@ const VendorVerificationScreen: React.FC = () => {
                 setVendor={val => setData(d => ({ ...d, vendor: val }))}
                 handleFocusScroll={() => {}}
                 vendorAddressRef={vendorAddressRef}
+                isMobileFromOtp={!!mobileNumber}
               />
             )}
             {step === 2 && (
@@ -248,12 +297,8 @@ const VendorVerificationScreen: React.FC = () => {
                 />
               )}
               <CustomBtn
-                title={
-                  
-                     'Next'
-                    
-                }
-                onPress={step < 3 ? handleNext : handleSubmit}
+                title="Next"
+                onPress={handleNext}
                 disabled={mutation.isPending}
                 style={step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton}
                 textStyle={styles.nextButtonText}

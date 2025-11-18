@@ -17,6 +17,7 @@ interface Props {
   setVendor: (v: any) => void;
   handleFocusScroll: (ref: any) => void;
   vendorAddressRef: React.RefObject<View | null>;
+  isMobileFromOtp?: boolean;
 }
 
 const VendorDetailsStep: React.FC<Props> = ({
@@ -24,6 +25,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   setVendor,
   handleFocusScroll,
   vendorAddressRef,
+  isMobileFromOtp = false,
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
@@ -185,6 +187,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.mobile || ''}
         onChangeText={val => setVendor({ ...vendor, mobile: val })}
         containerStyle={styles.inputContainer}
+        isEditable={!isMobileFromOtp}
       />
 
       <ProfileInput

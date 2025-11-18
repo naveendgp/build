@@ -12,11 +12,12 @@ import {
 } from '../../../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 
-export const useOtpVerification = (mobile: string, isRegister: boolean) => {
+export const useOtpVerification = (mobile: string) => {
   const navigation = useNavigation<any>();
   const setToken = useAuthStore(state => state.setToken);
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
   const setDocumentState = useAuthStore(state => state.setDocumentState);
+  const setMobileNumber = useAuthStore(state => state.setMobileNumber);
   const fcm = useAuthStore(state => state.fcmToken);
 
   const mutation = useMutation<
@@ -28,17 +29,9 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
       verifyOtp({ phone: mobile, otp, fcm_token: fcm }),
     onSuccess: data => {
       setToken(data.data.token);
-
+      setMobileNumber(mobile); // Store mobile number used for OTP
       setDocumentState(data.data.status); // Store document state
       showSuccessToast(data?.message);
-
-      if (isRegister) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'VendorVerification' }],
-        });
-        return;
-      }
 
       console.log('User status:', data?.data.status);
 
@@ -55,10 +48,7 @@ export const useOtpVerification = (mobile: string, isRegister: boolean) => {
 
         case LoginUserStatus.DOC_PENDING_UPLOAD:
         case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'VendorVerification' }],
-          });
+          navigation.navigate('VendorVerification'); 
           break;
 
         case LoginUserStatus.DOC_UNDER_REVIEW:
