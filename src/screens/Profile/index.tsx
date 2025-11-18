@@ -101,7 +101,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Services & Offer Details',
       icon: 'card-giftcard',
       iconType: 'MaterialIcons' as const,
-      onPress: () => navigation.navigate('ServicesPricing'),
+      onPress: () => navigation.navigate('Services'),
     },
     {
       id: '5',

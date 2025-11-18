@@ -42,7 +42,7 @@ export default StyleSheet.create({
     borderColor: COLORS.BORDER_INPUT,
     borderRadius: 16,
     paddingHorizontal: 12,
-     backgroundColor: COLORS.CARD_BACKGROUND,
+    backgroundColor: COLORS.CARD_BACKGROUND,
     minHeight: 80,
   },
   addressInput: {
@@ -56,7 +56,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-     gap: 8,
+    gap: 8,
   },
   locationButtonText: {
     fontSize: 14,
@@ -75,7 +75,7 @@ export default StyleSheet.create({
     marginBottom: 12,
   },
   uploadButton: {
-     alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
@@ -83,13 +83,13 @@ export default StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: COLORS.CARD_BACKGROUND,
     gap: 8,
-    height:80
+    height: 80
   },
   uploadText: {
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     color: COLORS.INPUT_TEXT,
-    fontWeight:'400'
+    fontWeight: '400'
   },
   uploadedFileContainer: {
     flexDirection: 'row',
@@ -131,7 +131,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.CARD_BACKGROUND,
     borderRadius: 16,
     paddingHorizontal: 16,
-   
+
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
   },
@@ -141,7 +141,7 @@ export default StyleSheet.create({
     color: COLORS.INPUT_TEXT,
     flex: 1,
     marginRight: 12,
-    fontWeight:'500'
+    fontWeight: '500'
   },
   repeatContainer: {
     flexDirection: 'row',
@@ -174,7 +174,7 @@ export default StyleSheet.create({
     fontSize: 14,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     color: COLORS.INPUT_TEXT,
-    fontWeight:'400'
+    fontWeight: '400'
   },
   modalOverlay: {
     flex: 1,
@@ -217,7 +217,6 @@ export default StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: COLORS.CARD_BACKGROUND,
-    marginHorizontal: 20,
     marginTop: 16,
     borderRadius: 12,
     gap: 12,
@@ -256,7 +255,6 @@ export default StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: COLORS.BUTTON_BACKGROUND,
-    marginHorizontal: 20,
     marginTop: 12,
     borderRadius: 8,
   },
@@ -268,7 +266,6 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
   timePickerContainer: {
-    maxHeight: 400,
     marginTop: 16,
   },
   timePickerContent: {
@@ -370,6 +367,117 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_MEDIUM,
     color: COLORS.LOGIN_SUBTITLE,
     fontWeight: '500',
+  },
+  // Repeat Days Bottom Sheet Styles
+  repeatSheetContent: {
+    padding: 16,
+
+  },
+  repeatSheetTitle: {
+    fontSize: 20,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    color: COLORS.TEXT_PRIMARY,
+    fontWeight: '700',
+    marginBottom: 24,
+    textAlign: 'left'
+  },
+  repeatDayItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.BORDER_INPUT,
+  },
+
+  repeatDayLabel: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.INPUT_TEXT,
+    fontWeight: '500',
+  },
+  repeatCheckbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    backgroundColor: COLORS.WHITE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  repeatCheckboxSelected: {
+    backgroundColor: COLORS.THEME_GREEN,
+  },
+  repeatSheetButtonContainer: {
+    marginTop: 24,
+    paddingHorizontal: 0,
+  },
+  repeatSaveButton: {
+    backgroundColor: COLORS.THEME_GREEN,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    width: '100%',
+  },
+  repeatSaveButtonText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.WHITE,
+    fontWeight: '500',
+  },
+  // Time Picker Bottom Sheet Styles
+  timePickerSheetContent: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 20,
+  },
+  timePickerSheetTitle: {
+    fontSize: 20,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    color: COLORS.BLACK,
+    fontWeight: '700',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  timePickerButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+  },
+  timePickerResetButton: {
+    flex: 1,
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  timePickerResetButtonText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.LOGIN_SUBTITLE,
+    fontWeight: '500',
+  },
+  timePickerCancelButton: {
+    flex: 1,
+    backgroundColor: COLORS.THEME_GREEN,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  timePickerCancelButtonText: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    color: COLORS.WHITE,
+    fontWeight: '600',
   },
 });
 

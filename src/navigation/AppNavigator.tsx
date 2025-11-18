@@ -20,11 +20,11 @@ import { LoginUserStatus } from '../constants/tripStatus';
 import BottomTabNavigator from './BottomTabNavigator';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
-import ServicesPricingScreen from '../screens/Profile/ServicesPricingScreen';
 import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
 import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
-import ShopListScreen from '../screens/ShopList';
+import CategoryListScreen from '../screens/Services/CategoryList';
+import ServiceDetailScreen from '../screens/Services/ServiceDetail';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -41,7 +41,8 @@ export type RootStackParamList = {
   ShopStatus: undefined;
   Wallet: undefined;
   Services: undefined;
-  ShopList: { service: any };
+  CategoryListScreen: { service: any };
+  ServiceDetail: { service: any };
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
   OrderDetails: { order: any } | undefined;
@@ -141,11 +142,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={BusinessSettingsScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="ServicesPricing"
-            component={ServicesPricingScreen}
-            options={{ headerShown: false }}
-          />
+
           <Stack.Screen
             name="ShopStatus"
             component={ShopStatusScreen}
@@ -162,8 +159,13 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="ShopList"
-            component={ShopListScreen}
+            name="CategoryListScreen"
+            component={CategoryListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceDetail"
+            component={ServiceDetailScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>
