@@ -57,7 +57,14 @@ export const STRINGS = {
 
 
   //Local storage
-  FCM_TOKEN:'fcm_token'
+  FCM_TOKEN: 'fcm_token'
+
+
+} as const;
+
+export const PRICING_TYPES = {
+  PER_PC: 'per_pc',
+  PER_KG: 'per_kg',
 
 } as const;
 

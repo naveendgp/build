@@ -1,74 +1,42 @@
 import React, { useRef, useState } from 'react';
-import { View, TouchableOpacity } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import CustomText from '../../components/Text';
 import { ReceivedOrderCardProps } from './CardComponents/RecivedOrderCard';
 import ReceivedOrdersScreen from './TabScreens/ReceivedOrdersScreen';
 import AcceptedOrdersScreen from './TabScreens/AcceptedOrdersScreen';
+import CompletedOrdersScreen from './TabScreens/CompletedOrdersScreen';
 import styles from './styles.ts';
 import { COLORS, FONTFAMILY } from '../../constants/colors.ts';
 import CustomSwitch from '../../components/CustomSwitch/index.tsx';
 import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/DraggableSlider/index.tsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { OrderStatus } from '../../types/order/order.ts';
 
-type OrderStatus = 'received' | 'accepted';
+
 
 const OrdersScreen: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<OrderStatus>('received');
+  const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
   const [refreshing, setRefreshing] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const tabRefs = useRef<{ [key: string]: View | null }>({});
+  const tabPositions = useRef<{ [key: string]: number }>({});
+  const screenWidth = Dimensions.get('window').width;
+
+  // Static order counts for badges - matching static data in tab screens
+  const getOrderCount = (tabType: OrderStatus): number => {
+    const counts: { [key in OrderStatus]: number } = {
+      received: 2,
+      accepted: 2,
+      readyForPickUp: 2,
+      completed: 2,
+    };
+    return counts[tabType] || 0;
+  };
 
   // Sample orders data - in real app, this would come from API
-  const receivedOrders: ReceivedOrderCardProps[] = [
-    {
-      orderId: '1234567',
-      location: 'Tambaram, chennai',
-      orderType: 'standard',
-      customerName: 'Srivathsan',
-      time: '12:40 PM',
-      serviceQuantity: '15 X',
-      serviceType: 'Iron',
-      customerNote:
-        'This is a sample note once the the app goes live the original note will appear here',
-      totalBill: '450.64',
-      timer: '00:04:59',
-      onAccept: () => console.log('Accept order 1'),
-      onViewDetails: () => console.log('View details 1'),
-      onViewBill: () => console.log('View bill 1'),
-    },
-    {
-      orderId: '1234568',
-      location: 'Tambaram, chennai',
-      orderType: 'express',
-      customerName: 'Srivathsan',
-      orderNumber: 7,
-      time: '12:40 PM',
-      serviceWeight: 'Medium 4Kg - 6kg',
-      serviceType: 'Wash',
-      customerNote:
-        'This is a sample note once the the app goes live the original note will appear here',
-      timer: '00:04:59',
-      onAccept: () => console.log('Accept order 2'),
-      onViewDetails: () => console.log('View details 2'),
-      onViewBill: () => console.log('View bill 2'),
-    },
-  ];
-
-  const acceptedOrders: ReceivedOrderCardProps[] = [
-    {
-      orderId: '1234569',
-      location: 'Tambaram, chennai',
-      orderType: 'standard',
-      customerName: 'John Doe',
-      time: '11:30 AM',
-      serviceQuantity: '10 X',
-      serviceType: 'Iron',
-      customerNote: 'Please handle with care',
-      totalBill: '350.00',
-      timer: '00:02:30',
-      onAccept: () => console.log('Accept order 3'),
-      onViewDetails: () => console.log('View details 3'),
-      onViewBill: () => console.log('View bill 3'),
-    },
-  ];
+  // These are optional and will be overridden by static data in tab screens if not provided
+  const receivedOrders: ReceivedOrderCardProps[] = [];
+  const acceptedOrders: ReceivedOrderCardProps[] = [];
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -76,6 +44,52 @@ const OrdersScreen: React.FC = () => {
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
+  };
+
+  const handleTabPress = (tab: OrderStatus) => {
+    setActiveTab(tab);
+
+    // Scroll to center after a small delay to ensure the tab is rendered
+    setTimeout(() => {
+      const tabPosition = tabPositions.current[tab];
+      if (tabPosition !== undefined && scrollViewRef.current) {
+        const scrollPosition = tabPosition - (screenWidth / 2);
+        scrollViewRef.current.scrollTo({
+          x: Math.max(0, scrollPosition),
+          animated: true,
+        });
+      } else {
+        // Fallback: try using measureLayout
+        const tabRef = tabRefs.current[tab];
+        if (tabRef && scrollViewRef.current) {
+          tabRef.measureLayout(
+            scrollViewRef.current as any,
+            (x, y, width, height) => {
+              const scrollPosition = x - (screenWidth / 2) + (width / 2);
+              scrollViewRef.current?.scrollTo({
+                x: Math.max(0, scrollPosition),
+                animated: true,
+              });
+            },
+            () => {
+              // Fallback: try using measure instead
+              tabRef.measure((fx, fy, width, height, px, py) => {
+                const scrollPosition = px - (screenWidth / 2) + (width / 2);
+                scrollViewRef.current?.scrollTo({
+                  x: Math.max(0, scrollPosition),
+                  animated: true,
+                });
+              });
+            }
+          );
+        }
+      }
+    }, 100);
+  };
+
+  const handleTabLayout = (tab: OrderStatus) => (event: any) => {
+    const { x, width } = event.nativeEvent.layout;
+    tabPositions.current[tab] = x + width / 2;
   };
 
   return (
@@ -138,60 +152,148 @@ const OrdersScreen: React.FC = () => {
       </View>
 
       {/* Tab Navigation */}
-      <View style={styles.tabContainer}>
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => setActiveTab('received')}
-          activeOpacity={0.7}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.tabContainer}
+        style={{ backgroundColor: '#FFFFFF', maxHeight: 50, overflow: 'hidden' }}
+        nestedScrollEnabled={true}
+      >
+        <View
+          ref={(ref) => { tabRefs.current['received'] = ref; }}
+          onLayout={handleTabLayout(OrderStatus.RECEIVED)}
         >
-          <CustomText
-            style={[
-              styles.tabText,
-              activeTab === 'received' && styles.tabTextActive,
-            ]}
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => handleTabPress(OrderStatus.RECEIVED)}
+            activeOpacity={0.7}
           >
-            Received Orders
-          </CustomText>
-          {activeTab === 'received' && <View style={styles.tabUnderline} />}
-          <View style={styles.badge}>
-            <CustomText style={styles.badgeText}>
-              {receivedOrders.length.toString().padStart(2, '0')}
+            <CustomText
+              style={[
+                styles.tabText,
+                activeTab === OrderStatus.RECEIVED && styles.tabTextActive,
+              ]}
+            >
+              Received Orders
             </CustomText>
-          </View>
-        </TouchableOpacity>
+            {activeTab === OrderStatus.RECEIVED && <View style={styles.tabUnderline} />}
+            <View style={styles.badge}>
+              <CustomText style={styles.badgeText}>
+                {getOrderCount(OrderStatus.RECEIVED).toString().padStart(2, '0')}
+              </CustomText>
+            </View>
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={styles.tab}
-          onPress={() => setActiveTab('accepted')}
-          activeOpacity={0.7}
+        <View
+          ref={(ref) => { tabRefs.current['accepted'] = ref; }}
+          onLayout={handleTabLayout(OrderStatus.ACCEPTED)}
         >
-          <CustomText
-            style={[
-              styles.tabText,
-              activeTab === 'accepted' && styles.tabTextActive,
-            ]}
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => handleTabPress(OrderStatus.ACCEPTED)}
+            activeOpacity={0.7}
           >
-            Accepted Orders
-          </CustomText>
-          {activeTab === 'accepted' && <View style={styles.tabUnderline} />}
-          <View style={styles.badge}>
-            <CustomText style={styles.badgeText}>
-              {acceptedOrders.length.toString().padStart(2, '0')}
+            <CustomText
+              style={[
+                styles.tabText,
+                activeTab === OrderStatus.ACCEPTED && styles.tabTextActive,
+              ]}
+            >
+              Accepted Orders
             </CustomText>
-          </View>
-        </TouchableOpacity>
-      </View>
+            {activeTab === OrderStatus.ACCEPTED && <View style={styles.tabUnderline} />}
+            <View style={styles.badge}>
+              <CustomText style={styles.badgeText}>
+                {getOrderCount(OrderStatus.ACCEPTED).toString().padStart(2, '0')}
+              </CustomText>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          ref={(ref) => { tabRefs.current[OrderStatus.READY_FOR_PICK_UP] = ref; }}
+          onLayout={handleTabLayout(OrderStatus.READY_FOR_PICK_UP)}
+        >
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => handleTabPress(OrderStatus.READY_FOR_PICK_UP)}
+            activeOpacity={0.7}
+          >
+            <CustomText
+              style={[
+                styles.tabText,
+                activeTab === OrderStatus.READY_FOR_PICK_UP && styles.tabTextActive,
+              ]}
+            >
+              Ready For Pick Up
+            </CustomText>
+            {activeTab === OrderStatus.READY_FOR_PICK_UP && <View style={styles.tabUnderline} />}
+            <View style={styles.badge}>
+              <CustomText style={styles.badgeText}>
+                {getOrderCount(OrderStatus.READY_FOR_PICK_UP).toString().padStart(2, '0')}
+              </CustomText>
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        <View
+          ref={(ref) => { tabRefs.current[OrderStatus.COMPLETED] = ref; }}
+          onLayout={handleTabLayout(OrderStatus.COMPLETED)}
+        >
+          <TouchableOpacity
+            style={styles.tab}
+            onPress={() => handleTabPress(OrderStatus.COMPLETED)}
+            activeOpacity={0.7}
+          >
+            <CustomText
+              style={[
+                styles.tabText,
+                activeTab === OrderStatus.COMPLETED && styles.tabTextActive,
+              ]}
+            >
+              Completed Orders
+            </CustomText>
+            {activeTab === OrderStatus.COMPLETED && <View style={styles.tabUnderline} />}
+            <View style={styles.badge}>
+              <CustomText style={styles.badgeText}>
+                {getOrderCount(OrderStatus.COMPLETED).toString().padStart(2, '0')}
+              </CustomText>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {/* Tab Content */}
-      {activeTab === 'received' ? (
+      {activeTab === OrderStatus.RECEIVED && (
         <ReceivedOrdersScreen
+          tabType={activeTab}
           orders={receivedOrders}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
-      ) : (
+      )}
+      {activeTab === OrderStatus.ACCEPTED && (
         <AcceptedOrdersScreen
+          tabType={activeTab}
           orders={acceptedOrders}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+        />
+      )}
+      {activeTab === OrderStatus.READY_FOR_PICK_UP && (
+        <AcceptedOrdersScreen
+          tabType={activeTab}
+          orders={acceptedOrders}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
+        />
+      )}
+      {activeTab === OrderStatus.COMPLETED && (
+        <CompletedOrdersScreen
+          tabType={activeTab}
+          orders={[]}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />

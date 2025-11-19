@@ -320,7 +320,7 @@ export class socketService<Events extends Record<string, any> = any> {
       if (this.options.autoSuspendOnBackground) {
         if (prev === 'active' && next === 'background') {
           this.log('App backgrounded → disconnecting socket');
-          this.disconnect(false);
+         // this.disconnect(false);
         } else if (prev === 'background' && next === 'active') {
           // Only reconnect if autoConnect is enabled or we've connected before
           if (this.options.autoConnect || this.hasEverConnected) {

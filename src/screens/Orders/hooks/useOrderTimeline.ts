@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Order, OrderUpdateLog, OrderStatus, getOrderStatusMessage } from '../../../../types/order/order';
 import SvgRiderAcceptedIcon from '../../../assets/auto-generated-svg-icons/RiderAcceptedIcon';
-import SvgOtpIconCopy from '../../../assets/assets/auto-generated-svg-icons/OtpIconCopy';
+import SvgOtpIconCopy from '../../../assets/auto-generated-svg-icons/OtpIconCopy';
 
 
 export interface TimelineEvent {

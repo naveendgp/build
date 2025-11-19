@@ -25,6 +25,7 @@ import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
 import CategoryListScreen from '../screens/Services/CategoryList';
 import ServiceDetailScreen from '../screens/Services/ServiceDetail';
+import { Service } from '../apiService/types/profileTypes';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -41,8 +42,8 @@ export type RootStackParamList = {
   ShopStatus: undefined;
   Wallet: undefined;
   Services: undefined;
-  CategoryListScreen: { service: any };
-  ServiceDetail: { service: any };
+  CategoryListScreen: { service: any; category?: string };
+  ServiceDetail: { service: Service };
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
   OrderDetails: { order: any } | undefined;

@@ -25,6 +25,7 @@ import Animated, {
 import ReactNativeHapticFeedback from 'react-native-haptic-feedback';
 import { COLORS } from '../../constants';
 import styles from './style';
+import SvgDoubleArrowRight from '../../assets/auto-generated-svg-icons/DoubleArrowRight';
 
 // 📏 Constants
 const { width: screenWidth } = Dimensions.get('window');
@@ -213,7 +214,7 @@ const DraggableSlider = forwardRef<BasicDraggableSliderHandle, BasicDraggableSli
                 accessibilityLabel={text}
                 accessibilityState={{ disabled }}>
                 <Animated.View style={[styles.thumb, animatedThumbStyle]}>
-                  <Text style={styles.arrow}>{">>"}</Text>
+                  <SvgDoubleArrowRight style={styles.arrow}/>
                 </Animated.View>
               </Animated.View>
             </GestureDetector>
