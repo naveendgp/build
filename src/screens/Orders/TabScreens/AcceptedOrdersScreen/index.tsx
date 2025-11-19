@@ -166,6 +166,7 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
     <ReceivedOrderCard
       key={`${item.orderId}-${index}`}
       {...item}
+      index={index + 1}
       tabType={tabType}
     />
   );

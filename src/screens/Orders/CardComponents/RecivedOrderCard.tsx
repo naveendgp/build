@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import CustomText from '../../../components/Text';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
@@ -31,6 +31,7 @@ export interface ReceivedOrderCardProps {
   onAccept?: () => void;
   onViewDetails?: () => void;
   onViewBill?: () => void;
+  index?: number;
 }
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
@@ -50,6 +51,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   onViewDetails,
   onViewBill,
   tabType,
+  index
 }) => {
   const isExpress = orderType === 'express';
   const CONTAINER_WIDTH = 235;
@@ -65,16 +67,14 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   };
 
   return (
-    <View style={{ marginBottom: 16 }}>
+    <View >
       <View
         style={{
           backgroundColor: COLORS.BUTTON_BACKGROUND,
           borderRadius: 12,
           borderWidth: 1,
           borderColor: COLORS.BORDER_INPUT,
-          padding: 10,
           marginBottom: 8,
-
           flexDirection: 'row',
           justifyContent: 'center',
           alignItems: 'center',
@@ -86,10 +86,13 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             fontSize: 16,
             fontWeight: '400',
             color: COLORS.INPUT_TEXT,
+            paddingHorizontal: 11,
+            paddingVertical: 10,
+            lineHeight: 16 * (120 / 100),
             fontFamily: FONTFAMILY.INTER_REGULAR,
           }}
         >
-          #{orderId}
+          #{index}
         </CustomText>
       </View>
 
@@ -158,7 +161,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.serviceTypeText}>
               {serviceType}
             </CustomText>
-            <SvgChevronRight width={16} height={16} />
+            <SvgChevronRight />
 
           </TouchableOpacity>
         </View>
@@ -201,14 +204,17 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             >
               <SvgBillIcon />
 
-              <CustomText style={styles.billMain}>
-                Total Bill {totalBill ? `₹${totalBill}` : '-'}
-              </CustomText>
+              <View>
+                <CustomText style={styles.billMain}>
+                  Total Bill {totalBill ? `₹${totalBill}` : '-'}
+                </CustomText>
+                <CustomText style={styles.billSub}>
+                  Incl. All taxes & Charges
+                </CustomText>
+              </View>
             </View>
 
-            <CustomText style={styles.billSub}>
-              Incl. All taxes & Charges
-            </CustomText>
+
           </View>
           <SvgChevronRightBlack />
         </TouchableOpacity>
@@ -228,7 +234,6 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
               justifyContent: 'center', alignItems: 'center',
               paddingHorizontal: 12, paddingVertical: 6,
               borderRadius: 12,
-              width: 87
             }}>
               <CustomText style={styles.timerText}>{timer}</CustomText>
             </View>
@@ -294,6 +299,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
+    lineHeight: 18 * (120 / 100),
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
 
@@ -301,16 +307,19 @@ const styles = StyleSheet.create({
   location: {
     marginLeft: 4,
     fontSize: 12,
+    width: (Dimensions.get('window').width) - 180,
     color: COLORS.TEXT_GRAY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
+    lineHeight: 12 * (130 / 100),
     fontWeight: '400',
-    
+
   },
 
   orderTypeText: {
     fontSize: 18,
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
+    lineHeight: 18 * (120 / 100),
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
 
@@ -322,6 +331,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
+    lineHeight: 14 * (120 / 100),
     fontFamily: FONTFAMILY.INTER_REGULAR,
     flex: 1,
   },
@@ -329,6 +339,8 @@ const styles = StyleSheet.create({
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
+    lineHeight: 14 * (120 / 100),
+    fontSize: 14,
   },
 
   tagRow: { flexDirection: 'row', alignItems: 'center' },
@@ -351,8 +363,7 @@ const styles = StyleSheet.create({
   servicePill: {
     flexDirection: 'row',
     alignItems: 'center',
-
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     paddingVertical: 6,
   },
   serviceTypeText: {
@@ -360,7 +371,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     fontFamily: FONTFAMILY.INTER_MEDIUM,
-    marginRight: 4,
   },
 
   noteSection: { marginBottom: 12 },
@@ -374,7 +384,7 @@ const styles = StyleSheet.create({
   noteText: {
     fontSize: 14,
     color: COLORS.NOTE_TEXT,
-    lineHeight: 18,
+    lineHeight: 14 * (142 / 100),
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },
@@ -403,7 +413,7 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 10, justifyContent: 'space-between' },
+  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, justifyContent: 'space-between' },
 
   arrowBtn: {
     width: 46,

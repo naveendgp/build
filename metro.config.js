@@ -59,7 +59,7 @@ const config = {
 module.exports = mergeConfig(defaultConfig, config);
 
 // auto genrate svg icon command
-//npx @svgr/cli --native "*.svg" --out-dir ../../assets/auto-generated-svg-icons
+//npx @svgr/cli --native "*.svg" --out-dir ../../auto-generated-svg-icons
 
 //DebugBuild
 //npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res

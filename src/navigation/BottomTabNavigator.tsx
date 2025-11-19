@@ -4,6 +4,10 @@ import { View, Text } from 'react-native';
 import HomeScreen from '../screens/Home';
 import OrdersScreen from '../screens/Orders';
 import ProfileScreen from '../screens/Profile';
+import SvgSelectedOrderIcon from '../assets/auto-generated-svg-icons/SelectedOrdersIcon';
+import SvgUnselectedOrderIcon from '../assets/auto-generated-svg-icons/UnselectedOrdersIcon';
+import SvgSelectedProfileIcon from '../assets/auto-generated-svg-icons/SelectedProfileIcon';
+import SvgUnselectedProfileIcon from '../assets/auto-generated-svg-icons/UnselectedProfileIcon';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -17,19 +21,23 @@ const Tab = createBottomTabNavigator<BottomTabParamList>();
 const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
   const getIcon = () => {
     switch (name) {
-      
+
       case 'Orders':
-        return focused ? '📋' : '📄';
+        return focused
+          ? <SvgSelectedOrderIcon />
+          : <SvgUnselectedOrderIcon />;
       case 'Profile':
-        return focused ? '👤' : '👥';
+        return focused
+          ? <SvgSelectedProfileIcon />
+          : <SvgUnselectedProfileIcon />;
       default:
-        return '•';
+        return <Text style={{ fontSize: 24 }}>•</Text>;
     }
   };
 
   return (
     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 24, marginBottom: 4 }}>{getIcon()}</Text>
+      {getIcon()}
     </View>
   );
 };
@@ -66,7 +74,7 @@ const BottomTabNavigator = () => {
         },
       })}
     >
-     
+
       <Tab.Screen
         name="Orders"
         component={OrdersScreen}

@@ -157,7 +157,7 @@ const OrdersScreen: React.FC = () => {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.tabContainer}
-        style={{ backgroundColor: '#FFFFFF', maxHeight: 50, overflow: 'hidden' }}
+        style={{ maxHeight: 40, overflow: 'hidden' }}
         nestedScrollEnabled={true}
       >
         <View
