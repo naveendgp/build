@@ -27,7 +27,7 @@ const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
         flex: 1,
         paddingTop: insets.top, // Need to adjust this based Gradient Bg req
         paddingBottom: insets.bottom,
-        backgroundColor: "#74C38D",
+        backgroundColor: "#ffffff",
       }}
     >
       {children}
@@ -73,7 +73,7 @@ const App = () => {
         <SafeAreaView style={styles.container}>
           <ScreenWrapper>
             <GestureHandlerRootView style={styles.container}>
-              <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+              <StatusBar barStyle={'dark-content'} />
               <AppNavigator />
               <CustomToast />
             </GestureHandlerRootView>
