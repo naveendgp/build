@@ -8,7 +8,8 @@ export const COLORS = {
   // Primary Colors
   PRIMARY: '#000000',
   SECONDARY: '#FFFFFF',
-
+  OFFER_BACKGROUND: '#ECF0FE',
+  OFFER_BORDER: '#ADC3FE',
   // Basic Colors
   BLACK: '#000000',
   WHITE: '#FFFFFF',
@@ -33,7 +34,7 @@ export const COLORS = {
   LOGIN_SUBTITLE: '#404040',
   NEUTRAL_WHITE: '#BABABA',
   LOCATION_TEXT: '#0F1112',
-STEP_INDICATOR_ACTIVE: '#04F604',
+  STEP_INDICATOR_ACTIVE: '#04F604',
   // Theme Colors
   THEME_GREEN: '#038203',
   LIGHT_GREEN: '#C8E6C9',

@@ -28,13 +28,11 @@ export const useLogin = () => {
         showSuccessToast(data?.message || 'OTP sent successfully');
         navigation.navigate('OTPVerification', {
           mobile: variables.phone,
-          isRegister: false,
         });
       } else {
         showErrorToast(data?.message || 'Failed to send OTP');
-         navigation.navigate('OTPVerification', {
+        navigation.navigate('OTPVerification', {
           mobile: variables.phone,
-          isRegister: false,
         });
       }
     },

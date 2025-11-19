@@ -2,6 +2,19 @@ import { StyleSheet } from 'react-native';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
 
 export default StyleSheet.create({
+    confirmButton: {
+        backgroundColor: COLORS.ONBOARDING_BUTTON,
+        width: '100%',
+        borderRadius: 16,
+        alignItems: "center",
+        paddingVertical: 15,
+        marginVertical: 12
+    }, continueText: {
+        color: COLORS.BUTTON_BACKGROUND,
+        fontSize: 16,
+        fontFamily: FONTFAMILY.INTER_MEDIUM,
+        fontWeight: '500',
+    },
     container: {
         flex: 1,
         backgroundColor: COLORS.WHITE,
@@ -20,12 +33,11 @@ export default StyleSheet.create({
         marginVertical: 24,
     },
     toggleCard: {
-        backgroundColor: COLORS.EXPRESS_BACKGROUND,
+        backgroundColor: COLORS.CARD_BACKGROUND,
         borderRadius: 16,
-        padding: 16,
+
         marginBottom: 16,
-        borderWidth: 1,
-        borderColor: COLORS.EXPRESS_BORDER,
+
     },
     offerCard: {
         backgroundColor: '#E3F2FD',
@@ -35,7 +47,14 @@ export default StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+
+        backgroundColor: COLORS.EXPRESS_BACKGROUND,
+        padding: 8,
+        paddingHorizontal: 16,
+        borderTopEndRadius: 16,
+        borderTopStartRadius: 16,
+        borderColor: COLORS.EXPRESS_BORDER,
+        borderWidth: 1
     },
     toggleCardTitle: {
         fontSize: 16,
@@ -44,26 +63,39 @@ export default StyleSheet.create({
         fontWeight: '600',
     },
     subOptionsContainer: {
-        marginTop: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderWidth: 1,
+        borderColor: COLORS.BORDER_INPUT,
+        borderBottomEndRadius: 16,
+        borderBottomStartRadius: 16,
+        borderTopWidth: 0,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.BORDER_INPUT,
+        flexDirection: 'row',
+        alignItems: 'center',
+        position: 'relative',
+        backgroundColor: COLORS.CARD_BACKGROUND,
+    },
+    subOptionsContent: {
+        flex: 1,
         gap: 12,
     },
     subOptionRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 8,
     },
     subOptionLeft: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 12,
+        gap: 8,
         flex: 1,
     },
     subOptionText: {
         fontSize: 14,
-        fontFamily: FONTFAMILY.INTER_REGULAR,
+        fontFamily: FONTFAMILY.INTER_MEDIUM,
         color: COLORS.INPUT_TEXT,
-        fontWeight: '400',
+        fontWeight: '500',
     },
     lightningIcon: {
         fontSize: 20,
@@ -71,7 +103,10 @@ export default StyleSheet.create({
     editButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 4,
+        marginLeft: 16,
+        alignSelf: 'center',
     },
     editText: {
         fontSize: 14,
@@ -83,11 +118,11 @@ export default StyleSheet.create({
         marginBottom: 24,
     },
     inputLabel: {
-        fontSize: 16,
+        fontSize: 14,
         fontFamily: FONTFAMILY.INTER_MEDIUM,
         color: COLORS.INPUT_TEXT,
         fontWeight: '500',
-        marginBottom: 12,
+        marginBottom: 8,
     },
     inputContainer: {
         borderWidth: 1,
@@ -95,17 +130,17 @@ export default StyleSheet.create({
         borderRadius: 16,
         backgroundColor: COLORS.CARD_BACKGROUND,
         paddingHorizontal: 16,
-        paddingVertical: 14,
-        marginBottom: 8,
+        marginBottom: 6,
+        paddingVertical: 10,
     },
     input: {
         fontSize: 16,
-        fontFamily: FONTFAMILY.INTER_REGULAR,
+        fontFamily: FONTFAMILY.INTER_MEDIUM,
         color: COLORS.BLACK,
-        fontWeight: '400',
+        fontWeight: '500',
     },
     inputNote: {
-        fontSize: 12,
+        fontSize: 14,
         fontFamily: FONTFAMILY.INTER_REGULAR,
         color: COLORS.NOTE_TEXT,
         fontWeight: '400',
@@ -115,18 +150,18 @@ export default StyleSheet.create({
         marginBottom: 24,
     },
     categoryTitle: {
-        fontSize: 18,
+        fontSize: 24,
         fontFamily: FONTFAMILY.INTER_SEMIBOLD,
         color: COLORS.BLACK,
-        fontWeight: '600',
-        marginBottom: 8,
+        fontWeight: '700',
+        marginBottom: 16,
     },
     categorySubtitle: {
         fontSize: 14,
         fontFamily: FONTFAMILY.INTER_REGULAR,
         color: COLORS.LOGIN_SUBTITLE,
         fontWeight: '400',
-        marginBottom: 16,
+        marginTop: 6
     },
     categoryList: {
         gap: 12,
@@ -135,7 +170,7 @@ export default StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        paddingVertical: 16,
+        paddingVertical: 8,
         paddingHorizontal: 16,
         backgroundColor: COLORS.CARD_BACKGROUND,
         borderRadius: 16,

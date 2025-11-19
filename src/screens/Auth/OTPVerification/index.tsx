@@ -9,7 +9,7 @@ import { useOtpInput } from './hooks/useOtpInput';
 import { useOtpVerification } from './hooks/useOtpVerification';
 import { useOtpResend } from './hooks/useOtpResend';
 import BackgroundGradient from '../../../components/backgroundGradient';
-  import { COLORS } from '../../../constants/colors';
+import { COLORS } from '../../../constants/colors';
 import SvgTimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
 import SvgOTPVerificationIcon from '../../../assets/auto-generated-svg-icons/OtpIcon';
 
@@ -19,7 +19,7 @@ const OTPVerificationScreen: React.FC = () => {
 
   const { digits, otp, handleChange, handleKeyPress, inputsRef } =
     useOtpInput(4);
-  const mutation = useOtpVerification(mobile, isRegister);
+  const mutation = useOtpVerification(mobile);
   const { timer, isResendEnabled, handleResend, isResending } = useOtpResend(mobile);
 
   const handleVerifyOtp = () => {
