@@ -16,6 +16,7 @@ import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/Chevr
 
 export interface ReceivedOrderCardProps {
   orderId: string;
+  index?: number;
   tabType?: OrderStatus;
   location: string;
   orderType: 'standard' | 'express';
@@ -35,6 +36,7 @@ export interface ReceivedOrderCardProps {
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   orderId,
+  index,
   location,
   orderType,
   customerName,
@@ -89,7 +91,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             fontFamily: FONTFAMILY.INTER_REGULAR,
           }}
         >
-          #{orderId}
+          #{index !== undefined ? index + 1 : orderId}
         </CustomText>
       </View>
 
@@ -97,7 +99,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Order Header */}
         <View style={styles.header}>
           <View>
-            <CustomText style={styles.orderId}>#{orderId}</CustomText>
+            <CustomText style={styles.orderId}>#{index !== undefined ? index + 1 : orderId}</CustomText>
             <View style={styles.locationContainer}>
 
               <SvgLocationLine />
@@ -304,7 +306,7 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_GRAY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
-    
+
   },
 
   orderTypeText: {

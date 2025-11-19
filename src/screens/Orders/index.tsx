@@ -1,7 +1,6 @@
-import React, { useRef, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import CustomText from '../../components/Text';
-import { ReceivedOrderCardProps } from './CardComponents/RecivedOrderCard';
 import ReceivedOrdersScreen from './TabScreens/ReceivedOrdersScreen';
 import AcceptedOrdersScreen from './TabScreens/AcceptedOrdersScreen';
 import CompletedOrdersScreen from './TabScreens/CompletedOrdersScreen';
@@ -11,43 +10,58 @@ import CustomSwitch from '../../components/CustomSwitch/index.tsx';
 import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/DraggableSlider/index.tsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OrderStatus } from '../../types/order/order.ts';
-
-
+import { useOrdersQuery } from './hooks/useOrders';
 
 const OrdersScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
-  const [refreshing, setRefreshing] = useState(false);
+  const [enabledTabs, setEnabledTabs] = useState<Record<OrderStatus, boolean>>({
+    [OrderStatus.RECEIVED]: true,
+    [OrderStatus.ACCEPTED]: false,
+    [OrderStatus.READY_FOR_PICK_UP]: false,
+    [OrderStatus.COMPLETED]: false,
+  });
   const scrollViewRef = useRef<ScrollView>(null);
   const tabRefs = useRef<{ [key: string]: View | null }>({});
   const tabPositions = useRef<{ [key: string]: number }>({});
   const screenWidth = Dimensions.get('window').width;
 
-  // Static order counts for badges - matching static data in tab screens
+  const receivedQuery = useOrdersQuery(OrderStatus.RECEIVED, enabledTabs[OrderStatus.RECEIVED]);
+  const acceptedQuery = useOrdersQuery(OrderStatus.ACCEPTED, enabledTabs[OrderStatus.ACCEPTED]);
+  const readyQuery = useOrdersQuery(
+    OrderStatus.READY_FOR_PICK_UP,
+    enabledTabs[OrderStatus.READY_FOR_PICK_UP],
+  );
+  const completedQuery = useOrdersQuery(OrderStatus.COMPLETED, enabledTabs[OrderStatus.COMPLETED]);
+
+  const queryMap = useMemo(
+    () => ({
+      [OrderStatus.RECEIVED]: receivedQuery,
+      [OrderStatus.ACCEPTED]: acceptedQuery,
+      [OrderStatus.READY_FOR_PICK_UP]: readyQuery,
+      [OrderStatus.COMPLETED]: completedQuery,
+    }),
+    [receivedQuery, acceptedQuery, readyQuery, completedQuery],
+  );
+
   const getOrderCount = (tabType: OrderStatus): number => {
-    const counts: { [key in OrderStatus]: number } = {
-      received: 2,
-      accepted: 2,
-      readyForPickUp: 2,
-      completed: 2,
-    };
-    return counts[tabType] || 0;
+    const query = queryMap[tabType];
+    return query?.data?.length ?? 0;
   };
 
-  // Sample orders data - in real app, this would come from API
-  // These are optional and will be overridden by static data in tab screens if not provided
-  const receivedOrders: ReceivedOrderCardProps[] = [];
-  const acceptedOrders: ReceivedOrderCardProps[] = [];
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+  const enableTab = (tab: OrderStatus) => {
+    setEnabledTabs(prev =>
+      prev[tab]
+        ? prev
+        : {
+          ...prev,
+          [tab]: true,
+        },
+    );
   };
 
   const handleTabPress = (tab: OrderStatus) => {
     setActiveTab(tab);
+    enableTab(tab);
 
     // Scroll to center after a small delay to ensure the tab is rendered
     setTimeout(() => {
@@ -269,33 +283,37 @@ const OrdersScreen: React.FC = () => {
       {activeTab === OrderStatus.RECEIVED && (
         <ReceivedOrdersScreen
           tabType={activeTab}
-          orders={receivedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
+          orders={receivedQuery.data}
+          onRefresh={receivedQuery.refetch}
+          refreshing={receivedQuery.isFetching}
+          loading={receivedQuery.isLoading}
         />
       )}
       {activeTab === OrderStatus.ACCEPTED && (
         <AcceptedOrdersScreen
           tabType={activeTab}
-          orders={acceptedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
+          orders={acceptedQuery.data}
+          onRefresh={acceptedQuery.refetch}
+          refreshing={acceptedQuery.isFetching}
+          loading={acceptedQuery.isLoading}
         />
       )}
       {activeTab === OrderStatus.READY_FOR_PICK_UP && (
         <AcceptedOrdersScreen
           tabType={activeTab}
-          orders={acceptedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
+          orders={readyQuery.data}
+          onRefresh={readyQuery.refetch}
+          refreshing={readyQuery.isFetching}
+          loading={readyQuery.isLoading}
         />
       )}
       {activeTab === OrderStatus.COMPLETED && (
         <CompletedOrdersScreen
           tabType={activeTab}
-          orders={[]}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
+          orders={completedQuery.data}
+          onRefresh={completedQuery.refetch}
+          refreshing={completedQuery.isFetching}
+          loading={completedQuery.isLoading}
         />
       )}
     </View>
