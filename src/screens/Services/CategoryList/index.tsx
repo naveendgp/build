@@ -8,8 +8,6 @@ import {
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import CustomText from '../../../components/Text';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
@@ -20,13 +18,10 @@ import { RootStackParamList } from '../../../navigation/AppNavigator';
 import {
     Service,
     ServiceItem,
-    UpdateServiceInput,
-    UpdateServicesResponse,
 } from '../../../apiService/types/profileTypes';
-import { ErrorResponse } from '../../../apiService/types/authTypes';
-import { updateServicesOffered } from '../../../apiService/api/profileApi';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import ServiceItemCard from '../Components';
+import { useServiceDataStore } from '../../../apiService/store/useServiceDataStore';
 import styles from './style';
 
 type CategoryListNavProp = NativeStackNavigationProp<
@@ -39,7 +34,7 @@ const CategoryListScreen: React.FC = () => {
     const navigation = useNavigation<CategoryListNavProp>();
     const route = useRoute<CategoryListRouteProp>();
     const { service, category } = route.params;
-    const queryClient = useQueryClient();
+    const { setUpdatedService } = useServiceDataStore();
 
     // Get items for the selected category
     const categoryItems = category
@@ -61,35 +56,7 @@ const CategoryListScreen: React.FC = () => {
         setEditableItems(items);
     }, [categoryItems]);
 
-    // React Query mutation for updating services
-    const updateServicesMutation = useMutation<
-        UpdateServicesResponse,
-        AxiosError<ErrorResponse>,
-        UpdateServiceInput
-    >({
-        mutationFn: updateServicesOffered,
-        onSuccess: (response: UpdateServicesResponse) => {
-            queryClient.invalidateQueries({ queryKey: ['profile'] });
-            Alert.alert(
-                'Success',
-                response.message || 'Service updated successfully!',
-                [
-                    {
-                        text: 'OK',
-                        onPress: () => navigation.goBack(),
-                    },
-                ],
-            );
-        },
-        onError: (error: AxiosError<ErrorResponse>) => {
-            console.error('Error updating service:', error);
-            const errorMessage =
-                error.response?.data?.message ||
-                error.message ||
-                'Failed to update service. Please try again.';
-            Alert.alert('Error', errorMessage);
-        },
-    });
+    // No API call here - just save and go back with updated data
 
     const updateItemField = (
         itemKey: string,
@@ -134,46 +101,91 @@ const CategoryListScreen: React.FC = () => {
         );
     };
 
-    const convertToApiFormat = (): UpdateServiceInput => {
-        const changedItems = Object.values(editableItems).filter(item => {
-            const originalItem = service?.items?.find(
-                (orig: ServiceItem) => orig.item_name === item.item_name,
-            );
-            if (!originalItem) return true;
 
-            return (
-                originalItem.item_price !== item.item_price ||
-                originalItem.express_price !== item.express_price ||
-                originalItem.discount_percentage !== item.discount_percentage ||
-                originalItem.is_active !== item.is_active
-            );
-        });
-
-        const apiInput: UpdateServiceInput = {
-            service: {
-                service_name: service?.service_name || '',
-                max_count_per_day: service?.max_count_per_day || 0,
-                items: changedItems.map(item => ({
-                    item_name: item.item_name,
-                    item_price: item.item_price,
-                    item_category: item.category,
-                    express_price: item.express_price,
-                    discount_percentage: item.discount_percentage,
-                    is_active: item.is_active,
-                })),
-            },
-        };
-        return apiInput;
-    };
-
-    const handleSubmit = async () => {
+    const handleSubmit = () => {
         if (!hasChanges) {
             Alert.alert('No Changes', 'No changes have been made to save.');
             return;
         }
 
-        const apiInput = convertToApiFormat();
-        updateServicesMutation.mutate(apiInput);
+        // Get all items from service (from items array or items_by_category)
+        const allServiceItems: ServiceItem[] = [];
+        if (service?.items && service.items.length > 0) {
+            allServiceItems.push(...service.items);
+        } else if (service?.items_by_category) {
+            // Flatten items_by_category into a single array
+            Object.values(service.items_by_category).forEach(categoryItems => {
+                if (Array.isArray(categoryItems)) {
+                    allServiceItems.push(...(categoryItems as ServiceItem[]));
+                }
+            });
+        }
+
+        // Get updated items from this category
+        const updatedItems = Object.values(editableItems);
+
+        // Merge: update existing items or add new ones
+        const finalItems = allServiceItems.map((item: ServiceItem) => {
+            // If this item belongs to the current category, use updated version
+            if (item.category === category) {
+                const updatedItem = updatedItems.find(
+                    (updated) => updated.item_name === item.item_name && updated.category === item.category,
+                );
+                return updatedItem || item;
+            }
+            // Otherwise, keep the original item
+            return item;
+        });
+
+        // Add any new items from updatedItems that don't exist in allServiceItems
+        updatedItems.forEach(updatedItem => {
+            const exists = finalItems.find(
+                item => item.item_name === updatedItem.item_name && item.category === updatedItem.category
+            );
+            if (!exists) {
+                finalItems.push(updatedItem);
+            }
+        });
+
+        const selectedCount = finalItems.filter((item: ServiceItem) => item.is_active).length;
+
+        console.log('💾 Saving data from CategoryList:', {
+            category,
+            serviceName: service?.service_name,
+            totalItems: finalItems.length,
+            selectedItems: selectedCount,
+            updatedItems: updatedItems.map(item => ({
+                name: item.item_name,
+                category: item.category,
+                is_active: item.is_active,
+                item_price: item.item_price,
+                express_price: item.express_price,
+            })),
+            finalItems: finalItems.map(item => ({
+                name: item.item_name,
+                category: item.category,
+                is_active: item.is_active,
+                item_price: item.item_price,
+                express_price: item.express_price,
+            })),
+        });
+
+        // Prepare updated service data to pass back
+        const updatedService = {
+            ...service,
+            items: finalItems,
+            // Also update items_by_category to keep it in sync
+            items_by_category: {
+                ...(service?.items_by_category || {}),
+                ...(category ? { [category]: updatedItems } : {}),
+            },
+        };
+
+        // Store updated service data temporarily
+        setUpdatedService(updatedService);
+
+        // Go back to ServiceDetail screen
+        navigation.goBack();
     };
 
     const selectedItemsCount = Object.values(editableItems).filter(
@@ -219,9 +231,9 @@ const CategoryListScreen: React.FC = () => {
 
             <View style={styles.submitContainer}>
                 <CustomBtn
-                    title={updateServicesMutation.isPending ? 'Saving...' : 'Save'}
+                    title="Save"
                     onPress={handleSubmit}
-                    disabled={updateServicesMutation.isPending || !hasChanges}
+                    disabled={!hasChanges}
                     style={styles.confirmButton}
                     textStyle={styles.continueText}
                 />

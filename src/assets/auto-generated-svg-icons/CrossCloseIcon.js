@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { Path } from 'react-native-svg';
-const SvgLogoutIcon = props => (
+const SvgCrossCloseIcon = props => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
     width={24}
@@ -9,11 +9,11 @@ const SvgLogoutIcon = props => (
     {...props}
   >
     <Path
-      stroke="#BB1F15"
+      stroke="#FCFCFC"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77.04"
+      d="M18 6 6 18M6 6l12 12"
     />
   </Svg>
 );
-export default SvgLogoutIcon;
+export default SvgCrossCloseIcon;

@@ -1,9 +1,14 @@
 import React, { useMemo } from 'react';
 import { View, RefreshControl, SectionList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../../../navigation/AppNavigator';
 import CompletedOrderCard, { CompletedOrderCardProps } from '../../CardComponents/CompletedOrderCard';
 import CustomText from '../../../../components/Text';
 import styles from './style';
 import { OrderStatus } from '../../../../types/order/order';
+
+type CompletedOrdersNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface CompletedOrdersScreenProps {
   tabType: OrderStatus;
@@ -23,6 +28,8 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
   onRefresh,
   refreshing = false,
 }) => {
+  const navigation = useNavigation<CompletedOrdersNavProp>();
+
   // Static data for completed orders with timeline
   const staticData: CompletedOrderCardProps[] = [
     {
@@ -46,36 +53,100 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
         },
       ],
       totalPrice: '500.00',
-      onViewDetails: () => console.log('View details 1'),
+      onViewDetails: () => {
+        navigation.navigate('OrderDetails', {
+          order: {
+            orderId: '1234567',
+            location: 'Tambaram, chennai',
+            orderType: 'express',
+            serviceType: 'Iron',
+            serviceQuantity: '1',
+            timeline: [
+              {
+                status: 'Order Received',
+                date: '12th Oct',
+                time: '4:24 AM',
+                isCompleted: true,
+              },
+              {
+                status: 'Order Picked up',
+                date: '12th Oct',
+                time: '4:24 PM',
+                isCompleted: true,
+              },
+            ],
+            itemTotal: '200',
+            gst: '36',
+            gstPercentage: '18',
+            grandTotal: '236',
+            customerName: 'Srivathsan',
+          },
+        });
+      },
     },
     {
       orderId: '1234567',
       location: 'Tambaram, chennai',
       orderType: 'standard',
-      serviceQuantity: '1',
+      serviceQuantity: '15',
       serviceType: 'Iron',
       timeline: [
         {
           status: 'Order Received',
-          date: '12th Oct',
-          time: '4:24 AM',
+          date: '14th Oct',
+          time: '4:24 PM',
           isCompleted: true,
         },
         {
           status: 'Order Picked up',
           date: '12th Oct',
-          time: '4:24 PM',
+          time: '4:24 AM',
           isCompleted: true,
         },
         {
-          status: 'Reached customer',
-          date: '12th Oct',
+          status: 'Out for delivery',
+          date: '14th Oct',
           time: '4:24 PM',
-          isCompleted: true,
+          isActive: true,
         },
       ],
-      totalPrice: '500.00',
-      onViewDetails: () => console.log('View details 2'),
+      totalPrice: '236.00',
+      onViewDetails: () => {
+        navigation.navigate('OrderDetails', {
+          order: {
+            orderId: '1234567',
+            location: 'Tambaram, chennai',
+            orderType: 'standard',
+            serviceType: 'Iron',
+            serviceQuantity: '15',
+            timeline: [
+              {
+                status: 'Order Received',
+                date: '14th Oct',
+                time: '4:24 PM',
+                isCompleted: true,
+              },
+              {
+                status: 'Order Picked up',
+                date: '12th Oct',
+                time: '4:24 AM',
+                isCompleted: true,
+              },
+              {
+                status: 'Out for delivery',
+                date: '14th Oct',
+                time: '4:24 PM',
+                isActive: true,
+              },
+            ],
+            itemTotal: '200',
+            gst: '36',
+            gstPercentage: '18',
+            grandTotal: '236',
+            customerName: 'Srivathsan',
+          },
+        });
+      },
     },
   ];
 
@@ -107,9 +178,36 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
     return sections.filter(section => section.data.length > 0);
   }, [displayOrders]);
 
-  const renderOrderItem = ({ item }: { item: CompletedOrderCardProps }) => (
-    <CompletedOrderCard {...item} />
-  );
+  const renderOrderItem = ({ item }: { item: CompletedOrderCardProps }) => {
+    const handleViewDetails = () => {
+      if (item.onViewDetails) {
+        item.onViewDetails();
+      } else {
+        // Default navigation if no handler provided
+        navigation.navigate('OrderDetails', {
+          order: {
+            orderId: item.orderId,
+            location: item.location,
+            orderType: item.orderType,
+            serviceType: item.serviceType,
+            serviceQuantity: item.serviceQuantity,
+            serviceWeight: item.serviceWeight,
+            timeline: item.timeline.map(t => ({
+              ...t,
+              isActive: !t.isCompleted && t === item.timeline[item.timeline.length - 1],
+            })),
+            itemTotal: parseFloat(item.totalPrice || '0').toString(),
+            gst: '36',
+            gstPercentage: '18',
+            grandTotal: item.totalPrice || '0',
+            customerName: 'Customer',
+          },
+        });
+      }
+    };
+
+    return <CompletedOrderCard {...item} onViewDetails={handleViewDetails} />;
+  };
 
   const renderSectionHeader = ({ section }: { section: SectionData }) => (
     <View style={styles.sectionHeader}>
