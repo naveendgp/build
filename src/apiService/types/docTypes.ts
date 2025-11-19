@@ -18,8 +18,7 @@ export interface ShopDocumentUploadPayload {
     ifsc_code: string;
     bank_name: string;
     aadhaar_number: string; 
-    branch: string;
-  }
+   }
 
   export interface ShopDocumentUploadResponse {
     message: string;

@@ -3,7 +3,7 @@ import { COLORS, FONTFAMILY } from "../../constants";
 
 export default StyleSheet.create({
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
@@ -23,6 +23,7 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
+    height:40
   },
   inputRowDisabled: {
     opacity: 0.6,

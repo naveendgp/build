@@ -52,8 +52,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 56,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
-    elevation: 1,
+    
+   
   },
   iconButton: {
     padding: 8,

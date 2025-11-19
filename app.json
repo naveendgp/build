@@ -1,4 +1,5 @@
 {
   "name": "LaundryVendorApp",
-  "displayName": "LaundryVendorApp"
+  "displayName": "LaundryVendorApp",
+  "package": "com.otter.laundryvendorapp"
 }

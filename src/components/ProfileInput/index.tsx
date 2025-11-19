@@ -15,6 +15,7 @@ interface ProfileInputProps extends TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
   isEditable?: boolean;
+  isWhiteBG?: boolean;
 }
 
 const ProfileInput: React.FC<ProfileInputProps> = ({
@@ -27,7 +28,9 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
   onChangeText,
   placeholder,
   isEditable = true,
+  isWhiteBG = false,
   ...rest
+  
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
   const [mobileValue, setMobileValue] = useState("");
@@ -107,7 +110,7 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
           {required && <CustomText style={styles.asterisk}>*</CustomText>}
         </CustomText>
       )}
-      <View style={[styles.inputRow, !isEditable && styles.inputRowDisabled]}>
+      <View style={[styles.inputRow, isWhiteBG && {backgroundColor: COLORS.BUTTON_BACKGROUND}, !isEditable && styles.inputRowDisabled]}>
         <TextInput
           style={styles.input}
           value={displayValue}

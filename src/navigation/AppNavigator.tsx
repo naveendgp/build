@@ -11,24 +11,27 @@ import OTPVerificationScreen from '../screens/Auth/OTPVerification';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FilePickerScreen from '../utils/FilePicker';
 import VendorVerificationScreen from '../screens/VendorVerification';
+import ReviewDetailsScreen from '../screens/VendorVerification/ReviewDetails';
 import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
+import ProfileLocation from '../screens/VendorVerification/map/ProfileLocation';
 import { LoginUserStatus } from '../constants/tripStatus';
 import BottomTabNavigator from './BottomTabNavigator';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
-import ServicesPricingScreen from '../screens/Profile/ServicesPricingScreen';
 import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
 import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
-import ShopListScreen from '../screens/ShopList';
+import CategoryListScreen from '../screens/Services/CategoryList';
+import ServiceDetailScreen from '../screens/Services/ServiceDetail';
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
-  VendorVerification: undefined;
+  VendorVerification: { step?: number } | undefined;
+  ReviewDetails: undefined;
   MainTabs: undefined;
   Orders: undefined;
   Profile: undefined;
@@ -38,13 +41,15 @@ export type RootStackParamList = {
   ShopStatus: undefined;
   Wallet: undefined;
   Services: undefined;
-  ShopList: { service: any };
+  CategoryListScreen: { service: any };
+  ServiceDetail: { service: any };
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
   OrderDetails: { order: any } | undefined;
   UserProfile: undefined;
   FilePicker: undefined;
   MapScreen: undefined;
+  ProfileLocation: { onSelect?: (data: { address: string; latitude: number; longitude: number }) => void } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -55,8 +60,8 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
 
   // Determine initial route based on login status and document state
   const getInitialRoute = () => {
-    if (isLoggedIn) {
-      return 'MainTabs';
+    if (!isLoggedIn) {
+      return 'Login';
     }
 
     // If logged in, check document state
@@ -106,6 +111,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={VendorVerificationScreen}
           />
           <Stack.Screen
+            options={{ headerShown: false }}
+            name="ReviewDetails"
+            component={ReviewDetailsScreen}
+          />
+          <Stack.Screen
             name="FilePicker"
             component={FilePickerScreen}
             options={{ title: 'Pick a File' }}
@@ -113,6 +123,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
           <Stack.Screen
             name="MapScreen"
             component={MapScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ProfileLocation"
+            component={ProfileLocation}
             options={{ headerShown: false }}
           />
 
@@ -127,11 +142,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={BusinessSettingsScreen}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            name="ServicesPricing"
-            component={ServicesPricingScreen}
-            options={{ headerShown: false }}
-          />
+
           <Stack.Screen
             name="ShopStatus"
             component={ShopStatusScreen}
@@ -148,8 +159,13 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="ShopList"
-            component={ShopListScreen}
+            name="CategoryListScreen"
+            component={CategoryListScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ServiceDetail"
+            component={ServiceDetailScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

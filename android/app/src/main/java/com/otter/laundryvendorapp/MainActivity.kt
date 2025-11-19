@@ -1,4 +1,4 @@
-package com.laundryvendorapp
+package com.otter.laundryvendorapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,53 +1,105 @@
 import { StyleSheet } from 'react-native';
 import shared from '../../styles/shared';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export default {
   ...shared,
   ...StyleSheet.create({
     connectorCompleted: {
-      backgroundColor: '#34C759',
+      backgroundColor: '#026602',
+      width: 2,
     },
     stepIndicatorRow: {
       flexDirection: 'row',
       justifyContent: 'space-around',
       alignItems: 'center',
       marginBottom: 16,
-      marginHorizontal: 20,
+     
     },
     stepIndicator: {
-      width: 20,
-      height: 20,
-      borderRadius: 15,
+      width: 24,
+      height: 24,
+      borderRadius: 12,
       borderWidth: 1,
       borderColor: '#ccc',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: '#fff',
+      backgroundColor: COLORS.BORDER_INPUT,
     },
     stepIndicatorActive: {
-      borderColor: '#000000',
-      backgroundColor: '#E8F1FF',
-      width: 30,
-      height: 30,
+      borderColor: COLORS.STEP_INDICATOR_ACTIVE,
+      backgroundColor: COLORS.ICON_GREEN,
+      width: 24,
+      height: 24,
       borderRadius: 20,
     },
     stepIndicatorCompleted: {
-      borderColor: '#0000004d',
-      backgroundColor: '#0000004d',
+        borderColor: COLORS.STEP_INDICATOR_ACTIVE,
+      backgroundColor: COLORS.ICON_GREEN,
+      width: 24,
+      height: 24,
+      borderRadius: 20,
     },
-    stepIndicatorText: { fontFamily: 'Poppins-Bold' },
+    stepIndicatorText: { fontFamily: FONTFAMILY.INTER_SEMIBOLD, 
+      fontSize: 18, fontWeight: '700', color: COLORS.BLACK },
     dot: {
-      width: 12,
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: '#000',
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      backgroundColor: COLORS.INPUT_TEXT,
+    },
+    activeDot: {
+      backgroundColor: COLORS.THEME_GREEN,
     },
     connector: {
       height: 2,
       flex: 1,
-      backgroundColor: '#E0E0E0',
+      backgroundColor: '#BABABA',
       alignSelf: 'center',
       marginHorizontal: 8,
+    },
+    buttonRow: {
+      flexDirection: 'row',
+      gap: 12,
+      marginTop: 20,
+      marginBottom: 20,
+    },
+    previousButton: {
+      flex: 1,
+      backgroundColor: COLORS.CARD_BACKGROUND,
+      borderRadius: 16,
+      paddingVertical: 15,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: COLORS.GREEN,
+    },
+    previousButtonText: {
+      color: '#666666',
+      fontSize: 16,
+      fontFamily: 'Poppins-Medium',
+      fontWeight: '500',
+    },
+    nextButton: {
+      flex: 1,
+      backgroundColor: '#038203',
+      borderRadius: 16,
+      paddingVertical: 15,
+      alignItems: 'center',
+    },
+    nextButtonFullWidth: {
+      width: '100%',
+    },
+    nextButtonText: {
+      color: '#FFFFFF',
+      fontSize: 16,
+      fontFamily: 'Poppins-Medium',
+      fontWeight: '500',
+    },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
   }),
 };
