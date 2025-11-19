@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { Path } from 'react-native-svg';
-const SvgOtpIcon = props => (
+const SvgChevronRightBlack = props => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
     width={24}
@@ -9,11 +9,11 @@ const SvgOtpIcon = props => (
     {...props}
   >
     <Path
-      stroke="#292929"
+      stroke="#1D1D1D"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M17 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2M12 18h.01"
+      d="m9 18 6-6-6-6"
     />
   </Svg>
 );
-export default SvgOtpIcon;
+export default SvgChevronRightBlack;

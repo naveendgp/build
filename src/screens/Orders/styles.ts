@@ -24,7 +24,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 15,
+
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E5E5',
@@ -128,5 +128,5 @@ export default StyleSheet.create({
     fontWeight: 'bold',
     color: '#1B2A4A',
   },
- 
+
 });
