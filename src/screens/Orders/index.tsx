@@ -101,11 +101,11 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders
+            Ready To Accept Orders
           </CustomText>
 
-          
-          <CustomSwitch value={true} onValueChange={() => {}} />
+
+          <CustomSwitch value={true} onValueChange={() => { }} />
         </View>
 
         <View
@@ -130,7 +130,7 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders
+            Ready To Accept Express Orders
           </CustomText>
           <CustomSwitch value={true} onValueChange={() => { }} />
         </View>

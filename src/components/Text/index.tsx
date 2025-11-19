@@ -1,15 +1,16 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { Text, TextProps } from 'react-native';
+import { FONTFAMILY } from '../../constants/fonts';
 
 interface CustomTextProps extends TextProps {
-  fontWeight?: 'Regular' | 'Medium' | 'SemiBold' | 'Bold';
+  fontFamily?: string;
 }
 
 const CustomText: React.FC<CustomTextProps> = (props) => {
-  const { fontWeight = 'Regular', style, ...rest } = props;
+  const { fontFamily, style, ...rest } = props;
 
   const fontStyle = {
-    fontFamily: `Poppins-${fontWeight}`,
+    fontFamily: fontFamily || FONTFAMILY.INTER_REGULAR,
   };
 
   return <Text allowFontScaling={false} style={[fontStyle, style]} {...rest} />;
