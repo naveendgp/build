@@ -1,4 +1,4 @@
-package com.laundryvendorapp
+package com.otter.laundryvendorapp
 
 import android.app.Application
 import com.facebook.react.PackageList
