@@ -55,7 +55,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
 
   // Determine initial route based on login status and document state
   const getInitialRoute = () => {
-    if (!isLoggedIn) {
+    if (isLoggedIn) {
       return 'MainTabs';
     }
 
