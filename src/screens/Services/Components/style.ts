@@ -35,6 +35,10 @@ export default StyleSheet.create({
         backgroundColor: COLORS.THEME_GREEN,
         borderColor: COLORS.THEME_GREEN,
     },
+    checkboxDisabled: {
+        opacity: 0.5,
+        backgroundColor: COLORS.LIGHT_GRAY_3,
+    },
     itemName: {
         fontSize: 16,
         fontFamily: FONTFAMILY.INTER_MEDIUM,

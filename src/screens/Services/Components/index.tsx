@@ -19,6 +19,11 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
 }) => {
     const isSelected = editableItem.is_active;
 
+    // Check if both prices are entered
+    const hasStandardPrice = editableItem.item_price && editableItem.item_price > 0;
+    const hasExpressPrice = editableItem.express_price && editableItem.express_price > 0;
+    const isCheckboxEnabled = hasStandardPrice && hasExpressPrice;
+
     return (
         <View style={styles.itemCard}>
             <View style={styles.itemRow}>
@@ -26,15 +31,20 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
                     <TouchableOpacity
                         style={[
                             styles.checkbox,
-                            isSelected && styles.checkboxSelected,
+                            isSelected ? styles.checkboxSelected : null,
+                            !isCheckboxEnabled ? styles.checkboxDisabled : null,
                         ]}
                         onPress={() => {
-                            onUpdateField('is_active', !isSelected);
+                            if (isCheckboxEnabled) {
+                                onUpdateField('is_active', !isSelected);
+                            }
                         }}
+                        disabled={!isCheckboxEnabled}
+                        activeOpacity={isCheckboxEnabled ? 0.7 : 1}
                     >
-                        {isSelected && (
+                        {isSelected ? (
                             <CheckIcon width={16} height={16} color={COLORS.WHITE} />
-                        )}
+                        ) : null}
                     </TouchableOpacity>
                     <CustomText style={styles.itemName}>
                         {item.item_name}
@@ -51,7 +61,8 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
                             style={styles.priceInput}
                             value={editableItem.item_price?.toString() || ''}
                             onChangeText={text => {
-                                onUpdateField('item_price', parseInt(text) || 0);
+                                const price = parseInt(text) || 0;
+                                onUpdateField('item_price', price);
                             }}
                             keyboardType="number-pad"
                             placeholder="0"
@@ -67,7 +78,8 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
                             style={styles.priceInput}
                             value={editableItem.express_price?.toString() || ''}
                             onChangeText={text => {
-                                onUpdateField('express_price', parseInt(text) || 0);
+                                const price = parseInt(text) || 0;
+                                onUpdateField('express_price', price);
                             }}
                             keyboardType="number-pad"
                             placeholder="0"

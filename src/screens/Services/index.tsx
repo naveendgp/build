@@ -34,7 +34,7 @@ const ServicesScreen: React.FC = () => {
   );
 
   const renderServiceItem = (item: Service) => {
-    const isSelected = selectedServices.includes(item.service_name);
+    const isSelected = item.is_active;
 
     return (
       <TouchableOpacity

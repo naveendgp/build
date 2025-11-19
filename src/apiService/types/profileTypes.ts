@@ -45,6 +45,14 @@ export interface Service {
   service_description: string;
   items: ServiceItem[];
   items_by_category: ItemsByCategory;
+
+  offer_percentage: number;
+  offer_max_cap: number;
+  express_time: number;
+  standard_time: number;
+  is_express_available: boolean;
+  is_offer: boolean;
+  is_active: boolean;
 }
 
 export interface ServiceItem {
@@ -106,8 +114,16 @@ export interface UpdateServiceItem {
 
 export interface UpdateServiceInput {
   service: {
+    service_id: string;
     service_name: string;
     max_count_per_day: number;
+    is_express: boolean;
+    is_offer: boolean;
+    offer_max_cap: number;
+    offer_percentage: number;
+    express_time: number;
+    standard_time: number;
+
     items: UpdateServiceItem[];
   };
 }
