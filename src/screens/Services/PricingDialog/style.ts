@@ -70,6 +70,7 @@ export default StyleSheet.create({
         fontWeight: '500',
         color: COLORS.LOGIN_SUBTITLE,
         padding: 0,
+        flex: 1,
     },
     currencySymbol: {
         fontSize: 16,
@@ -84,7 +85,6 @@ export default StyleSheet.create({
         fontWeight: '500',
         color: COLORS.LOGIN_SUBTITLE,
         marginLeft: 8,
-        alignSelf: 'flex-start',
     },
     note: {
         fontSize: 14,

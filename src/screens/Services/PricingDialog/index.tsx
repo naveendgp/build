@@ -19,13 +19,13 @@ interface PricingDialogProps {
 }
 
 export interface OfferData {
-    offerPercentage: string;
-    maxCap: string;
+    offerPercentage: number;
+    maxCap: number;
 }
 
 export interface ServiceTimeData {
-    standardTime: string;
-    expressTime: string;
+    standardTime: number;
+    expressTime: number;
 }
 
 const PricingDialog: React.FC<PricingDialogProps> = ({
@@ -37,16 +37,16 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
     initialData,
 }) => {
     const [offerPercentage, setOfferPercentage] = useState(
-        (initialData as OfferData)?.offerPercentage || '50',
+        (initialData as OfferData)?.offerPercentage || 0,
     );
     const [maxCap, setMaxCap] = useState(
-        (initialData as OfferData)?.maxCap || '100',
+        (initialData as OfferData)?.maxCap || 0,
     );
     const [standardTime, setStandardTime] = useState(
-        (initialData as ServiceTimeData)?.standardTime || '48 Hours',
+        (initialData as ServiceTimeData)?.standardTime || 0,
     );
     const [expressTime, setExpressTime] = useState(
-        (initialData as ServiceTimeData)?.expressTime || '8 Hours',
+        (initialData as ServiceTimeData)?.expressTime || 0,
     );
 
     const handleConfirm = () => {
@@ -96,13 +96,15 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
 
                                         <TextInput
                                             style={styles.input}
-                                            value={offerPercentage}
-                                            onChangeText={setOfferPercentage}
+                                            value={offerPercentage.toString() + " %"}
+                                            onChangeText={(text) => {
+                                                const num = text ? parseInt(text, 10) : 0;
+                                                setOfferPercentage(isNaN(num) ? 0 : num);
+                                            }}
                                             keyboardType="number-pad"
-                                            placeholder="50"
+                                            placeholder={offerPercentage.toString()}
                                             placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                         />
-                                        <CustomText style={styles.percentageSymbol}>%</CustomText>
 
                                     </View>
                                     <CustomText style={styles.note}>
@@ -117,10 +119,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
                                         <CustomText style={styles.currencySymbol}>₹</CustomText>
                                         <TextInput
                                             style={styles.input}
-                                            value={maxCap}
-                                            onChangeText={setMaxCap}
+                                            value={maxCap.toString()}
+                                            onChangeText={(text) => {
+                                                const num = text ? parseInt(text, 10) : 0;
+                                                setMaxCap(isNaN(num) ? 0 : num);
+                                            }}
                                             keyboardType="number-pad"
-                                            placeholder="100"
+                                            placeholder={maxCap.toString()}
                                             placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                         />
                                     </View>
@@ -144,9 +149,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
 
                                         <TextInput
                                             style={styles.input}
-                                            value={standardTime}
-                                            onChangeText={setStandardTime}
-                                            placeholder="48 Hours"
+                                            value={standardTime.toString()}
+                                            onChangeText={(text) => {
+                                                const num = text ? parseInt(text, 10) : 0;
+                                                setStandardTime(isNaN(num) ? 0 : num);
+                                            }}
+                                            keyboardType="number-pad"
+                                            placeholder={standardTime.toString()}
                                             placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                         />
                                     </View>
@@ -170,9 +179,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
 
                                         <TextInput
                                             style={styles.input}
-                                            value={expressTime}
-                                            onChangeText={setExpressTime}
-                                            placeholder="8 Hours"
+                                            value={expressTime.toString()}
+                                            onChangeText={(text) => {
+                                                const num = text ? parseInt(text, 10) : 0;
+                                                setExpressTime(isNaN(num) ? 0 : num);
+                                            }}
+                                            keyboardType="number-pad"
+                                            placeholder={expressTime.toString()}
                                             placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                         />
                                     </View>
