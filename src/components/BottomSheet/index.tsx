@@ -22,6 +22,7 @@ import {
 } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import CustomIcon from '../Icon';
+import SvgCrossCloseIcon from '../../assets/auto-generated-svg-icons/CrossCloseIcon';
 
 
 const { height: screenHeight } = Dimensions.get('window');
@@ -205,7 +206,7 @@ const CustomBottomSheet: React.FC<BottomSheetProps> = ({
             onPress={handleHeaderPress}
             activeOpacity={0.8}
           >
-            <CustomIcon type="Feather" name="x" size={22} color="#fff" />
+            <SvgCrossCloseIcon/>
           </TouchableOpacity>
 
           <SafeAreaView edges={['top', 'bottom']} style={sheetStyle}>

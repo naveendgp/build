@@ -25,6 +25,7 @@ import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
 import CategoryListScreen from '../screens/Services/CategoryList';
 import ServiceDetailScreen from '../screens/Services/ServiceDetail';
+import OrderDetailsScreen from '../screens/Orders/OrderDetails';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -166,6 +167,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
           <Stack.Screen
             name="ServiceDetail"
             component={ServiceDetailScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="OrderDetails"
+            component={OrderDetailsScreen}
             options={{ headerShown: false }}
           />
         </Stack.Navigator>

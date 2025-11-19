@@ -6,7 +6,7 @@ import { useDialogStore } from '../store/useDialogStore';
 
 const api = axios.create({
   // baseURL: 'http://13.204.157.24:3000',
-  baseURL: 'http://192.168.0.144:3000',
+  baseURL: 'http://192.168.0.127:3000',
   timeout: 10000,
 });
 
