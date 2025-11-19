@@ -29,6 +29,12 @@ export interface VendorProfile {
   shop_license_number: string;
   shop_name: string;
   app_version: AppVersion;
+  documents: Documents;
+  shop_image_url: string;
+}
+export interface Documents {
+  aadhaar_card: string;
+  pan_card: string;
 }
 
 export interface ShopStatus {
@@ -155,6 +161,7 @@ export interface BankDetails {
   ifsc_code: string;
   bank_name: string;
   branch: string;
+  cancelled_cheque: string
 }
 
 // Bank Details API Types

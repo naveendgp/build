@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import ProfileInput from '../../../components/ProfileInput';
@@ -28,6 +28,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   const [timeType, setTimeType] = useState<'start' | 'end'>('start');
   const [showRepeatSheet, setShowRepeatSheet] = useState(false);
+  const DEFAULT_REPEAT_DISPLAY = 'Mon, Tue, Wed, Thu, Fri';
 
   // Days of the week
   const daysOfWeek = [
@@ -171,35 +172,86 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
   };
 
   const handleSaveRepeatDays = () => {
-    // Format selected days as "Mon, Tue, Wed, Thu And Fri"
     const selectedDayLabels = selectedDays
       .map(dayKey => {
         const day = daysOfWeek.find(d => d.key === dayKey);
         return day?.short || '';
       })
-      .filter(Boolean);
+      .filter(Boolean)
+      .sort((a, b) => {
+        const indexA = daysOfWeek.findIndex(day => day.short === a);
+        const indexB = daysOfWeek.findIndex(day => day.short === b);
+        return indexA - indexB;
+      });
 
-    let formattedDays = '';
-    if (selectedDayLabels.length > 0) {
-      if (selectedDayLabels.length === 1) {
-        formattedDays = selectedDayLabels[0];
-      } else if (selectedDayLabels.length === 2) {
-        formattedDays = `${selectedDayLabels[0]} And ${selectedDayLabels[1]}`;
-      } else {
-        const lastDay = selectedDayLabels[selectedDayLabels.length - 1];
-        const otherDays = selectedDayLabels.slice(0, -1);
-        formattedDays = `${otherDays.join(', ')} And ${lastDay}`;
-      }
-    }
+    const formattedDays =
+      selectedDayLabels.length > 0 ? selectedDayLabels.join(', ') : DEFAULT_REPEAT_DISPLAY;
 
     setShop({ ...shop, repeat_days: formattedDays });
     setShowRepeatSheet(false);
   };
 
   const formatRepeatDaysDisplay = (repeatDays: string): string => {
-    if (!repeatDays) return 'Mon, Tue, Wed, Thu And Fri';
+    if (!repeatDays) return DEFAULT_REPEAT_DISPLAY;
     return repeatDays;
   };
+
+  const formatTimeForDisplay = (timeString: string): string => {
+    if (!timeString) return '';
+    const trimmed = timeString.trim();
+    const periodMatch = trimmed.match(/(AM|PM)$/i);
+    let timePart = trimmed;
+    let periodInput = '';
+    if (periodMatch) {
+      periodInput = periodMatch[1].toUpperCase();
+      timePart = trimmed.replace(periodMatch[0], '').trim();
+    }
+    let [hoursStr, minutesStr = '00'] = timePart.split(':');
+    let hours = parseInt(hoursStr, 10);
+    let minutes = parseInt(minutesStr, 10) || 0;
+    if (isNaN(hours)) return trimmed;
+    if (periodInput) {
+      if (periodInput === 'PM' && hours < 12) hours += 12;
+      if (periodInput === 'AM' && hours === 12) hours = 0;
+    }
+    const isPM = hours >= 12;
+    const displayHour = hours % 12 || 12;
+    const displayPeriod = isPM ? 'PM' : 'AM';
+    return minutes === 0
+      ? `${displayHour} ${displayPeriod}`
+      : `${displayHour}:${minutes.toString().padStart(2, '0')} ${displayPeriod}`;
+  };
+
+  const getBusinessHoursDisplay = (businessHours?: string): string => {
+    if (!businessHours) return '';
+    const trimmed = businessHours.trim();
+    if (!trimmed) return '';
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (parsed && typeof parsed === 'object') {
+        const firstActiveDay =
+          daysOfWeek.find(day => parsed[day.key])?.key || Object.keys(parsed)[0];
+        if (firstActiveDay && parsed[firstActiveDay]) {
+          const { open, close } = parsed[firstActiveDay];
+          if (open && close) {
+            return `${formatTimeForDisplay(open)} - ${formatTimeForDisplay(close)}`;
+          }
+        }
+      }
+    } catch (error) {
+      // Not JSON, fall back to string parsing
+    }
+    const [startRaw, endRaw] = trimmed.split('-').map(part => part.trim());
+    if (startRaw && endRaw) {
+      return `${formatTimeForDisplay(startRaw)} - ${formatTimeForDisplay(endRaw)}`;
+    }
+    return trimmed;
+  };
+
+  const businessHoursDisplay = useMemo(
+    () => getBusinessHoursDisplay(shop.business_hours),
+    [shop.business_hours]
+  );
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
@@ -339,8 +391,8 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
             label="Business Hours"
             required
             inputType="normal"
-            value={shop.business_hours || ''}
-            placeholder="10:00 AM - 08:00 PM"
+            value={businessHoursDisplay || ''}
+            placeholder="9 AM - 6 PM"
             onChangeText={() => { }}
             containerStyle={{ marginBottom: 16, }}
             isEditable={false}
