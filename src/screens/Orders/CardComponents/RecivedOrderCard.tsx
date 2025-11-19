@@ -7,9 +7,16 @@ import DraggableSlider, { BasicDraggableSliderHandle } from '../../../components
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import TimeLineCard from './TimeLineCard';
 import SvgRiderAcceptedIcon from '../../../assets/auto-generated-svg-icons/RiderAcceptedIcon';
+import { OrderStatus } from '../../../types/order/order';
+import SvgLocationLine from '../../../assets/auto-generated-svg-icons/LocationLine';
+import SvgForwardRightBlackSvg from '../../../assets/auto-generated-svg-icons/ForwardRightBlackSvg';
+import SvgChevronRight from '../../../assets/auto-generated-svg-icons/ChevronRight';
+import SvgBillIcon from '../../../assets/auto-generated-svg-icons/BillIcon';
+import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ChevronRightBlack';
 
 export interface ReceivedOrderCardProps {
   orderId: string;
+  tabType?: OrderStatus;
   location: string;
   orderType: 'standard' | 'express';
   customerName: string;
@@ -42,6 +49,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   onAccept,
   onViewDetails,
   onViewBill,
+  tabType,
 }) => {
   const isExpress = orderType === 'express';
   const CONTAINER_WIDTH = 235;
@@ -49,6 +57,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
   const sliderRef = useRef<BasicDraggableSliderHandle>(null);
 
+  console.log('tabType', tabType);
 
   const handleComplete = () => {
     console.log('handleComplete');
@@ -90,7 +99,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
           <View>
             <CustomText style={styles.orderId}>#{orderId}</CustomText>
             <View style={styles.locationContainer}>
-              <Icon name="location-on" size={13} color="#7B869A" />
+
+              <SvgLocationLine />
               <CustomText style={styles.location}>{location}</CustomText>
             </View>
           </View>
@@ -148,7 +158,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.serviceTypeText}>
               {serviceType}
             </CustomText>
-            <Icon name="chevron-right" size={18} color={COLORS.THEME_GREEN} />
+            <SvgChevronRight width={16} height={16} />
+
           </TouchableOpacity>
         </View>
 
@@ -188,7 +199,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <View
               style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
             >
-              <Icon name="receipt-long" size={22} color="#7B869A" />
+              <SvgBillIcon />
+
               <CustomText style={styles.billMain}>
                 Total Bill {totalBill ? `₹${totalBill}` : '-'}
               </CustomText>
@@ -198,43 +210,51 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
               Incl. All taxes & Charges
             </CustomText>
           </View>
-          <Icon name="chevron-right" size={22} color="#7B869A" />
+          <SvgChevronRightBlack />
         </TouchableOpacity>
 
         {/* Buttons */}
-        <View style={styles.actionRow}>
-          
+
+        {(tabType === OrderStatus.RECEIVED || tabType === OrderStatus.ACCEPTED) && (
+          <View style={styles.actionRow}>
+
             <GestureHandlerRootView >
               <DraggableSlider ref={sliderRef} onComplete={handleComplete} text="Accept Order" />
             </GestureHandlerRootView>
-         
 
-          <View style={{
-            backgroundColor: COLORS.LOGIN_SUBTITLE, height: 48,
-            justifyContent: 'center', alignItems: 'center',
-            paddingHorizontal: 12, paddingVertical: 6,
-            borderRadius: 12,
-            width:87
-          }}>
-            <CustomText style={styles.timerText}>{timer}</CustomText>
+
+            <View style={{
+              backgroundColor: COLORS.LOGIN_SUBTITLE, height: 48,
+              justifyContent: 'center', alignItems: 'center',
+              paddingHorizontal: 12, paddingVertical: 6,
+              borderRadius: 12,
+              width: 87
+            }}>
+              <CustomText style={styles.timerText}>{timer}</CustomText>
+            </View>
           </View>
-        </View>
+        )}
 
-        <TimeLineCard
-          key={'1'}
-          date={'Today'}
-          time={'12:00 PM'}
-          title={' Order Accepted'}
-          icon={SvgRiderAcceptedIcon}
-          iconType={'svg'}
-          note={'Note: order cannot be canceled after accepted by the shop'}
-          showCallButton={true}
-          onCallPress={() => {}}
-          otp={''}
-          showTimelineLine={true}
-          riderName={'John Doe'}
-          riderPhone={'+91 9876543210'}
-        />
+
+        {(tabType !== OrderStatus.RECEIVED) && (
+          <TimeLineCard
+            key={'1'}
+            date={'Today'}
+            time={'12:00 PM'}
+            title={' Order Accepted'}
+            icon={SvgRiderAcceptedIcon}
+            iconType={'svg'}
+            note={'Note: order cannot be canceled after accepted by the shop'}
+            showCallButton={true}
+            onCallPress={() => { }}
+            otp={''}
+            showTimelineLine={true}
+            riderName={'John Doe'}
+            riderPhone={'+91 9876543210'}
+          />
+        )}
+
+
       </View>
     </View>
   );
@@ -277,14 +297,14 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
 
-  locationContainer: { flexDirection: 'row', alignItems: 'center' },
+  locationContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
   location: {
     marginLeft: 4,
     fontSize: 12,
     color: COLORS.TEXT_GRAY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
-    marginTop: 4,
+    
   },
 
   orderTypeText: {
