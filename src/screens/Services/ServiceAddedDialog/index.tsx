@@ -52,8 +52,8 @@ const ServiceAddedDialog: React.FC<ServiceAddedDialogProps> = ({
 
                     {/* Body Text */}
                     <CustomText style={styles.bodyText}>
-                        Once you have approved you will be able to receive orders from customers. It may take up to{' '}
-                        <CustomText style={styles.boldText}>48 hours to verify your details.</CustomText>
+                        We’re reviewing your details. After approval, you’ll be able to update your service prices and receive customer orders. The process may take up to
+                        <CustomText style={styles.boldText}> 48 hours.</CustomText>
                     </CustomText>
 
 

@@ -199,7 +199,7 @@ const ServiceDetailScreen: React.FC = () => {
             // Show success dialog for 1 second
             setShowDialog(true);
             setTimeout(() => {
-                setShowDialog(false);
+                showSuccessToast('Service updated successfully');
                 navigation.goBack();
             }, 1000);
         },
@@ -451,10 +451,7 @@ const ServiceDetailScreen: React.FC = () => {
                 initialData={offerData}
             />
 
-            <ServiceAddedDialog
-                visible={showDialog}
-                onClose={() => setShowDialog(false)}
-            />
+
         </SafeAreaView>
     );
 };

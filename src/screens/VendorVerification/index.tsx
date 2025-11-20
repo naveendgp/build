@@ -21,6 +21,7 @@ import { useVendorVerificationStore } from '../../apiService/store/useVendorVeri
 import VendorDetailsStep from './ProfileDetails/VendorDetailsStep';
 import ShopDetailsStep from './ShopDetails/ShopDetailsStep';
 import BankDetailsStep from './BankDetails/BankDetailsStep';
+import ServicesStep from './ServicesStep';
 import ReviewDetailsScreen from './ReviewDetails';
 import { useVendorValidation } from './useVendorValidation';
 import Toolbar from '../../components/Toolbar';
@@ -47,12 +48,12 @@ const VendorVerificationScreen: React.FC = () => {
   const mobileNumber = useAuthStore(state => state.mobileNumber);
   const routeParams = route.params as { step?: number } | undefined;
   const initialStep = routeParams?.step || 1;
-  
+
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [step, setStep] = useState(initialStep);
-  
+
   // Store methods
-  const { vendor: storeVendor, shop: storeShop, bank: storeBank, setVendorData, setShopData, setBankData } = useVendorVerificationStore();
+  const { vendor: storeVendor, shop: storeShop, bank: storeBank, services: storeServices, setVendorData, setShopData, setBankData, setServicesData } = useVendorVerificationStore();
 
   // Load data from store when navigating to a step
   useEffect(() => {
@@ -62,8 +63,10 @@ const VendorVerificationScreen: React.FC = () => {
       setData(prev => ({ ...prev, shop: storeShop }));
     } else if (step === 3 && storeBank.account_holder_name) {
       setData(prev => ({ ...prev, bank: storeBank }));
+    } else if (step === 4 && storeServices.selectedServices.length > 0) {
+      setData(prev => ({ ...prev, services: storeServices }));
     }
-  }, [step, storeVendor, storeShop, storeBank]);
+  }, [step, storeVendor, storeShop, storeBank, storeServices]);
 
   // Set mobile number from auth store when available
   useEffect(() => {
@@ -115,11 +118,14 @@ const VendorVerificationScreen: React.FC = () => {
     bank: {
       account_number: '',
       account_holder_name: '',
-    
+
       ifsc_code: '',
       bank_name: '',
       upi_id: '',
       cancelled_cheque: null,
+    },
+    services: {
+      selectedServices: [] as string[],
     },
   });
 
@@ -150,22 +156,26 @@ const VendorVerificationScreen: React.FC = () => {
   });
 
   const handleNext = () => {
-   // if (validateStep(step, data)) {
-      // Save current step data to store before moving to next step
-      if (step === 1) {
-        setVendorData(data.vendor);
-        setStep(prev => prev + 1);
-        setCurrentStep(prev => prev + 1);
-      } else if (step === 2) {
-        setShopData(data.shop);
-        setStep(prev => prev + 1);
-        setCurrentStep(prev => prev + 1);
-      } else if (step === 3) {
-        setBankData(data.bank);
-        // Navigate to ReviewDetails screen after step 3
-        navigation.navigate('ReviewDetails');
-      }
-  //  }
+    // if (validateStep(step, data)) {
+    // Save current step data to store before moving to next step
+    if (step === 1) {
+      setVendorData(data.vendor);
+      setStep(prev => prev + 1);
+      setCurrentStep(prev => prev + 1);
+    } else if (step === 2) {
+      setShopData(data.shop);
+      setStep(prev => prev + 1);
+      setCurrentStep(prev => prev + 1);
+    } else if (step === 3) {
+      setBankData(data.bank);
+      setStep(prev => prev + 1);
+      setCurrentStep(prev => prev + 1);
+    } else if (step === 4) {
+      setServicesData(data.services);
+      // Navigate to ReviewDetails screen after step 4
+      navigation.navigate('ReviewDetails');
+    }
+    //  }
   };
 
   const handleBack = () => {
@@ -197,7 +207,7 @@ const VendorVerificationScreen: React.FC = () => {
       ifsc_code: data.bank.ifsc_code,
       bank_name: data.bank.bank_name,
       aadhaar_number: data.vendor.aadhaar_no,
-    
+
     };
 
     console.log('Submitting data:', payload);
@@ -217,59 +227,59 @@ const VendorVerificationScreen: React.FC = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
 
-      <View style={{paddingHorizontal:12,gap:24,marginTop:24}}>
-        
-     
-     <CustomText style={styles.stepIndicatorText}>{step === 1 ? "Profile Details" : step === 2 ? "Shop Details" : "Bank Details"}</CustomText>
-       <View style={styles.stepIndicatorRow}>
-              {[1, 2, 3].map((stepNum, idx, arr) => {
-                const completed = stepNum < currentStep;
-                const active = stepNum === currentStep;
-                return (
-                  <React.Fragment key={stepNum}>
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (completed || active) {
-                          setStep(stepNum);
-                          setCurrentStep(stepNum);
-                        }
-                      }}
-                      style={[
-                        styles.stepIndicator,
-                        active && styles.stepIndicatorActive,
-                        completed && styles.stepIndicatorCompleted,
-                      ]}
-                    >
-                      {  <View style={[styles.dot, (active || completed) && styles.activeDot]} />}
-                    </TouchableOpacity>
+        <View style={{ paddingHorizontal: 12, gap: 24, marginTop: 24 }}>
 
-                    {idx < arr.length - 1 && (
-                      <View
-                        style={[
-                          styles.connector,
-                          stepNum < currentStep && styles.connectorCompleted,
-                        ]}
-                      />
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </View>
-      </View>
-      
+
+          <CustomText style={styles.stepIndicatorText}>{step === 1 ? "Profile Details" : step === 2 ? "Shop Details" : step === 3 ? "Bank Details" : "Services"}</CustomText>
+          <View style={styles.stepIndicatorRow}>
+            {[1, 2, 3, 4].map((stepNum, idx, arr) => {
+              const completed = stepNum < currentStep;
+              const active = stepNum === currentStep;
+              return (
+                <React.Fragment key={stepNum}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      if (completed || active) {
+                        setStep(stepNum);
+                        setCurrentStep(stepNum);
+                      }
+                    }}
+                    style={[
+                      styles.stepIndicator,
+                      active && styles.stepIndicatorActive,
+                      completed && styles.stepIndicatorCompleted,
+                    ]}
+                  >
+                    {<View style={[styles.dot, (active || completed) && styles.activeDot]} />}
+                  </TouchableOpacity>
+
+                  {idx < arr.length - 1 && (
+                    <View
+                      style={[
+                        styles.connector,
+                        stepNum < currentStep && styles.connectorCompleted,
+                      ]}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </View>
+        </View>
+
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             ref={scrollRef}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={step === 4 ? { paddingBottom: 20 } : { padding: 20 }}
+            contentContainerStyle={step === 4 ? { paddingHorizontal: 12, paddingBottom: 20 } : { padding: 20 }}
           >
-          
+
 
             {step === 1 && (
               <VendorDetailsStep
                 vendor={data.vendor}
                 setVendor={val => setData(d => ({ ...d, vendor: val }))}
-                handleFocusScroll={() => {}}
+                handleFocusScroll={() => { }}
                 vendorAddressRef={vendorAddressRef}
                 isMobileFromOtp={!!mobileNumber}
               />
@@ -284,6 +294,14 @@ const VendorVerificationScreen: React.FC = () => {
               <BankDetailsStep
                 bank={data.bank}
                 setBank={val => setData(d => ({ ...d, bank: val }))}
+              />
+            )}
+            {step === 4 && (
+              <ServicesStep
+                selectedServices={data.services.selectedServices}
+                setSelectedServices={(val: string[]) => {
+                  setData(d => ({ ...d, services: { ...d.services, selectedServices: val } }));
+                }}
               />
             )}
 

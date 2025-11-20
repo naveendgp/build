@@ -177,3 +177,35 @@ export interface UpdateBankDetailsResponse {
   status: boolean;
   message: string;
 }
+
+// Toggle Service Active API Types
+export interface ToggleService {
+  service_id: string;
+  is_active: boolean;
+}
+
+export interface ToggleServiceActiveInput {
+  services: ToggleService[];
+}
+
+export interface ToggleServiceActiveResponse {
+  status: boolean;
+  message: string;
+}
+
+// List Services API Types
+export interface ListServiceItem {
+  _id: string;
+  service_name: string;
+  image_url: string;
+  pricing_type: string;
+  service_description: string;
+  service_slug?: string;
+  updatedAt: string;
+}
+
+export interface ListServicesResponse {
+  status: boolean;
+  message: string;
+  data: ListServiceItem[];
+}

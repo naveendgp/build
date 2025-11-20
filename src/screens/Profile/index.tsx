@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   ScrollView,
@@ -15,12 +15,6 @@ import { useProfileStore } from '../../apiService/store/useProfileStore';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
-import { useQuery } from '@tanstack/react-query';
-import { getProfile } from '../../apiService/api/profileApi';
-import { showErrorToast } from '../../utils/Toast';
-import { ProfileResponse } from '../../apiService/types/profileTypes';
-import { ErrorResponse } from '../../apiService/types/authTypes';
-import { AxiosError } from 'axios';
 import { COLORS, FONTFAMILY } from '../../constants/colors';
 import SvgProfileIcon from '../../assets/auto-generated-svg-icons/ProfileIcon';
 import SvgShopIcon from '../../assets/auto-generated-svg-icons/ShopIcon';
@@ -42,28 +36,7 @@ export type ProfileNavProp = NativeStackNavigationProp<
 const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileNavProp>();
   const { logout, token, documentState } = useAuthStore();
-  const { profile, setProfile, setLoading, setError } = useProfileStore();
-
-  // Fetch profile data
-  const { data, isLoading, error, refetch } = useQuery<
-    ProfileResponse,
-    AxiosError<ErrorResponse>
-  >({
-    queryKey: ['profile'],
-    queryFn: getProfile,
-  });
-
-  // Handle success and error
-  useEffect(() => {
-    if (data) {
-      setProfile(data.data);
-    }
-    if (error) {
-      const msg = error.response?.data?.message || error.message;
-      setError(msg);
-      showErrorToast(msg);
-    }
-  }, [data, error, setProfile, setError]);
+  const { profile, isLoading } = useProfileStore();
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -91,21 +64,21 @@ const ProfileScreen: React.FC = () => {
       title: 'Profile',
       icon: SvgProfileIcon,
       iconType: 'svg',
-      onPress: () => navigation.navigate('EditProfile'),
+      onPress: () => navigation.navigate('ProfileDetails'),
     },
     {
       id: '2',
       title: 'Shop Details',
       icon: SvgShopIcon,
       iconType: 'svg',
-      onPress: () => navigation.navigate('BusinessSettings'),
+      onPress: () => navigation.navigate('ShopDetails'),
     },
     {
       id: '3',
       title: 'Bank Details',
       icon: SvgBankIcon,
       iconType: 'svg',
-      onPress: () => console.log('Bank Details'),
+      onPress: () => navigation.navigate('BankDetails'),
     },
     {
       id: '4',
@@ -234,7 +207,7 @@ const ProfileScreen: React.FC = () => {
                   <View style={styles.optionLeft}>
                     <CustomIcon
                       type={option.iconType}
-                      name={option.icon}
+                      name={option.icon as any}
                     />
                     <CustomText
                       style={[

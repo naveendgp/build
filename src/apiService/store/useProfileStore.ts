@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { VendorProfile } from '../types/profileTypes';
 import { getProfile } from '../api/profileApi';
+import { useAuthStore } from './useAuthStore';
 
 interface ProfileState {
   profile: VendorProfile | null;
@@ -30,10 +31,15 @@ export const useProfileStore = create<ProfileState>()(
           set({ isLoading: true, error: null });
           const response = await getProfile();
           set({ profile: response.data, isLoading: false });
+          // Update document state from profile status
+          if (response.data.status) {
+            const { setDocumentState } = useAuthStore.getState();
+            setDocumentState(response.data.status);
+          }
         } catch (error: any) {
-          set({ 
-            error: error?.response?.data?.message || 'Failed to refresh profile', 
-            isLoading: false 
+          set({
+            error: error?.response?.data?.message || 'Failed to refresh profile',
+            isLoading: false
           });
         }
       },
