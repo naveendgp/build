@@ -11,6 +11,7 @@ import {
   OtpResponse,
 } from '../../../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
+import { getFcmToken } from '../../../../services/Notification/useNotifications';
 
 export const useOtpVerification = (mobile: string) => {
   const navigation = useNavigation<any>();
@@ -18,15 +19,19 @@ export const useOtpVerification = (mobile: string) => {
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);
   const setDocumentState = useAuthStore(state => state.setDocumentState);
   const setMobileNumber = useAuthStore(state => state.setMobileNumber);
-  const fcm = useAuthStore(state => state.fcmToken);
 
   const mutation = useMutation<
     OtpResponse,
     AxiosError<ErrorResponse>,
     string // ✅ otp string only
   >({
-    mutationFn: (otp: string) =>
-      verifyOtp({ phone: mobile, otp, fcm_token: fcm }),
+    mutationFn: async (otp: string) => {
+      // Refresh FCM token before making the API call
+      await getFcmToken();
+      // Get the fresh FCM token from store
+      const fcm = useAuthStore.getState().fcmToken;
+      return verifyOtp({ phone: mobile, otp, fcm_token: fcm });
+    },
     onSuccess: data => {
       setToken(data.data.token);
       setMobileNumber(mobile); // Store mobile number used for OTP

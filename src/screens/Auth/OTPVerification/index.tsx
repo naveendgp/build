@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, TextInput, TouchableOpacity } from 'react-native';
 import styles from './styles';
 import { useRoute } from '@react-navigation/native';
@@ -12,10 +12,16 @@ import BackgroundGradient from '../../../components/backgroundGradient';
 import { COLORS } from '../../../constants/colors';
 import SvgTimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
 import SvgOTPVerificationIcon from '../../../assets/auto-generated-svg-icons/OtpIcon';
+import { getFcmToken } from '../../../services/Notification/useNotifications';
 
 const OTPVerificationScreen: React.FC = () => {
   const route = useRoute<any>();
   const { mobile, isRegister } = route.params;
+
+  // Refresh FCM token when OTP screen mounts
+  useEffect(() => {
+    getFcmToken();
+  }, []);
 
   const { digits, otp, handleChange, handleKeyPress, inputsRef } =
     useOtpInput(4);
