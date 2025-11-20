@@ -3,6 +3,7 @@ import { View, TextInput, TextInputProps, ViewStyle } from "react-native";
 import CustomText from "../Text";
 import { COLORS } from "../../constants";
 import styles from "./styles";
+import { processInset } from "react-native-reanimated/lib/typescript/css/native";
 
 export type InputType = "phone" | "email" | "normal";
 
@@ -15,7 +16,6 @@ interface ProfileInputProps extends TextInputProps {
   value: string;
   onChangeText: (text: string) => void;
   isEditable?: boolean;
-  isWhiteBG?: boolean;
 }
 
 const ProfileInput: React.FC<ProfileInputProps> = ({
@@ -28,20 +28,29 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
   onChangeText,
   placeholder,
   isEditable = true,
-  isWhiteBG = false,
   ...rest
-
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
   const [mobileValue, setMobileValue] = useState("");
 
+  // useEffect(() => {
+  //   if (inputType === "phone") {
+  //     // Remove country code and spaces from value
+  //     console.log("value", value);
+  //     const cleaned = value ? value.replace(countryCode, "").replace(/\s/g, "").trim() : "";
+  //     console.log("cleaned", cleaned);
+  //     setMobileValue(cleaned);
+  //     setDisplayValue(cleaned ? `${countryCode} ${cleaned}` : countryCode);
+  //   } else {
+  //     setDisplayValue(value);
+  //   }
+  // }, [value, inputType, countryCode]);
+
   useEffect(() => {
     if (inputType === "phone") {
-      // Remove country code and spaces from value
-      // const cleaned = value ? value.replace(countryCode, "").replace(/\s/g, "").trim() : "";
       const cleaned = value ? value.replace(/\D/g, "") : "";
       setMobileValue(cleaned);
-      setDisplayValue(cleaned ? `${countryCode} ${cleaned}` : countryCode);
+      setDisplayValue(`${countryCode} ${cleaned}`);
     } else {
       setDisplayValue(value);
     }
@@ -49,9 +58,7 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
 
   // const handleTextChange = (text: string) => {
   //   if (inputType === "phone") {
-  //     // Handle phone number with country code
-  //     // Remove country code prefix if user tries to type it
-  //     let cleaned = text.replace(new RegExp(countryCode.replace("+", "\\+"), "g"), "");
+  //     let cleaned = text.replace(new RegExp(countryCode.replace("+", "+"), "g"), "");
   //     cleaned = cleaned.replace(/\s/g, "").trim();
 
   //     // Only allow digits
@@ -63,11 +70,15 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
   //       setDisplayValue(formattedValue);
   //       onChangeText(digitsOnly);
   //     }
-  //   } else {
+
+  //   }
+  //   else {
   //     setDisplayValue(text);
   //     onChangeText(text);
   //   }
+
   // };
+
   const handleTextChange = (text: string) => {
     if (inputType !== "phone") {
       setDisplayValue(text);
@@ -93,6 +104,7 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
     setDisplayValue(prefix + digits);
     onChangeText(digits);
   };
+
   const getKeyboardType = () => {
     switch (inputType) {
       case "phone":
@@ -135,7 +147,7 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
           {required && <CustomText style={styles.asterisk}>*</CustomText>}
         </CustomText>
       )}
-      <View style={[styles.inputRow, isWhiteBG && { backgroundColor: COLORS.BUTTON_BACKGROUND }, !isEditable && styles.inputRowDisabled]}>
+      <View style={[styles.inputRow, !isEditable && styles.inputRowDisabled]}>
         <TextInput
           style={styles.input}
           value={displayValue}

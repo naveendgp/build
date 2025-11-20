@@ -116,8 +116,8 @@ export const COLORS = {
 
 // Font families
 export const FONTFAMILY = {
-  INTER_REGULAR: 'Poppins-Regular',
-  INTER_MEDIUM: 'Poppins-Medium',
-  INTER_SEMIBOLD: 'Poppins-SemiBold',
-  INTER_BOLD: 'Poppins-Bold',
+  INTER_REGULAR: 'Inter-Regular',
+  INTER_MEDIUM: 'Inter-Medium',
+  INTER_SEMIBOLD: 'Inter-SemiBold',
+  INTER_BOLD: 'Inter-Bold',
 } as const;

@@ -73,7 +73,7 @@ const DraggableSlider = forwardRef<BasicDraggableSliderHandle, BasicDraggableSli
     const THUMB_WIDTH = 64;
     const THUMB_HEIGHT = 32;
     const SIDE_MARGIN = 42;
-  
+
 
     // derived range and progress
     const sliderRange = useDerivedValue(() => {
@@ -214,7 +214,7 @@ const DraggableSlider = forwardRef<BasicDraggableSliderHandle, BasicDraggableSli
                 accessibilityLabel={text}
                 accessibilityState={{ disabled }}>
                 <Animated.View style={[styles.thumb, animatedThumbStyle]}>
-                  <SvgDoubleArrowRight style={styles.arrow}/>
+                  <SvgDoubleArrowRight />
                 </Animated.View>
               </Animated.View>
             </GestureDetector>

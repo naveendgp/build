@@ -13,7 +13,6 @@ const THUMB_HEIGHT = 32;
 export default StyleSheet.create({
   container: {
     alignItems: 'center',
-    marginVertical: 12,
   },
   measureContainer: {
     width: '100%',
@@ -23,17 +22,15 @@ export default StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     zIndex: 2,
-    paddingHorizontal: 20,
+    paddingHorizontal: 29,
   },
   sliderText: {
     color: COLORS.WHITE,
     fontSize: 16,
     fontWeight: '500',
     textAlign: 'right',
-    marginRight: 28,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
   },
   disabledText: {
@@ -55,23 +52,17 @@ export default StyleSheet.create({
     zIndex: 3,
   },
   slider: {
-    width: SLIDER_WIDTH,
+    // width: SLIDER_WIDTH,
     height: SLIDER_HEIGHT,
     borderRadius: 16,
     justifyContent: 'center',
     overflow: 'hidden',
     backgroundColor: COLORS.THEME_GREEN,
-    paddingHorizontal: 16, 
+    // paddingHorizontal: 16,
     ...Platform.select({
-      ios: {
-        shadowColor: COLORS.BLACK,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
-      },
       android: { elevation: 0.2 },
     }),
-},
+  },
 
   thumb: {
     width: THUMB_WIDTH,
@@ -83,9 +74,5 @@ export default StyleSheet.create({
     backgroundColor: COLORS.WHITE,
     // marginLeft: 0 by default (remove the 10px you added earlier)
   },
-  arrow: {
-    color: COLORS.THEME_GREEN,
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
+
 });
