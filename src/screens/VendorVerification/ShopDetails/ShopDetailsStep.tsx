@@ -15,13 +15,15 @@ import UploadIcon from '../../../assets/auto-generated-svg-icons/UploadIcon';
 import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
+import { ShopErrors } from '../useVendorValidation';
 
 interface Props {
   shop: any;
   setShop: (s: any) => void;
+  errors?: ShopErrors;
 }
 
-const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
+const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
   const navigation = useNavigation<any>();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
@@ -266,6 +268,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
           value={shop.shop_name || ''}
           onChangeText={val => setShop({ ...shop, shop_name: val })}
           containerStyle={styles.inputContainer}
+          error={errors.shop_name}
         />
 
         <ProfileInput
@@ -275,6 +278,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
           value={shop.gst_number || ''}
           onChangeText={val => setShop({ ...shop, gst_number: val })}
           containerStyle={styles.inputContainer}
+          error={errors.gst_number}
         />
 
         <TouchableOpacity
@@ -326,6 +330,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
           maxLength={6}
           onChangeText={val => setShop({ ...shop, pincode: val })}
           containerStyle={styles.inputContainer}
+          error={errors.pincode}
         />
 
         <ProfileInput
@@ -335,6 +340,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop }) => {
           value={shop.landmark || ''}
           onChangeText={val => setShop({ ...shop, landmark: val })}
           containerStyle={styles.inputContainer}
+          error={errors.landmark}
         />
 
         <ProfileInput

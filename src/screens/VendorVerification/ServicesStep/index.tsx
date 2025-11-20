@@ -14,11 +14,13 @@ import Loader from '../../../components/Loader';
 interface ServicesStepProps {
   selectedServices: string[];
   setSelectedServices: (services: string[]) => void;
+  error?: string;
 }
 
 const ServicesStep: React.FC<ServicesStepProps> = ({
   selectedServices,
   setSelectedServices,
+  error: validationError,
 }) => {
   const serviceNote = useMemo(
     () => 'Note: Select the services available at your shop',
@@ -26,7 +28,7 @@ const ServicesStep: React.FC<ServicesStepProps> = ({
   );
 
   // Fetch services from API
-  const { data, isLoading, error } = useQuery<
+  const { data, isLoading, error: queryError } = useQuery<
     ListServicesResponse,
     AxiosError<{ message: string }>
   >({
@@ -36,11 +38,11 @@ const ServicesStep: React.FC<ServicesStepProps> = ({
 
   // Handle error
   React.useEffect(() => {
-    if (error) {
-      const msg = error.response?.data?.message || error.message;
+    if (queryError) {
+      const msg = queryError.response?.data?.message || queryError.message;
       showErrorToast(msg || 'Failed to load services');
     }
-  }, [error]);
+  }, [queryError]);
 
   const handleServiceToggle = (serviceName: string) => {
     if (selectedServices.includes(serviceName)) {
@@ -55,47 +57,47 @@ const ServicesStep: React.FC<ServicesStepProps> = ({
 
     return (
       <TouchableOpacity
-          key={service._id}
-          activeOpacity={0.9}
-          style={[
-            styles.serviceOptionCard,
-            isSelected && styles.serviceOptionCardSelected,
-          ]}
-          onPress={() => handleServiceToggle(service.service_name)}
-        >
-          <View style={styles.serviceOptionLeft}>
-            <View
-              style={[
-                styles.serviceCheckbox,
-                isSelected && styles.serviceCheckboxSelected,
-              ]}
-            >
-              {isSelected && <CheckIcon width={16} height={16} color={COLORS.WHITE} />}
-            </View>
-            <CustomText
-              style={[
-                styles.serviceOptionName,
-                isSelected && styles.serviceOptionNameSelected,
-              ]}
-            >
-              {service.service_name}
-            </CustomText>
+        key={service._id}
+        activeOpacity={0.9}
+        style={[
+          styles.serviceOptionCard,
+          isSelected && styles.serviceOptionCardSelected,
+        ]}
+        onPress={() => handleServiceToggle(service.service_name)}
+      >
+        <View style={styles.serviceOptionLeft}>
+          <View
+            style={[
+              styles.serviceCheckbox,
+              isSelected && styles.serviceCheckboxSelected,
+            ]}
+          >
+            {isSelected && <CheckIcon width={16} height={16} color={COLORS.WHITE} />}
           </View>
+          <CustomText
+            style={[
+              styles.serviceOptionName,
+              isSelected && styles.serviceOptionNameSelected,
+            ]}
+          >
+            {service.service_name}
+          </CustomText>
+        </View>
 
-          <View style={styles.serviceOptionRight}>
-            {service.image_url ? (
-              <Image
-                source={{ uri: service.image_url }}
-                style={styles.serviceImage}
-                resizeMode="contain"
-              />
-            ) : (
-              <View style={styles.serviceImagePlaceholder} />
-            )}
-          </View>
-        </TouchableOpacity>
-      );
-    };
+        <View style={styles.serviceOptionRight}>
+          {service.image_url ? (
+            <Image
+              source={{ uri: service.image_url }}
+              style={styles.serviceImage}
+              resizeMode="contain"
+            />
+          ) : (
+            <View style={styles.serviceImagePlaceholder} />
+          )}
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -120,6 +122,11 @@ const ServicesStep: React.FC<ServicesStepProps> = ({
       </View>
 
       <CustomText style={styles.serviceNote}>{serviceNote}</CustomText>
+      {validationError ? (
+        <CustomText style={styles.errorText}>
+          {validationError}
+        </CustomText>
+      ) : null}
     </View>
   );
 };

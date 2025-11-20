@@ -81,5 +81,11 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },
+  errorText: {
+    marginTop: 8,
+    fontSize: 13,
+    color: COLORS.ERROR,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
 });
 

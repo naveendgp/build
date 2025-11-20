@@ -23,7 +23,7 @@ import ShopDetailsStep from './ShopDetails/ShopDetailsStep';
 import BankDetailsStep from './BankDetails/BankDetailsStep';
 import ServicesStep from './ServicesStep';
 import ReviewDetailsScreen from './ReviewDetails';
-import { useVendorValidation } from './useVendorValidation';
+import { useVendorValidation, VendorErrors, ShopErrors, BankErrors } from './useVendorValidation';
 import Toolbar from '../../components/Toolbar';
 import { useMutation } from '@tanstack/react-query';
 import { documentUploadApi } from '../../apiService/api/documentApi';
@@ -133,7 +133,18 @@ const VendorVerificationScreen: React.FC = () => {
   const vendorAddressRef = useRef(null);
   const pincodeRef = useRef(null);
 
-  const { validateStep } = useVendorValidation();
+  const { validateStep, validateVendor, validateShop, validateBank, validateServices } = useVendorValidation();
+  const [formErrors, setFormErrors] = useState<{
+    vendor: VendorErrors;
+    shop: ShopErrors;
+    bank: BankErrors;
+    services: string;
+  }>({
+    vendor: {},
+    shop: {},
+    bank: {},
+    services: '',
+  });
 
   // Document upload mutation
   const mutation = useMutation<
@@ -156,26 +167,46 @@ const VendorVerificationScreen: React.FC = () => {
   });
 
   const handleNext = () => {
-    // if (validateStep(step, data)) {
-    // Save current step data to store before moving to next step
     if (step === 1) {
+      const vendorErrors = validateVendor(data.vendor);
+      setFormErrors(prev => ({ ...prev, vendor: vendorErrors }));
+      if (Object.values(vendorErrors).some(Boolean)) {
+        return;
+      }
+      setFormErrors(prev => ({ ...prev, vendor: {} }));
       setVendorData(data.vendor);
       setStep(prev => prev + 1);
       setCurrentStep(prev => prev + 1);
     } else if (step === 2) {
+      const shopErrors = validateShop(data.shop);
+      setFormErrors(prev => ({ ...prev, shop: shopErrors }));
+      if (Object.values(shopErrors).some(Boolean)) {
+        return;
+      }
+      setFormErrors(prev => ({ ...prev, shop: {} }));
       setShopData(data.shop);
       setStep(prev => prev + 1);
       setCurrentStep(prev => prev + 1);
     } else if (step === 3) {
+      const bankErrors = validateBank(data.bank);
+      setFormErrors(prev => ({ ...prev, bank: bankErrors }));
+      if (Object.values(bankErrors).some(Boolean)) {
+        return;
+      }
+      setFormErrors(prev => ({ ...prev, bank: {} }));
       setBankData(data.bank);
       setStep(prev => prev + 1);
       setCurrentStep(prev => prev + 1);
     } else if (step === 4) {
+      const servicesError = validateServices(data.services);
+      setFormErrors(prev => ({ ...prev, services: servicesError }));
+      if (servicesError) {
+        return;
+      }
       setServicesData(data.services);
       // Navigate to ReviewDetails screen after step 4
       navigation.navigate('ReviewDetails');
     }
-    //  }
   };
 
   const handleBack = () => {
@@ -282,18 +313,21 @@ const VendorVerificationScreen: React.FC = () => {
                 handleFocusScroll={() => { }}
                 vendorAddressRef={vendorAddressRef}
                 isMobileFromOtp={!!mobileNumber}
+                errors={formErrors.vendor}
               />
             )}
             {step === 2 && (
               <ShopDetailsStep
                 shop={data.shop}
                 setShop={val => setData(d => ({ ...d, shop: val }))}
+                errors={formErrors.shop}
               />
             )}
             {step === 3 && (
               <BankDetailsStep
                 bank={data.bank}
                 setBank={val => setData(d => ({ ...d, bank: val }))}
+                errors={formErrors.bank}
               />
             )}
             {step === 4 && (
@@ -302,6 +336,7 @@ const VendorVerificationScreen: React.FC = () => {
                 setSelectedServices={(val: string[]) => {
                   setData(d => ({ ...d, services: { ...d.services, selectedServices: val } }));
                 }}
+                error={formErrors.services}
               />
             )}
 

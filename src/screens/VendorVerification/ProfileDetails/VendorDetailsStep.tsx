@@ -11,6 +11,7 @@ import UploadIcon from '../../../assets/auto-generated-svg-icons/UploadIcon';
 import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS } from '../../../constants/colors';
+import { VendorErrors } from '../useVendorValidation';
 
 interface Props {
   vendor: any;
@@ -18,12 +19,14 @@ interface Props {
   handleFocusScroll: (ref: any) => void;
   vendorAddressRef: React.RefObject<View | null>;
   isMobileFromOtp?: boolean;
+  errors?: VendorErrors;
 }
 
 const VendorDetailsStep: React.FC<Props> = ({
   vendor,
   setVendor,
   isMobileFromOtp = false,
+  errors = {},
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
@@ -112,6 +115,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.owner_name}
         onChangeText={val => setVendor({ ...vendor, owner_name: val })}
         containerStyle={styles.inputContainer}
+        error={errors.owner_name}
       />
 
       <ProfileInput
@@ -123,6 +127,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         onChangeText={val => setVendor({ ...vendor, mobile: val })}
         containerStyle={styles.inputContainer}
         isEditable={!isMobileFromOtp}
+        error={errors.mobile}
       />
 
       <ProfileInput
@@ -131,6 +136,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.email}
         onChangeText={val => setVendor({ ...vendor, email: val })}
         containerStyle={styles.inputContainer}
+        error={errors.email}
       />
 
       {/* <View style={styles.dateInputContainer}>
