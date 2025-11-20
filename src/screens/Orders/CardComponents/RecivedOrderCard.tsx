@@ -16,7 +16,6 @@ import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/Chevr
 
 export interface ReceivedOrderCardProps {
   orderId: string;
-  index?: number;
   tabType?: OrderStatus;
   location: string;
   orderType: 'standard' | 'express';
@@ -37,7 +36,6 @@ export interface ReceivedOrderCardProps {
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   orderId,
-  index,
   location,
   orderType,
   customerName,
