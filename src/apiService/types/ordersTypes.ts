@@ -72,10 +72,18 @@ export interface VendorOrder {
   __v: number;
 }
 
+export interface OrdersData {
+  orders: VendorOrder[];
+  total: number;
+  page: string;
+  limit: string;
+  totalPages: number;
+}
+
 export interface OrdersResponse {
   status: boolean;
   message: string;
-  data: VendorOrder[];
+  data: OrdersData;
 }
 
 export enum OrderStatusCode {

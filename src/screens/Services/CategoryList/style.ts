@@ -41,7 +41,7 @@ export default StyleSheet.create({
     },
     itemsList: {
         padding: 20,
-        paddingBottom: 100,
+        paddingBottom: 10,
     },
     submitContainer: {
         position: 'absolute',

@@ -23,7 +23,7 @@ export const useOrdersQuery = (
         queryKey: [ORDERS_QUERY_KEY, statusCode],
         queryFn: () => fetchOrdersByStatus(statusCode),
         enabled,
-        select: data => data.data,
+        select: data => data.data.orders,
         staleTime: 60 * 1000,
         refetchOnWindowFocus: true,
     });

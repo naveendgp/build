@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useCallback } from 'react';
-import { View, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import { View, FlatList, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import ReceivedOrderCard from '../../CardComponents/RecivedOrderCard';
 import CustomText from '../../../../components/Text';
 import styles from './style';
@@ -7,24 +7,40 @@ import socket from '../../../../apiService/socket/socket';
 import { useFocusEffect } from '@react-navigation/native';
 import { SOCKET_ENDPOINTS } from '../../../../constants';
 import { OrderStatus } from '../../../../types/order/order';
-import { VendorOrder } from '../../../../apiService/types/ordersTypes';
 import { mapOrdersToReceivedCards } from '../../utils/orderMappers';
+import { useOrdersPagination } from '../../hooks/useOrdersPagination';
+import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
+import { COLORS, FONTFAMILY } from '../../../../constants/colors';
 
 interface ReceivedOrdersScreenProps {
   tabType: OrderStatus;
-  orders?: VendorOrder[];
-  onRefresh?: () => void;
-  refreshing?: boolean;
-  loading?: boolean;
 }
 
 const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
   tabType,
-  orders,
-  onRefresh,
-  refreshing = false,
-  loading = false,
 }) => {
+  const {
+    data: orders,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+    hasNextPage,
+    loadMore,
+    isFetchingMore,
+    total,
+  } = useOrdersPagination(tabType, true, 5);
+
+  const setCount = useOrdersCountStore(state => state.setCount);
+
+  // Update store when total changes
+  useEffect(() => {
+    if (total > 0) {
+      setCount(tabType, total);
+    }
+  }, [total, tabType, setCount]);
+
   const displayOrders = useMemo(
     () => mapOrdersToReceivedCards(orders),
     [orders],
@@ -107,13 +123,87 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      {loading ? (
+      {isLoading ? (
         <ActivityIndicator size="small" />
+      ) : isError ? (
+        <CustomText style={styles.emptyText}>
+          Error: {error?.message || 'Failed to load orders'}
+        </CustomText>
       ) : (
         <CustomText style={styles.emptyText}>{getEmptyText()}</CustomText>
       )}
     </View>
   );
+
+  const [footerLoading, setFooterLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isFetchingMore) {
+      setFooterLoading(false);
+    }
+  }, [isFetchingMore]);
+
+  const renderFooter = () => {
+    if (!hasNextPage) {
+      return <View style={{ height: 24 }} />;
+    }
+
+    const showSpinner = isFetchingMore || footerLoading;
+
+    return (
+      <View
+        style={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 60,
+        }}
+      >
+        {showSpinner ? (
+          <>
+            <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+            <CustomText
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                color: COLORS.TEXT_GRAY,
+                fontFamily: FONTFAMILY.INTER_REGULAR,
+              }}
+            >
+              Loading more orders...
+            </CustomText>
+          </>
+        ) : (
+          <CustomText
+            style={{
+              fontSize: 13,
+              color: COLORS.TEXT_GRAY,
+              fontFamily: FONTFAMILY.INTER_REGULAR,
+            }}
+          >
+            Pull up to load more
+          </CustomText>
+        )}
+      </View>
+    );
+  };
+
+  const triggerLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingMore && !isLoading) {
+      if (!footerLoading) {
+        setFooterLoading(true);
+      }
+      loadMore();
+    }
+  }, [hasNextPage, isFetchingMore, isLoading, footerLoading, loadMore]);
+
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const isNearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 40;
+    if (isNearBottom) {
+      triggerLoadMore();
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -121,13 +211,22 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
         data={displayOrders}
         renderItem={renderOrderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 10 }, // Extra padding to show loader above bottom tab
+        ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooter}
+        onEndReachedThreshold={0.1}
+        onMomentumScrollEnd={triggerLoadMore}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          ) : undefined
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => refetch()}
+          />
         }
       />
     </View>
