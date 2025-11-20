@@ -52,8 +52,10 @@ export const useOtpVerification = (mobile: string) => {
           break;
 
         case LoginUserStatus.DOC_PENDING_UPLOAD:
+          navigation.navigate('VendorVerification');
+          break;
         case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
-          navigation.navigate('VendorVerification'); 
+          navigation.navigate('VendorVerification', { isReupload: true });
           break;
 
         case LoginUserStatus.DOC_UNDER_REVIEW:

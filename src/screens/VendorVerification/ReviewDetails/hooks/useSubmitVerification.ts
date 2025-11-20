@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { documentUploadApi } from '../../../../apiService/api/documentApi';
+import { registerComplete } from '../../../../apiService/api/authApi';
 import { toggleServiceActive, listServices } from '../../../../apiService/api/profileApi';
-import { ShopDocumentUploadPayload } from '../../../../apiService/types/docTypes';
+import { RegisterCompletePayload, OperatingHours } from '../../../../apiService/types/authTypes';
 import { ToggleServiceActiveInput, ListServiceItem } from '../../../../apiService/types/profileTypes';
 import { showErrorToast, showSuccessToast } from '../../../../utils/Toast';
+import { useVendorVerificationStore } from '../../../../apiService/store/useVendorVerificationStore';
+import { useAuthStore } from '../../../../apiService/store/useAuthStore';
 
 interface UseSubmitVerificationProps {
     onSuccess: () => void;
@@ -17,6 +19,7 @@ interface ApiStatus {
 }
 
 export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps) => {
+    const { vendor, shop, bank } = useVendorVerificationStore();
     const [apiStatus, setApiStatus] = useState<ApiStatus>({
         documentUpload: 'idle',
         servicesToggle: 'idle',
@@ -25,6 +28,23 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     const [documentError, setDocumentError] = useState<string | null>(null);
     const [servicesError, setServicesError] = useState<string | null>(null);
     const successHandledRef = useRef(false);
+
+    // Helper function to parse operating hours from business_hours string
+    const parseOperatingHours = (businessHours: string): OperatingHours => {
+        if (!businessHours) {
+            return {};
+        }
+        try {
+            // Try to parse as JSON first
+            const parsed = JSON.parse(businessHours);
+            if (typeof parsed === 'object' && parsed !== null) {
+                return parsed as OperatingHours;
+            }
+        } catch (e) {
+            // If not JSON, return empty object (or you could parse string format if needed)
+        }
+        return {};
+    };
 
     // Check if both APIs succeeded
     useEffect(() => {
@@ -39,10 +59,72 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
         }
     }, [apiStatus.documentUpload, apiStatus.servicesToggle, onSuccess]);
 
-    // Document upload mutation
+    // Document upload mutation using registerComplete
     const documentMutation = useMutation({
-        mutationFn: (payload: ShopDocumentUploadPayload) => documentUploadApi(payload),
-        onSuccess: () => {
+        mutationFn: (payload: RegisterCompletePayload) => {
+            // Convert ShopDocumentUploadPayload to RegisterCompletePayload
+            const registerPayload: RegisterCompletePayload = {
+                shop_name: payload.shop_name,
+                owner_name: payload.owner_name,
+                email: payload.email || '',
+                gst_number: payload.gst_number,
+                pan_number: payload.pan_number,
+                shop_license_number: payload.shop_license_number,
+                aadhaar_number: payload.aadhaar_number,
+                address_line1: payload.address_line1,
+                pincode: payload.pincode,
+                landmark: payload.landmark,
+                latitude: payload.latitude,
+                longitude: payload.longitude,
+                contactNum: shop.contact_number || '',
+                account_holder_name: payload.account_holder_name,
+                account_number: payload.account_number,
+                ifsc_code: payload.ifsc_code,
+                bank_name: payload.bank_name,
+                branch: '', // Optional field, not in current payload
+                upi_id: bank.upi_id || '',
+                operating_hours: parseOperatingHours(shop.business_hours || ''),
+            };
+
+            // Helper function to normalize file object
+            const normalizeFile = (file: any, defaultName: string, defaultType: string = 'image/jpeg') => {
+                if (!file) return undefined;
+                // Handle string URI
+                if (typeof file === 'string') {
+                    return {
+                        uri: file,
+                        name: defaultName,
+                        type: defaultType,
+                    };
+                }
+                // Handle object with uri and name
+                if (file.uri) {
+                    return {
+                        uri: file.uri,
+                        name: file.name || defaultName,
+                        type: file.type || (file.name?.endsWith('.pdf') ? 'application/pdf' : defaultType),
+                    };
+                }
+                return undefined;
+            };
+
+            // Prepare images object
+            const images = {
+                profile_pic: normalizeFile(vendor.profile_pic, 'profile_pic.jpg'),
+                aadhaar_card: normalizeFile(vendor.aadhaar_file, 'aadhaar_card.pdf', 'application/pdf'),
+                pan_card: normalizeFile(vendor.pan_file, 'pan_card.pdf', 'application/pdf'),
+                shop_image: normalizeFile(shop.shop_front_photo, 'shop_image.jpg'),
+                cancelled_cheque: normalizeFile(bank.cancelled_cheque, 'cancelled_cheque.jpg'),
+            };
+
+            return registerComplete(registerPayload, images);
+        },
+        onSuccess: (data) => {
+            // Update document state from response
+            if (data?.data?.status) {
+                const { setDocumentState } = useAuthStore.getState();
+                setDocumentState(data.data.status);
+            }
             setApiStatus(prev => ({ ...prev, documentUpload: 'success' as const }));
             setDocumentError(null);
         },
@@ -103,7 +185,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     };
 
     const submitBoth = async (
-        documentPayload: ShopDocumentUploadPayload,
+        documentPayload: RegisterCompletePayload,
         selectedServiceNames: string[],
     ) => {
         // Reset status
@@ -132,7 +214,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     };
 
     // Retry individual APIs
-    const retryDocumentUpload = (payload: ShopDocumentUploadPayload) => {
+    const retryDocumentUpload = (payload: RegisterCompletePayload) => {
         documentMutation.mutate(payload);
     };
 

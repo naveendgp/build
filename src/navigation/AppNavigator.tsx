@@ -33,7 +33,7 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
-  VendorVerification: { step?: number } | undefined;
+  VendorVerification: { step?: number; isReupload?: boolean } | undefined;
   ReviewDetails: undefined;
   MainTabs: undefined;
   Orders: undefined;
