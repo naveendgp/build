@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+import { useNavigation } from '@react-navigation/native';
 import HomeScreen from '../screens/Home';
 import OrdersScreen from '../screens/Orders';
 import ProfileScreen from '../screens/Profile';
@@ -54,8 +55,9 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
 
 const BottomTabNavigator = () => {
   const { setProfile, setError, setLoading } = useProfileStore();
-  const { setDocumentState } = useAuthStore();
+  const { setDocumentState, setIsLoggedIn } = useAuthStore();
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const navigation = useNavigation<any>();
 
   // Fetch profile data when entering the application
   const { data, error, isLoading } = useQuery<
@@ -77,8 +79,23 @@ const BottomTabNavigator = () => {
       setProfile(data.data);
       // Update document state from profile status
       if (data.data.status) {
-        setDocumentState(data.data.status);
-        setShowReviewDialog(data.data.status === LoginUserStatus.DOC_UNDER_REVIEW);
+        const status = data.data.status as LoginUserStatus;
+        setDocumentState(status);
+        if (status === LoginUserStatus.ACTIVE) {
+          setShowReviewDialog(false);
+        } else if (status === LoginUserStatus.DOC_UNDER_REVIEW) {
+          setShowReviewDialog(true);
+        } else {
+          setShowReviewDialog(false);
+          showErrorToast('Your account status requires attention. Please log in again.');
+          setTimeout(() => {
+            setIsLoggedIn(false);
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'Login' }],
+            });
+          }, 1000);
+        }
       }
     }
     if (error) {
