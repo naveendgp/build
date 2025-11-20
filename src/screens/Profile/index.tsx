@@ -22,6 +22,17 @@ import { ProfileResponse } from '../../apiService/types/profileTypes';
 import { ErrorResponse } from '../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 import { COLORS, FONTFAMILY } from '../../constants/colors';
+import SvgProfileIcon from '../../assets/auto-generated-svg-icons/ProfileIcon';
+import SvgShopIcon from '../../assets/auto-generated-svg-icons/ShopIcon';
+import SvgBankIcon from '../../assets/auto-generated-svg-icons/BankIcon';
+import SvgServicesIcon from '../../assets/auto-generated-svg-icons/ServicesIcon';
+import SvgStarIcon from '../../assets/auto-generated-svg-icons/StarIcon';
+import SvgHelpSupportIcon from '../../assets/auto-generated-svg-icons/HelpSupportIcon';
+import SvgHepSupportIcon from '../../assets/auto-generated-svg-icons/HepSupportIcon';
+import SvgTermsConditionIcon from '../../assets/auto-generated-svg-icons/TermsConditionIcon';
+import SvgLogoutIcon from '../../assets/auto-generated-svg-icons/LogoutIcon';
+import SvgLogoutBlackIcon from '../../assets/auto-generated-svg-icons/LogoutBlackIcon';
+import SvgSupportIcon from '../../assets/auto-generated-svg-icons/SupportIcon';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -78,64 +89,64 @@ const ProfileScreen: React.FC = () => {
     {
       id: '1',
       title: 'Profile',
-      icon: 'person',
-      iconType: 'MaterialIcons' as const,
-      onPress: () => navigation.navigate('ProfileDetails'),
+      icon: SvgProfileIcon,
+      iconType: 'svg',
+      onPress: () => navigation.navigate('EditProfile'),
     },
     {
       id: '2',
       title: 'Shop Details',
-      icon: 'store',
-      iconType: 'MaterialIcons' as const,
-      onPress: () => navigation.navigate('ShopDetails'),
+      icon: SvgShopIcon,
+      iconType: 'svg',
+      onPress: () => navigation.navigate('BusinessSettings'),
     },
     {
       id: '3',
       title: 'Bank Details',
-      icon: 'account-balance',
-      iconType: 'MaterialIcons' as const,
-      onPress: () => navigation.navigate('BankDetails'),
+      icon: SvgBankIcon,
+      iconType: 'svg',
+      onPress: () => console.log('Bank Details'),
     },
     {
       id: '4',
       title: 'Services & Offer Details',
-      icon: 'card-giftcard',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgServicesIcon,
+      iconType: 'svg',
       onPress: () => navigation.navigate('Services'),
     },
     {
       id: '5',
       title: 'Shop Review',
-      icon: 'star',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgStarIcon,
+      iconType: 'svg',
       onPress: () => console.log('Shop Review'),
     },
     {
       id: '6',
       title: 'Help & support',
-      icon: 'headset-mic',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgSupportIcon,
+      iconType: 'svg',
       onPress: () => console.log('Help & Support'),
     },
     {
       id: '7',
       title: 'Privacy & Security',
-      icon: 'lock',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgHepSupportIcon,
+      iconType: 'svg',
       onPress: () => console.log('Privacy & Security'),
     },
     {
       id: '8',
       title: 'Terms & Condition',
-      icon: 'description',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgTermsConditionIcon,
+      iconType: 'svg',
       onPress: () => console.log('Terms & Condition'),
     },
     {
       id: '9',
       title: 'Logout',
-      icon: 'logout',
-      iconType: 'MaterialIcons' as const,
+      icon: SvgLogoutBlackIcon,
+      iconType: 'svg',
       onPress: handleLogout,
       isLogout: true,
     },
@@ -224,8 +235,6 @@ const ProfileScreen: React.FC = () => {
                     <CustomIcon
                       type={option.iconType}
                       name={option.icon}
-                      size={22}
-                      color={isLogout ? '#FF3B30' : COLORS.TEXT_PRIMARY}
                     />
                     <CustomText
                       style={[

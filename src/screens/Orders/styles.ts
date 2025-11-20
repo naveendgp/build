@@ -1,14 +1,16 @@
 import { StyleSheet } from 'react-native';
-import { COLORS } from '../../constants/colors';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.CARD_BACKGROUND,
+    backgroundColor: COLORS.WHITE
   },
   header: {
-    padding: 20,
-    paddingTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 16,
+    marginBottom: 24,
+    backgroundColor: COLORS.CARD_BACKGROUND,
   },
   title: {
     fontSize: 28,
@@ -23,11 +25,7 @@ export default StyleSheet.create({
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingTop: 10,
-
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5',
+    backgroundColor: COLORS.WHITE,
   },
   tab: {
     flexDirection: 'row',
@@ -37,37 +35,50 @@ export default StyleSheet.create({
     position: 'relative',
   },
   tabText: {
-    fontSize: 16,
-    color: '#7B869A',
-    fontWeight: '500',
-    marginRight: 8,
+    fontSize: 18,
+    color: COLORS.INPUT_TEXT,
+    fontWeight: '400',
+    alignContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    alignSelf: 'center',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    lineHeight: 18 * (120 / 100),
+    marginRight: 10,
   },
   tabTextActive: {
-    color: '#1B2A4A',
-    fontWeight: '600',
+    color: COLORS.INPUT_TEXT,
+    fontWeight: '800',
+    lineHeight: 18 * (120 / 100),
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
   },
   tabUnderline: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    left: -5,
+    right: -3,
+    alignContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+    alignSelf: 'center',
     height: 2,
-    backgroundColor: '#1B2A4A',
+    gap: 6,
+    backgroundColor: COLORS.INPUT_TEXT,
   },
   badge: {
     width: 24,
     height: 24,
-    borderRadius: 12,
-    backgroundColor: '#1B2A4A',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+    borderRadius: 32,
+    backgroundColor: COLORS.INPUT_TEXT,
     justifyContent: 'center',
     alignItems: 'center',
   },
   badgeText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontWeight: '500',
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    lineHeight: 12 * (120 / 100),
+    color: COLORS.BUTTON_BACKGROUND,
   },
   content: {
     flex: 1,
