@@ -4,7 +4,6 @@ import CustomText from '../../../../components/Text';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F6F9FF',
   },
   scrollView: {
     flex: 1,
@@ -26,10 +25,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   sliderContainer: {
-        width: '100%',
-        alignItems: 'center',
-        paddingHorizontal: 15,
-    },
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
 });
 
 export default styles;

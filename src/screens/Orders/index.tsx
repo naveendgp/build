@@ -91,7 +91,7 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders
+            Ready To Accept Orders
           </CustomText>
 
 
@@ -120,7 +120,7 @@ const OrdersScreen: React.FC = () => {
               fontFamily: FONTFAMILY.INTER_MEDIUM,
             }}
           >
-            Ready to accept orders
+            Ready To Accept Express Orders
           </CustomText>
           <CustomSwitch value={true} onValueChange={() => { }} />
         </View>
@@ -133,7 +133,7 @@ const OrdersScreen: React.FC = () => {
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.tabContainer}
-        style={{ backgroundColor: '#FFFFFF', maxHeight: 50, overflow: 'hidden' }}
+        style={{ maxHeight: 40, overflow: 'hidden' }}
         nestedScrollEnabled={true}
       >
         <View

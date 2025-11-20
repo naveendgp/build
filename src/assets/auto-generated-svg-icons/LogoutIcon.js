@@ -6,14 +6,14 @@ const SvgLogoutIcon = props => (
     width={24}
     height={24}
     fill="none"
-    stroke="currentColor"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    strokeWidth={2}
-    className="logoutIcon_svg__lucide logoutIcon_svg__lucide-log-out-icon logoutIcon_svg__lucide-log-out"
     {...props}
   >
-    <Path d="m16 17 5-5-5-5M21 12H9M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <Path
+      stroke="#BB1F15"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77.04"
+    />
   </Svg>
 );
 export default SvgLogoutIcon;
