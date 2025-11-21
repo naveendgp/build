@@ -86,11 +86,11 @@ const ServicesScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Toolbar title="Services & Offer Details" />
+      <Toolbar title="Services" />
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-
+          <CustomText style={styles.serviceNote}>Verified</CustomText>
           <View style={styles.servicesList}>
             {services.map(renderServiceItem)}
           </View>

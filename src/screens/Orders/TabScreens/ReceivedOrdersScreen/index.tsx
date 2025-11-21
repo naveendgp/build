@@ -190,12 +190,12 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
           if (!isMounted) return;
 
           handleData = (data: any) => {
-            console.log('Received data:', data);
+            // console.log('Received data:', data);
           };
 
           socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
         } catch (err) {
-          console.error('Failed to connect socket:', err);
+          // console.error('Failed to connect socket:', err);
         }
       };
 
