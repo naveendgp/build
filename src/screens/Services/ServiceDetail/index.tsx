@@ -24,9 +24,10 @@ import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import { PRICING_TYPES } from '../../../constants';
 import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
-import ServiceItemCard from '../Components';
+import CategoryItemCard from '../Components/CategoryItemCard';
 import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
 import ServiceAddedDialog from '../ServiceAddedDialog';
+import dialogStyles from '../ServiceAddedDialog/style';
 
 type ServiceDetailNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -370,7 +371,7 @@ const ServiceDetailScreen: React.FC = () => {
                                 {categories.map((category, index) => {
                                     const { total, selected } = getCategoryItemCounts(category);
                                     return (
-                                        <View key={index}>
+                                        <View key={index} style={{ marginBottom: 16 }}>
                                             <TouchableOpacity
                                                 style={styles.categoryItem}
                                                 onPress={() => {
@@ -381,9 +382,9 @@ const ServiceDetailScreen: React.FC = () => {
                                                 <CustomText style={styles.categoryItemText}>{category}</CustomText>
                                                 <RightArrowIcon width={24} height={24} color={COLORS.INPUT_TEXT} />
                                             </TouchableOpacity>
-                                            <CustomText style={styles.categorySubtitle}>
+                                            {(selected > 0) && <CustomText style={styles.categorySubtitle}>
                                                 Selected Items - {selected}/{total}
-                                            </CustomText>
+                                            </CustomText>}
                                         </View>
                                     );
                                 })}
@@ -400,7 +401,7 @@ const ServiceDetailScreen: React.FC = () => {
                                         const itemKey = `${item.item_name}_${item.category}`;
                                         const editableItem = editableItems[itemKey] || item;
                                         return (
-                                            <ServiceItemCard
+                                            <CategoryItemCard
                                                 key={`${item.item_name}_${item.category}_${index}`}
                                                 item={item}
                                                 editableItem={editableItem}
@@ -451,6 +452,13 @@ const ServiceDetailScreen: React.FC = () => {
                 initialData={offerData}
             />
 
+            {/* Success Dialog */}
+            <ServiceAddedDialog
+                visible={showDialog}
+                onClose={() => setShowDialog(false)}
+                title={'Successfully Updated'}
+                bodyText={'Your service details have been updated successfully.'}
+            />
 
         </SafeAreaView>
     );

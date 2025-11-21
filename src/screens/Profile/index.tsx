@@ -92,7 +92,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Item Pricing & Offer Details',
       icon: SvgServicesIcon,
       iconType: 'svg',
-      onPress: () => navigation.navigate('Services'),
+      onPress: () => navigation.navigate('ActiveServicesPricingScreen'),
     },
     {
       id: '6',

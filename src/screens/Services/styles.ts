@@ -10,7 +10,7 @@ export default StyleSheet.create({
     flex: 1,
   },
   section: {
-    marginTop: 24, marginHorizontal: 12
+    marginTop: 16, marginHorizontal: 12
   },
   servicesList: {
     backgroundColor: COLORS.BUTTON_BACKGROUND,
@@ -90,10 +90,63 @@ export default StyleSheet.create({
     borderColor: COLORS.THEME_GREEN,
   },
   serviceNote: {
-    marginTop: 24,
+    marginTop: 16,
+    marginBottom: 24,
     fontSize: 14,
     color: COLORS.NOTE_TEXT,
     textAlign: 'left',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    color: COLORS.BOTTOM_BLACK,
+    fontWeight: '700',
+    marginBottom: 16,
+  },
+  serviceNameContainer: {
+
+  },
+  underVerificationText: {
+    fontSize: 12,
+    color: COLORS.LOGIN_SUBTITLE,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    fontWeight: '500',
+    marginTop: 2,
+    paddingLeft: 12
+  },
+  serviceCheckboxUnverified: {
+    backgroundColor: COLORS.WHITE,
+    borderColor: COLORS.BORDER_INPUT,
+  },
+  minusIcon: {
+    fontSize: 20,
+    color: COLORS.NOTE_TEXT,
+    fontWeight: '400',
+    lineHeight: 20,
+  },
+  updateButtonContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 24,
+    paddingTop: 16,
+    backgroundColor: COLORS.WHITE,
+  },
+  updateButton: {
+    backgroundColor: COLORS.THEME_GREEN,
+    borderRadius: 8,
+    paddingVertical: 16,
+  },
+  selectedItemsContainer: {
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.BORDER_INPUT,
+  },
+  selectedItemsText: {
+    fontSize: 14,
+    color: COLORS.NOTE_TEXT,
+    textAlign: 'center',
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },

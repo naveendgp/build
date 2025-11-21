@@ -210,3 +210,36 @@ export interface ListServicesResponse {
   message: string;
   data: ListServiceItem[];
 }
+
+// Services by State API Types
+export interface ServiceByState {
+  service_id: string;
+  service_name: string;
+  image_url: string;
+  pricing_type: string;
+  service_description: string;
+  max_count_per_day: number;
+  is_offer: boolean;
+  offer_percentage: number;
+  offer_max_cap: number;
+  is_active: boolean;
+  is_approved: boolean;
+  is_express_available: boolean;
+  express_delivery_time_minutes: number;
+  normal_delivery_time_minutes: number;
+  express_time: number;
+  standard_time: number;
+  active_items_count: number;
+  total_items_count: number;
+}
+
+export interface ServicesByStateData {
+  verified: ServiceByState[];
+  unverified: ServiceByState[];
+}
+
+export interface ServicesByStateResponse {
+  status: boolean;
+  message: string;
+  data: ServicesByStateData;
+}

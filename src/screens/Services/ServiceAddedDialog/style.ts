@@ -45,8 +45,11 @@ export default StyleSheet.create({
         fontWeight: '400',
         color: COLORS.NOTE_TEXT,
         textAlign: 'center',
-        marginBottom: 24,
         lineHeight: 20,
+    },
+    bodyTextContainer: {
+        marginBottom: 24,
+        alignItems: 'center',
     },
     boldText: {
         fontFamily: FONTFAMILY.INTER_BOLD,

@@ -10,6 +10,7 @@ import {
   ToggleServiceActiveInput,
   ToggleServiceActiveResponse,
   ListServicesResponse,
+  ServicesByStateResponse,
 } from '../types/profileTypes';
 
 export const getProfile = async (): Promise<ProfileResponse> => {
@@ -41,5 +42,10 @@ export const toggleServiceActive = async (
 
 export const listServices = async (): Promise<ListServicesResponse> => {
   const response = await api.get('/vendor/list-services');
+  return response.data;
+};
+
+export const getServicesByState = async (): Promise<ServicesByStateResponse> => {
+  const response = await api.get('/vendor/services-by-state');
   return response.data;
 };
