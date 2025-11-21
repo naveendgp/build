@@ -13,9 +13,22 @@ import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS } from '../../../constants/colors';
 import { VendorErrors } from '../useVendorValidation';
 
+interface VendorData {
+  owner_name: string;
+  email: string;
+  address: string;
+  aadhaar_no: string;
+  pan_number: string;
+  mobile: string;
+  date_of_birth: string;
+  profile_pic: string | { uri: string; name?: string } | null;
+  aadhaar_file: { uri: string; name: string } | null;
+  pan_file: { uri: string; name: string } | null;
+}
+
 interface Props {
-  vendor: any;
-  setVendor: (v: any) => void;
+  vendor: VendorData;
+  setVendor: (v: VendorData) => void;
   handleFocusScroll: (ref: any) => void;
   vendorAddressRef: React.RefObject<View | null>;
   isMobileFromOtp?: boolean;
@@ -30,8 +43,17 @@ const VendorDetailsStep: React.FC<Props> = ({
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
-
-
+  // Helper function to get profile pic URI safely
+  const getProfilePicUri = (): string | undefined => {
+    if (!vendor.profile_pic) return undefined;
+    if (typeof vendor.profile_pic === 'string') {
+      return vendor.profile_pic;
+    }
+    if (typeof vendor.profile_pic === 'object' && vendor.profile_pic !== null && 'uri' in vendor.profile_pic) {
+      return vendor.profile_pic.uri;
+    }
+    return undefined;
+  };
 
   const pickProfilePic = () => {
     launchImageLibrary({ mediaType: 'photo', includeBase64: false }, res => {
@@ -92,9 +114,9 @@ const VendorDetailsStep: React.FC<Props> = ({
           onPress={pickProfilePic}
           style={styles.profilePicPlaceholder}
         >
-          {vendor.profile_pic ? (
+          {getProfilePicUri() ? (
             <Image
-              source={{ uri: vendor.profile_pic }}
+              source={{ uri: getProfilePicUri()! }}
               style={styles.profilePic}
             />
           ) : null}

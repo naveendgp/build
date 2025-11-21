@@ -38,7 +38,8 @@ const ProfileDetailsScreen: React.FC = () => {
         pan_number: profile.pan_number || '',
         mobile: profile.phone || mobileNumber || '',
         date_of_birth: storeVendor.date_of_birth || '',
-        profile_pic: storeVendor.profile_pic || null,
+        // Use profile_pic from API if available, otherwise use local selection
+        profile_pic: profile.profile_pic || storeVendor.profile_pic || null,
         aadhaar_file: buildDocumentFile(profile.documents?.aadhaar_card, storeVendor.aadhaar_file, 'Aadhaar Document'),
         pan_file: buildDocumentFile(profile.documents?.pan_card, storeVendor.pan_file, 'PAN Document'),
       };
@@ -72,6 +73,8 @@ const ProfileDetailsScreen: React.FC = () => {
         aadhaar_no: profile.aadhaar_number || prev.aadhaar_no,
         pan_number: profile.pan_number || prev.pan_number,
         mobile: profile.phone || prev.mobile,
+        // Use profile_pic from API if available, but keep local selection if user has selected a new one
+        profile_pic: prev.profile_pic || profile.profile_pic || null,
         aadhaar_file: buildDocumentFile(profile.documents?.aadhaar_card, prev.aadhaar_file, 'Aadhaar Document'),
         pan_file: buildDocumentFile(profile.documents?.pan_card, prev.pan_file, 'PAN Document'),
       }));

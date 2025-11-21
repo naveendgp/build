@@ -201,9 +201,9 @@ const VendorVerificationScreen: React.FC = () => {
       pan_number: '',
       mobile: mobileNumber || '', // Set mobile from auth store if available
       date_of_birth: '',
-      profile_pic: null,
-      aadhaar_file: null,
-      pan_file: null,
+      profile_pic: null as string | { uri: string; name?: string } | null,
+      aadhaar_file: null as { uri: string; name: string } | null,
+      pan_file: null as { uri: string; name: string } | null,
     },
     shop: {
       shop_name: '',
@@ -270,6 +270,27 @@ const VendorVerificationScreen: React.FC = () => {
     return {};
   };
 
+  // Helper function to get MIME type from file extension
+  const getMimeTypeFromExtension = (fileName: string): string => {
+    if (!fileName) return 'image/jpeg';
+    const extension = fileName.toLowerCase().split('.').pop();
+    switch (extension) {
+      case 'jpg':
+      case 'jpeg':
+        return 'image/jpeg';
+      case 'png':
+        return 'image/png';
+      case 'gif':
+        return 'image/gif';
+      case 'webp':
+        return 'image/webp';
+      case 'pdf':
+        return 'application/pdf';
+      default:
+        return 'image/jpeg'; // Default to image format
+    }
+  };
+
   // Helper function to normalize file object
   const normalizeFile = (file: any, defaultName: string, defaultType: string = 'image/jpeg') => {
     if (!file) return undefined;
@@ -278,15 +299,18 @@ const VendorVerificationScreen: React.FC = () => {
       return {
         uri: file,
         name: defaultName,
-        type: defaultType,
+        type: getMimeTypeFromExtension(defaultName),
       };
     }
     // Handle object with uri and name
     if (file?.uri) {
+      const fileName = file.name || defaultName;
+      // Use provided type, or detect from extension, or use default
+      const mimeType = file.type || getMimeTypeFromExtension(fileName) || defaultType;
       return {
         uri: file.uri,
-        name: file.name || defaultName,
-        type: file.type || (file.name?.endsWith('.pdf') ? 'application/pdf' : defaultType),
+        name: fileName,
+        type: mimeType,
       };
     }
     return undefined;
@@ -326,8 +350,9 @@ const VendorVerificationScreen: React.FC = () => {
       // Prepare images object
       const images = {
         profile_pic: normalizeFile(data.vendor.profile_pic, 'profile_pic.jpg'),
-        aadhaar_card: normalizeFile(data.vendor.aadhaar_file, 'aadhaar_card.pdf', 'application/pdf'),
-        pan_card: normalizeFile(data.vendor.pan_file, 'pan_card.pdf', 'application/pdf'),
+        // Don't force PDF - preserve original format (image or PDF)
+        aadhaar_card: normalizeFile(data.vendor.aadhaar_file, 'aadhaar_card.jpg'),
+        pan_card: normalizeFile(data.vendor.pan_file, 'pan_card.jpg'),
         shop_image: normalizeFile(data.shop.shop_front_photo, 'shop_image.jpg'),
         cancelled_cheque: normalizeFile(data.bank.cancelled_cheque, 'cancelled_cheque.jpg'),
       };

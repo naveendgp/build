@@ -86,6 +86,27 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                 operating_hours: parseOperatingHours(shop.business_hours || ''),
             };
 
+            // Helper function to get MIME type from file extension
+            const getMimeTypeFromExtension = (fileName: string): string => {
+                if (!fileName) return 'image/jpeg';
+                const extension = fileName.toLowerCase().split('.').pop();
+                switch (extension) {
+                    case 'jpg':
+                    case 'jpeg':
+                        return 'image/jpeg';
+                    case 'png':
+                        return 'image/png';
+                    case 'gif':
+                        return 'image/gif';
+                    case 'webp':
+                        return 'image/webp';
+                    case 'pdf':
+                        return 'application/pdf';
+                    default:
+                        return 'image/jpeg'; // Default to image format
+                }
+            };
+
             // Helper function to normalize file object
             const normalizeFile = (file: any, defaultName: string, defaultType: string = 'image/jpeg') => {
                 if (!file) return undefined;
@@ -94,15 +115,18 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                     return {
                         uri: file,
                         name: defaultName,
-                        type: defaultType,
+                        type: getMimeTypeFromExtension(defaultName),
                     };
                 }
                 // Handle object with uri and name
                 if (file.uri) {
+                    const fileName = file.name || defaultName;
+                    // Use provided type, or detect from extension, or use default
+                    const mimeType = file.type || getMimeTypeFromExtension(fileName) || defaultType;
                     return {
                         uri: file.uri,
-                        name: file.name || defaultName,
-                        type: file.type || (file.name?.endsWith('.pdf') ? 'application/pdf' : defaultType),
+                        name: fileName,
+                        type: mimeType,
                     };
                 }
                 return undefined;
@@ -111,8 +135,9 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
             // Prepare images object
             const images = {
                 profile_pic: normalizeFile(vendor.profile_pic, 'profile_pic.jpg'),
-                aadhaar_card: normalizeFile(vendor.aadhaar_file, 'aadhaar_card.pdf', 'application/pdf'),
-                pan_card: normalizeFile(vendor.pan_file, 'pan_card.pdf', 'application/pdf'),
+                // Don't force PDF - preserve original format (image or PDF)
+                aadhaar_card: normalizeFile(vendor.aadhaar_file, 'aadhaar_card.jpg'),
+                pan_card: normalizeFile(vendor.pan_file, 'pan_card.jpg'),
                 shop_image: normalizeFile(shop.shop_front_photo, 'shop_image.jpg'),
                 cancelled_cheque: normalizeFile(bank.cancelled_cheque, 'cancelled_cheque.jpg'),
             };

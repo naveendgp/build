@@ -31,6 +31,7 @@ export interface VendorProfile {
   app_version: AppVersion;
   documents: Documents;
   shop_image_url: string;
+  profile_pic: string;
 }
 export interface Documents {
   aadhaar_card: string;
