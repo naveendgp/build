@@ -14,7 +14,7 @@ export default {
       justifyContent: 'space-around',
       alignItems: 'center',
       marginBottom: 16,
-     
+
     },
     stepIndicator: {
       width: 24,
@@ -34,14 +34,16 @@ export default {
       borderRadius: 20,
     },
     stepIndicatorCompleted: {
-        borderColor: COLORS.STEP_INDICATOR_ACTIVE,
+      borderColor: COLORS.STEP_INDICATOR_ACTIVE,
       backgroundColor: COLORS.ICON_GREEN,
       width: 24,
       height: 24,
       borderRadius: 20,
     },
-    stepIndicatorText: { fontFamily: FONTFAMILY.INTER_SEMIBOLD, 
-      fontSize: 18, fontWeight: '700', color: COLORS.BLACK },
+    stepIndicatorText: {
+      fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+      fontSize: 18, fontWeight: '700', color: COLORS.BLACK
+    },
     dot: {
       width: 14,
       height: 14,

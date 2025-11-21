@@ -1,16 +1,10 @@
 import { StyleSheet } from 'react-native';
-import { COLORS, FONTFAMILY } from '../../constants/colors';
+import { COLORS, FONTFAMILY } from '../../../constants/colors';
 
 export default StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: COLORS.WHITE,
-  },
-  content: {
-    flex: 1,
-  },
-  section: {
-    marginTop: 16, marginHorizontal: 12
+    marginTop: 24,
+    marginHorizontal: 12,
   },
   servicesList: {
     backgroundColor: COLORS.BUTTON_BACKGROUND,
@@ -40,11 +34,6 @@ export default StyleSheet.create({
     flex: 1,
     gap: 12,
   },
-  serviceInfo: {
-    flex: 1,
-    flexDirection: 'row',
-    gap: 8
-  },
   serviceOptionName: {
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
@@ -54,11 +43,6 @@ export default StyleSheet.create({
   serviceOptionNameSelected: {
     color: COLORS.THEME_GREEN,
   },
-  serviceOptionDescription: {
-    fontSize: 13,
-    color: COLORS.LOGIN_SUBTITLE,
-    marginTop: 4,
-  },
   serviceOptionRight: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -67,7 +51,7 @@ export default StyleSheet.create({
   serviceImage: {
     width: 100,
     height: 70,
-    bottom: 0
+    bottom: 0,
   },
   serviceImagePlaceholder: {
     width: 56,
@@ -90,65 +74,18 @@ export default StyleSheet.create({
     borderColor: COLORS.THEME_GREEN,
   },
   serviceNote: {
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: 24,
     fontSize: 14,
     color: COLORS.NOTE_TEXT,
     textAlign: 'left',
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },
-  sectionTitle: {
-    fontSize: 20,
+  errorText: {
+    marginTop: 8,
+    fontSize: 13,
+    color: COLORS.ERROR,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
-    color: COLORS.BOTTOM_BLACK,
-    fontWeight: '700',
-    marginBottom: 16,
-  },
-  serviceNameContainer: {
-
-  },
-  underVerificationText: {
-    fontSize: 12,
-    color: COLORS.LOGIN_SUBTITLE,
-    fontFamily: FONTFAMILY.INTER_MEDIUM,
-    fontWeight: '500',
-    marginTop: 2,
-    paddingLeft: 12
-  },
-  serviceCheckboxUnverified: {
-    backgroundColor: COLORS.WHITE,
-    borderColor: COLORS.BORDER_INPUT,
-  },
-  minusIcon: {
-    fontSize: 20,
-    color: COLORS.NOTE_TEXT,
-    fontWeight: '400',
-    lineHeight: 20,
-  },
-  updateButtonContainer: {
-    paddingHorizontal: 12,
-    paddingBottom: 24,
-    paddingTop: 16,
-    backgroundColor: COLORS.WHITE,
-  },
-  updateButton: {
-    backgroundColor: COLORS.THEME_GREEN,
-    borderRadius: 8,
-    paddingVertical: 16,
-  },
-  selectedItemsContainer: {
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_INPUT,
-  },
-  selectedItemsText: {
-    fontSize: 14,
-    color: COLORS.NOTE_TEXT,
-    textAlign: 'center',
-    fontFamily: FONTFAMILY.INTER_REGULAR,
-    fontWeight: '400',
   },
 });
 

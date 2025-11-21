@@ -84,5 +84,9 @@ export interface RegisterCompletePayload {
 export interface RegisterCompleteResponse {
   status: boolean;
   message: string;
-  data?: any;
+  data: RegisterCompleteResponseData;
+}
+
+export interface RegisterCompleteResponseData {
+  status: string;
 }

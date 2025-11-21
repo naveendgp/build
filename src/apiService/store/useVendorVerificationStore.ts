@@ -42,16 +42,23 @@ interface BankData {
   cancelled_cheque: any;
 }
 
+interface ServicesData {
+  selectedServices: string[];
+}
+
 interface VendorVerificationState {
   vendor: VendorData;
   shop: ShopData;
   bank: BankData;
+  services: ServicesData;
   setVendor: (vendor: Partial<VendorData>) => void;
   setShop: (shop: Partial<ShopData>) => void;
   setBank: (bank: Partial<BankData>) => void;
+  setServices: (services: Partial<ServicesData>) => void;
   setVendorData: (vendor: VendorData) => void;
   setShopData: (shop: ShopData) => void;
   setBankData: (bank: BankData) => void;
+  setServicesData: (services: ServicesData) => void;
   clearAll: () => void;
 }
 
@@ -97,11 +104,16 @@ const initialBank: BankData = {
   cancelled_cheque: null,
 };
 
+const initialServices: ServicesData = {
+  selectedServices: [],
+};
+
 export const useVendorVerificationStore = create<VendorVerificationState>()(
   set => ({
     vendor: initialVendor,
     shop: initialShop,
     bank: initialBank,
+    services: initialServices,
     setVendor: (vendorData: Partial<VendorData>) =>
       set(state => ({
         vendor: { ...state.vendor, ...vendorData },
@@ -114,14 +126,20 @@ export const useVendorVerificationStore = create<VendorVerificationState>()(
       set(state => ({
         bank: { ...state.bank, ...bankData },
       })),
+    setServices: (servicesData: Partial<ServicesData>) =>
+      set(state => ({
+        services: { ...state.services, ...servicesData },
+      })),
     setVendorData: (vendorData: VendorData) => set({ vendor: vendorData }),
     setShopData: (shopData: ShopData) => set({ shop: shopData }),
     setBankData: (bankData: BankData) => set({ bank: bankData }),
+    setServicesData: (servicesData: ServicesData) => set({ services: servicesData }),
     clearAll: () =>
       set({
         vendor: initialVendor,
         shop: initialShop,
         bank: initialBank,
+        services: initialServices,
       }),
   }),
 );

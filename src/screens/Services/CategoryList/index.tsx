@@ -20,7 +20,7 @@ import {
     ServiceItem,
 } from '../../../apiService/types/profileTypes';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
-import ServiceItemCard from '../Components';
+import CategoryItemCard from '../Components/CategoryItemCard';
 import { useServiceDataStore } from '../../../apiService/store/useServiceDataStore';
 import styles from './style';
 
@@ -197,7 +197,7 @@ const CategoryListScreen: React.FC = () => {
         const editableItem = editableItems[itemKey] || item;
 
         return (
-            <ServiceItemCard
+            <CategoryItemCard
                 item={item}
                 editableItem={editableItem}
                 onUpdateField={(field, value) => {

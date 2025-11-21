@@ -411,9 +411,8 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
   logoutOptionItem: {
-    borderTopWidth: 1,
-    borderTopColor: COLORS.BORDER_INPUT,
-    marginTop: 8,
+
+
     paddingTop: 16,
   },
   logoutOptionTitle: {

@@ -9,12 +9,16 @@ interface ServiceAddedDialogProps {
     visible: boolean;
     onClose: () => void;
     onButtonPress?: () => void;
+    title?: string;
+    bodyText?: string | React.ReactNode;
 }
 
 const ServiceAddedDialog: React.FC<ServiceAddedDialogProps> = ({
     visible,
     onClose,
     onButtonPress,
+    title,
+    bodyText,
 }) => {
     const handleButtonPress = () => {
         if (onButtonPress) {
@@ -23,6 +27,10 @@ const ServiceAddedDialog: React.FC<ServiceAddedDialogProps> = ({
             onClose();
         }
     };
+
+    // Default texts
+    const defaultTitle = "Your Details Have Been Sent For Review";
+    const defaultBodyText = "We're reviewing your details. After approval, you'll be able to update your service prices and receive customer orders. The process may take up to 48 hours.";
 
     return (
         <Modal
@@ -47,14 +55,23 @@ const ServiceAddedDialog: React.FC<ServiceAddedDialogProps> = ({
 
                     {/* Main Heading */}
                     <CustomText style={styles.title}>
-                        Your Details Have Been Sent For Review
+                        {title || defaultTitle}
                     </CustomText>
 
                     {/* Body Text */}
-                    <CustomText style={styles.bodyText}>
-                        Once you have approved you will be able to receive orders from customers. It may take up to{' '}
-                        <CustomText style={styles.boldText}>48 hours to verify your details.</CustomText>
-                    </CustomText>
+                    {typeof bodyText === 'string' ? (
+                        <CustomText style={styles.bodyText}>
+                            {bodyText || defaultBodyText}
+                        </CustomText>
+                    ) : (
+                        <View style={styles.bodyTextContainer}>
+                            {bodyText || (
+                                <CustomText style={styles.bodyText}>
+                                    {defaultBodyText}
+                                </CustomText>
+                            )}
+                        </View>
+                    )}
 
 
 

@@ -5,8 +5,8 @@ import { showErrorToast } from '../../utils/Toast';
 import { useDialogStore } from '../store/useDialogStore';
 
 const api = axios.create({
-  baseURL: 'http://13.204.157.24:3000',
-  // baseURL: 'http://192.168.0.127:3000',
+  // baseURL: 'http://13.204.157.24:3000',
+  baseURL: 'http://192.168.0.127:3000',
   timeout: 10000,
 });
 
@@ -20,7 +20,7 @@ api.interceptors.request.use(config => {
 
   // 🔥 LOG REQUEST
   console.log(
-    `%c[API REQUEST]  ${config.baseURL} ${config.method?.toUpperCase()} ${config.url}  ${token ? 'Token Present' : 'Token Absent'}`,
+    `%c[API REQUEST]  ${config.baseURL} ${config.method?.toUpperCase()} ${config.url}  ${token ? 'Token Present' : 'Token Absent'} \n ${token} `,
     "color: #3498db; font-weight: bold;"
   );
   console.log("➡ Payload:", config.data);
@@ -62,7 +62,11 @@ api.interceptors.response.use(
           "Your session has expired. Please login again.",
           "OK",
           require('../../assets/background/bg.png'),
-          () => logout()
+          () => {
+            logout();
+            useDialogStore.getState().hideDialog();
+          },
+          false // Not closable - user must click OK button
         );
       }, 100);
     }

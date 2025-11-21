@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AppNavigator from './src/navigation/AppNavigator';
 import CustomToast from './src/components/CustomToast';
+import CustomeDialog from './src/components/Dialog';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NavigationContainerRef } from '@react-navigation/native';
@@ -42,7 +43,7 @@ const App = () => {
 
   const isDarkMode = useColorScheme() === 'dark';
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
-  const { setNavigationRef } = useAuthStore();
+  const { setNavigationRef, navigationRef: authNavigationRef } = useAuthStore();
   const {
     visible,
     title,
@@ -51,6 +52,7 @@ const App = () => {
     hideDialog,
     imageSource,
     onClose,
+    closable,
   } = useDialogStore();
 
 
@@ -59,11 +61,21 @@ const App = () => {
     setNavigationRef(navigationRef);
   }, [setNavigationRef]);
 
-  const handleDialogClose = () => {
-    hideDialog();
+  const handleDialogButtonPress = () => {
     // Execute the onClose callback if it exists (this will call logout)
     if (onClose) {
       onClose();
+    }
+    hideDialog();
+
+    // Navigate to Login screen
+    const { navigationRef: storeNavRef } = useAuthStore.getState();
+    const navRef = storeNavRef || navigationRef;
+    if (navRef?.current) {
+      navRef.current.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
     }
   };
 
@@ -76,6 +88,16 @@ const App = () => {
               <StatusBar barStyle={'dark-content'} />
               <AppNavigator />
               <CustomToast />
+              <CustomeDialog
+                visible={visible}
+                title={title}
+                subtitle={subtitle}
+                buttonText={buttonText}
+
+                onButtonPress={handleDialogButtonPress}
+                closable={closable}
+                onClose={closable ? handleDialogButtonPress : undefined}
+              />
             </GestureHandlerRootView>
           </ScreenWrapper>
         </SafeAreaView>

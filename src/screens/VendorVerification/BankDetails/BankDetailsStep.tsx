@@ -8,13 +8,15 @@ import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS } from '../../../constants/colors';
 import styles from './bankDetailsStyles';
+import { BankErrors } from '../useVendorValidation';
 
 interface Props {
   bank: any;
   setBank: (b: any) => void;
+  errors?: BankErrors;
 }
 
-const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => {
+const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
   const pickCancelledCheque = () => {
     const options = {
       mediaType: 'photo' as MediaType,
@@ -56,6 +58,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => {
         value={bank.account_holder_name || ''}
         onChangeText={val => setBank({ ...bank, account_holder_name: val })}
         containerStyle={styles.inputContainer}
+        error={errors.account_holder_name}
       />
 
       <ProfileInput
@@ -65,6 +68,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => {
         onChangeText={val => setBank({ ...bank, account_number: val })}
         keyboardType="number-pad"
         containerStyle={styles.inputContainer}
+        error={errors.account_number}
       />
 
       <ProfileInput
@@ -73,6 +77,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => {
         value={bank.bank_name || ''}
         onChangeText={val => setBank({ ...bank, bank_name: val })}
         containerStyle={styles.inputContainer}
+        error={errors.bank_name}
       />
 
       <ProfileInput
@@ -82,6 +87,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank }) => {
         onChangeText={val => setBank({ ...bank, ifsc_code: val })}
         containerStyle={styles.inputContainer}
         autoCapitalize="characters"
+        error={errors.ifsc_code}
       />
 
       <ProfileInput
