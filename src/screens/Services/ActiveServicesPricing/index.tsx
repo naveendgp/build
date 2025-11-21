@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
-import { View, ScrollView } from 'react-native';
+import { View, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import CustomText from '../../../components/Text';
 import Toolbar from '../../../components/Toolbar';
+import ErrorScreen from '../../../components/ErrorScreen';
 import ServiceItemCard from '../Components/ServiceItemCard';
 import { getServicesByState, getProfile } from '../../../apiService/api/profileApi';
 import { ServiceByState, Service } from '../../../apiService/types/profileTypes';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
 
 type ActiveServicesPricingNavProp = NativeStackNavigationProp<RootStackParamList, 'ServicesPricing'>;
@@ -20,7 +23,7 @@ const ActiveServicesPricingScreen: React.FC = () => {
     const { profile } = useProfileStore();
 
     // Fetch services by state
-    const { data: servicesData, isLoading } = useQuery({
+    const { data: servicesData, isLoading, isError, error, refetch } = useQuery({
         queryKey: ['services-by-state'],
         queryFn: getServicesByState,
     });
@@ -91,33 +94,44 @@ const ActiveServicesPricingScreen: React.FC = () => {
         <SafeAreaView style={styles.container} edges={['top']}>
             <Toolbar title="Item Pricing & Offer Details" />
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                <View style={styles.section}>
-                    <View style={styles.servicesList}>
-                        {activeServices.map(service => {
-                            const isVerified = servicesData?.data?.verified.some(
-                                v => v.service_id === service.service_id
-                            ) || false;
-
-                            return (
-                                <ServiceItemCard
-                                    key={service.service_id}
-                                    item={service}
-                                    isVerified={isVerified}
-                                    isSelected={service.is_active}
-                                    onToggle={handleServiceToggle}
-                                    onPress={handleServicePress}
-                                    isArrowVisible={true}
-                                    showCheckbox={false}
-                                    showItemsCount={service.active_items_count > 0}
-                                />
-                            );
-                        })}
-                    </View>
-
-
+            {isLoading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
                 </View>
-            </ScrollView>
+            ) : isError ? (
+                <ErrorScreen
+                    title="Something went wrong"
+                    subtitle="Please check After sometime and try again."
+                    onRetry={() => refetch()}
+                    retryButtonText="Retry"
+                />
+            ) : (
+                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                    <View style={styles.section}>
+                        <View style={styles.servicesList}>
+                            {activeServices.map(service => {
+                                const isVerified = servicesData?.data?.verified.some(
+                                    v => v.service_id === service.service_id
+                                ) || false;
+
+                                return (
+                                    <ServiceItemCard
+                                        key={service.service_id}
+                                        item={service}
+                                        isVerified={isVerified}
+                                        isSelected={service.is_active}
+                                        onToggle={handleServiceToggle}
+                                        onPress={handleServicePress}
+                                        isArrowVisible={true}
+                                        showCheckbox={false}
+                                        showItemsCount={service.active_items_count > 0}
+                                    />
+                                );
+                            })}
+                        </View>
+                    </View>
+                </ScrollView>
+            )}
         </SafeAreaView>
     );
 };

@@ -99,7 +99,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Shop Review',
       icon: SvgStarIcon,
       iconType: 'svg',
-      onPress: () => console.log('Shop Review'),
+      onPress: () => navigation.navigate('ShopReviewsScreen'),
     },
     {
       id: '7',

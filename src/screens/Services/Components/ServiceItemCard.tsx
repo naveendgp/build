@@ -42,7 +42,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
     const textIsSelected = !isMinus && isSelected;
 
     return (
-        <View>
+        <TouchableOpacity onPress={() => onPress(item)} activeOpacity={0.7}>
             <View
                 style={[
                     styles.serviceOptionCard,
@@ -71,24 +71,20 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
                             </View>
                         </TouchableOpacity>
                     )}
-                    <TouchableOpacity
-                        style={styles.serviceInfo}
-                        onPress={() => onPress(item)}
-                        activeOpacity={0.7}
-                    >
-                        <View style={styles.serviceNameContainer}>
-                            <CustomText
-                                style={[
-                                    styles.serviceOptionName,
-                                    textIsSelected && styles.serviceOptionNameSelected,
-                                ]}
-                            >
-                                {item.service_name}
-                            </CustomText>
 
-                        </View>
-                        {isArrowVisible && <RightArrowIcon width={24} height={24} color={COLORS.INPUT_TEXT} />}
-                    </TouchableOpacity>
+                    <View style={styles.serviceNameContainer}>
+                        <CustomText
+                            style={[
+                                styles.serviceOptionName,
+                                textIsSelected && styles.serviceOptionNameSelected,
+                            ]}
+                        >
+                            {item.service_name}
+                        </CustomText>
+
+                    </View>
+                    {isArrowVisible && <RightArrowIcon width={24} height={24} color={COLORS.INPUT_TEXT} />}
+
 
                 </View>
 
@@ -120,7 +116,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
                     </CustomText>
                 )
             }
-        </View>
+        </TouchableOpacity>
     );
 };
 

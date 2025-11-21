@@ -19,6 +19,7 @@ import BottomTabNavigator from './BottomTabNavigator';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
 import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
+import ShopReviewsScreen from '../screens/Profile/ShopReviewsScreen';
 import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
 import ActiveServicesPricingScreen from '../screens/Services/ActiveServicesPricing';
@@ -58,6 +59,7 @@ export type RootStackParamList = {
   ShopDetails: undefined;
   BankDetails: undefined;
   ActiveServicesPricingScreen: undefined;
+  ShopReviewsScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -198,7 +200,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={BankDetailsScreen}
             options={{ headerShown: false }}
           />
-
+          <Stack.Screen
+            name="ShopReviewsScreen"
+            component={ShopReviewsScreen}
+            options={{ headerShown: false }}
+          />
 
         </Stack.Navigator>
       </NavigationContainer>
