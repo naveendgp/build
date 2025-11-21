@@ -8,12 +8,14 @@ interface DialogState {
   buttonText: string;
   imageSource?: any;
   onClose?: () => void;
+  closable?: boolean;
   showDialog: (
     title: string,
     subtitle: string,
     buttonText?: string,
     imageSource?: any,
-    onClose?: () => void
+    onClose?: () => void,
+    closable?: boolean
   ) => void;
   hideDialog: () => void;
 }
@@ -25,8 +27,9 @@ export const useDialogStore = create<DialogState>(set => ({
   buttonText: 'Close',
   imageSource: undefined,
   onClose: undefined,
+  closable: true,
 
-  showDialog: (title, subtitle, buttonText = 'Close', imageSource, onClose) =>
+  showDialog: (title, subtitle, buttonText = 'Close', imageSource, onClose, closable = true) =>
     set({
       visible: true,
       title,
@@ -34,6 +37,7 @@ export const useDialogStore = create<DialogState>(set => ({
       buttonText,
       imageSource,
       onClose,
+      closable,
     }),
 
   hideDialog: () =>
@@ -44,5 +48,6 @@ export const useDialogStore = create<DialogState>(set => ({
       buttonText: 'Close',
       imageSource: undefined,
       onClose: undefined,
+      closable: true,
     }),
 }));

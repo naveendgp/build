@@ -1,20 +1,29 @@
 import { StyleSheet } from 'react-native';
+import { COLORS, FONTFAMILY } from '../../constants/colors';
 
 export default StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
   },
   container: {
     width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+    maxWidth: 400,
+    backgroundColor: COLORS.WHITE,
+    borderRadius: 16,
+    padding: 24,
     alignItems: 'center',
-    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
   },
   closeBtn: {
     position: 'absolute',
@@ -23,19 +32,40 @@ export default StyleSheet.create({
     zIndex: 10,
     padding: 6,
   },
-  closeText: { fontSize: 24, lineHeight: 24 },
-  image: { width: 150, height: 150, marginBottom: 12, borderRadius: 10 },
+  closeText: { 
+    fontSize: 24, 
+    lineHeight: 24,
+    color: COLORS.BOTTOM_BLACK,
+  },
+  iconContainer: {
+    marginBottom: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  image: { 
+    width: 70, 
+    height: 70,
+    borderRadius: 0,
+  },
   title: {
     fontSize: 18,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
     fontWeight: '700',
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
+    color: COLORS.BOTTOM_BLACK,
     textAlign: 'center',
     marginBottom: 16,
+    lineHeight: 24,
   },
-  actionRow: { width: '100%' },
+  subtitle: {
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+    color: COLORS.NOTE_TEXT,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  actionRow: { 
+    width: '100%',
+  },
 });

@@ -62,7 +62,11 @@ api.interceptors.response.use(
           "Your session has expired. Please login again.",
           "OK",
           require('../../assets/background/bg.png'),
-          () => logout()
+          () => {
+            logout();
+            useDialogStore.getState().hideDialog();
+          },
+          false // Not closable - user must click OK button
         );
       }, 100);
     }
