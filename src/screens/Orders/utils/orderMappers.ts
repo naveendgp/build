@@ -107,7 +107,7 @@ export const mapOrdersToReceivedCards = (
   return orders.map(order => {
     const firstItem = order.items?.[0];
     return {
-      orderId: order.order_number?.toString() ?? order._id,
+      orderId: order._id??"",
       location: formatAddress(order),
       orderType: order.is_express ? 'express' : 'standard',
       customerName: order.user_address.label || 'Customer',

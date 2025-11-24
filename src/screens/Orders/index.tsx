@@ -154,11 +154,13 @@ const OrdersScreen: React.FC = () => {
               Received Orders
             </CustomText>
             {activeTab === OrderStatus.RECEIVED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.RECEIVED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.RECEIVED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.RECEIVED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -180,11 +182,13 @@ const OrdersScreen: React.FC = () => {
               Accepted Orders
             </CustomText>
             {activeTab === OrderStatus.ACCEPTED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.ACCEPTED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.ACCEPTED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.ACCEPTED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -206,11 +210,13 @@ const OrdersScreen: React.FC = () => {
               Ready For Pick Up
             </CustomText>
             {activeTab === OrderStatus.READY_FOR_PICK_UP && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.READY_FOR_PICK_UP).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.READY_FOR_PICK_UP) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.READY_FOR_PICK_UP).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -232,11 +238,13 @@ const OrdersScreen: React.FC = () => {
               Completed Orders
             </CustomText>
             {activeTab === OrderStatus.COMPLETED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.COMPLETED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.COMPLETED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.COMPLETED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

@@ -47,58 +47,39 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
   );
 
   useEffect(() => {
-    const connectSocket = async () => {
-      try {
-        await socket.connect();
-        console.log('Socket connected successfully');
-      } catch (err) {
-        console.error('Failed to connect socket:', err);
-      }
+    console.log("[Screen] useEffect triggered");
+
+    // 1. Ensure socket physically connects first
+    socket.connect();
+
+    // 2. Register event listener ONLY AFTER connection
+    const handleData = (data: any) => {
+      console.log('🔥 EVENT RECEIVED:', data);
+      refetch();
     };
-    connectSocket();
+
+    socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+    console.log("[Screen] Listener attached");
+
+    return () => {
+      socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+    };
   }, []);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let isMounted = true;
-      let handleData: ((data: any) => void) | null = null;
 
-      const setupSocketListeners = async () => {
-        try {
-          const sock = socket.getSocket();
 
-          if (!sock?.connected) {
-            await socket.connect();
-          }
 
-          if (!isMounted) return;
 
-          handleData = (data: any) => {
-            console.log('Received data:', data);
-          };
 
-          socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
-        } catch (err) {
-          console.error('Failed to connect socket:', err);
-        }
-      };
-
-      setupSocketListeners();
-
-      return () => {
-        isMounted = false;
-        if (handleData) {
-          socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
-        }
-      };
-    }, [])
-  );
+  const handleOrderAccept = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   const renderOrderItem = useCallback(
     ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
-      <ReceivedOrderCard {...item} tabType={tabType} index={index} />
+      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept} />
     ),
-    [tabType],
+    [tabType, handleOrderAccept],
   );
 
   const keyExtractor = useCallback(

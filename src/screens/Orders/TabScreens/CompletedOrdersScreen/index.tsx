@@ -52,22 +52,9 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
   );
 
   const handleNavigateToDetails = useCallback(
-    (order: VendorOrder, card: CompletedOrderCardProps) => {
+    (order: VendorOrder) => {
       navigation.navigate('OrderDetails', {
-        order: {
-          orderId: card.orderId,
-          location: card.location,
-          orderType: card.orderType,
-          serviceType: card.serviceType,
-          serviceQuantity: card.serviceQuantity,
-          serviceWeight: card.serviceWeight,
-          timeline: card.timeline,
-          itemTotal: card.totalPrice,
-          gst: order.payment_details?.gst?.toString() ?? '0',
-          gstPercentage: '18',
-          grandTotal: card.totalPrice,
-          customerName: order.user_address.label || 'Customer',
-        },
+        orderId: order._id,
       });
     },
     [navigation],
@@ -77,7 +64,7 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
     ({ item }: { item: CompletedSection['data'][number] }) => (
       <CompletedOrderCard
         {...item.card}
-        onViewDetails={() => handleNavigateToDetails(item.source, item.card)}
+        onViewDetails={() => handleNavigateToDetails(item.source)}
       />
     ),
     [handleNavigateToDetails],

@@ -1,7 +1,7 @@
 import { AppState, AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { io, Socket } from 'socket.io-client';
-
+import { Options } from 'react-native-reanimated/lib/typescript/createAnimatedComponent/AnimatedComponent';
 
 // Options for socket
 export interface SimpleSocketOptions {
@@ -30,7 +30,6 @@ export class socketService<Events extends Record<string, any> = any> {
   private reconnectAttempts = 0;
   private manualDisconnect = false;
   private isConnecting = false;
-  private hasEverConnected = false;
   private appState: AppStateStatus = AppState.currentState;
   private networkConnected = true;
   private listeners = new Map<keyof Events, Set<(data: any) => void>>();
@@ -101,7 +100,6 @@ export class socketService<Events extends Record<string, any> = any> {
 
       await this.waitForConnect(this.options.connectTimeout);
       this.reconnectAttempts = 0;
-      this.hasEverConnected = true; // Mark that we've successfully connected
       this.log('Socket connected ✅');
       this.attachAllListeners();
     } catch (err) {
@@ -278,11 +276,6 @@ export class socketService<Events extends Record<string, any> = any> {
   }
 
   private scheduleReconnect() {
-    // Don't reconnect if autoConnect is false and we've never connected
-    if (!this.options.autoConnect && !this.hasEverConnected) {
-      this.log('Auto-connect disabled and never connected, skipping reconnect');
-      return;
-    }
     if (this.manualDisconnect) return;
     if (!this.networkConnected) {
       this.log('Network offline, waiting...');
@@ -320,15 +313,10 @@ export class socketService<Events extends Record<string, any> = any> {
       if (this.options.autoSuspendOnBackground) {
         if (prev === 'active' && next === 'background') {
           this.log('App backgrounded → disconnecting socket');
-         // this.disconnect(false);
+          this.disconnect(false);
         } else if (prev === 'background' && next === 'active') {
-          // Only reconnect if autoConnect is enabled or we've connected before
-          if (this.options.autoConnect || this.hasEverConnected) {
-            this.log('App foregrounded → reconnecting socket');
-            this.connect().catch(() => { });
-          } else {
-            this.log('App foregrounded but auto-connect disabled, skipping reconnect');
-          }
+          this.log('App foregrounded → reconnecting socket');
+          this.connect().catch(() => { });
         }
       }
     });
@@ -340,12 +328,7 @@ export class socketService<Events extends Record<string, any> = any> {
       if (connected !== this.networkConnected) {
         this.networkConnected = connected;
         this.log('Network status changed:', connected);
-        // Only schedule reconnect if autoConnect is enabled or we've connected before
-        if (connected && (this.options.autoConnect || this.hasEverConnected)) {
-          this.scheduleReconnect();
-        } else if (connected) {
-          this.log('Network connected but auto-connect disabled, skipping reconnect');
-        }
+        if (connected) this.scheduleReconnect();
       }
     });
   }

@@ -1,5 +1,6 @@
 import api from './axios';
-import { OrderStatusCode, OrdersResponse } from '../types/ordersTypes';
+import { OrderStatusCode, OrdersResponse, AcceptOrderResponse, CompleteOrderResponse } from '../types/ordersTypes';
+import { API_ENDPOINTS } from '../../constants/apiEndpoints';
 
 export interface FetchOrdersParams {
   status: OrderStatusCode;
@@ -7,14 +8,48 @@ export interface FetchOrdersParams {
   limit?: number;
 }
 
+export interface AcceptOrderParams {
+  orderId: string;
+  isReject?: boolean;
+}
+
 export const fetchOrdersByStatus = async (
   params: FetchOrdersParams,
 ): Promise<OrdersResponse> => {
   const { status, page = 1, limit = 10 } = params;
-  const response = await api.get('/vendor/orders', {
+  const response = await api.get(API_ENDPOINTS.ORDERS, {
     params: { status, page, limit },
   });
 
+  return response.data;
+};
+
+export const acceptOrder = async (
+  params: AcceptOrderParams,
+): Promise<AcceptOrderResponse> => {
+  const { orderId, isReject = false } = params;
+  const response = await api.get(`${API_ENDPOINTS.ACCEPT_ORDER}/${orderId}`, {
+    params: { is_reject: isReject },
+  });
+
+  return response.data;
+};
+
+export const completeOrder = async (
+  orderId: string,
+): Promise<CompleteOrderResponse> => {
+  const response = await api.get(API_ENDPOINTS.COMPLETE_ORDER, {
+    params: { order_id: orderId },
+  });
+  return response.data;
+};
+
+export const fetchOrderById = async (
+  orderId: string,
+): Promise<OrdersResponse> => {
+  const response = await api.get(API_ENDPOINTS.ORDERS, {
+    params: { order_id: orderId },
+  });
   return response.data;
 };
 

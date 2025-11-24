@@ -93,3 +93,15 @@ export enum OrderStatusCode {
   COMPLETED = 4,
 }
 
+export interface AcceptOrderResponse {
+  status: boolean;
+  message: string;
+  data: Record<string, never>;
+}
+
+export interface CompleteOrderResponse {
+  status: boolean;
+  message: string;
+  data: Record<string, never>;
+}
+

@@ -47,7 +47,7 @@ export type RootStackParamList = {
   ServiceDetail: { service: Service };
   OrderConfirmation: undefined;
   OrdersDrawerScreen: undefined;
-  OrderDetails: { order: any } | undefined;
+  OrderDetails: { orderId: string } | undefined;
   UserProfile: undefined;
   FilePicker: undefined;
   MapScreen: undefined;

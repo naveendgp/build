@@ -1,4 +1,4 @@
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_ENDPOINTS, STRINGS } from '../../constants';
 import { socketService } from './socketService';
 import { useAuthStore } from '../store/useAuthStore';
@@ -9,6 +9,9 @@ const socket = new socketService({
   autoConnect: false,
   headers: async () => ({
     Authorization: `Bearer ${useAuthStore.getState().token}`,
+  }),
+  auth: async () => ({
+    token: useAuthStore.getState().token,
   }),
   params: {
     target: 'vendor',

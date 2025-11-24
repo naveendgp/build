@@ -43,11 +43,15 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
     [orders],
   );
 
+  const handleOrderAccept = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
   const renderOrderItem = useCallback(
     ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
-      <ReceivedOrderCard {...item} tabType={tabType} index={index} />
+      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept}  />
     ),
-    [tabType],
+    [tabType, handleOrderAccept],
   );
 
   const keyExtractor = useCallback(
