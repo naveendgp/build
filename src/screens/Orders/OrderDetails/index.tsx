@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import Toolbar from '../../../components/Toolbar';
 import CustomText from '../../../components/Text';
@@ -14,6 +15,8 @@ import styles from './styles';
 import SvgOrderBoxIcon from '../../../assets/auto-generated-svg-icons/OrderBoxIcon';
 import SvgHelpSupportIcon from '../../../assets/auto-generated-svg-icons/HelpSupportIcon';
 import ItemsDetailBottomsheet, { OrderItem } from '../BottomSheets/ItemsDetailBottomsheet';
+import { fetchOrderById } from '../../../apiService/api/ordersApi';
+import { VendorOrder } from '../../../apiService/types/ordersTypes';
 
 type OrderDetailsRouteProp = RouteProp<RootStackParamList, 'OrderDetails'>;
 type OrderDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'OrderDetails'>;
@@ -44,42 +47,132 @@ interface OrderDetailsData {
 const OrderDetailsScreen: React.FC = () => {
     const navigation = useNavigation<OrderDetailsNavProp>();
     const route = useRoute<OrderDetailsRouteProp>();
-    const order = route.params?.order;
+    const orderId = route.params?.orderId;
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
 
-    // Default data structure - in real app, this would come from route params
-    const orderData: OrderDetailsData = order || {
-        orderId: '1234567',
-        location: 'Tambaram, chennai',
-        orderType: 'standard',
-        serviceType: 'Iron',
-        serviceQuantity: '15',
-        timeline: [
-            {
-                status: 'Order Received',
-                date: '14th Oct',
-                time: '4:24 PM',
-                isCompleted: true,
-            },
-            {
-                status: 'Order Picked up',
-                date: '12th Oct',
-                time: '4:24 AM',
-                isCompleted: true,
-            },
-            {
-                status: 'Out for delivery',
-                date: '14th Oct',
-                time: '4:24 PM',
-                isActive: true,
-            },
-        ],
-        itemTotal: '200',
-        gst: '36',
-        gstPercentage: '18',
-        grandTotal: '236',
-        customerName: 'Srivathsan',
+    // Helper functions to format dates (defined before useMemo)
+    const getOrdinalSuffix = (n: number) => {
+        const j = n % 10;
+        const k = n % 100;
+        if (j === 1 && k !== 11) return 'st';
+        if (j === 2 && k !== 12) return 'nd';
+        if (j === 3 && k !== 13) return 'rd';
+        return 'th';
     };
+
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const day = date.getDate();
+        const month = date.toLocaleString('default', { month: 'short' });
+        return `${day}${getOrdinalSuffix(day)} ${month}`;
+    };
+
+    const formatTime = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+    };
+
+    // Fetch order details from API
+    const {
+        data: orderResponse,
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
+        queryKey: ['orderDetails', orderId],
+        queryFn: () => fetchOrderById(orderId!),
+        enabled: !!orderId,
+    });
+
+    // Get the first order from the response
+    const vendorOrder: VendorOrder | undefined = orderResponse?.data?.orders?.[0];
+
+    // Map VendorOrder to OrderDetailsData
+    const orderData: OrderDetailsData | null = useMemo(() => {
+        if (!vendorOrder) return null;
+
+        // Format address
+        const address = vendorOrder.user_address;
+        const location = `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}, ${address.city}, ${address.state}`;
+
+        // Calculate item total from items
+        const itemTotal = vendorOrder.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
+
+        // Get GST from payment_details
+        const gst = vendorOrder.payment_details?.gst || 0;
+        const gstPercentage = itemTotal > 0 ? ((gst / itemTotal) * 100).toFixed(0) : '18';
+
+        // Get grand total
+        const grandTotal = vendorOrder.total_amount || vendorOrder.payment_details?.totalPayableAmount || 0;
+
+        // Get service type from first item
+        const firstItem = vendorOrder.items?.[0];
+        const serviceType = firstItem?.service_name || 'Service';
+
+        // Calculate total quantity
+        const totalQuantity = vendorOrder.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+
+        // Build timeline based on status
+        const timeline: TimelineItem[] = [];
+        const statusTimestamps = vendorOrder.status_timestamps || {};
+
+        if (statusTimestamps.pending || vendorOrder.status === 'pending') {
+            timeline.push({
+                status: 'Order Received',
+                date: formatDate(vendorOrder.created_at),
+                time: formatTime(vendorOrder.created_at),
+                isCompleted: true,
+            });
+        }
+        if (statusTimestamps.accepted || vendorOrder.status === 'accepted') {
+            timeline.push({
+                status: 'Order Accepted',
+                date: formatDate(statusTimestamps.accepted || vendorOrder.updated_at),
+                time: formatTime(statusTimestamps.accepted || vendorOrder.updated_at),
+                isCompleted: true,
+            });
+        }
+        if (statusTimestamps.processed || vendorOrder.status === 'processed') {
+            timeline.push({
+                status: 'Order Processed',
+                date: formatDate(statusTimestamps.processed || vendorOrder.updated_at),
+                time: formatTime(statusTimestamps.processed || vendorOrder.updated_at),
+                isCompleted: true,
+            });
+        }
+        if (statusTimestamps.delivered || vendorOrder.status === 'delivered') {
+            timeline.push({
+                status: 'Order Delivered',
+                date: formatDate(statusTimestamps.delivered || vendorOrder.updated_at),
+                time: formatTime(statusTimestamps.delivered || vendorOrder.updated_at),
+                isCompleted: true,
+            });
+        }
+
+        return {
+            orderId: vendorOrder.order_number?.toString() || vendorOrder._id,
+            location,
+            orderType: vendorOrder.is_express ? 'express' : 'standard',
+            serviceType,
+            serviceQuantity: totalQuantity.toString(),
+            serviceWeight: vendorOrder.is_express ? `${totalQuantity} Kg` : undefined,
+            timeline: timeline.length > 0 ? timeline : [
+                {
+                    status: 'Order Received',
+                    date: formatDate(vendorOrder.created_at),
+                    time: formatTime(vendorOrder.created_at),
+                    isCompleted: true,
+                },
+            ],
+            itemTotal: itemTotal.toFixed(2),
+            gst: gst.toFixed(2),
+            gstPercentage,
+            grandTotal: grandTotal.toFixed(2),
+            customerName: address.label || 'Customer',
+        };
+    }, [vendorOrder, formatDate, formatTime]);
 
     const handleSupportPress = () => {
         // Handle support action
@@ -96,58 +189,16 @@ const OrderDetailsScreen: React.FC = () => {
 
     // Prepare items data for bottom sheet
     const getItemsData = (): OrderItem[] => {
-        const quantity = orderData.orderType === 'express'
-            ? parseInt(orderData.serviceWeight?.split(' ')[0] || '1')
-            : parseInt(orderData.serviceQuantity?.replace(' X', '') || '1');
+        if (!vendorOrder?.items) return [];
 
-        const itemPrice = parseFloat(orderData.itemTotal) / quantity;
-
-        return [{
-            id: '1',
-            type:'wash',
-            itemName: orderData.serviceType,
-            category: orderData.serviceType,
-            quantity: quantity,
-            amount: itemPrice,
-        },
-            {
-                id: '2',
-                type: orderData.serviceType.toLowerCase().includes('iron') ? 'iron' : 'wash',
-                itemName: orderData.serviceType,
-                category: orderData.serviceType,
-                quantity: quantity,
-                amount: itemPrice,
-            },
-            {
-                id: '3',
-                type: orderData.serviceType.toLowerCase().includes('iron') ? 'iron' : 'wash',
-                itemName: orderData.serviceType,
-                category: orderData.serviceType,
-                quantity: quantity,
-                amount: itemPrice,
-            },
-            {
-                id: '3',
-                type: orderData.serviceType.toLowerCase().includes('iron') ? 'iron' : 'wash',
-                itemName: orderData.serviceType,
-                category: orderData.serviceType,
-                quantity: quantity,
-                amount: itemPrice,
-            }, {
-                id: '3',
-                type: orderData.serviceType.toLowerCase().includes('iron') ? 'iron' : 'wash',
-                itemName: orderData.serviceType,
-                category: orderData.serviceType,
-                quantity: quantity,
-                amount: itemPrice,
-            }, {
-                id: '3',
-                type: orderData.serviceType.toLowerCase().includes('iron') ? 'iron' : 'wash',
-                itemName: orderData.serviceType,
-                category: orderData.serviceType,
-                quantity: quantity,
-                amount: itemPrice,
-            }];
+        return vendorOrder.items.map((item, index) => ({
+            id: item.item_id || index.toString(),
+            type: item.service_name.toLowerCase().includes('iron') ? 'iron' : 'wash',
+            itemName: item.item_name,
+            category: item.service_name,
+            quantity: item.quantity,
+            amount: item.price_per_item,
+        }));
     };
 
     const renderTimelineItem = (item: TimelineItem, index: number, totalItems: number) => {
@@ -192,6 +243,54 @@ const OrderDetailsScreen: React.FC = () => {
             </View>
         );
     };
+
+    // Show loader while fetching
+    if (isLoading) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.headerContainer}>
+                    <View style={styles.toolbarContainer}>
+                        <Toolbar
+                            title="Order"
+                            onBackPress={() => navigation.goBack()}
+                        />
+                    </View>
+                    <TouchableOpacity style={styles.supportButton} onPress={handleSupportPress}>
+                        <SvgHelpSupportIcon />
+                        <CustomText style={styles.supportText}>Support</CustomText>
+                    </TouchableOpacity>
+                </View>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+                </View>
+            </View>
+        );
+    }
+
+    // Show error state
+    if (isError || !orderData) {
+        return (
+            <View style={styles.container}>
+                <View style={styles.headerContainer}>
+                    <View style={styles.toolbarContainer}>
+                        <Toolbar
+                            title="Order"
+                            onBackPress={() => navigation.goBack()}
+                        />
+                    </View>
+                    <TouchableOpacity style={styles.supportButton} onPress={handleSupportPress}>
+                        <SvgHelpSupportIcon />
+                        <CustomText style={styles.supportText}>Support</CustomText>
+                    </TouchableOpacity>
+                </View>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <CustomText style={{ fontSize: 16, color: COLORS.ERROR, textAlign: 'center' }}>
+                        {error?.message || 'Failed to load order details. Please try again.'}
+                    </CustomText>
+                </View>
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
@@ -244,14 +343,14 @@ const OrderDetailsScreen: React.FC = () => {
                                         : `${orderData.serviceQuantity?.replace(' X', '') || '1'}X`}
                                 </CustomText>
                             </View>
-                            <CustomText style={[styles.serviceTypeText, styles.serviceTypeMargin]}>
-                                {orderData.serviceType}
-                            </CustomText>
                             <TouchableOpacity
                                 style={styles.arrowIconContainer}
                                 onPress={handleArrowPress}
-                                activeOpacity={0.7}
+                                activeOpacity={0.2}
                             >
+                                <CustomText style={[styles.serviceTypeText, styles.serviceTypeMargin]}>
+                                    {orderData.serviceType}
+                                </CustomText>
                                 <SvgForwardRightBlackSvg />
                             </TouchableOpacity>
                         </View>
