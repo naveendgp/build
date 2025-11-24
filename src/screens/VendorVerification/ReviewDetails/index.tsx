@@ -10,7 +10,7 @@ import styles from './style';
 import EditIcon from '../../../assets/auto-generated-svg-icons/EditIcon';
 import { COLORS } from '../../../constants/colors';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
-import { ShopDocumentUploadPayload } from '../../../apiService/types/docTypes';
+import { ShopDocumentUploadPayload } from '../../../apiService/types/authTypes';
 import { showErrorToast } from '../../../utils/Toast';
 import { useAuthStore } from '../../../apiService/store/useAuthStore';
 import { useVendorValidation } from '../useVendorValidation';

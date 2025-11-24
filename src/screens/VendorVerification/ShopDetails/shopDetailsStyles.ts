@@ -479,5 +479,12 @@ export default StyleSheet.create({
     color: COLORS.WHITE,
     fontWeight: '600',
   },
+  errorText: {
+    fontSize: 12,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.ERROR,
+    marginTop: 4,
+    marginLeft: 4,
+  },
 });
 
