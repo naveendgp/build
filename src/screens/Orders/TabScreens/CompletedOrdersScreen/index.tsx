@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, RefreshControl, SectionList } from 'react-native';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import { View, RefreshControl, SectionList, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../../navigation/AppNavigator';
@@ -7,219 +7,159 @@ import CompletedOrderCard, { CompletedOrderCardProps } from '../../CardComponent
 import CustomText from '../../../../components/Text';
 import styles from './style';
 import { OrderStatus } from '../../../../types/order/order';
+import { VendorOrder } from '../../../../apiService/types/ordersTypes';
+import { CompletedSection, mapOrdersToCompletedSections } from '../../utils/orderMappers';
+import { useOrdersPagination } from '../../hooks/useOrdersPagination';
+import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
+import { COLORS, FONTFAMILY } from '../../../../constants/colors';
 
 type CompletedOrdersNavProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface CompletedOrdersScreenProps {
   tabType: OrderStatus;
-  orders?: CompletedOrderCardProps[];
-  onRefresh?: () => void;
-  refreshing?: boolean;
-}
-
-interface SectionData {
-  title: string;
-  data: CompletedOrderCardProps[];
 }
 
 const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
   tabType,
-  orders,
-  onRefresh,
-  refreshing = false,
 }) => {
   const navigation = useNavigation<CompletedOrdersNavProp>();
 
-  // Static data for completed orders with timeline
-  const staticData: CompletedOrderCardProps[] = [
-    {
-      orderId: '1234567',
-      location: 'Tambaram, chennai',
-      orderType: 'express',
-      serviceQuantity: '1',
-      serviceType: 'Iron',
-      timeline: [
-        {
-          status: 'Order Received',
-          date: '12th Oct',
-          time: '4:24 AM',
-          isCompleted: true,
-        },
-        {
-          status: 'Order Picked up',
-          date: '12th Oct',
-          time: '4:24 PM',
-          isCompleted: true,
-        },
-      ],
-      totalPrice: '500.00',
-      onViewDetails: () => {
-        navigation.navigate('OrderDetails', {
-          order: {
-            orderId: '1234567',
-            location: 'Tambaram, chennai',
-            orderType: 'express',
-            serviceType: 'Iron',
-            serviceQuantity: '1',
-            timeline: [
-              {
-                status: 'Order Received',
-                date: '12th Oct',
-                time: '4:24 AM',
-                isCompleted: true,
-              },
-              {
-                status: 'Order Picked up',
-                date: '12th Oct',
-                time: '4:24 PM',
-                isCompleted: true,
-              },
-            ],
-            itemTotal: '200',
-            gst: '36',
-            gstPercentage: '18',
-            grandTotal: '236',
-            customerName: 'Srivathsan',
-          },
-        });
-      },
-    },
-    {
-      orderId: '1234567',
-      location: 'Tambaram, chennai',
-      orderType: 'standard',
-      serviceQuantity: '15',
-      serviceType: 'Iron',
-      timeline: [
-        {
-          status: 'Order Received',
-          date: '14th Oct',
-          time: '4:24 PM',
-          isCompleted: true,
-        },
-        {
-          status: 'Order Picked up',
-          date: '12th Oct',
-          time: '4:24 AM',
-          isCompleted: true,
-        },
-        {
-          status: 'Out for delivery',
-          date: '14th Oct',
-          time: '4:24 PM',
-          isActive: true,
-        },
-      ],
-      totalPrice: '236.00',
-      onViewDetails: () => {
-        navigation.navigate('OrderDetails', {
-          order: {
-            orderId: '1234567',
-            location: 'Tambaram, chennai',
-            orderType: 'standard',
-            serviceType: 'Iron',
-            serviceQuantity: '15',
-            timeline: [
-              {
-                status: 'Order Received',
-                date: '14th Oct',
-                time: '4:24 PM',
-                isCompleted: true,
-              },
-              {
-                status: 'Order Picked up',
-                date: '12th Oct',
-                time: '4:24 AM',
-                isCompleted: true,
-              },
-              {
-                status: 'Out for delivery',
-                date: '14th Oct',
-                time: '4:24 PM',
-                isActive: true,
-              },
-            ],
-            itemTotal: '200',
-            gst: '36',
-            gstPercentage: '18',
-            grandTotal: '236',
-            customerName: 'Srivathsan',
-          },
-        });
-      },
-    },
-  ];
+  const {
+    data: orders,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+    hasNextPage,
+    loadMore,
+    isFetchingMore,
+    total,
+  } = useOrdersPagination(tabType, true, 5);
 
-  // Load data based on orders prop or static data
-  const displayOrders = useMemo(() => {
-    if (orders && orders.length > 0) {
-      return orders;
+  const setCount = useOrdersCountStore(state => state.setCount);
+
+  // Update store when total changes
+  useEffect(() => {
+    if (total > 0) {
+      setCount(tabType, total);
     }
-    return staticData;
-  }, [orders]);
+  }, [total, tabType, setCount]);
 
-  // Group orders by date (Today/Yesterday)
-  const groupedData = useMemo(() => {
-    const sections: SectionData[] = [
-      { title: 'Today', data: [] },
-      { title: 'Yesterday', data: [] },
-    ];
+  const groupedData = useMemo<CompletedSection[]>(
+    () => mapOrdersToCompletedSections(orders),
+    [orders],
+  );
 
-    // For now, split by index - in real app, this would be based on actual dates
-    displayOrders.forEach((order, index) => {
-      if (index === 0) {
-        sections[0].data.push(order); // Today
-      } else {
-        sections[1].data.push(order); // Yesterday
-      }
-    });
+  const handleNavigateToDetails = useCallback(
+    (order: VendorOrder) => {
+      navigation.navigate('OrderDetails', {
+        orderId: order._id,
+      });
+    },
+    [navigation],
+  );
 
-    // Filter out empty sections
-    return sections.filter(section => section.data.length > 0);
-  }, [displayOrders]);
+  const renderOrderItem = useCallback(
+    ({ item }: { item: CompletedSection['data'][number] }) => (
+      <CompletedOrderCard
+        {...item.card}
+        onViewDetails={() => handleNavigateToDetails(item.source)}
+      />
+    ),
+    [handleNavigateToDetails],
+  );
 
-  const renderOrderItem = ({ item }: { item: CompletedOrderCardProps }) => {
-    const handleViewDetails = () => {
-      if (item.onViewDetails) {
-        item.onViewDetails();
-      } else {
-        // Default navigation if no handler provided
-        navigation.navigate('OrderDetails', {
-          order: {
-            orderId: item.orderId,
-            location: item.location,
-            orderType: item.orderType,
-            serviceType: item.serviceType,
-            serviceQuantity: item.serviceQuantity,
-            serviceWeight: item.serviceWeight,
-            timeline: item.timeline.map(t => ({
-              ...t,
-              isActive: !t.isCompleted && t === item.timeline[item.timeline.length - 1],
-            })),
-            itemTotal: parseFloat(item.totalPrice || '0').toString(),
-            gst: '36',
-            gstPercentage: '18',
-            grandTotal: item.totalPrice || '0',
-            customerName: 'Customer',
-          },
-        });
-      }
-    };
-
-    return <CompletedOrderCard {...item} onViewDetails={handleViewDetails} />;
-  };
-
-  const renderSectionHeader = ({ section }: { section: SectionData }) => (
-    <View style={styles.sectionHeader}>
-      <CustomText style={styles.sectionHeaderText}>{section.title}</CustomText>
-    </View>
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: CompletedSection }) => (
+      <View style={styles.sectionHeader}>
+        <CustomText style={styles.sectionHeaderText}>{section.title}</CustomText>
+      </View>
+    ),
+    [],
   );
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      <CustomText style={styles.emptyText}>No completed orders</CustomText>
+      {isLoading ? (
+        <ActivityIndicator size="small" />
+      ) : isError ? (
+        <CustomText style={styles.emptyText}>
+          Error: {error?.message || 'Failed to load orders'}
+        </CustomText>
+      ) : (
+        <CustomText style={styles.emptyText}>No completed orders</CustomText>
+      )}
     </View>
   );
+
+  const [footerLoading, setFooterLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isFetchingMore) {
+      setFooterLoading(false);
+    }
+  }, [isFetchingMore]);
+
+  const renderFooter = () => {
+    if (!hasNextPage) return <View style={{ height: 24 }} />;
+
+    const showSpinner = isFetchingMore || footerLoading;
+
+    return (
+      <View
+        style={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 60,
+        }}
+      >
+        {showSpinner ? (
+          <>
+            <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+            <CustomText
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                color: COLORS.TEXT_GRAY,
+                fontFamily: FONTFAMILY.INTER_REGULAR,
+              }}
+            >
+              Loading more orders...
+            </CustomText>
+          </>
+        ) : (
+          <CustomText
+            style={{
+              fontSize: 13,
+              color: COLORS.TEXT_GRAY,
+              fontFamily: FONTFAMILY.INTER_REGULAR,
+            }}
+          >
+            Pull up to load more
+          </CustomText>
+        )}
+      </View>
+    );
+  };
+
+  const triggerLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingMore && !isLoading) {
+      if (!footerLoading) {
+        setFooterLoading(true);
+      }
+      loadMore();
+    }
+  }, [hasNextPage, isFetchingMore, isLoading, footerLoading, loadMore]);
+
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const isNearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 40;
+    if (isNearBottom) {
+      triggerLoadMore();
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -227,15 +167,24 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
         sections={groupedData}
         renderItem={renderOrderItem}
         renderSectionHeader={renderSectionHeader}
-        keyExtractor={(item, index) => `${item.orderId}-${index}`}
-        contentContainerStyle={styles.scrollContent}
+        keyExtractor={(item) => item.card.orderId}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 10 }, // Extra padding to show loader above bottom tab
+        ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooter}
+        onEndReachedThreshold={0.1}
+        onMomentumScrollEnd={triggerLoadMore}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         stickySectionHeadersEnabled={false}
         refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          ) : undefined
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => refetch()}
+          />
         }
       />
     </View>

@@ -201,6 +201,8 @@ export default StyleSheet.create({
     marginLeft: 8,
   },
   arrowIconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginLeft: 4,
   },
   itemDetailsRight: {

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import CustomText from '../../../components/Text';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -13,6 +13,12 @@ import SvgForwardRightBlackSvg from '../../../assets/auto-generated-svg-icons/Fo
 import SvgChevronRight from '../../../assets/auto-generated-svg-icons/ChevronRight';
 import SvgBillIcon from '../../../assets/auto-generated-svg-icons/BillIcon';
 import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ChevronRightBlack';
+import { acceptOrder, completeOrder, fetchOrderById } from '../../../apiService/api/ordersApi';
+import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
+import { useQuery } from '@tanstack/react-query';
+import ItemsDetailBottomsheet, { OrderItem } from '../BottomSheets/ItemsDetailBottomsheet';
+import BillSummaryBottomsheet, { BillSummaryData } from '../BottomSheets/BillSummaryBottomsheet';
+import { VendorOrder } from '../../../apiService/types/ordersTypes';
 
 export interface ReceivedOrderCardProps {
   orderId: string;
@@ -58,16 +64,198 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   const CONTAINER_HEIGHT = 48;
 
   const sliderRef = useRef<BasicDraggableSliderHandle>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
+  const [isBillBottomSheetVisible, setIsBillBottomSheetVisible] = useState(false);
+  const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
+  const pendingBottomSheetRef = useRef<'items' | 'bill' | null>(null);
+  const isOpeningRef = useRef(false);
 
-  console.log('tabType', tabType);
+  // Fetch order details when bottom sheet should be opened
+  // Keep query enabled to access cached data, but only fetch when needed for items
+  const {
+    data: orderResponse,
+    isLoading: isLoadingOrder,
+    refetch: refetchOrder,
+  } = useQuery({
+    queryKey: ['orderDetails', orderId],
+    queryFn: () => fetchOrderById(orderId),
+    enabled: shouldFetchOrder && !!orderId, // Only enabled when explicitly needed
+    staleTime: 30000, // Cache for 30 seconds to prevent unnecessary refetches
+    refetchOnMount: false, // Don't refetch if data exists in cache
+    refetchOnWindowFocus: false,
+  });
 
-  const handleComplete = () => {
-    console.log('handleComplete');
-    sliderRef.current?.reset();
+  // Get the first order from the response
+  const vendorOrder: VendorOrder | undefined = useMemo(
+    () => orderResponse?.data?.orders?.[0],
+    [orderResponse?.data?.orders]
+  );
+
+  // Open the appropriate bottom sheet when data is loaded
+  useEffect(() => {
+    if (shouldFetchOrder && vendorOrder && !isLoadingOrder && pendingBottomSheetRef.current && !isOpeningRef.current) {
+      isOpeningRef.current = true;
+      const pendingType = pendingBottomSheetRef.current;
+
+      // Use setTimeout to ensure state updates happen in the next tick
+      setTimeout(() => {
+        if (pendingType === 'items') {
+          setIsBottomSheetVisible(true);
+        } else if (pendingType === 'bill') {
+          setIsBillBottomSheetVisible(true);
+        }
+        pendingBottomSheetRef.current = null;
+        isOpeningRef.current = false;
+      }, 0);
+    }
+  }, [vendorOrder, shouldFetchOrder, isLoadingOrder]);
+
+  // Cleanup refs when orderId changes or component unmounts
+  useEffect(() => {
+    return () => {
+      pendingBottomSheetRef.current = null;
+      isOpeningRef.current = false;
+    };
+  }, [orderId]);
+
+  // Get the appropriate text based on tab type
+  const getSliderText = () => {
+    if (tabType === OrderStatus.RECEIVED) {
+      return 'Accept order';
+    } else if (tabType === OrderStatus.ACCEPTED) {
+      return 'Ready to pick up';
+    }
+    return 'Accept order'; // Default fallback
   };
 
+  const handleComplete = async () => {
+    if (isProcessing) return;
+
+    try {
+      setIsProcessing(true);
+
+      if (tabType === OrderStatus.RECEIVED) {
+        // Handle accept order
+        const response = await acceptOrder({
+          orderId,
+          isReject: false,
+        });
+
+        if (response.status) {
+          showSuccessToast(response.message || 'Order accepted successfully');
+          onAccept?.();
+        } else {
+          showErrorToast(response.message || 'Failed to accept order');
+        }
+      } else if (tabType === OrderStatus.ACCEPTED) {
+        // Handle complete order
+        const response = await completeOrder(orderId);
+
+        if (response.status) {
+          showSuccessToast(response.message || 'Order marked as complete successfully');
+          onAccept?.();
+        } else {
+          showErrorToast(response.message || 'Failed to complete order');
+        }
+      }
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        (tabType === OrderStatus.RECEIVED
+          ? 'Failed to accept order. Please try again.'
+          : 'Failed to complete order. Please try again.');
+      showErrorToast(errorMessage);
+    } finally {
+      setIsProcessing(false);
+      sliderRef.current?.reset();
+    }
+  };
+
+  const handleArrowPress = useCallback(() => {
+    // Prevent multiple rapid clicks
+    if (isOpeningRef.current || isBottomSheetVisible) return;
+
+    // If data is already available, open immediately
+    if (vendorOrder && !isLoadingOrder) {
+      setIsBottomSheetVisible(true);
+    } else {
+      // Otherwise, fetch the data first
+      pendingBottomSheetRef.current = 'items';
+      setShouldFetchOrder(true);
+    }
+  }, [vendorOrder, isLoadingOrder, isBottomSheetVisible]);
+
+  const handleCloseBottomSheet = useCallback(() => {
+    setIsBottomSheetVisible(false);
+    // Don't reset shouldFetchOrder immediately to keep data cached
+    pendingBottomSheetRef.current = null;
+    isOpeningRef.current = false;
+  }, []);
+
+  const handleBillPress = useCallback(() => {
+    // Prevent multiple rapid clicks
+    if (isOpeningRef.current || isBillBottomSheetVisible) return;
+
+    // Open bottom sheet immediately, show loader if data is not ready
+    setIsBillBottomSheetVisible(true);
+
+    // If data is not available, fetch it
+    if (!vendorOrder && !isLoadingOrder) {
+      pendingBottomSheetRef.current = 'bill';
+      setShouldFetchOrder(true);
+    }
+  }, [vendorOrder, isLoadingOrder, isBillBottomSheetVisible]);
+
+  const handleCloseBillBottomSheet = useCallback(() => {
+    setIsBillBottomSheetVisible(false);
+    // Don't reset shouldFetchOrder immediately to keep data cached
+    pendingBottomSheetRef.current = null;
+    isOpeningRef.current = false;
+  }, []);
+
+  // Prepare items data for bottom sheet - memoized to prevent recalculation
+  const itemsData = useMemo((): OrderItem[] => {
+    if (!vendorOrder?.items) return [];
+
+    return vendorOrder.items.map((item, index) => ({
+      id: item.item_id || index.toString(),
+      type: item.service_name.toLowerCase().includes('iron') ? 'iron' : 'wash',
+      itemName: item.item_name,
+      category: item.service_name,
+      quantity: item.quantity,
+      amount: item.price_per_item,
+    }));
+  }, [vendorOrder?.items]);
+
+  // Prepare bill summary data for bottom sheet - memoized to prevent recalculation
+  const billSummaryData = useMemo((): BillSummaryData | null => {
+    if (!vendorOrder) return null;
+
+    // Calculate item total from items
+    const itemTotal = vendorOrder.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
+
+    // Get GST from payment_details
+    const gst = vendorOrder.payment_details?.gst || 0;
+    const gstPercentage = itemTotal > 0 ? ((gst / itemTotal) * 100).toFixed(0) : '18';
+
+    // Get grand total
+    const grandTotal = vendorOrder.total_amount || vendorOrder.payment_details?.totalPayableAmount || 0;
+
+    return {
+      itemTotal: itemTotal.toFixed(2),
+      gst: gst.toFixed(2),
+      gstPercentage,
+      grandTotal: grandTotal.toFixed(2),
+    };
+  }, [vendorOrder]);
+
+  // Memoize the items bottom sheet title
+  const itemsBottomSheetTitle = useMemo(() => `${serviceType} Item Details`, [serviceType]);
+
   return (
-    <View >
+    <View style={{ marginBottom: 16 }} >
       <View
         style={{
           backgroundColor: COLORS.BUTTON_BACKGROUND,
@@ -92,7 +280,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             fontFamily: FONTFAMILY.INTER_REGULAR,
           }}
         >
-          #{index}
+          #{index !== undefined ? index + 1 : orderId}
         </CustomText>
       </View>
 
@@ -100,7 +288,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Order Header */}
         <View style={styles.header}>
           <View>
-            <CustomText style={styles.orderId}>#{orderId}</CustomText>
+            <CustomText style={styles.orderId}>#{orderNumber}</CustomText>
             <View style={styles.locationContainer}>
 
               <SvgLocationLine />
@@ -154,7 +342,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
           </View>
 
           <TouchableOpacity
-            onPress={onViewDetails}
+            onPress={handleArrowPress}
             style={styles.servicePill}
             activeOpacity={0.7}
           >
@@ -195,7 +383,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Bill Container */}
         <TouchableOpacity
           style={styles.billBox}
-          onPress={onViewBill}
+          onPress={handleBillPress}
           activeOpacity={0.7}
         >
           <View style={styles.billCenter}>
@@ -225,7 +413,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
           <View style={styles.actionRow}>
 
             <GestureHandlerRootView >
-              <DraggableSlider ref={sliderRef} onComplete={handleComplete} text="Accept Order" />
+              <DraggableSlider ref={sliderRef} onComplete={handleComplete} text={getSliderText()} />
             </GestureHandlerRootView>
 
 
@@ -261,6 +449,22 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
 
       </View>
+
+      {/* Items Detail Bottom Sheet */}
+      <ItemsDetailBottomsheet
+        isVisible={isBottomSheetVisible}
+        onClose={handleCloseBottomSheet}
+        title={itemsBottomSheetTitle}
+        items={itemsData}
+      />
+
+      {/* Bill Summary Bottom Sheet */}
+      <BillSummaryBottomsheet
+        isVisible={isBillBottomSheetVisible}
+        onClose={handleCloseBillBottomSheet}
+        billData={billSummaryData}
+        isLoading={isBillBottomSheetVisible && (isLoadingOrder || !billSummaryData)}
+      />
     </View>
   );
 };

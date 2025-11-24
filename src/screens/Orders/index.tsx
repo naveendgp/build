@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import CustomText from '../../components/Text';
-import { ReceivedOrderCardProps } from './CardComponents/RecivedOrderCard';
 import ReceivedOrdersScreen from './TabScreens/ReceivedOrdersScreen';
 import AcceptedOrdersScreen from './TabScreens/AcceptedOrdersScreen';
 import CompletedOrdersScreen from './TabScreens/CompletedOrdersScreen';
@@ -11,40 +10,17 @@ import CustomSwitch from '../../components/CustomSwitch/index.tsx';
 import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/DraggableSlider/index.tsx';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OrderStatus } from '../../types/order/order.ts';
-
-
+import { useOrdersCountStore } from '../../apiService/store/useOrdersCountStore';
 
 const OrdersScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
-  const [refreshing, setRefreshing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const tabRefs = useRef<{ [key: string]: View | null }>({});
   const tabPositions = useRef<{ [key: string]: number }>({});
   const screenWidth = Dimensions.get('window').width;
 
-  // Static order counts for badges - matching static data in tab screens
-  const getOrderCount = (tabType: OrderStatus): number => {
-    const counts: { [key in OrderStatus]: number } = {
-      received: 2,
-      accepted: 2,
-      readyForPickUp: 2,
-      completed: 2,
-    };
-    return counts[tabType] || 0;
-  };
-
-  // Sample orders data - in real app, this would come from API
-  // These are optional and will be overridden by static data in tab screens if not provided
-  const receivedOrders: ReceivedOrderCardProps[] = [];
-  const acceptedOrders: ReceivedOrderCardProps[] = [];
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
-  };
+  // Get order counts from store (updated by each tab when data loads)
+  const getOrderCount = useOrdersCountStore(state => state.getCount);
 
   const handleTabPress = (tab: OrderStatus) => {
     setActiveTab(tab);
@@ -178,11 +154,13 @@ const OrdersScreen: React.FC = () => {
               Received Orders
             </CustomText>
             {activeTab === OrderStatus.RECEIVED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.RECEIVED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.RECEIVED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.RECEIVED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -204,11 +182,13 @@ const OrdersScreen: React.FC = () => {
               Accepted Orders
             </CustomText>
             {activeTab === OrderStatus.ACCEPTED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.ACCEPTED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.ACCEPTED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.ACCEPTED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -230,11 +210,13 @@ const OrdersScreen: React.FC = () => {
               Ready For Pick Up
             </CustomText>
             {activeTab === OrderStatus.READY_FOR_PICK_UP && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.READY_FOR_PICK_UP).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.READY_FOR_PICK_UP) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.READY_FOR_PICK_UP).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
 
@@ -256,47 +238,29 @@ const OrdersScreen: React.FC = () => {
               Completed Orders
             </CustomText>
             {activeTab === OrderStatus.COMPLETED && <View style={styles.tabUnderline} />}
-            <View style={styles.badge}>
-              <CustomText style={styles.badgeText}>
-                {getOrderCount(OrderStatus.COMPLETED).toString().padStart(2, '0')}
-              </CustomText>
-            </View>
+            {getOrderCount(OrderStatus.COMPLETED) > 0 && (
+              <View style={styles.badge}>
+                <CustomText style={styles.badgeText}>
+                  {getOrderCount(OrderStatus.COMPLETED).toString().padStart(2, '0')}
+                </CustomText>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
 
       {/* Tab Content */}
       {activeTab === OrderStatus.RECEIVED && (
-        <ReceivedOrdersScreen
-          tabType={activeTab}
-          orders={receivedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-        />
+        <ReceivedOrdersScreen tabType={activeTab} />
       )}
       {activeTab === OrderStatus.ACCEPTED && (
-        <AcceptedOrdersScreen
-          tabType={activeTab}
-          orders={acceptedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-        />
+        <AcceptedOrdersScreen tabType={activeTab} />
       )}
       {activeTab === OrderStatus.READY_FOR_PICK_UP && (
-        <AcceptedOrdersScreen
-          tabType={activeTab}
-          orders={acceptedOrders}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-        />
+        <AcceptedOrdersScreen tabType={activeTab} />
       )}
       {activeTab === OrderStatus.COMPLETED && (
-        <CompletedOrdersScreen
-          tabType={activeTab}
-          orders={[]}
-          onRefresh={handleRefresh}
-          refreshing={refreshing}
-        />
+        <CompletedOrdersScreen tabType={activeTab} />
       )}
     </View>
   );

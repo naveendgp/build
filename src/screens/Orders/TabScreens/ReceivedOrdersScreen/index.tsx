@@ -1,221 +1,90 @@
-import React, { useEffect, useMemo } from 'react';
-import { View, FlatList, RefreshControl } from 'react-native';
-import ReceivedOrderCard, { ReceivedOrderCardProps } from '../../CardComponents/RecivedOrderCard';
+import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import { View, FlatList, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import ReceivedOrderCard from '../../CardComponents/RecivedOrderCard';
 import CustomText from '../../../../components/Text';
 import styles from './style';
 import socket from '../../../../apiService/socket/socket';
 import { useFocusEffect } from '@react-navigation/native';
 import { SOCKET_ENDPOINTS } from '../../../../constants';
 import { OrderStatus } from '../../../../types/order/order';
+import { mapOrdersToReceivedCards } from '../../utils/orderMappers';
+import { useOrdersPagination } from '../../hooks/useOrdersPagination';
+import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
+import { COLORS, FONTFAMILY } from '../../../../constants/colors';
 
 interface ReceivedOrdersScreenProps {
   tabType: OrderStatus;
-  orders?: ReceivedOrderCardProps[];
-  onRefresh?: () => void;
-  refreshing?: boolean;
 }
 
 const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
   tabType,
-  orders,
-  onRefresh,
-  refreshing = false,
 }) => {
-  console.log('tabType', tabType);
-  // Static data for all tab types
-  const staticData: { [key in OrderStatus]: ReceivedOrderCardProps[] } = {
-    [OrderStatus.RECEIVED]: [
-      {
-        orderId: '1234567',
-        location: 'Tambaram, chennai',
-        orderType: 'standard',
-        customerName: 'Srivathsan',
-        time: '12:40 PM',
-        serviceQuantity: '15 X',
-        serviceType: 'Iron',
-        customerNote: 'This is a sample note once the the app goes live the original note will appear here',
-        totalBill: '450.64',
-        timer: '00:04:59',
-        onAccept: () => console.log('Accept order 1'),
-        onViewDetails: () => console.log('View details 1'),
-        onViewBill: () => console.log('View bill 1'),
-      },
-      {
-        orderId: '1234568',
-        location: 'Tambaram, chennai',
-        orderType: 'express',
-        customerName: 'Srivathsan',
-        orderNumber: 7,
-        time: '12:40 PM',
-        serviceWeight: 'Medium 4Kg - 6kg',
-        serviceType: 'Wash',
-        customerNote: 'This is a sample note once the the app goes live the original note will appear here',
-        timer: '00:04:59',
-        onAccept: () => console.log('Accept order 2'),
-        onViewDetails: () => console.log('View details 2'),
-        onViewBill: () => console.log('View bill 2'),
-      },
-    ],
-    [OrderStatus.ACCEPTED]: [
-      {
-        orderId: '1234569',
-        location: 'Tambaram, chennai',
-        orderType: 'standard',
-        customerName: 'John Doe',
-        time: '11:30 AM',
-        serviceQuantity: '10 X',
-        serviceType: 'Iron',
-        customerNote: 'Please handle with care',
-        totalBill: '350.00',
-        timer: '00:02:30',
-        onAccept: () => console.log('Accept order 3'),
-        onViewDetails: () => console.log('View details 3'),
-        onViewBill: () => console.log('View bill 3'),
-      },
-      {
-        orderId: '1234570',
-        location: 'Adyar, chennai',
-        orderType: 'express',
-        customerName: 'Jane Smith',
-        time: '10:15 AM',
-        serviceWeight: 'Small 2Kg - 4kg',
-        serviceType: 'Wash',
-        customerNote: 'Quick delivery needed',
-        totalBill: '280.50',
-        timer: '00:01:45',
-        onAccept: () => console.log('Accept order 4'),
-        onViewDetails: () => console.log('View details 4'),
-        onViewBill: () => console.log('View bill 4'),
-      },
-    ],
-    [OrderStatus.READY_FOR_PICK_UP]: [
-      {
-        orderId: '1234571',
-        location: 'T Nagar, chennai',
-        orderType: 'standard',
-        customerName: 'Robert Wilson',
-        time: '09:00 AM',
-        serviceQuantity: '20 X',
-        serviceType: 'Iron',
-        customerNote: 'Handle with extra care',
-        totalBill: '600.00',
-        timer: '00:00:00',
-        onAccept: () => console.log('Accept order 5'),
-        onViewDetails: () => console.log('View details 5'),
-        onViewBill: () => console.log('View bill 5'),
-      },
-      {
-        orderId: '1234572',
-        location: 'Anna Nagar, chennai',
-        orderType: 'express',
-        customerName: 'Sarah Johnson',
-        time: '08:30 AM',
-        serviceWeight: 'Large 8Kg - 10kg',
-        serviceType: 'Wash',
-        customerNote: 'Ready for pickup',
-        totalBill: '750.00',
-        timer: '00:00:00',
-        onAccept: () => console.log('Accept order 6'),
-        onViewDetails: () => console.log('View details 6'),
-        onViewBill: () => console.log('View bill 6'),
-      },
-    ],
-    [OrderStatus.COMPLETED]: [
-      {
-        orderId: '1234573',
-        location: 'Velachery, chennai',
-        orderType: 'standard',
-        customerName: 'Michael Brown',
-        time: 'Yesterday 5:00 PM',
-        serviceQuantity: '12 X',
-        serviceType: 'Iron',
-        customerNote: 'Completed successfully',
-        totalBill: '420.00',
-        timer: '00:00:00',
-        onAccept: () => console.log('Accept order 7'),
-        onViewDetails: () => console.log('View details 7'),
-        onViewBill: () => console.log('View bill 7'),
-      },
-      {
-        orderId: '1234574',
-        location: 'Guindy, chennai',
-        orderType: 'express',
-        customerName: 'Emily Davis',
-        time: 'Yesterday 3:00 PM',
-        serviceWeight: 'Medium 4Kg - 6kg',
-        serviceType: 'Wash',
-        customerNote: 'Customer satisfied',
-        totalBill: '380.00',
-        timer: '00:00:00',
-        onAccept: () => console.log('Accept order 8'),
-        onViewDetails: () => console.log('View details 8'),
-        onViewBill: () => console.log('View bill 8'),
-      },
-    ],
-  };
+  const {
+    data: orders,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+    hasNextPage,
+    loadMore,
+    isFetchingMore,
+    total,
+  } = useOrdersPagination(tabType, true, 5);
 
-  // Load data based on tabType
-  const displayOrders = useMemo(() => {
-    if (orders && orders.length > 0) {
-      return orders;
-    }
-    return staticData[tabType] || [];
-  }, [orders, tabType]);
+  const setCount = useOrdersCountStore(state => state.setCount);
 
+  // Update store when total changes
   useEffect(() => {
-    const connectSocket = async () => {
-      try {
-        await socket.connect();
-        console.log('Socket connected successfully');
-      } catch (err) {
-        console.error('Failed to connect socket:', err);
-      }
-    };
-    connectSocket();
-  }, []);
+    if (total > 0) {
+      setCount(tabType, total);
+    }
+  }, [total, tabType, setCount]);
 
-  useFocusEffect(
-    React.useCallback(() => {
-      let isMounted = true;
-      let handleData: ((data: any) => void) | null = null;
-
-      const setupSocketListeners = async () => {
-        try {
-          const sock = socket.getSocket();
-
-          if (!sock?.connected) {
-            await socket.connect();
-          }
-
-          if (!isMounted) return;
-
-          handleData = (data: any) => {
-            // console.log('Received data:', data);
-          };
-
-          socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
-        } catch (err) {
-          // console.error('Failed to connect socket:', err);
-        }
-      };
-
-      setupSocketListeners();
-
-      return () => {
-        isMounted = false;
-        if (handleData) {
-          socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
-        }
-      };
-    }, [])
+  const displayOrders = useMemo(
+    () => mapOrdersToReceivedCards(orders),
+    [orders],
   );
 
-  const renderOrderItem = ({ item, index }: { item: ReceivedOrderCardProps; index: number }) => (
-    <ReceivedOrderCard
-      key={`${item.orderId}-${index}`}
-      {...item}
-      tabType={tabType}
-    />
+  useEffect(() => {
+    console.log("[Screen] useEffect triggered");
+
+    // 1. Ensure socket physically connects first
+    socket.connect();
+
+    // 2. Register event listener ONLY AFTER connection
+    const handleData = (data: any) => {
+      console.log('🔥 EVENT RECEIVED:', data);
+      refetch();
+    };
+
+    socket.on(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+    console.log("[Screen] Listener attached");
+
+    return () => {
+      socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
+    };
+  }, []);
+
+
+
+
+
+
+  const handleOrderAccept = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const renderOrderItem = useCallback(
+    ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
+      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept} />
+    ),
+    [tabType, handleOrderAccept],
+  );
+
+  const keyExtractor = useCallback(
+    (item: ReturnType<typeof mapOrdersToReceivedCards>[number]) => item.orderId,
+    [],
   );
 
   const getEmptyText = () => {
@@ -235,23 +104,110 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      <CustomText style={styles.emptyText}>{getEmptyText()}</CustomText>
+      {isLoading ? (
+        <ActivityIndicator size="small" />
+      ) : isError ? (
+        <CustomText style={styles.emptyText}>
+          Error: {error?.message || 'Failed to load orders'}
+        </CustomText>
+      ) : (
+        <CustomText style={styles.emptyText}>{getEmptyText()}</CustomText>
+      )}
     </View>
   );
+
+  const [footerLoading, setFooterLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isFetchingMore) {
+      setFooterLoading(false);
+    }
+  }, [isFetchingMore]);
+
+  const renderFooter = () => {
+    if (!hasNextPage) {
+      return <View style={{ height: 24 }} />;
+    }
+
+    const showSpinner = isFetchingMore || footerLoading;
+
+    return (
+      <View
+        style={{
+          paddingVertical: 20,
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 60,
+        }}
+      >
+        {showSpinner ? (
+          <>
+            <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+            <CustomText
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                color: COLORS.TEXT_GRAY,
+                fontFamily: FONTFAMILY.INTER_REGULAR,
+              }}
+            >
+              Loading more orders...
+            </CustomText>
+          </>
+        ) : (
+          <CustomText
+            style={{
+              fontSize: 13,
+              color: COLORS.TEXT_GRAY,
+              fontFamily: FONTFAMILY.INTER_REGULAR,
+            }}
+          >
+            Pull up to load more
+          </CustomText>
+        )}
+      </View>
+    );
+  };
+
+  const triggerLoadMore = useCallback(() => {
+    if (hasNextPage && !isFetchingMore && !isLoading) {
+      if (!footerLoading) {
+        setFooterLoading(true);
+      }
+      loadMore();
+    }
+  }, [hasNextPage, isFetchingMore, isLoading, footerLoading, loadMore]);
+
+  const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+    const isNearBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 40;
+    if (isNearBottom) {
+      triggerLoadMore();
+    }
+  };
 
   return (
     <View style={styles.container}>
       <FlatList
         data={displayOrders}
         renderItem={renderOrderItem}
-        keyExtractor={(item, index) => `${item.orderId}-${index}`}
-        contentContainerStyle={styles.scrollContent}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingBottom: 10 }, // Extra padding to show loader above bottom tab
+        ]}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={renderEmptyComponent}
+        ListFooterComponent={renderFooter}
+        onEndReachedThreshold={0.1}
+        onMomentumScrollEnd={triggerLoadMore}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         refreshControl={
-          onRefresh ? (
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          ) : undefined
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => refetch()}
+          />
         }
       />
     </View>
