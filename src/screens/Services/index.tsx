@@ -1,16 +1,20 @@
-import React, { useMemo, useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { View, ScrollView, ActivityIndicator, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import CustomText from '../../components/Text';
 import Toolbar from '../../components/Toolbar';
 import CustomBtn from '../../components/CustomBtn';
+import EmptyScreen from '../../components/EmptyScreen';
+import ErrorScreen from '../../components/ErrorScreen';
 import ServiceItemCard from './Components/ServiceItemCard';
 import { getServicesByState, toggleServiceActive } from '../../apiService/api/profileApi';
-import { ServiceByState, ToggleServiceActiveInput } from '../../apiService/types/profileTypes';
+import { ServiceByState, ToggleServiceActiveInput, ServicesByStateResponse } from '../../apiService/types/profileTypes';
 import { RootStackParamList } from '../../navigation/AppNavigator';
+import { COLORS } from '../../constants/colors';
 import styles from './styles';
 import { showSuccessToast, showErrorToast } from '../../utils/Toast';
 
@@ -21,10 +25,24 @@ const ServicesScreen: React.FC = () => {
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
   // Fetch services by state
-  const { data: servicesData, refetch } = useQuery({
+  const {
+    data: servicesData,
+    refetch,
+    isError,
+    isLoading,
+    error
+  } = useQuery<ServicesByStateResponse, AxiosError<{ message: string }>>({
     queryKey: ['services-by-state'],
     queryFn: getServicesByState,
   });
+
+  // Handle error - show toast notification
+  useEffect(() => {
+    if (isError && error) {
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load services';
+      showErrorToast(errorMessage);
+    }
+  }, [isError, error]);
 
   // Initialize selected services from verified services
   React.useEffect(() => {
@@ -102,63 +120,85 @@ const ServicesScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <Toolbar title="Services" />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.section}>
-          {verifiedServices.length > 0 && (
-            <>
-              <CustomText style={styles.sectionTitle}>Verified</CustomText>
-              <View style={styles.servicesList}>
-                {verifiedServices.map(service => (
-                  <ServiceItemCard
-                    key={service.service_id}
-                    item={service}
-                    isVerified={true}
-                    isSelected={selectedServices.includes(service.service_id)}
-                    onToggle={handleServiceToggle}
-                    onPress={handleServicePress}
-                    isArrowVisible={false}
-                  />
-                ))}
-              </View>
-              <CustomText style={styles.serviceNote}>
-                Note: Select the services available at your shop
-              </CustomText>
-            </>
-          )}
-
-          {unverifiedServices.length > 0 && (
-            <>
-              <CustomText style={styles.sectionTitle}>Not Verified</CustomText>
-              <View style={styles.servicesList}>
-                {unverifiedServices.map(service => (
-                  <ServiceItemCard
-                    key={service.service_id}
-                    item={service}
-                    isVerified={false}
-                    isSelected={selectedServices.includes(service.service_id)}
-                    onToggle={handleServiceToggle}
-                    onPress={handleServicePress}
-                    isArrowVisible={false}
-                  />
-                ))}
-              </View>
-              <CustomText style={styles.serviceNote}>
-                Note: Selected services will be verified within 48 hrs
-              </CustomText>
-            </>
-          )}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
         </View>
-      </ScrollView>
-
-      <View style={styles.updateButtonContainer}>
-        <CustomBtn
-          title="Update"
-          onPress={handleUpdate}
-          disabled={updateMutation.isPending}
-          loading={updateMutation.isPending}
-          style={styles.updateButton}
+      ) : isError ? (
+        <ErrorScreen
+          title="Something went wrong"
+          subtitle="Please check After sometime and try again."
+          onRetry={() => refetch()}
+          retryButtonText="Retry"
         />
-      </View>
+      ) : (
+        <>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={styles.section}>
+              {verifiedServices.length > 0 && (
+                <>
+                  <CustomText style={styles.sectionTitle}>Verified</CustomText>
+                  <View style={styles.servicesList}>
+                    {verifiedServices.map(service => (
+                      <ServiceItemCard
+                        key={service.service_id}
+                        item={service}
+                        isVerified={true}
+                        isSelected={selectedServices.includes(service.service_id)}
+                        onToggle={handleServiceToggle}
+                        onPress={handleServicePress}
+                        isArrowVisible={false}
+                      />
+                    ))}
+                  </View>
+                  <CustomText style={styles.serviceNote}>
+                    Note: Select the services available at your shop
+                  </CustomText>
+                </>
+              )}
+
+              {unverifiedServices.length > 0 && (
+                <>
+                  <CustomText style={styles.sectionTitle}>Not Verified</CustomText>
+                  <View style={styles.servicesList}>
+                    {unverifiedServices.map(service => (
+                      <ServiceItemCard
+                        key={service.service_id}
+                        item={service}
+                        isVerified={false}
+                        isSelected={selectedServices.includes(service.service_id)}
+                        onToggle={handleServiceToggle}
+                        onPress={handleServicePress}
+                        isArrowVisible={false}
+                      />
+                    ))}
+                  </View>
+                  <CustomText style={styles.serviceNote}>
+                    Note: Selected services will be verified within 48 hrs
+                  </CustomText>
+                </>
+              )}
+
+              {verifiedServices.length === 0 && unverifiedServices.length === 0 && (
+                <EmptyScreen
+                  title="No Services Available"
+                  subtitle="Services will appear here once they are configured."
+                />
+              )}
+            </View>
+          </ScrollView>
+
+          <View style={styles.updateButtonContainer}>
+            <CustomBtn
+              title="Update"
+              onPress={handleUpdate}
+              disabled={updateMutation.isPending || isLoading || isError}
+              loading={updateMutation.isPending}
+              style={styles.updateButton}
+            />
+          </View>
+        </>
+      )}
     </SafeAreaView>
   );
 };

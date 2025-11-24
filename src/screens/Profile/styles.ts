@@ -7,46 +7,41 @@ export default StyleSheet.create({
     backgroundColor: COLORS.WHITE,
   },
   header: {
-    padding: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  backButton: {
-    fontSize: 16,
-    color: '#1B2A4A',
-    fontWeight: '500',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    marginBottom: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
-    color: COLORS.TEXT_PRIMARY,
-    fontFamily: FONTFAMILY.INTER_BOLD,
+    color: COLORS.BOTTOM_BLACK,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
   },
   content: {
     flex: 1,
   },
   summaryCard: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.CARD_BACKGROUND,
     borderRadius: 16,
-    padding: 20,
-    marginHorizontal: 20,
+    padding: 16,
+    marginHorizontal: 12,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
   },
   summaryTitle: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '400',
     color: COLORS.TEXT_GRAY,
-    fontFamily: FONTFAMILY.INTER_MEDIUM,
-    marginBottom: 12,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
   },
   summaryAmount: {
-    fontSize: 32,
-    fontWeight: '700',
+    fontSize: 24,
+    fontWeight: '600',
     color: COLORS.TEXT_PRIMARY,
-    fontFamily: FONTFAMILY.INTER_BOLD,
-    marginBottom: 20,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    marginTop: 2,
+    marginBottom: 16,
   },
   summaryStats: {
     gap: 16,
@@ -62,53 +57,6 @@ export default StyleSheet.create({
     marginBottom: 16,
   },
 
-  // Profile Card Styles
-  profileCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  avatarContainer: {
-    marginRight: 16,
-  },
-  avatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#E8F1FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1B2A4A',
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1B2A4A',
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#7B869A',
-    marginBottom: 8,
-  },
   statusBadge: {
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
@@ -121,77 +69,6 @@ export default StyleSheet.create({
     color: '#FFFFFF',
   },
 
-  // Service Card Styles
-  serviceCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  serviceHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  serviceName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1B2A4A',
-  },
-  pricingType: {
-    fontSize: 12,
-    color: '#7B869A',
-    backgroundColor: '#F0F0F0',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  serviceDescription: {
-    fontSize: 14,
-    color: '#7B869A',
-    marginBottom: 12,
-  },
-  itemsContainer: {
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
-    paddingTop: 12,
-  },
-  itemsTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1B2A4A',
-    marginBottom: 8,
-  },
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  itemName: {
-    fontSize: 14,
-    color: '#7B869A',
-  },
-  itemPrice: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#1B2A4A',
-  },
-  moreItems: {
-    fontSize: 12,
-    color: '#7B869A',
-    fontStyle: 'italic',
-    marginTop: 4,
-  },
 
   // Switch Row Styles
   switchRow: {
@@ -282,15 +159,15 @@ export default StyleSheet.create({
     flex: 1,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '500',
     color: COLORS.TEXT_PRIMARY,
-    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
     marginTop: 4,
   },
   statLabel: {
     fontSize: 14,
-    color: COLORS.TEXT_GRAY,
+    color: COLORS.NOTE_TEXT,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },
@@ -379,21 +256,17 @@ export default StyleSheet.create({
 
   // Profile Options Styles
   optionsContainer: {
-    backgroundColor: COLORS.WHITE,
-    borderRadius: 16,
-    marginHorizontal: 20,
+
+    marginHorizontal: 12,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: COLORS.BORDER_INPUT,
-    overflow: 'hidden',
+
   },
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.BORDER_INPUT,
+    marginBottom: 20,
+    paddingVertical: 4
   },
   optionItemLast: {
     borderBottomWidth: 0,
@@ -411,12 +284,10 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
   logoutOptionItem: {
-
-
     paddingTop: 16,
   },
   logoutOptionTitle: {
-    color: '#FF3B30',
+    color: COLORS.LOGOUT_TEXT,
     fontWeight: '500',
   },
   logoutButton: {
@@ -430,11 +301,6 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#FFFFFF',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#7B869A',
-    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
@@ -635,5 +501,129 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 20,
     gap: 12,
+  },
+  // Review Section Styles
+  reviewSection: {
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 32,
+  },
+  reviewSectionEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    padding: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 400,
+  },
+  sectionTitle1: {
+    fontSize: 20,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    fontWeight: '700',
+    color: COLORS.BOTTOM_BLACK,
+    marginBottom: 16,
+  },
+  sectionTitle2: {
+    fontSize: 24,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    fontWeight: '700',
+    color: COLORS.TEXT_PRIMARY,
+    marginBottom: 16,
+  },
+  // Rating Summary Styles
+  ratingSummary: {
+    marginBottom: 16,
+  },
+  largeRatingText: {
+    fontSize: 24,
+    color: COLORS.SUCCESS,
+    fontFamily: FONTFAMILY.INTER_BOLD,
+    fontWeight: '700',
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 6,
+  },
+  ratingCount: {
+    fontSize: 12,
+    color: '#8A8A8A',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+  },
+  // Review Card Styles
+  reviewCard: {
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    borderRadius: 16,
+    padding: 16,
+
+    marginBottom: 12,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  reviewerInfo: {
+    flexDirection: 'row',
+    gap: 12,
+    flex: 1,
+  },
+  avatar2: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#A2A2A2',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText2: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
+  reviewerName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: COLORS.TEXT_PRIMARY,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+
+  },
+  reviewDate: {
+    fontSize: 12,
+    color: '#8A8A8A',
+
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    fontWeight: '400',
+  },
+  reviewService: {
+    fontSize: 16,
+    color: '#595959',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    marginVertical: 12,
+    fontWeight: '400',
+  },
+  reviewRating: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  reviewRatingText: {
+    fontSize: 16,
+    color: COLORS.SUCCESS,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+  },
+  reviewText: {
+    fontSize: 14,
+    color: '#595959',
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: '400',
+    lineHeight: 14 * 1.42,
   },
 });

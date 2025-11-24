@@ -30,7 +30,7 @@ export default StyleSheet.create({
         fontFamily: FONTFAMILY.INTER_SEMIBOLD,
         color: COLORS.BOTTOM_BLACK,
         fontWeight: '700',
-        marginVertical: 24,
+        marginBottom: 24,
     },
     toggleCard: {
         backgroundColor: COLORS.CARD_BACKGROUND,
