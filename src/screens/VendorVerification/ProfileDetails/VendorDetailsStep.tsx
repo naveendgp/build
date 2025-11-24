@@ -11,88 +11,48 @@ import UploadIcon from '../../../assets/auto-generated-svg-icons/UploadIcon';
 import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS } from '../../../constants/colors';
+import { VendorErrors } from '../useVendorValidation';
+
+interface VendorData {
+  owner_name: string;
+  email: string;
+  address: string;
+  aadhaar_no: string;
+  pan_number: string;
+  mobile: string;
+  date_of_birth: string;
+  profile_pic: string | { uri: string; name?: string } | null;
+  aadhaar_file: { uri: string; name: string } | null;
+  pan_file: { uri: string; name: string } | null;
+}
 
 interface Props {
-  vendor: any;
-  setVendor: (v: any) => void;
+  vendor: VendorData;
+  setVendor: (v: VendorData) => void;
   handleFocusScroll: (ref: any) => void;
   vendorAddressRef: React.RefObject<View | null>;
   isMobileFromOtp?: boolean;
+  errors?: VendorErrors;
 }
 
 const VendorDetailsStep: React.FC<Props> = ({
   vendor,
   setVendor,
-  handleFocusScroll,
-  vendorAddressRef,
   isMobileFromOtp = false,
+  errors = {},
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
-  const calculateAge = (birthDate: Date): number => {
-    const today = new Date();
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
+  // Helper function to get profile pic URI safely
+  const getProfilePicUri = (): string | undefined => {
+    if (!vendor.profile_pic) return undefined;
+    if (typeof vendor.profile_pic === 'string') {
+      return vendor.profile_pic;
     }
-    return age;
-  };
-
-  const parseDate = (dateString: string): Date | null => {
-    if (!dateString) return null;
-    try {
-      const parts = dateString.split('/');
-      if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1;
-        const year = parseInt(parts[2], 10);
-        if (day > 0 && day <= 31 && month >= 0 && month < 12 && year > 1900) {
-          return new Date(year, month, day);
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing date:', e);
+    if (typeof vendor.profile_pic === 'object' && vendor.profile_pic !== null && 'uri' in vendor.profile_pic) {
+      return vendor.profile_pic.uri;
     }
-    return null;
-  };
-
-  const handleDateInput = (text: string) => {
-    // Remove all non-digits
-    const cleaned = text.replace(/\D/g, '');
-    
-    // Format as DD/MM/YYYY
-    let formatted = cleaned;
-    if (cleaned.length > 2) {
-      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2);
-    }
-    if (cleaned.length > 4) {
-      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2, 4) + '/' + cleaned.slice(4, 8);
-    }
-    
-    // Limit to 10 characters (DD/MM/YYYY)
-    if (formatted.length > 10) {
-      formatted = formatted.slice(0, 10);
-    }
-
-    setVendor({ ...vendor, date_of_birth: formatted });
-
-    // Validate age if date is complete
-    if (formatted.length === 10) {
-      const date = parseDate(formatted);
-      if (date) {
-        const age = calculateAge(date);
-        if (age < 18) {
-          setAgeError('You must be at least 18 years old to register');
-        } else {
-          setAgeError('');
-        }
-      } else {
-        setAgeError('Please enter a valid date (DD/MM/YYYY)');
-      }
-    } else {
-      setAgeError('');
-    }
+    return undefined;
   };
 
   const pickProfilePic = () => {
@@ -154,9 +114,9 @@ const VendorDetailsStep: React.FC<Props> = ({
           onPress={pickProfilePic}
           style={styles.profilePicPlaceholder}
         >
-          {vendor.profile_pic ? (
+          {getProfilePicUri() ? (
             <Image
-              source={{ uri: vendor.profile_pic }}
+              source={{ uri: getProfilePicUri()! }}
               style={styles.profilePic}
             />
           ) : null}
@@ -177,6 +137,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.owner_name}
         onChangeText={val => setVendor({ ...vendor, owner_name: val })}
         containerStyle={styles.inputContainer}
+        error={errors.owner_name}
       />
 
       <ProfileInput
@@ -188,6 +149,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         onChangeText={val => setVendor({ ...vendor, mobile: val })}
         containerStyle={styles.inputContainer}
         isEditable={!isMobileFromOtp}
+        error={errors.mobile}
       />
 
       <ProfileInput
@@ -196,6 +158,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         value={vendor.email}
         onChangeText={val => setVendor({ ...vendor, email: val })}
         containerStyle={styles.inputContainer}
+        error={errors.email}
       />
 
       {/* <View style={styles.dateInputContainer}>

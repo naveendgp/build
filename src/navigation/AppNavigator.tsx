@@ -6,13 +6,11 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/Login';
-import RegisterScreen from '../screens/Auth/Register';
 import OTPVerificationScreen from '../screens/Auth/OTPVerification';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import FilePickerScreen from '../utils/FilePicker';
 import VendorVerificationScreen from '../screens/VendorVerification';
 import ReviewDetailsScreen from '../screens/VendorVerification/ReviewDetails';
-import HomeScreen from '../screens/Home';
 import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
 import ProfileLocation from '../screens/VendorVerification/map/ProfileLocation';
@@ -23,16 +21,20 @@ import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
 import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
 import WalletScreen from '../screens/Profile/WalletScreen';
 import ServicesScreen from '../screens/Services';
+import ActiveServicesPricingScreen from '../screens/Services/ActiveServicesPricing';
 import CategoryListScreen from '../screens/Services/CategoryList';
 import ServiceDetailScreen from '../screens/Services/ServiceDetail';
 import OrderDetailsScreen from '../screens/Orders/OrderDetails';
 import { Service } from '../apiService/types/profileTypes';
+import ProfileDetailsScreen from '../screens/VendorVerification/ProfileDetails';
+import ShopDetailsScreen from '../screens/VendorVerification/ShopDetails';
+import BankDetailsScreen from '../screens/VendorVerification/BankDetails';
 
 export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
-  VendorVerification: { step?: number } | undefined;
+  VendorVerification: { step?: number; isReupload?: boolean } | undefined;
   ReviewDetails: undefined;
   MainTabs: undefined;
   Orders: undefined;
@@ -52,6 +54,10 @@ export type RootStackParamList = {
   FilePicker: undefined;
   MapScreen: undefined;
   ProfileLocation: { onSelect?: (data: { address: string; latitude: number; longitude: number }) => void } | undefined;
+  ProfileDetails: undefined;
+  ShopDetails: undefined;
+  BankDetails: undefined;
+  ActiveServicesPricingScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -97,11 +103,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={BottomTabNavigator}
             options={{ headerShown: false }}
           />
-          <Stack.Screen
-            options={{ headerShown: false }}
-            name="Register"
-            component={RegisterScreen}
-          />
+
           <Stack.Screen
             options={{ headerShown: false }}
             name="OTPVerification"
@@ -161,6 +163,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
+            name="ActiveServicesPricingScreen"
+            component={ActiveServicesPricingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
             name="CategoryListScreen"
             component={CategoryListScreen}
             options={{ headerShown: false }}
@@ -175,6 +182,24 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             component={OrderDetailsScreen}
             options={{ headerShown: false }}
           />
+
+          <Stack.Screen
+            name="ProfileDetails"
+            component={ProfileDetailsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ShopDetails"
+            component={ShopDetailsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="BankDetails"
+            component={BankDetailsScreen}
+            options={{ headerShown: false }}
+          />
+
+
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>

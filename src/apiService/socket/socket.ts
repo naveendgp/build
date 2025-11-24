@@ -5,7 +5,7 @@ import { useAuthStore } from '../store/useAuthStore';
 
 const socket = new socketService({
   url: API_ENDPOINTS.SOCKET_BASE_URL,
-  debug: true,
+  debug: false, // Socket logs disabled
   autoConnect: false,
   headers: async () => ({
     Authorization: `Bearer ${useAuthStore.getState().token}`,

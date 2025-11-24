@@ -12,7 +12,7 @@ interface ServiceItemCardProps {
     onUpdateField: (field: keyof ServiceItem, value: any) => void;
 }
 
-const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
+const CategoryItemCard: React.FC<ServiceItemCardProps> = ({
     item,
     editableItem,
     onUpdateField,
@@ -91,5 +91,5 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
     );
 };
 
-export default ServiceItemCard;
+export default CategoryItemCard;
 

@@ -10,17 +10,11 @@ import styles from './style';
 import EditIcon from '../../../assets/auto-generated-svg-icons/EditIcon';
 import { COLORS } from '../../../constants/colors';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
-import { useMutation } from '@tanstack/react-query';
-import { registerComplete } from '../../../apiService/api/authApi';
-import {
-  RegisterCompletePayload,
-  RegisterCompleteResponse,
-  OperatingHours,
-} from '../../../apiService/types/authTypes';
-import { AxiosError } from 'axios';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { ShopDocumentUploadPayload } from '../../../apiService/types/docTypes';
+import { showErrorToast } from '../../../utils/Toast';
 import { useAuthStore } from '../../../apiService/store/useAuthStore';
 import { useVendorValidation } from '../useVendorValidation';
+import { useSubmitVerification } from './hooks/useSubmitVerification';
 
 type ReviewDetailsNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -33,166 +27,57 @@ const ReviewDetailsScreen: React.FC = () => {
   const { validateStep } = useVendorValidation();
 
   // Get data from store
-  const { vendor, shop, bank, clearAll } = useVendorVerificationStore();
+  const { vendor, shop, bank, services, clearAll } = useVendorVerificationStore();
 
-  // Helper function to parse business hours and repeat days into operating_hours
-  const parseOperatingHours = (): OperatingHours => {
-    const operatingHours: OperatingHours = {};
-
-    // Parse business_hours (format: "10:00 AM - 08:00 PM" or "09:00 - 20:00")
-    let openTime = '09:00';
-    let closeTime = '20:00';
-
-    if (shop.business_hours) {
-      const timeMatch = shop.business_hours.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?\s*-\s*(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
-      if (timeMatch) {
-        // Convert 12-hour format to 24-hour format if needed
-        const startHour = parseInt(timeMatch[1]);
-        const startMin = timeMatch[2];
-        const startAmPm = timeMatch[3]?.toUpperCase();
-        const endHour = parseInt(timeMatch[4]);
-        const endMin = timeMatch[5];
-        const endAmPm = timeMatch[6]?.toUpperCase();
-
-        let startHour24 = startHour;
-        if (startAmPm === 'PM' && startHour !== 12) startHour24 = startHour + 12;
-        if (startAmPm === 'AM' && startHour === 12) startHour24 = 0;
-
-        let endHour24 = endHour;
-        if (endAmPm === 'PM' && endHour !== 12) endHour24 = endHour + 12;
-        if (endAmPm === 'AM' && endHour === 12) endHour24 = 0;
-
-        openTime = `${startHour24.toString().padStart(2, '0')}:${startMin}`;
-        closeTime = `${endHour24.toString().padStart(2, '0')}:${endMin}`;
-      } else {
-        // Try 24-hour format directly
-        const parts = shop.business_hours.split(' - ');
-        if (parts.length === 2) {
-          openTime = parts[0].trim();
-          closeTime = parts[1].trim();
-        }
-      }
-    }
-
-    // Parse repeat_days to determine which days are active
-    // Format: "Mon, Tue, Wed, Thu And Fri" or similar
-    const repeatDays = shop.repeat_days || 'Mon, Tue, Wed, Thu, Fri, Sat, Sun';
-    const dayMap: { [key: string]: string } = {
-      'mon': 'monday',
-      'tue': 'tuesday',
-      'wed': 'wednesday',
-      'thu': 'thursday',
-      'fri': 'friday',
-      'sat': 'saturday',
-      'sun': 'sunday',
-    };
-
-    // Check which days are mentioned in repeat_days
-    const lowerRepeat = repeatDays.toLowerCase();
-    Object.keys(dayMap).forEach(shortDay => {
-      if (lowerRepeat.includes(shortDay)) {
-        operatingHours[dayMap[shortDay] as keyof OperatingHours] = {
-          open: openTime,
-          close: closeTime,
-        };
-      }
-    });
-
-    // If no days found, default to all weekdays
-    if (Object.keys(operatingHours).length === 0) {
-      operatingHours.monday = { open: openTime, close: closeTime };
-      operatingHours.tuesday = { open: openTime, close: closeTime };
-      operatingHours.wednesday = { open: openTime, close: closeTime };
-      operatingHours.thursday = { open: openTime, close: closeTime };
-      operatingHours.friday = { open: openTime, close: closeTime };
-      operatingHours.saturday = { open: openTime, close: closeTime };
-      operatingHours.sunday = { open: openTime, close: closeTime };
-    }
-
-    return operatingHours;
-  };
-
-  // Register complete mutation
-  const mutation = useMutation<
-    RegisterCompleteResponse,
-    AxiosError<{ message: string }>,
-    { payload: RegisterCompletePayload; images?: any }
-  >({
-    mutationFn: ({ payload, images }) => registerComplete(payload, images),
-    onSuccess: data => {
-      console.log('Register complete API response:', data.message);
-      showSuccessToast(data?.message || 'Registration completed successfully!');
-      // Clear vendor verification data after successful registration
+  // Custom hook for handling both API calls
+  const {
+    submitBoth,
+    retryDocumentUpload,
+    retryServicesToggle,
+    isLoading,
+    bothSuccess,
+    apiStatus,
+    documentError,
+    servicesError,
+    documentSuccess,
+    servicesSuccess,
+  } = useSubmitVerification({
+    onSuccess: () => {
       clearAll();
       setLoggedIn(true);
       navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     },
-    onError: error => {
-      const msg = error.response?.data?.message || error.message;
-      console.log('Register complete API error:', msg);
-      showErrorToast(msg);
-    },
   });
 
   const handleSubmit = () => {
-    const data = { vendor, shop, bank };
+    const data = { vendor, shop, bank, services };
     if (!validateStep(3, data)) return;
 
-    // Parse operating hours
-    const operatingHours = parseOperatingHours();
-
-    // Format contact number
-    const formatContactNum = (phone: string) => {
-      if (!phone) return '';
-      // Remove any non-digit characters
-      const digits = phone.replace(/\D/g, '');
-      // If it's 10 digits, add country code
-      if (digits.length === 10) {
-        return `+91${digits}`;
-      }
-      // If it already has country code, ensure it starts with +
-      if (digits.length > 10 && !phone.startsWith('+')) {
-        return `+${digits}`;
-      }
-      return phone.startsWith('+') ? phone : `+${phone}`;
-    };
-
-    // Transform data to match API payload structure
-    const payload: RegisterCompletePayload = {
+    // Transform data to match ShopDocumentUploadPayload structure
+    const documentPayload: ShopDocumentUploadPayload = {
       shop_name: shop.shop_name,
       owner_name: vendor.owner_name,
       email: vendor.email,
       gst_number: shop.gst_number,
       pan_number: vendor.pan_number,
       shop_license_number: shop.shop_license_number,
-      aadhaar_number: vendor.aadhaar_no,
       address_line1: shop.address,
+      address_line2: shop.landmark || '',
+      city: shop.city || '',
+      state: shop.state || '',
       pincode: shop.pincode,
-      landmark: shop.landmark,
+      landmark: shop.landmark || '',
       latitude: parseFloat(shop.latitude) || 0,
       longitude: parseFloat(shop.longitude) || 0,
-      contactNum: formatContactNum(shop.contact_number || vendor.mobile),
       account_holder_name: bank.account_holder_name,
       account_number: bank.account_number,
       ifsc_code: bank.ifsc_code,
       bank_name: bank.bank_name,
-      branch: bank.bank_name, // Using bank_name as branch if branch is not available
-      upi_id: bank.upi_id,
-      operating_hours: operatingHours,
+      aadhaar_number: vendor.aadhaar_no,
     };
 
-    // Prepare images - map to API field names
-    const images = {
-      ...(vendor.profile_pic && { profile_pic: vendor.profile_pic }),
-      ...(vendor.aadhaar_file && { aadhaar_card: vendor.aadhaar_file }),
-      ...(vendor.pan_file && { pan_card: vendor.pan_file }),
-      ...(shop.shop_front_photo && { shop_image: shop.shop_front_photo }),
-      ...(bank.cancelled_cheque && { cancelled_cheque: bank.cancelled_cheque }),
-    };
-
-    console.log('Submitting data:', payload);
-    console.log('Submitting images:', images);
-    mutation.mutate({ payload, images });
+    // Submit both APIs simultaneously
+    submitBoth(documentPayload, services.selectedServices);
   };
 
   const handleEditPersonal = () => {
@@ -205,6 +90,10 @@ const ReviewDetailsScreen: React.FC = () => {
 
   const handleEditBank = () => {
     navigation.navigate('VendorVerification', { step: 3 });
+  };
+
+  const handleEditServices = () => {
+    navigation.navigate('VendorVerification', { step: 4 });
   };
   const formatPhoneNumber = (phone: string) => {
     if (!phone) return '';
@@ -293,6 +182,31 @@ const ReviewDetailsScreen: React.FC = () => {
         )}
       </View>
 
+      {/* Services Section */}
+      <View style={styles.card}>
+        <View style={styles.cardHeader}>
+          <CustomText style={styles.sectionTitle}>Selected Services</CustomText>
+          <TouchableOpacity onPress={handleEditServices} style={styles.editButton}>
+            <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+            <CustomText style={styles.editText}>Edit</CustomText>
+          </TouchableOpacity>
+        </View>
+
+        {services.selectedServices.length > 0 ? (
+          <View style={styles.detailItem}>
+            <View style={{ marginTop: 4 }}>
+              {services.selectedServices.map((serviceName, index) => (
+                <CustomText key={index} style={[styles.value, { marginTop: index > 0 ? 4 : 0 }]}>
+                  {serviceName}
+                </CustomText>
+              ))}
+            </View>
+          </View>
+        ) : (
+          <DetailItem label="Selected Services" value="No services selected" />
+        )}
+      </View>
+
       {/* Buttons */}
       <View style={styles.buttonRow}>
         <CustomBtn
@@ -304,12 +218,59 @@ const ReviewDetailsScreen: React.FC = () => {
         <CustomBtn
           title="Save"
           onPress={handleSubmit}
-          disabled={mutation.isPending}
-          loading={mutation.isPending}
+          disabled={isLoading || bothSuccess}
+          loading={isLoading}
           style={styles.nextButton}
           textStyle={styles.nextButtonText}
         />
       </View>
+
+      {/* Retry buttons for failed APIs */}
+      {(documentError || servicesError) && (
+        <View style={styles.buttonRow}>
+          {documentError && !documentSuccess && (
+            <CustomBtn
+              title="Retry Document Upload"
+              onPress={() => {
+                const documentPayload: ShopDocumentUploadPayload = {
+                  shop_name: shop.shop_name,
+                  owner_name: vendor.owner_name,
+                  email: vendor.email,
+                  gst_number: shop.gst_number,
+                  pan_number: vendor.pan_number,
+                  shop_license_number: shop.shop_license_number,
+                  address_line1: shop.address,
+                  address_line2: shop.landmark || '',
+                  city: shop.city || '',
+                  state: shop.state || '',
+                  pincode: shop.pincode,
+                  landmark: shop.landmark || '',
+                  latitude: parseFloat(shop.latitude) || 0,
+                  longitude: parseFloat(shop.longitude) || 0,
+                  account_holder_name: bank.account_holder_name,
+                  account_number: bank.account_number,
+                  ifsc_code: bank.ifsc_code,
+                  bank_name: bank.bank_name,
+                  aadhaar_number: vendor.aadhaar_no,
+                };
+                retryDocumentUpload(documentPayload);
+              }}
+              disabled={isLoading}
+              style={styles.previousButton}
+              textStyle={styles.previousButtonText}
+            />
+          )}
+          {servicesError && !servicesSuccess && (
+            <CustomBtn
+              title="Retry Services Update"
+              onPress={() => retryServicesToggle(services.selectedServices)}
+              disabled={isLoading}
+              style={styles.previousButton}
+              textStyle={styles.previousButtonText}
+            />
+          )}
+        </View>
+      )}
     </ScrollView>
   );
 };

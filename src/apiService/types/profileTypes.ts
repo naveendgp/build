@@ -29,6 +29,13 @@ export interface VendorProfile {
   shop_license_number: string;
   shop_name: string;
   app_version: AppVersion;
+  documents: Documents;
+  shop_image_url: string;
+  profile_pic: string;
+}
+export interface Documents {
+  aadhaar_card: string;
+  pan_card: string;
 }
 
 export interface ShopStatus {
@@ -155,6 +162,7 @@ export interface BankDetails {
   ifsc_code: string;
   bank_name: string;
   branch: string;
+  cancelled_cheque: string
 }
 
 // Bank Details API Types
@@ -169,4 +177,69 @@ export interface UpdateBankDetailsInput {
 export interface UpdateBankDetailsResponse {
   status: boolean;
   message: string;
+}
+
+// Toggle Service Active API Types
+export interface ToggleService {
+  service_id: string;
+  is_active: boolean;
+}
+
+export interface ToggleServiceActiveInput {
+  services: ToggleService[];
+}
+
+export interface ToggleServiceActiveResponse {
+  status: boolean;
+  message: string;
+}
+
+// List Services API Types
+export interface ListServiceItem {
+  _id: string;
+  service_name: string;
+  image_url: string;
+  pricing_type: string;
+  service_description: string;
+  service_slug?: string;
+  updatedAt: string;
+}
+
+export interface ListServicesResponse {
+  status: boolean;
+  message: string;
+  data: ListServiceItem[];
+}
+
+// Services by State API Types
+export interface ServiceByState {
+  service_id: string;
+  service_name: string;
+  image_url: string;
+  pricing_type: string;
+  service_description: string;
+  max_count_per_day: number;
+  is_offer: boolean;
+  offer_percentage: number;
+  offer_max_cap: number;
+  is_active: boolean;
+  is_approved: boolean;
+  is_express_available: boolean;
+  express_delivery_time_minutes: number;
+  normal_delivery_time_minutes: number;
+  express_time: number;
+  standard_time: number;
+  active_items_count: number;
+  total_items_count: number;
+}
+
+export interface ServicesByStateData {
+  verified: ServiceByState[];
+  unverified: ServiceByState[];
+}
+
+export interface ServicesByStateResponse {
+  status: boolean;
+  message: string;
+  data: ServicesByStateData;
 }

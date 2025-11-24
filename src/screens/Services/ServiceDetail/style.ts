@@ -176,6 +176,7 @@ export default StyleSheet.create({
         borderRadius: 16,
         borderWidth: 1,
         borderColor: COLORS.BORDER_INPUT,
+
     },
     categoryItemText: {
         fontSize: 16,

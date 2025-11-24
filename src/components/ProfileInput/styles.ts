@@ -25,6 +25,9 @@ export default StyleSheet.create({
     borderColor: COLORS.BORDER_INPUT,
     height:40
   },
+  inputRowError: {
+    borderColor: COLORS.ERROR,
+  },
   inputRowDisabled: {
     opacity: 0.6,
   },
@@ -34,6 +37,12 @@ export default StyleSheet.create({
     fontWeight: "500",
     color: COLORS.INPUT_TEXT,
     padding: 0,
+  },
+  errorText: {
+    color: COLORS.ERROR,
+    fontSize: 12,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    marginTop: 6,
   },
 });
 
