@@ -15,8 +15,8 @@ interface ErrorScreenProps {
 }
 
 const ErrorScreen: React.FC<ErrorScreenProps> = ({
-    title = 'Connection Lost. Please Check',
-    subtitle = 'Your Internet And Try Again.',
+    title = 'Something went wrong.',
+    subtitle = 'Please try again.',
     onRetry,
     retryButtonText = 'Retry',
     iconSize = 150,

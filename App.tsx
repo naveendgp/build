@@ -24,8 +24,8 @@ const queryClient = new QueryClient();
 const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   const insets = useSafeAreaInsets();
   const token = useAuthStore(state => state.token);
- 
-  
+
+
   return (
     <View
       style={{
@@ -99,7 +99,6 @@ const App = () => {
                 title={title}
                 subtitle={subtitle}
                 buttonText={buttonText}
-
                 onButtonPress={handleDialogButtonPress}
                 closable={closable}
                 onClose={closable ? handleDialogButtonPress : undefined}

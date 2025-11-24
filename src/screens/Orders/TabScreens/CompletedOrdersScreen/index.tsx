@@ -12,6 +12,9 @@ import { CompletedSection, mapOrdersToCompletedSections } from '../../utils/orde
 import { useOrdersPagination } from '../../hooks/useOrdersPagination';
 import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
 import { COLORS, FONTFAMILY } from '../../../../constants/colors';
+import ErrorScreen from '../../../../components/ErrorScreen';
+import EmptyScreen from '../../../../components/EmptyScreen';
+import LoadingScreen from '../../../../components/LoadingScreen';
 
 type CompletedOrdersNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -81,15 +84,15 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      {isLoading ? (
-        <ActivityIndicator size="small" />
-      ) : isError ? (
-        <CustomText style={styles.emptyText}>
-          Error: {error?.message || 'Failed to load orders'}
-        </CustomText>
-      ) : (
-        <CustomText style={styles.emptyText}>No completed orders</CustomText>
-      )}
+      {
+        isLoading ? (
+          <LoadingScreen />
+        ) :
+          isError ? (
+            <ErrorScreen onRetry={() => refetch()} />
+          ) : (
+            <EmptyScreen title="No completed orders" />
+          )}
     </View>
   );
 

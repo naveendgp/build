@@ -11,6 +11,9 @@ import { mapOrdersToReceivedCards } from '../../utils/orderMappers';
 import { useOrdersPagination } from '../../hooks/useOrdersPagination';
 import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
 import { COLORS, FONTFAMILY } from '../../../../constants/colors';
+import ErrorScreen from '../../../../components/ErrorScreen';
+import EmptyScreen from '../../../../components/EmptyScreen';
+import LoadingScreen from '../../../../components/LoadingScreen';
 
 interface ReceivedOrdersScreenProps {
   tabType: OrderStatus;
@@ -104,15 +107,15 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      {isLoading ? (
-        <ActivityIndicator size="small" />
-      ) : isError ? (
-        <CustomText style={styles.emptyText}>
-          Error: {error?.message || 'Failed to load orders'}
-        </CustomText>
-      ) : (
-        <CustomText style={styles.emptyText}>{getEmptyText()}</CustomText>
-      )}
+      {
+        isLoading ? (
+          <LoadingScreen />
+        ) :
+          isError ? (
+            <ErrorScreen onRetry={() => refetch()} />
+          ) : (
+            <EmptyScreen title={getEmptyText()} />
+          )}
     </View>
   );
 
@@ -185,6 +188,14 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
       triggerLoadMore();
     }
   };
+
+  // if (isLoading) {
+  //   return (
+  //     <View style={styles.fullScreenLoader}>
+  //       <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+  //     </View>
+  //   );
+  // }
 
   return (
     <View style={styles.container}>
