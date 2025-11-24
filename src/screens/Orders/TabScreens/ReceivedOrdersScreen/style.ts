@@ -5,6 +5,7 @@ import { COLORS } from '../../../../constants';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F6F9FF',
   },
   scrollView: {
     flex: 1,

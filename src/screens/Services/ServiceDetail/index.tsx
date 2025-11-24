@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -41,7 +41,11 @@ const ServiceDetailScreen: React.FC = () => {
     const { service: initialService } = route.params;
     const queryClient = useQueryClient();
     const { refreshProfile } = useProfileStore();
-    const { updatedService, clearUpdatedService } = useServiceDataStore();
+    const { updatedService, clearUpdatedService, serviceFormData, setServiceFormData, clearServiceFormData } = useServiceDataStore();
+
+    // Ref to track if we're currently restoring values (to prevent infinite loops)
+    const isRestoringRef = useRef(false);
+    const hasRestoredRef = useRef(false);
 
     // Use state to track current service (can be updated from CategoryList)
     const [service, setService] = useState<Service>(initialService);
@@ -74,64 +78,115 @@ const ServiceDetailScreen: React.FC = () => {
         maxCap: initialService?.offer_max_cap ?? 100,
     });
 
-    // Update service when coming back from CategoryList (only for PER_PC)
+    // Restore form values when screen comes into focus
     useFocusEffect(
         React.useCallback(() => {
-            // Only handle updates for PER_PC pricing type
-            if (service?.pricing_type !== PRICING_TYPES.PER_PC) {
-                return;
+            const serviceName = service?.service_name;
+            if (serviceName && serviceFormData[serviceName] && !hasRestoredRef.current) {
+                isRestoringRef.current = true;
+                hasRestoredRef.current = true;
+                const savedData = serviceFormData[serviceName];
+                // Restore form values from store
+                if (savedData.expressServiceEnabled !== undefined) {
+                    setExpressServiceEnabled(savedData.expressServiceEnabled);
+                }
+                if (savedData.offerEnabled !== undefined) {
+                    setOfferEnabled(savedData.offerEnabled);
+                }
+                if (savedData.maxItemsPerDay !== undefined) {
+                    setMaxItemsPerDay(savedData.maxItemsPerDay);
+                }
+                if (savedData.serviceTimeData) {
+                    setServiceTimeData(savedData.serviceTimeData);
+                }
+                if (savedData.offerData) {
+                    setOfferData(savedData.offerData);
+                }
+                // Reset flag after state updates complete
+                setTimeout(() => {
+                    isRestoringRef.current = false;
+                }, 200);
             }
 
-            // Check if there's updated service data from CategoryList
-            if (updatedService && updatedService.service_name === service.service_name) {
-                // Check if items have changed
-                const itemsChanged = JSON.stringify(updatedService.items) !== JSON.stringify(service.items);
-                if (itemsChanged) {
-                    console.log('📦 Updated service data from CategoryList:', {
-                        serviceName: updatedService.service_name,
-                        items: updatedService.items,
-                        itemsCount: updatedService.items?.length || 0,
-                        selectedItems: updatedService.items?.filter((item: ServiceItem) => item.is_active).length || 0,
-                    });
-                    setService(updatedService);
-                    // Clear the temporary store after using it
-                    clearUpdatedService();
+            // Update service when coming back from CategoryList (only for PER_PC)
+            if (service?.pricing_type === PRICING_TYPES.PER_PC) {
+                // Check if there's updated service data from CategoryList
+                if (updatedService && updatedService.service_name === service.service_name) {
+                    // Check if items have changed
+                    const itemsChanged = JSON.stringify(updatedService.items) !== JSON.stringify(service.items);
+                    if (itemsChanged) {
+                        console.log('📦 Updated service data from CategoryList:', {
+                            serviceName: updatedService.service_name,
+                            items: updatedService.items,
+                            itemsCount: updatedService.items?.length || 0,
+                            selectedItems: updatedService.items?.filter((item: ServiceItem) => item.is_active).length || 0,
+                        });
+                        setService(updatedService);
+                        // Clear the temporary store after using it
+                        clearUpdatedService();
+                    }
                 }
             }
         }, [updatedService, service, clearUpdatedService]),
     );
 
-    // Update state when service changes (including when updated from CategoryList or refreshed)
+    // Reset restore flag when service changes
     useEffect(() => {
-        if (service) {
-            // Update express service toggle
-            if (service.is_express_available !== undefined) {
-                setExpressServiceEnabled(service.is_express_available);
-            }
-            // Update offer toggle
-            if (service.is_offer !== undefined) {
-                setOfferEnabled(service.is_offer);
-            }
-            // Update max items per day
-            if (service.max_count_per_day !== undefined) {
-                setMaxItemsPerDay(service.max_count_per_day.toString());
-            }
-            // Update service time data
-            if (service.standard_time !== undefined || service.express_time !== undefined) {
-                setServiceTimeData({
-                    standardTime: service.standard_time ?? 48,
-                    expressTime: service.express_time ?? 8,
-                });
-            }
-            // Update offer data
-            if (service.offer_percentage !== undefined || service.offer_max_cap !== undefined) {
-                setOfferData({
-                    offerPercentage: service.offer_percentage ?? 50,
-                    maxCap: service.offer_max_cap ?? 100,
-                });
+        hasRestoredRef.current = false;
+    }, [service?.service_name]);
+
+    // Update state when service changes (including when updated from CategoryList or refreshed)
+    // Only update if we don't have saved form data (to avoid overwriting user edits)
+    useEffect(() => {
+        if (service && !isRestoringRef.current) {
+            const serviceName = service.service_name;
+            const hasSavedData = serviceName && serviceFormData[serviceName];
+
+            // Only update from service if we don't have saved form data
+            if (!hasSavedData) {
+                // Update express service toggle
+                if (service.is_express_available !== undefined) {
+                    setExpressServiceEnabled(service.is_express_available);
+                }
+                // Update offer toggle
+                if (service.is_offer !== undefined) {
+                    setOfferEnabled(service.is_offer);
+                }
+                // Update max items per day
+                if (service.max_count_per_day !== undefined) {
+                    setMaxItemsPerDay(service.max_count_per_day.toString());
+                }
+                // Update service time data
+                if (service.standard_time !== undefined || service.express_time !== undefined) {
+                    setServiceTimeData({
+                        standardTime: service.standard_time ?? 48,
+                        expressTime: service.express_time ?? 8,
+                    });
+                }
+                // Update offer data
+                if (service.offer_percentage !== undefined || service.offer_max_cap !== undefined) {
+                    setOfferData({
+                        offerPercentage: service.offer_percentage ?? 50,
+                        maxCap: service.offer_max_cap ?? 100,
+                    });
+                }
             }
         }
-    }, [service]);
+    }, [service, serviceFormData]);
+
+    // Save form values to store whenever they change (but not during restore)
+    useEffect(() => {
+        if (isRestoringRef.current) return; // Skip saving during restore
+        if (service?.service_name) {
+            setServiceFormData(service.service_name, {
+                expressServiceEnabled,
+                offerEnabled,
+                maxItemsPerDay,
+                serviceTimeData,
+                offerData,
+            });
+        }
+    }, [expressServiceEnabled, offerEnabled, maxItemsPerDay, serviceTimeData, offerData, service?.service_name, setServiceFormData]);
 
     // Initialize editable items from service items
     useEffect(() => {
@@ -196,6 +251,11 @@ const ServiceDetailScreen: React.FC = () => {
             // Refresh profile
             await refreshProfile();
             queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+            // Clear saved form data since it's been saved
+            if (service?.service_name) {
+                clearServiceFormData(service.service_name);
+            }
 
             // Show success dialog for 1 second
             setShowDialog(true);

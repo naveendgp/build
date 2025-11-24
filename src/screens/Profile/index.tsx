@@ -179,19 +179,19 @@ const ProfileScreen: React.FC = () => {
           {/* Summary Card */}
           <View style={styles.summaryCard}>
             <CustomText style={styles.summaryTitle}>To Be Received</CustomText>
-            <CustomText style={styles.summaryAmount}>₹5,000.00</CustomText>
+            <CustomText style={styles.summaryAmount}>-</CustomText>
             <View style={styles.summaryStats}>
               <View style={styles.statItem}>
                 <CustomText style={styles.statLabel}>
                   Total Orders Received
                 </CustomText>
-                <CustomText style={styles.statValue}>100</CustomText>
+                <CustomText style={styles.statValue}>-</CustomText>
               </View>
               <View style={styles.statItem}>
                 <CustomText style={styles.statLabel}>
                   Accepted Orders
                 </CustomText>
-                <CustomText style={styles.statValue}>89</CustomText>
+                <CustomText style={styles.statValue}>-</CustomText>
               </View>
             </View>
           </View>

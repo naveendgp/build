@@ -76,8 +76,20 @@ const ReviewDetailsScreen: React.FC = () => {
       aadhaar_number: vendor.aadhaar_no,
     };
 
-    // Submit both APIs simultaneously
-    submitBoth(documentPayload, services.selectedServices);
+    // If there are errors, retry only the failed operations
+    // Otherwise, submit both APIs simultaneously
+    if ((documentError && !documentSuccess) || (servicesError && !servicesSuccess)) {
+      // Retry failed operations
+      if (documentError && !documentSuccess) {
+        retryDocumentUpload(documentPayload);
+      }
+      if (servicesError && !servicesSuccess) {
+        retryServicesToggle(services.selectedServices);
+      }
+    } else {
+      // Submit both APIs simultaneously (initial submission)
+      submitBoth(documentPayload, services.selectedServices);
+    }
   };
 
   const handleEditPersonal = () => {
@@ -224,53 +236,6 @@ const ReviewDetailsScreen: React.FC = () => {
           textStyle={styles.nextButtonText}
         />
       </View>
-
-      {/* Retry buttons for failed APIs */}
-      {(documentError || servicesError) && (
-        <View style={styles.buttonRow}>
-          {documentError && !documentSuccess && (
-            <CustomBtn
-              title="Retry Document Upload"
-              onPress={() => {
-                const documentPayload: ShopDocumentUploadPayload = {
-                  shop_name: shop.shop_name,
-                  owner_name: vendor.owner_name,
-                  email: vendor.email,
-                  gst_number: shop.gst_number,
-                  pan_number: vendor.pan_number,
-                  shop_license_number: shop.shop_license_number,
-                  address_line1: shop.address,
-                  address_line2: shop.landmark || '',
-                  city: shop.city || '',
-                  state: shop.state || '',
-                  pincode: shop.pincode,
-                  landmark: shop.landmark || '',
-                  latitude: parseFloat(shop.latitude) || 0,
-                  longitude: parseFloat(shop.longitude) || 0,
-                  account_holder_name: bank.account_holder_name,
-                  account_number: bank.account_number,
-                  ifsc_code: bank.ifsc_code,
-                  bank_name: bank.bank_name,
-                  aadhaar_number: vendor.aadhaar_no,
-                };
-                retryDocumentUpload(documentPayload);
-              }}
-              disabled={isLoading}
-              style={styles.previousButton}
-              textStyle={styles.previousButtonText}
-            />
-          )}
-          {servicesError && !servicesSuccess && (
-            <CustomBtn
-              title="Retry Services Update"
-              onPress={() => retryServicesToggle(services.selectedServices)}
-              disabled={isLoading}
-              style={styles.previousButton}
-              textStyle={styles.previousButtonText}
-            />
-          )}
-        </View>
-      )}
     </ScrollView>
   );
 };
