@@ -150,5 +150,58 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: COLORS.LOGIN_SUBTITLE,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  errorTitle: {
+    fontSize: 20,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
+    fontWeight: '600',
+    color: COLORS.BOTTOM_BLACK,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    fontSize: 14,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.LOGIN_SUBTITLE,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+  },
+  retryButton: {
+    backgroundColor: COLORS.THEME_GREEN,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    minWidth: 120,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    color: COLORS.LOGIN_SUBTITLE,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    textAlign: 'center',
+  },
 });
 
