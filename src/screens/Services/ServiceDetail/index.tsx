@@ -25,6 +25,7 @@ import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import { PRICING_TYPES } from '../../../constants';
 import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
 import CategoryItemCard from '../Components/CategoryItemCard';
+import categoryItemStyles from '../Components/style';
 import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
 import ServiceAddedDialog from '../ServiceAddedDialog';
 import dialogStyles from '../ServiceAddedDialog/style';
@@ -46,6 +47,8 @@ const ServiceDetailScreen: React.FC = () => {
     // Ref to track if we're currently restoring values (to prevent infinite loops)
     const isRestoringRef = useRef(false);
     const hasRestoredRef = useRef(false);
+    const previousItemsStrRef = useRef<string>('');
+    const justUpdatedFromCategoryListRef = useRef(false);
 
     // Use state to track current service (can be updated from CategoryList)
     const [service, setService] = useState<Service>(initialService);
@@ -62,6 +65,12 @@ const ServiceDetailScreen: React.FC = () => {
     const [editableItems, setEditableItems] = useState<{
         [key: string]: ServiceItem;
     }>({});
+    const [standardPricePerKg, setStandardPricePerKg] = useState<string>(
+        service?.standard_price_per_kg?.toString() || ''
+    );
+    const [expressPricePerKg, setExpressPricePerKg] = useState<string>(
+        service?.express_price_per_kg?.toString() || ''
+    );
 
     // Dialog states
     const [showServiceTimeDialog, setShowServiceTimeDialog] = useState(false);
@@ -82,19 +91,19 @@ const ServiceDetailScreen: React.FC = () => {
     useFocusEffect(
         React.useCallback(() => {
             const serviceName = service?.service_name;
-            
+
             // Get fresh serviceFormData from store to avoid stale closure
             const currentFormData = useServiceDataStore.getState().serviceFormData;
-            
+
             // First, check if profile has updated service data (from server refresh)
             if (profile?.services_offered && serviceName) {
                 const updatedServiceFromProfile = profile.services_offered.find(
                     (s: Service) => s.service_name === serviceName
                 );
-                
+
                 if (updatedServiceFromProfile) {
                     // Check if profile data is different from current service
-                    const hasChanges = 
+                    const hasChanges =
                         updatedServiceFromProfile.is_express_available !== service.is_express_available ||
                         updatedServiceFromProfile.is_offer !== service.is_offer ||
                         updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
@@ -104,7 +113,7 @@ const ServiceDetailScreen: React.FC = () => {
                         updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
                         JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
                         JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
-                    
+
                     if (hasChanges) {
                         // Clear saved form data since we have fresh data from server
                         clearServiceFormData(serviceName);
@@ -117,7 +126,7 @@ const ServiceDetailScreen: React.FC = () => {
                     }
                 }
             }
-            
+
             // Restore form values from saved data (only if no profile update)
             if (serviceName && currentFormData[serviceName] && !hasRestoredRef.current) {
                 isRestoringRef.current = true;
@@ -139,6 +148,12 @@ const ServiceDetailScreen: React.FC = () => {
                 if (savedData.offerData) {
                     setOfferData(savedData.offerData);
                 }
+                if (savedData.standardPricePerKg !== undefined) {
+                    setStandardPricePerKg(savedData.standardPricePerKg);
+                }
+                if (savedData.expressPricePerKg !== undefined) {
+                    setExpressPricePerKg(savedData.expressPricePerKg);
+                }
                 // Reset flag after state updates complete
                 setTimeout(() => {
                     isRestoringRef.current = false;
@@ -149,18 +164,48 @@ const ServiceDetailScreen: React.FC = () => {
             if (service?.pricing_type === PRICING_TYPES.PER_PC) {
                 // Check if there's updated service data from CategoryList
                 if (updatedService && updatedService.service_name === service.service_name) {
-                    // Check if items have changed
+                    // Check if items or items_by_category have changed
                     const itemsChanged = JSON.stringify(updatedService.items) !== JSON.stringify(service.items);
-                    if (itemsChanged) {
+                    const itemsByCategoryChanged = JSON.stringify(updatedService.items_by_category) !== JSON.stringify(service.items_by_category);
+                    if (itemsChanged || itemsByCategoryChanged) {
                         console.log('📦 Updated service data from CategoryList:', {
                             serviceName: updatedService.service_name,
                             items: updatedService.items,
                             itemsCount: updatedService.items?.length || 0,
                             selectedItems: updatedService.items?.filter((item: ServiceItem) => item.is_active).length || 0,
+                            itemsByCategory: updatedService.items_by_category,
                         });
+
+                        // Update editableItems directly from the updated service
+                        const newEditableItems: { [key: string]: ServiceItem } = {};
+                        if (updatedService.items && updatedService.items.length > 0) {
+                            updatedService.items.forEach((item: ServiceItem) => {
+                                const itemKey = `${item.item_name}_${item.category}`;
+                                newEditableItems[itemKey] = { ...item };
+                            });
+                        }
+
+                        console.log('📦 Directly updating editableItems:', {
+                            editableItemsCount: Object.keys(newEditableItems).length,
+                            selectedItems: Object.values(newEditableItems).filter(item => item.is_active).length,
+                        });
+
+                        setEditableItems(newEditableItems);
+                        previousItemsStrRef.current = JSON.stringify(newEditableItems);
+
+                        // Set flag to prevent useEffect from overwriting
+                        justUpdatedFromCategoryListRef.current = true;
+
                         setService(updatedService);
                         // Clear the temporary store after using it
                         clearUpdatedService();
+                        // Force refresh by resetting the restore flag
+                        hasRestoredRef.current = false;
+
+                        // Reset flag after a short delay to allow useEffect to skip this update
+                        setTimeout(() => {
+                            justUpdatedFromCategoryListRef.current = false;
+                        }, 100);
                     }
                 }
             }
@@ -174,11 +219,11 @@ const ServiceDetailScreen: React.FC = () => {
             const updatedServiceFromProfile = profile.services_offered.find(
                 (s: Service) => s.service_name === service.service_name
             );
-            
+
             if (updatedServiceFromProfile) {
                 // Only update if the service data has actually changed
                 // Compare key fields to avoid unnecessary updates
-                const hasChanges = 
+                const hasChanges =
                     updatedServiceFromProfile.is_express_available !== service.is_express_available ||
                     updatedServiceFromProfile.is_offer !== service.is_offer ||
                     updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
@@ -188,7 +233,7 @@ const ServiceDetailScreen: React.FC = () => {
                     updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
                     JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
                     JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
-                
+
                 if (hasChanges) {
                     // Clear saved form data since we have fresh data from server
                     clearServiceFormData(service.service_name);
@@ -241,6 +286,12 @@ const ServiceDetailScreen: React.FC = () => {
                         maxCap: service.offer_max_cap ?? 100,
                     });
                 }
+                if (service.standard_price_per_kg !== undefined) {
+                    setStandardPricePerKg((service.standard_price_per_kg ?? '').toString());
+                }
+                if (service.express_price_per_kg !== undefined) {
+                    setExpressPricePerKg((service.express_price_per_kg ?? '').toString());
+                }
             }
         }
     }, [service, serviceFormData]);
@@ -255,30 +306,71 @@ const ServiceDetailScreen: React.FC = () => {
                 maxItemsPerDay,
                 serviceTimeData,
                 offerData,
+                standardPricePerKg,
+                expressPricePerKg,
             });
         }
-    }, [expressServiceEnabled, offerEnabled, maxItemsPerDay, serviceTimeData, offerData, service?.service_name, setServiceFormData]);
+    }, [expressServiceEnabled, offerEnabled, maxItemsPerDay, serviceTimeData, offerData, standardPricePerKg, expressPricePerKg, service?.service_name, setServiceFormData]);
 
     // Initialize editable items from service items
     useEffect(() => {
+        if (!service) return;
+
+        // Skip if we just updated from CategoryList (to prevent overwriting the direct update)
+        if (justUpdatedFromCategoryListRef.current) {
+            console.log('⏭️ Skipping editableItems update - just updated from CategoryList');
+            return;
+        }
+
         const items: { [key: string]: ServiceItem } = {};
-        // Handle items_by_category structure
-        if (service?.items_by_category) {
+
+        // Prefer items array if available (it has all items, including updates from CategoryList)
+        // items_by_category might only have partial data after CategoryList updates
+        if (service.items && service.items.length > 0) {
+            service.items.forEach((item: ServiceItem) => {
+                const itemKey = `${item.item_name}_${item.category}`;
+                items[itemKey] = { ...item };
+            });
+        } else if (service.items_by_category && Object.keys(service.items_by_category).length > 0) {
+            // Fallback to items_by_category if items array is not available
             Object.values(service.items_by_category)
                 .flat()
                 .forEach((item: ServiceItem) => {
                     const itemKey = `${item.item_name}_${item.category}`;
                     items[itemKey] = { ...item };
                 });
-        } else if (service?.items) {
-            // Fallback to items array if items_by_category is not available
-            service.items.forEach((item: ServiceItem) => {
-                const itemKey = `${item.item_name}_${item.category}`;
-                items[itemKey] = { ...item };
-            });
         }
-        setEditableItems(items);
+
+        // Create a string representation of items for comparison
+        const itemsStr = JSON.stringify(items);
+
+        // Always update if service changed (don't rely on string comparison alone)
+        // The previousItemsStrRef check helps avoid unnecessary updates, but we need to ensure updates happen
+        const shouldUpdate = itemsStr !== previousItemsStrRef.current || Object.keys(items).length !== Object.keys(editableItems).length;
+
+        if (shouldUpdate) {
+            console.log('🔄 Updating editableItems from service:', {
+                serviceName: service.service_name,
+                itemsCount: Object.keys(items).length,
+                previousCount: Object.keys(editableItems).length,
+                selectedItems: Object.values(items).filter(item => item.is_active).length,
+                sampleItem: Object.values(items)[0],
+                usingItemsArray: !!(service.items && service.items.length > 0),
+            });
+            setEditableItems(items);
+            previousItemsStrRef.current = itemsStr;
+        }
     }, [service]);
+
+    // Debug: Log when editableItems changes
+    useEffect(() => {
+        const selectedCount = Object.values(editableItems).filter(item => item.is_active).length;
+        console.log('📊 editableItems state updated:', {
+            totalItems: Object.keys(editableItems).length,
+            selectedItems: selectedCount,
+            sampleActiveItem: Object.values(editableItems).find(item => item.is_active),
+        });
+    }, [editableItems]);
 
     const updateItemField = (
         itemKey: string,
@@ -353,7 +445,11 @@ const ServiceDetailScreen: React.FC = () => {
             pricingType: service?.pricing_type,
             editableItemsCount: allItems.length,
             selectedItems: allItems.filter(item => item.is_active).length,
-            items: allItems.map(item => ({
+            editableItemsKeys: Object.keys(editableItems).length,
+            serviceItemsCount: service?.items?.length || 0,
+            serviceItemsByCategoryKeys: service?.items_by_category ? Object.keys(service.items_by_category).length : 0,
+            sampleEditableItem: allItems[0],
+            items: allItems.slice(0, 5).map(item => ({
                 name: item.item_name,
                 category: item.category,
                 is_active: item.is_active,
@@ -361,6 +457,11 @@ const ServiceDetailScreen: React.FC = () => {
                 express_price: item.express_price,
             })),
         });
+
+        const parsedStandardPerKg =
+            standardPricePerKg !== '' ? Number(standardPricePerKg) : service?.standard_price_per_kg || 0;
+        const parsedExpressPerKg =
+            expressPricePerKg !== '' ? Number(expressPricePerKg) : service?.express_price_per_kg || 0;
 
         const apiInput: UpdateServiceInput = {
             service: {
@@ -373,6 +474,8 @@ const ServiceDetailScreen: React.FC = () => {
                 offer_percentage: offerData.offerPercentage || 0,
                 express_time: serviceTimeData.expressTime || 0,
                 standard_time: serviceTimeData.standardTime || 0,
+                standard_price_per_kg: parsedStandardPerKg,
+                express_price_per_kg: parsedExpressPerKg,
                 items: allItems.map(item => ({
                     item_name: item.item_name,
                     item_price: item.item_price,
@@ -381,6 +484,7 @@ const ServiceDetailScreen: React.FC = () => {
                     discount_percentage: item.discount_percentage,
                     is_active: item.is_active,
                 })),
+
             },
         };
 
@@ -463,8 +567,9 @@ const ServiceDetailScreen: React.FC = () => {
                                     style={styles.editButton}
                                     onPress={() => setShowOfferDialog(true)}
                                 >
-                                    <CustomText style={styles.editText}>Edit</CustomText>
                                     <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+
+                                    <CustomText style={styles.editText}>Edit</CustomText>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -474,7 +579,7 @@ const ServiceDetailScreen: React.FC = () => {
                     {/* Max Items Per Day */}
                     <View style={styles.inputSection}>
                         <CustomText style={styles.inputLabel}>
-                            Max Number Of Items Per Day
+                            {service?.pricing_type === PRICING_TYPES.PER_PC ? 'Max Number Of Items Per Day' : 'Max Number of Kgs Per day'}
                         </CustomText>
                         <View style={styles.inputContainer}>
                             <TextInput
@@ -506,8 +611,20 @@ const ServiceDetailScreen: React.FC = () => {
                                             <TouchableOpacity
                                                 style={styles.categoryItem}
                                                 onPress={() => {
+                                                    // Create service with current editableItems merged in
+                                                    // This ensures CategoryList has the latest item states
+                                                    const serviceWithEditableItems = {
+                                                        ...service,
+                                                        items: Object.values(editableItems),
+                                                        items_by_category: {
+                                                            ...(service?.items_by_category || {}),
+                                                            [category]: Object.values(editableItems).filter(
+                                                                (item: ServiceItem) => item.category === category
+                                                            ),
+                                                        },
+                                                    };
                                                     // Navigate to CategoryList with service and selected category
-                                                    navigation.navigate('CategoryListScreen', { service, category });
+                                                    navigation.navigate('CategoryListScreen', { service: serviceWithEditableItems, category });
                                                 }}
                                             >
                                                 <CustomText style={styles.categoryItemText}>{category}</CustomText>
@@ -524,25 +641,37 @@ const ServiceDetailScreen: React.FC = () => {
                         :
                         <View>
                             <CustomText style={styles.categoryTitle}>Price</CustomText>
-
-                            {service?.items_by_category &&
-                                Object.values(service.items_by_category)
-                                    .flat()
-                                    .map((item: ServiceItem, index: number) => {
-                                        const itemKey = `${item.item_name}_${item.category}`;
-                                        const editableItem = editableItems[itemKey] || item;
-                                        return (
-                                            <CategoryItemCard
-                                                key={`${item.item_name}_${item.category}_${index}`}
-                                                item={item}
-                                                editableItem={editableItem}
-                                                onUpdateField={(field, value) => {
-                                                    updateItemField(itemKey, field, value);
-                                                }}
+                            <View style={categoryItemStyles.itemCard}>
+                                <CustomText style={categoryItemStyles.itemName}>1kg</CustomText>
+                                <View style={[categoryItemStyles.priceRow, { marginTop: 16 }]}>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Standard</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={standardPricePerKg}
+                                                onChangeText={setStandardPricePerKg}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
                                             />
-                                        );
-                                    })}
-
+                                        </View>
+                                    </View>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Express</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={expressPricePerKg}
+                                                onChangeText={setExpressPricePerKg}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
                             <CustomText style={[styles.inputNote, { marginBottom: 24 }]}>Note: Clothes will be weighed during pickup and the bill will be generated accordingly.</CustomText>
                         </View>
 

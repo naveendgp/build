@@ -83,20 +83,20 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   const timelineEvents = useOrderTimeline(vendorOrderData);
 
   // Log updateLogs data
-  useEffect(() => {
-    console.log('📋 ReceivedOrderCard - updateLogs:', updateLogs);
-    console.log('📋 ReceivedOrderCard - orderId:', orderId);
-    if (updateLogs && updateLogs.length > 0) {
-      console.log('📋 ReceivedOrderCard - updateLogs count:', updateLogs.length);
-      updateLogs.forEach((log, index) => {
-        console.log(`📋 ReceivedOrderCard - updateLog[${index}]:`, {
-          status: log.status,
-          statusStr: log.statusStr,
-          timestamp: log.timestamp,
-        });
-      });
-    }
-  }, [updateLogs, orderId]);
+  // useEffect(() => {
+  //   console.log('📋 ReceivedOrderCard - updateLogs:', updateLogs);
+  //   console.log('📋 ReceivedOrderCard - orderId:', orderId);
+  //   if (updateLogs && updateLogs.length > 0) {
+  //     console.log('📋 ReceivedOrderCard - updateLogs count:', updateLogs.length);
+  //     updateLogs.forEach((log, index) => {
+  //       console.log(`📋 ReceivedOrderCard - updateLog[${index}]:`, {
+  //         status: log.status,
+  //         statusStr: log.statusStr,
+  //         timestamp: log.timestamp,
+  //       });
+  //     });
+  //   }
+  // }, [updateLogs, orderId]);
 
   // Fetch order details when bottom sheet should be opened
   // Keep query enabled to access cached data, but only fetch when needed for items

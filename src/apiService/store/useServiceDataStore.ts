@@ -13,6 +13,8 @@ interface ServiceFormData {
         offerPercentage: number;
         maxCap: number;
     };
+    standardPricePerKg?: string;
+    expressPricePerKg?: string;
 }
 
 interface ServiceDataState {
