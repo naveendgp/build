@@ -42,12 +42,19 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
 
   const setCount = useOrdersCountStore(state => state.setCount);
 
-  // Update store when total changes
-  useEffect(() => {
-    if (total > 0) {
-      setCount(tabType, total);
+  const computedCount = useMemo(() => {
+    if (typeof total === 'number' && !Number.isNaN(total)) {
+      return total;
     }
-  }, [total, tabType, setCount]);
+    if (Array.isArray(orders)) {
+      return orders.length;
+    }
+    return 0;
+  }, [total, orders]);
+
+  useEffect(() => {
+    setCount(tabType, computedCount);
+  }, [computedCount, tabType, setCount]);
 
   const groupedData = useMemo<CompletedSection[]>(
     () => mapOrdersToCompletedSections(orders),

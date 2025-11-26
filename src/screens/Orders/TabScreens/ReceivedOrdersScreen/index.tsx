@@ -37,12 +37,20 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
 
   const setCount = useOrdersCountStore(state => state.setCount);
 
-  // Update store when total changes
-  useEffect(() => {
-    if (total > 0) {
-      setCount(tabType, total);
+  const computedCount = useMemo(() => {
+    if (typeof total === 'number' && !Number.isNaN(total)) {
+      return total;
     }
-  }, [total, tabType, setCount]);
+    if (Array.isArray(orders)) {
+      return orders.length;
+    }
+    return 0;
+  }, [total, orders]);
+
+  // Update store whenever count changes (even if value stays same)
+  useEffect(() => {
+    setCount(tabType, computedCount);
+  }, [computedCount, tabType, setCount]);
 
   const displayOrders = useMemo(
     () => mapOrdersToReceivedCards(orders),

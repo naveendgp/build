@@ -40,7 +40,7 @@ const ServiceDetailScreen: React.FC = () => {
     const route = useRoute<ServiceDetailRouteProp>();
     const { service: initialService } = route.params;
     const queryClient = useQueryClient();
-    const { refreshProfile } = useProfileStore();
+    const { refreshProfile, profile } = useProfileStore();
     const { updatedService, clearUpdatedService, serviceFormData, setServiceFormData, clearServiceFormData } = useServiceDataStore();
 
     // Ref to track if we're currently restoring values (to prevent infinite loops)
@@ -82,10 +82,47 @@ const ServiceDetailScreen: React.FC = () => {
     useFocusEffect(
         React.useCallback(() => {
             const serviceName = service?.service_name;
-            if (serviceName && serviceFormData[serviceName] && !hasRestoredRef.current) {
+            
+            // Get fresh serviceFormData from store to avoid stale closure
+            const currentFormData = useServiceDataStore.getState().serviceFormData;
+            
+            // First, check if profile has updated service data (from server refresh)
+            if (profile?.services_offered && serviceName) {
+                const updatedServiceFromProfile = profile.services_offered.find(
+                    (s: Service) => s.service_name === serviceName
+                );
+                
+                if (updatedServiceFromProfile) {
+                    // Check if profile data is different from current service
+                    const hasChanges = 
+                        updatedServiceFromProfile.is_express_available !== service.is_express_available ||
+                        updatedServiceFromProfile.is_offer !== service.is_offer ||
+                        updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
+                        updatedServiceFromProfile.standard_time !== service.standard_time ||
+                        updatedServiceFromProfile.express_time !== service.express_time ||
+                        updatedServiceFromProfile.offer_percentage !== service.offer_percentage ||
+                        updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
+                        JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
+                        JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
+                    
+                    if (hasChanges) {
+                        // Clear saved form data since we have fresh data from server
+                        clearServiceFormData(serviceName);
+                        // Reset restore flag to allow fresh data to be used
+                        hasRestoredRef.current = false;
+                        // Update service state with fresh data
+                        setService(updatedServiceFromProfile);
+                        // Don't restore form data if we just updated from profile
+                        return;
+                    }
+                }
+            }
+            
+            // Restore form values from saved data (only if no profile update)
+            if (serviceName && currentFormData[serviceName] && !hasRestoredRef.current) {
                 isRestoringRef.current = true;
                 hasRestoredRef.current = true;
-                const savedData = serviceFormData[serviceName];
+                const savedData = currentFormData[serviceName];
                 // Restore form values from store
                 if (savedData.expressServiceEnabled !== undefined) {
                     setExpressServiceEnabled(savedData.expressServiceEnabled);
@@ -127,8 +164,42 @@ const ServiceDetailScreen: React.FC = () => {
                     }
                 }
             }
-        }, [updatedService, service, clearUpdatedService]),
+        }, [updatedService, service, clearUpdatedService, profile?.services_offered, clearServiceFormData]),
     );
+
+    // Sync service data from refreshed profile (when profile updates while on screen)
+    useEffect(() => {
+        if (profile?.services_offered && service?.service_name && !isRestoringRef.current) {
+            // Find the updated service in the refreshed profile
+            const updatedServiceFromProfile = profile.services_offered.find(
+                (s: Service) => s.service_name === service.service_name
+            );
+            
+            if (updatedServiceFromProfile) {
+                // Only update if the service data has actually changed
+                // Compare key fields to avoid unnecessary updates
+                const hasChanges = 
+                    updatedServiceFromProfile.is_express_available !== service.is_express_available ||
+                    updatedServiceFromProfile.is_offer !== service.is_offer ||
+                    updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
+                    updatedServiceFromProfile.standard_time !== service.standard_time ||
+                    updatedServiceFromProfile.express_time !== service.express_time ||
+                    updatedServiceFromProfile.offer_percentage !== service.offer_percentage ||
+                    updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
+                    JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
+                    JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
+                
+                if (hasChanges) {
+                    // Clear saved form data since we have fresh data from server
+                    clearServiceFormData(service.service_name);
+                    // Reset restore flag to allow fresh data to be used
+                    hasRestoredRef.current = false;
+                    // Update service state with fresh data
+                    setService(updatedServiceFromProfile);
+                }
+            }
+        }
+    }, [profile?.services_offered, service?.service_name, clearServiceFormData]);
 
     // Reset restore flag when service changes
     useEffect(() => {

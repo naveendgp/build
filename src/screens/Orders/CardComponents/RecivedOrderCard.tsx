@@ -18,7 +18,8 @@ import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
 import { useQuery } from '@tanstack/react-query';
 import ItemsDetailBottomsheet, { OrderItem } from '../BottomSheets/ItemsDetailBottomsheet';
 import BillSummaryBottomsheet, { BillSummaryData } from '../BottomSheets/BillSummaryBottomsheet';
-import { VendorOrder } from '../../../apiService/types/ordersTypes';
+import { VendorOrder, OrderUpdateLog } from '../../../apiService/types/ordersTypes';
+import { useOrderTimeline } from '../hooks/useOrderTimeline';
 
 export interface ReceivedOrderCardProps {
   orderId: string;
@@ -38,6 +39,10 @@ export interface ReceivedOrderCardProps {
   onViewDetails?: () => void;
   onViewBill?: () => void;
   index?: number;
+  trip_type?: number;
+  status_type?: number;
+  updateLogs?: OrderUpdateLog[];
+  vendorOrderData?: VendorOrder;
 }
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
@@ -57,7 +62,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   onViewDetails,
   onViewBill,
   tabType,
-  index
+  trip_type,
+  status_type,
+  index,
+  updateLogs,
+  vendorOrderData,
 }) => {
   const isExpress = orderType === 'express';
   const CONTAINER_WIDTH = 235;
@@ -70,6 +79,24 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   const [shouldFetchOrder, setShouldFetchOrder] = useState(false);
   const pendingBottomSheetRef = useRef<'items' | 'bill' | null>(null);
   const isOpeningRef = useRef(false);
+
+  const timelineEvents = useOrderTimeline(vendorOrderData);
+
+  // Log updateLogs data
+  useEffect(() => {
+    console.log('📋 ReceivedOrderCard - updateLogs:', updateLogs);
+    console.log('📋 ReceivedOrderCard - orderId:', orderId);
+    if (updateLogs && updateLogs.length > 0) {
+      console.log('📋 ReceivedOrderCard - updateLogs count:', updateLogs.length);
+      updateLogs.forEach((log, index) => {
+        console.log(`📋 ReceivedOrderCard - updateLog[${index}]:`, {
+          status: log.status,
+          statusStr: log.statusStr,
+          timestamp: log.timestamp,
+        });
+      });
+    }
+  }, [updateLogs, orderId]);
 
   // Fetch order details when bottom sheet should be opened
   // Keep query enabled to access cached data, but only fetch when needed for items
@@ -254,6 +281,14 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   // Memoize the items bottom sheet title
   const itemsBottomSheetTitle = useMemo(() => `${serviceType} Item Details`, [serviceType]);
 
+  const displayOrderId = useMemo(() => {
+    if (!orderId) {
+      return '';
+    }
+    const orderIdStr = orderId.toString();
+    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-5);
+  }, [orderId]);
+
   return (
     <View style={{ marginBottom: 16 }} >
       <View
@@ -288,11 +323,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Order Header */}
         <View style={styles.header}>
           <View>
-            <CustomText style={styles.orderId}>#{orderNumber}</CustomText>
+            <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
             <View style={styles.locationContainer}>
 
               <SvgLocationLine />
-              <CustomText style={styles.location}>{location}</CustomText>
+              <CustomText style={styles.location} numberOfLines={1} ellipsizeMode="tail">{location}</CustomText>
             </View>
           </View>
 
@@ -409,42 +444,57 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
         {/* Buttons */}
 
-        {(tabType === OrderStatus.RECEIVED || tabType === OrderStatus.ACCEPTED) && (
-          <View style={styles.actionRow}>
+        {(
+          tabType === OrderStatus.RECEIVED ||
+          (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 7)
+        ) && (
+            <View style={styles.actionRow}>
 
-            <GestureHandlerRootView >
-              <DraggableSlider ref={sliderRef} onComplete={handleComplete} text={getSliderText()} />
-            </GestureHandlerRootView>
+              <GestureHandlerRootView>
+                <DraggableSlider
+                  ref={sliderRef}
+                  onComplete={handleComplete}
+                  text={getSliderText()}
+                />
+              </GestureHandlerRootView>
 
+              <View style={{
+                backgroundColor: COLORS.LOGIN_SUBTITLE,
+                height: 48,
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 12,
+              }}>
+                <CustomText style={styles.timerText}>{timer}</CustomText>
+              </View>
 
-            <View style={{
-              backgroundColor: COLORS.LOGIN_SUBTITLE, height: 48,
-              justifyContent: 'center', alignItems: 'center',
-              paddingHorizontal: 12, paddingVertical: 6,
-              borderRadius: 12,
-            }}>
-              <CustomText style={styles.timerText}>{timer}</CustomText>
             </View>
-          </View>
-        )}
+          )}
+
 
 
         {(tabType !== OrderStatus.RECEIVED) && (
-          <TimeLineCard
-            key={'1'}
-            date={'Today'}
-            time={'12:00 PM'}
-            title={' Order Accepted'}
-            icon={SvgRiderAcceptedIcon}
-            iconType={'svg'}
-            note={'Note: order cannot be canceled after accepted by the shop'}
-            showCallButton={true}
-            onCallPress={() => { }}
-            otp={''}
-            showTimelineLine={true}
-            riderName={'John Doe'}
-            riderPhone={'+91 9876543210'}
-          />
+          timelineEvents.map((event, index) => (
+            <TimeLineCard
+              key={event.id}
+              date={event.date}
+              time={event.time}
+              title={event.title}
+              icon={event.icon}
+              iconType={event.iconType}
+              note={index === 0 ? 'Note: order cannot be canceled after accepted by the shop' : ''}
+              showCallButton={event.showCallButton}
+              onCallPress={() => { }}
+              otp={event.showOtp ? event.otp : undefined}
+              showTimelineLine={index < timelineEvents.length - 1}
+              riderName={event.riderName}
+              riderPhone={event.riderPhone}
+            />
+          ))
+
+
         )}
 
 

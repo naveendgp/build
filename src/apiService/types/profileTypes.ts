@@ -32,6 +32,9 @@ export interface VendorProfile {
   documents: Documents;
   shop_image_url: string;
   profile_pic: string;
+  total_received_orders: number;
+  total_accepted_orders: number;
+  total_pending_prices: number;
 }
 export interface Documents {
   aadhaar_card: string;
