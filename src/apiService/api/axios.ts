@@ -5,8 +5,8 @@ import { showErrorToast } from '../../utils/Toast';
 import { useDialogStore } from '../store/useDialogStore';
 
 const api = axios.create({
-  baseURL: 'http://13.204.157.24:3000',
-  // baseURL: 'http://192.168.0.127:3000',
+  // baseURL: 'http://192.168.0.144:3000',
+  baseURL: 'http://13.201.170.46:3000',
   timeout: 10000,
 });
 
@@ -49,7 +49,7 @@ api.interceptors.request.use(config => {
   // 🔥 LOG REQUEST
   const fullUrl = buildFullUrl(config);
   console.log(
-    `%c[API REQUEST] ${config.method?.toUpperCase()} ${fullUrl} ${token ? 'Token Present' : 'Token Absent'}`,
+    `%c[API REQUEST] ${config.method?.toUpperCase()} ${fullUrl} ${token ? token : 'Token Absent'}`,
     "color: #3498db; font-weight: bold;"
   );
   console.log("➡ Payload:", config.data);

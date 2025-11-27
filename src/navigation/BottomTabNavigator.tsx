@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, Text } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
@@ -16,9 +16,11 @@ import { ProfileResponse } from '../apiService/types/profileTypes';
 import { ErrorResponse } from '../apiService/types/authTypes';
 import { useProfileStore } from '../apiService/store/useProfileStore';
 import { useAuthStore } from '../apiService/store/useAuthStore';
+import { useDialogStore } from '../apiService/store/useDialogStore';
 import { showErrorToast } from '../utils/Toast';
 import ServiceAddedDialog from '../screens/Services/ServiceAddedDialog';
 import { LoginUserStatus } from '../constants/tripStatus';
+import { isNetworkAvailable } from '../utils/network';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -56,8 +58,29 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
 const BottomTabNavigator = () => {
   const { setProfile, setError, setLoading } = useProfileStore();
   const { setDocumentState, setIsLoggedIn } = useAuthStore();
+  const showDialog = useDialogStore(state => state.showDialog);
+  const hideDialog = useDialogStore(state => state.hideDialog);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
   const navigation = useNavigation<any>();
+
+
+  const handleRestrictedStatus = useCallback(() => {
+    showDialog(
+      'Account Status',
+      'Your account status requires attention. Please log in again.',
+      'Go to Login',
+      require('../assets/background/bg.png'),
+      () => {
+        hideDialog();
+        setIsLoggedIn(false);
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      },
+      false,
+    );
+  }, [hideDialog, navigation, setIsLoggedIn, showDialog]);
 
   // Fetch profile data when entering the application
   const { data, error, isLoading } = useQuery<
@@ -87,14 +110,7 @@ const BottomTabNavigator = () => {
           setShowReviewDialog(true);
         } else {
           setShowReviewDialog(false);
-          showErrorToast('Your account status requires attention. Please log in again.');
-          setTimeout(() => {
-            setIsLoggedIn(false);
-            navigation.reset({
-              index: 0,
-              routes: [{ name: 'Login' }],
-            });
-          }, 1000);
+          handleRestrictedStatus();  // uncmd
         }
       }
     }
@@ -103,7 +119,7 @@ const BottomTabNavigator = () => {
       setError(msg);
       showErrorToast(msg);
     }
-  }, [data, error, setProfile, setError, setDocumentState]);
+  }, [data, error, setProfile, setError, setDocumentState, handleRestrictedStatus]);
 
   return (
     <>

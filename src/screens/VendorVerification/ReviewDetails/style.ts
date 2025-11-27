@@ -28,7 +28,7 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-     
+
   },
   sectionTitle: {
     fontSize: 20,
@@ -83,7 +83,6 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
     borderRadius: 16,
-    paddingVertical: 15,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.THEME_GREEN,

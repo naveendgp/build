@@ -32,6 +32,8 @@ export interface VendorProfile {
   documents: Documents;
   shop_image_url: string;
   profile_pic: string;
+  total_accepted_orders: number;
+  pending_settlement_amount: number;
 }
 export interface Documents {
   aadhaar_card: string;
@@ -60,6 +62,9 @@ export interface Service {
   is_express_available: boolean;
   is_offer: boolean;
   is_active: boolean;
+
+  express_price_per_kg: number;
+  standard_price_per_kg: number;
 }
 
 export interface ServiceItem {
@@ -130,7 +135,8 @@ export interface UpdateServiceInput {
     offer_percentage: number;
     express_time: number;
     standard_time: number;
-
+    standard_price_per_kg: number;
+    express_price_per_kg: number;
     items: UpdateServiceItem[];
   };
 }

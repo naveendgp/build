@@ -67,5 +67,17 @@ export default StyleSheet.create({
   removeButton: {
     padding: 4,
   },
+  asterisk: {
+    color: COLORS.ERROR,
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.ERROR,
+    marginTop: 4,
+    marginLeft: 4,
+  },
 });
 

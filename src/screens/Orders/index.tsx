@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
 import CustomText from '../../components/Text';
 import ReceivedOrdersScreen from './TabScreens/ReceivedOrdersScreen';
@@ -19,8 +19,12 @@ const OrdersScreen: React.FC = () => {
   const tabPositions = useRef<{ [key: string]: number }>({});
   const screenWidth = Dimensions.get('window').width;
 
-  // Get order counts from store (updated by each tab when data loads)
-  const getOrderCount = useOrdersCountStore(state => state.getCount);
+  // Subscribe to counts so badges re-render on updates
+  const orderCounts = useOrdersCountStore(state => state.counts);
+  const getOrderCount = useCallback(
+    (status: OrderStatus) => orderCounts[status] ?? 0,
+    [orderCounts],
+  );
 
   const handleTabPress = (tab: OrderStatus) => {
     setActiveTab(tab);

@@ -25,13 +25,16 @@ const formatDate = (dateString?: string) => {
 };
 
 const formatAddress = (order: VendorOrder) => {
+  if (!order || !order.user_address) {
+    return 'Address not available';
+  }
   const { user_address } = order;
   const parts = [
     user_address.label,
     user_address.address_line1,
     user_address.city,
   ].filter(Boolean);
-  return parts.join(', ');
+  return parts.join(', ') || 'Address not available';
 };
 
 const formatStatusLabel = (status: string) =>
@@ -71,6 +74,9 @@ const getSectionTitle = (dateString?: string) => {
 };
 
 const buildTimeline = (order: VendorOrder) => {
+  if (!order) {
+    return [];
+  }
   const entries = Object.entries(order.status_timestamps || {}).map(
     ([statusKey, timestamp]) => ({
       status: formatStatusLabel(statusKey),
@@ -104,23 +110,27 @@ export const mapOrdersToReceivedCards = (
     return [];
   }
 
-  return orders.map(order => {
-    const firstItem = order.items?.[0];
-    return {
-      orderId: order._id??"",
-      location: formatAddress(order),
-      orderType: order.is_express ? 'express' : 'standard',
-      customerName: order.user_address.label || 'Customer',
-      orderNumber: order.order_number,
-      time: formatTime(order.created_at),
-      serviceQuantity: order.is_express ? undefined : buildQuantityLabel(order.items),
-      serviceWeight: order.is_express ? firstItem?.item_name : undefined,
-      serviceType: firstItem?.service_name || 'Service',
-      customerNote: order.order_notes || 'No notes provided',
-      totalBill: order.total_amount ? order.total_amount.toFixed(2) : undefined,
-      timer: undefined,
-    };
-  });
+  return orders
+    .filter(order => order != null) // Filter out null/undefined orders
+    .map(order => {
+      const firstItem = order.items?.[0];
+      return {
+        orderId: order._id ?? "",
+        location: formatAddress(order),
+        orderType: order.is_express ? 'express' : 'standard',
+        customerName: order.user_address?.label || 'Customer',
+        orderNumber: order.order_number,
+        time: formatTime(order.created_at),
+        serviceQuantity: order.is_express ? undefined : buildQuantityLabel(order.items),
+        serviceWeight: order.is_express ? firstItem?.item_name : undefined,
+        serviceType: firstItem?.service_name || 'Service',
+        customerNote: order.order_notes || 'No notes provided',
+        totalBill: order.total_amount ? order.total_amount.toFixed(2) : undefined,
+        timer: undefined,
+        updateLogs: order.updateLogs,
+        vendorOrderData: order,
+      };
+    });
 };
 
 export interface CompletedSectionItem {
@@ -142,28 +152,30 @@ export const mapOrdersToCompletedSections = (
 
   const grouped: Record<string, CompletedSectionItem[]> = {};
 
-  orders.forEach(order => {
-    const firstItem = order.items?.[0];
-    const section = getSectionTitle(order.updated_at || order.created_at);
-    const entry: CompletedSectionItem = {
-      card: {
-        orderId: order.order_number?.toString() ?? order._id,
-        location: formatAddress(order),
-        orderType: order.is_express ? 'express' : 'standard',
-        serviceQuantity: buildQuantityLabel(order.items),
-        serviceType: firstItem?.service_name || 'Service',
-        serviceWeight: order.is_express ? firstItem?.item_name : undefined,
-        timeline: buildTimeline(order),
-        totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
-      },
-      source: order,
-    };
+  orders
+    .filter(order => order != null) // Filter out null/undefined orders
+    .forEach(order => {
+      const firstItem = order.items?.[0];
+      const section = getSectionTitle(order.updated_at || order.created_at);
+      const entry: CompletedSectionItem = {
+        card: {
+          orderId: order.order_number?.toString() ?? order._id,
+          location: formatAddress(order),
+          orderType: order.is_express ? 'express' : 'standard',
+          serviceQuantity: buildQuantityLabel(order.items),
+          serviceType: firstItem?.service_name || 'Service',
+          serviceWeight: order.is_express ? firstItem?.item_name : undefined,
+          timeline: buildTimeline(order),
+          totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
+        },
+        source: order,
+      };
 
-    if (!grouped[section]) {
-      grouped[section] = [];
-    }
-    grouped[section].push(entry);
-  });
+      if (!grouped[section]) {
+        grouped[section] = [];
+      }
+      grouped[section].push(entry);
+    });
 
   return Object.entries(grouped).map(([title, data]) => ({
     title,

@@ -8,6 +8,9 @@ import { mapOrdersToReceivedCards } from '../../utils/orderMappers';
 import { useOrdersPagination } from '../../hooks/useOrdersPagination';
 import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
 import { COLORS, FONTFAMILY } from '../../../../constants/colors';
+import EmptyScreen from '../../../../components/EmptyScreen';
+import LoadingScreen from '../../../../components/LoadingScreen';
+import ErrorScreen from '../../../../components/ErrorScreen';
 
 interface AcceptedOrdersScreenProps {
   tabType: OrderStatus;
@@ -31,12 +34,20 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
 
   const setCount = useOrdersCountStore(state => state.setCount);
 
-  // Update store when total changes
-  useEffect(() => {
-    if (total > 0) {
-      setCount(tabType, total);
+  const computedCount = useMemo(() => {
+    if (typeof total === 'number' && !Number.isNaN(total)) {
+      return total;
     }
-  }, [total, tabType, setCount]);
+    if (Array.isArray(orders)) {
+      return orders.length;
+    }
+    return 0;
+  }, [total, orders]);
+
+  // Update store whenever count changes
+  useEffect(() => {
+    setCount(tabType, computedCount);
+  }, [computedCount, tabType, setCount]);
 
   const displayOrders = useMemo(
     () => mapOrdersToReceivedCards(orders),
@@ -49,7 +60,7 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
 
   const renderOrderItem = useCallback(
     ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
-      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept}  />
+      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept} />
     ),
     [tabType, handleOrderAccept],
   );
@@ -76,15 +87,15 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      {isLoading ? (
-        <ActivityIndicator size="small" />
-      ) : isError ? (
-        <CustomText style={styles.emptyText}>
-          Error: {error?.message || 'Failed to load orders'}
-        </CustomText>
-      ) : (
-        <CustomText style={styles.emptyText}>{getEmptyText()}</CustomText>
-      )}
+      {
+        isLoading ? (
+          <LoadingScreen />
+        ) :
+          isError ? (
+            <ErrorScreen onRetry={() => refetch()} />
+          ) : (
+            <EmptyScreen title={getEmptyText()} />
+          )}
     </View>
   );
 

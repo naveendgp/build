@@ -2,11 +2,16 @@ export interface VendorErrors {
   owner_name?: string;
   mobile?: string;
   email?: string;
+  aadhaar_or_pan?: string; // At least one of Aadhaar or PAN is required
 }
 
 export interface ShopErrors {
   shop_name?: string;
   gst_number?: string;
+  address?: string;
+  contact_number?: string;
+  shop_front_photo?: string;
+  business_hours?: string; // Timings are required
   pincode?: string;
   landmark?: string;
 }
@@ -16,6 +21,7 @@ export interface BankErrors {
   account_number?: string;
   ifsc_code?: string;
   bank_name?: string;
+  cancelled_cheque?: string;
 }
 
 const hasErrors = (errors: Record<string, string | undefined>) =>
@@ -32,6 +38,12 @@ export const useVendorValidation = () => {
     } else if (!/^\d{10}$/.test(vendor.mobile)) {
       errors.mobile = 'Enter a valid 10-digit mobile number';
     }
+    // At least one of Aadhaar or PAN (ID number or file) is required
+    const hasAadhaar = (vendor.aadhaar_no?.trim() || vendor.aadhaar_file);
+    const hasPan = (vendor.pan_number?.trim() || vendor.pan_file);
+    if (!hasAadhaar && !hasPan) {
+      errors.aadhaar_or_pan = 'Either Aadhaar ID or PAN ID is required';
+    }
     if (vendor.email?.trim() && !/^\S+@\S+\.\S+$/.test(vendor.email.trim())) {
       errors.email = 'Enter a valid email address';
     }
@@ -43,8 +55,23 @@ export const useVendorValidation = () => {
     if (!shop.shop_name?.trim()) {
       errors.shop_name = 'Shop name is required';
     }
-    if (!shop.gst_number?.trim()) {
-      errors.gst_number = 'GST number is required';
+    // GST number is optional (not mandatory)
+    // if (!shop.gst_number?.trim()) {
+    //   errors.gst_number = 'GST number is required';
+    // }
+    if (!shop.address?.trim()) {
+      errors.address = 'Address is required';
+    }
+    if (!shop.contact_number?.trim()) {
+      errors.contact_number = 'Contact number is required';
+    } else if (!/^\d{10}$/.test(shop.contact_number.trim())) {
+      errors.contact_number = 'Enter a valid 10-digit contact number';
+    }
+    if (!shop.shop_front_photo) {
+      errors.shop_front_photo = 'Shop photo is required';
+    }
+    if (!shop.business_hours?.trim()) {
+      errors.business_hours = 'Shop timings are required';
     }
     if (!shop.pincode?.trim()) {
       errors.pincode = 'Pincode is required';
@@ -72,6 +99,9 @@ export const useVendorValidation = () => {
       errors.ifsc_code = 'IFSC code is required';
     } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bank.ifsc_code.trim())) {
       errors.ifsc_code = 'Enter a valid IFSC code';
+    }
+    if (!bank.cancelled_cheque) {
+      errors.cancelled_cheque = 'Cancelled cheque is required';
     }
     return errors;
   };

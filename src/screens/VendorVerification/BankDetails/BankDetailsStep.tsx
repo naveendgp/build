@@ -99,7 +99,9 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
       />
 
       <View style={styles.uploadSection}>
-        <CustomText style={styles.uploadLabel}>Upload Cancelled Cheque</CustomText>
+        <CustomText style={styles.uploadLabel}>
+          Upload Cancelled Cheque<CustomText style={styles.asterisk}>*</CustomText>
+        </CustomText>
         {!bank.cancelled_cheque ? (
           <TouchableOpacity style={styles.uploadButton} onPress={pickCancelledCheque}>
             <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
@@ -117,6 +119,9 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
               <CloseIcon width={16} height={16} color={COLORS.LOGIN_SUBTITLE} />
             </TouchableOpacity>
           </View>
+        )}
+        {errors.cancelled_cheque && (
+          <CustomText style={styles.errorText}>{errors.cancelled_cheque}</CustomText>
         )}
       </View>
     </View>

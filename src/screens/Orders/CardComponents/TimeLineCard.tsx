@@ -54,12 +54,12 @@ const TimeLineCard: React.FC<TimeLineCardProps> = ({
             <View style={styles.eventCard}>
                 {/* Icon Container */}
                 <View style={styles.iconContainer}>
-                    {/* <CustomIcon
+                    <CustomIcon
                         type={iconType as any}
-                        name={icon}
+                        name={icon as string}
                         size={24}
                         color={COLORS.INPUT_TEXT}
-                    /> */}
+                    />
                 </View>
 
                 {/* Event Description */}
@@ -107,6 +107,7 @@ export default TimeLineCard;
 const styles = StyleSheet.create({
     container: {
         marginBottom: 16,
+        marginTop: 16
     },
     timestamp: {
         fontSize: 12,

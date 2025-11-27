@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
-import { Order, OrderUpdateLog, OrderStatus, getOrderStatusMessage } from '../../../../types/order/order';
-import SvgRiderAcceptedIcon from '../../../assets/auto-generated-svg-icons/RiderAcceptedIcon';
-import SvgOtpIconCopy from '../../../assets/auto-generated-svg-icons/OtpIconCopy';
+import { OrderStatus, OrderStatusCode, OrderUpdateLog, VendorOrder, getOrderStatusMessage } from '../../../apiService/types/ordersTypes';
+import SvgOrderAcceptedIcon from '../../../assets/auto-generated-svg-icons/ServicesIcon';
+import SvgOrderDriverAcceptedIcon from '../../../assets/auto-generated-svg-icons/ServicesIcon';
+import SvgMobileVerifiedIcon from '../../../assets/auto-generated-svg-icons/ServicesIcon';
+import SvgListIcon from '../../../assets/auto-generated-svg-icons/ServicesIcon';
 
 
 export interface TimelineEvent {
@@ -25,11 +27,13 @@ interface IconConfig {
 
 // Status to icon mapping
 const STATUS_ICON_MAP: Record<number, IconConfig> = {
-    [OrderStatus.DRIVER_ACCEPTED]: { icon: SvgRiderAcceptedIcon, iconType: 'svg' },
-    [OrderStatus.VERIFIED]: { icon: SvgOtpIconCopy, iconType: 'svg' },
+    [OrderStatus.ACCEPTED]: { icon: SvgOrderAcceptedIcon, iconType: 'svg' },
+    [OrderStatus.DRIVER_ACCEPTED]: { icon: SvgOrderDriverAcceptedIcon, iconType: 'svg' },
+    [OrderStatus.VERIFIED]: { icon: SvgMobileVerifiedIcon, iconType: 'svg' },
+    [OrderStatus.PICKED_UP]: { icon: SvgListIcon, iconType: 'svg' },
 };
 
-const DEFAULT_ICON: IconConfig = { icon: SvgRiderAcceptedIcon, iconType: 'svg' };
+const DEFAULT_ICON: IconConfig = { icon: SvgListIcon, iconType: 'svg' };
 
 /**
  * Formats a date to a human-readable label
@@ -71,10 +75,13 @@ const getStatusIcon = (status: number): IconConfig => {
 const transformLogToEvent = (
     log: OrderUpdateLog,
     index: number,
-    orderData: Order
+    orderData: VendorOrder
 ): TimelineEvent => {
     const date = new Date(log.timestamp);
     const iconConfig = getStatusIcon(log.status);
+
+    console.log('log----------------------', log);
+    console.log('orderData', orderData);
 
     return {
         id: `log-${index}`,
@@ -86,15 +93,15 @@ const transformLogToEvent = (
         showCallButton: log.status === OrderStatus.CALL_BUTTON_VISIBLE,
         showOtp: log.status === OrderStatus.OTP_VISIBLE,
         otp: orderData?.user_otp ? orderData.user_otp.toString() : undefined,
-        riderName: orderData?.rider?.name,
-        riderPhone: orderData?.rider?.phone,
+        riderName: orderData?.rider?.name || 'John Doe',
+        riderPhone: orderData?.rider?.phone || '+91 9876543210',
     };
 };
 
 /**
  * Custom hook to transform order update logs into timeline events
  */
-export const useOrderTimeline = (orderData: Order | null): TimelineEvent[] => {
+export const useOrderTimeline = (orderData: VendorOrder | undefined): TimelineEvent[] => {
     return useMemo(() => {
         if (!orderData?.updateLogs || orderData.updateLogs.length === 0) {
             return [];

@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { registerComplete } from '../../../../apiService/api/authApi';
 import { toggleServiceActive, listServices } from '../../../../apiService/api/profileApi';
-import { RegisterCompletePayload, OperatingHours } from '../../../../apiService/types/authTypes';
+import { RegisterCompletePayload, OperatingHours, ShopDocumentUploadPayload } from '../../../../apiService/types/authTypes';
 import { ToggleServiceActiveInput, ListServiceItem } from '../../../../apiService/types/profileTypes';
 import { showErrorToast, showSuccessToast } from '../../../../utils/Toast';
 import { useVendorVerificationStore } from '../../../../apiService/store/useVendorVerificationStore';
@@ -60,8 +60,12 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     }, [apiStatus.documentUpload, apiStatus.servicesToggle, onSuccess]);
 
     // Document upload mutation using registerComplete
-    const documentMutation = useMutation({
-        mutationFn: (payload: RegisterCompletePayload) => {
+    const documentMutation = useMutation<
+        RegisterCompleteResponse,
+        AxiosError<{ message: string }>,
+        ShopDocumentUploadPayload
+    >({
+        mutationFn: (payload: ShopDocumentUploadPayload) => {
             // Convert ShopDocumentUploadPayload to RegisterCompletePayload
             const registerPayload: RegisterCompletePayload = {
                 shop_name: payload.shop_name,
@@ -210,7 +214,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     };
 
     const submitBoth = async (
-        documentPayload: RegisterCompletePayload,
+        documentPayload: ShopDocumentUploadPayload,
         selectedServiceNames: string[],
     ) => {
         // Reset status
@@ -239,7 +243,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     };
 
     // Retry individual APIs
-    const retryDocumentUpload = (payload: RegisterCompletePayload) => {
+    const retryDocumentUpload = (payload: ShopDocumentUploadPayload) => {
         documentMutation.mutate(payload);
     };
 

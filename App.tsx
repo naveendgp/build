@@ -24,8 +24,8 @@ const queryClient = new QueryClient();
 const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   const insets = useSafeAreaInsets();
   const token = useAuthStore(state => state.token);
- 
-  
+
+
   return (
     <View
       style={{
@@ -66,21 +66,23 @@ const App = () => {
   }, [setNavigationRef]);
 
   const handleDialogButtonPress = () => {
+    // Hide dialog first
+    hideDialog();
+
     // Execute the onClose callback if it exists (this will call logout)
     if (onClose) {
       onClose();
     }
-    hideDialog();
 
-    // Navigate to Login screen
-    const { navigationRef: storeNavRef } = useAuthStore.getState();
-    const navRef = storeNavRef || navigationRef;
-    if (navRef?.current) {
-      navRef.current.reset({
-        index: 0,
-        routes: [{ name: 'Login' }],
-      });
-    }
+    // Navigate to Login screen after a short delay to ensure logout completes
+    setTimeout(() => {
+      if (navigationRef?.current) {
+        navigationRef.current.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+      }
+    }, 100);
   };
 
   return (
@@ -90,14 +92,13 @@ const App = () => {
           <ScreenWrapper>
             <GestureHandlerRootView style={styles.container}>
               <StatusBar barStyle={'dark-content'} />
-              <AppNavigator />
+              <AppNavigator ref={navigationRef} />
               <CustomToast />
               <CustomeDialog
                 visible={visible}
                 title={title}
                 subtitle={subtitle}
                 buttonText={buttonText}
-
                 onButtonPress={handleDialogButtonPress}
                 closable={closable}
                 onClose={closable ? handleDialogButtonPress : undefined}

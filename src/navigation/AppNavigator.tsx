@@ -30,8 +30,10 @@ import { Service } from '../apiService/types/profileTypes';
 import ProfileDetailsScreen from '../screens/VendorVerification/ProfileDetails';
 import ShopDetailsScreen from '../screens/VendorVerification/ShopDetails';
 import BankDetailsScreen from '../screens/VendorVerification/BankDetails';
+import SplashScreen from '../screens/SplashScreen';
 
 export type RootStackParamList = {
+  Splash: undefined;
   Login: undefined;
   Register: undefined;
   OTPVerification: { mobile: string; isRegister?: boolean };
@@ -65,36 +67,15 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
-  const isLoggedIn = useAuthStore(state => state.isLoggedIn);
-  const documentState = useAuthStore(state => state.documentState);
-
-  // Determine initial route based on login status and document state
-  const getInitialRoute = () => {
-    if (!isLoggedIn) {
-      return 'Login';
-    }
-
-    // If logged in, check document state
-    switch (documentState) {
-      case LoginUserStatus.ACTIVE:
-      case LoginUserStatus.DOC_UNDER_REVIEW:
-        return 'MainTabs';
-
-      case LoginUserStatus.DOC_PENDING_UPLOAD:
-      case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
-        return 'VendorVerification';
-
-      case LoginUserStatus.INACTIVE:
-      case LoginUserStatus.BLOCKED:
-      default:
-        return 'Login';
-    }
-  };
-
   return (
     <SafeAreaProvider>
       <NavigationContainer ref={ref}>
-        <Stack.Navigator initialRouteName={getInitialRoute()}>
+        <Stack.Navigator initialRouteName="Splash">
+          <Stack.Screen
+            name="Splash"
+            component={SplashScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="Login"
             component={LoginScreen}

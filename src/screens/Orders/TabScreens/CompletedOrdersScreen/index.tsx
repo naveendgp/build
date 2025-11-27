@@ -12,6 +12,9 @@ import { CompletedSection, mapOrdersToCompletedSections } from '../../utils/orde
 import { useOrdersPagination } from '../../hooks/useOrdersPagination';
 import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
 import { COLORS, FONTFAMILY } from '../../../../constants/colors';
+import ErrorScreen from '../../../../components/ErrorScreen';
+import EmptyScreen from '../../../../components/EmptyScreen';
+import LoadingScreen from '../../../../components/LoadingScreen';
 
 type CompletedOrdersNavProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -39,12 +42,19 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
 
   const setCount = useOrdersCountStore(state => state.setCount);
 
-  // Update store when total changes
-  useEffect(() => {
-    if (total > 0) {
-      setCount(tabType, total);
+  const computedCount = useMemo(() => {
+    if (typeof total === 'number' && !Number.isNaN(total)) {
+      return total;
     }
-  }, [total, tabType, setCount]);
+    if (Array.isArray(orders)) {
+      return orders.length;
+    }
+    return 0;
+  }, [total, orders]);
+
+  useEffect(() => {
+    setCount(tabType, computedCount);
+  }, [computedCount, tabType, setCount]);
 
   const groupedData = useMemo<CompletedSection[]>(
     () => mapOrdersToCompletedSections(orders),
@@ -81,15 +91,15 @@ const CompletedOrdersScreen: React.FC<CompletedOrdersScreenProps> = ({
 
   const renderEmptyComponent = () => (
     <View style={styles.emptyContainer}>
-      {isLoading ? (
-        <ActivityIndicator size="small" />
-      ) : isError ? (
-        <CustomText style={styles.emptyText}>
-          Error: {error?.message || 'Failed to load orders'}
-        </CustomText>
-      ) : (
-        <CustomText style={styles.emptyText}>No completed orders</CustomText>
-      )}
+      {
+        isLoading ? (
+          <LoadingScreen />
+        ) :
+          isError ? (
+            <ErrorScreen onRetry={() => refetch()} />
+          ) : (
+            <EmptyScreen title="No completed orders" />
+          )}
     </View>
   );
 

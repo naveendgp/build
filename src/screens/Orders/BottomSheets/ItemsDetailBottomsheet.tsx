@@ -67,8 +67,8 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
                 </View>
 
                 {/* Items List - CustomBottomSheet already has ScrollView */}
-                {items.length > 0 ? (
-                    items.map((item) => renderItemCard(item))
+                {items?.length > 0 ? (
+                    items?.map((item) => renderItemCard(item))
                 ) : (
                     <View style={styles.emptyContainer}>
                         <Text style={styles.emptyText}>No items found</Text>

@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { COLORS } from '../constants/colors';
 
 const Loader = () => (
   <View style={styles.container}>
-    <ActivityIndicator size="large" color="#007bff" />
+    <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
   </View>
 );
 

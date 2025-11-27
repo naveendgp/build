@@ -7,7 +7,7 @@ interface AuthState {
   token: string | null;
   fcmToken: string;
   isLoggedIn: boolean;
-  documentState:string;
+  documentState: string;
   mobileNumber: string;
   navigationRef: any;
   setToken: (token: string) => void;
@@ -25,7 +25,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       fcmToken: '',
       isLoggedIn: false,
-      documentState:'',
+      documentState: '',
       mobileNumber: '',
       navigationRef: null,
       setDocumentState: documentState => set({ documentState }),
@@ -38,14 +38,6 @@ export const useAuthStore = create<AuthState>()(
         // Clear vendor verification data on logout
         const { clearAll } = useVendorVerificationStore.getState();
         clearAll();
-        // Reset navigation to Login screen
-        const { navigationRef } = useAuthStore.getState();
-        if (navigationRef?.current) {
-          navigationRef.current.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-          });
-        }
       },
       setIsLoggedIn: isLoggedIn => set({ isLoggedIn }),
     }),

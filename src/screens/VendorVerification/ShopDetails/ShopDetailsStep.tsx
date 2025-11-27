@@ -273,7 +273,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
 
         <ProfileInput
           label="GST Number"
-          required
           inputType="normal"
           value={shop.gst_number || ''}
           onChangeText={val => setShop({ ...shop, gst_number: val })}
@@ -310,6 +309,9 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
             editable={false}
           />
         </TouchableOpacity>
+        {errors.address && (
+          <CustomText style={styles.errorText}>{errors.address}</CustomText>
+        )}
 
         <TouchableOpacity
           onPress={handleLocationPress}
@@ -345,16 +347,20 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
 
         <ProfileInput
           label="Contact Number"
+          required
           inputType="phone"
           countryCode="+91"
           value={shop.contact_number || ''}
           onChangeText={val => setShop({ ...shop, contact_number: val })}
           containerStyle={styles.inputContainer}
+          error={errors.contact_number}
         />
 
         {/* Shop Front Photo Upload Section */}
         <View style={styles.uploadSection}>
-          <CustomText style={styles.uploadLabel}>Shop Front Photo</CustomText>
+          <CustomText style={styles.uploadLabel}>
+            Shop Front Photo<CustomText style={styles.asterisk}>*</CustomText>
+          </CustomText>
           {!shop.shop_front_photo ? (
             <TouchableOpacity
               onPress={pickShopPhoto}
@@ -379,6 +385,9 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
               </TouchableOpacity>
             </View>
           )}
+          {errors.shop_front_photo && (
+            <CustomText style={styles.errorText}>{errors.shop_front_photo}</CustomText>
+          )}
         </View>
       </View>
 
@@ -402,6 +411,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
             onChangeText={() => { }}
             containerStyle={{ marginBottom: 16, }}
             isEditable={false}
+            error={errors.business_hours}
           />
         </TouchableOpacity>
 
