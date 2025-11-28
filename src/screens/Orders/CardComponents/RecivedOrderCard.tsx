@@ -20,6 +20,7 @@ import ItemsDetailBottomsheet, { OrderItem } from '../BottomSheets/ItemsDetailBo
 import BillSummaryBottomsheet, { BillSummaryData } from '../BottomSheets/BillSummaryBottomsheet';
 import { VendorOrder, OrderUpdateLog } from '../../../apiService/types/ordersTypes';
 import { useOrderTimeline } from '../hooks/useOrderTimeline';
+import CountdownTimer from '../../../components/CountdownTimer';
 
 export interface ReceivedOrderCardProps {
   orderId: string;
@@ -29,6 +30,7 @@ export interface ReceivedOrderCardProps {
   customerName: string;
   orderNumber?: number;
   time: string;
+  expiredTime: string;
   serviceQuantity?: string;
   serviceWeight?: string;
   serviceType: string;
@@ -52,6 +54,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   customerName,
   orderNumber,
   time,
+  expiredTime,
   serviceQuantity,
   serviceWeight,
   serviceType,
@@ -458,17 +461,12 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
                 />
               </GestureHandlerRootView>
 
-              <View style={{
-                backgroundColor: COLORS.LOGIN_SUBTITLE,
-                height: 48,
-                justifyContent: 'center',
-                alignItems: 'center',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 12,
-              }}>
-                <CustomText style={styles.timerText}>{timer}</CustomText>
-              </View>
+              {vendorOrderData?.created_at && vendorOrderData?.expiry_at ? (
+                <CountdownTimer
+                  createdAt={vendorOrderData.created_at}
+                  expiredTime={vendorOrderData.expiry_at}
+                />
+              ) : null}
 
             </View>
           )}

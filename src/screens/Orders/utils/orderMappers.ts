@@ -121,6 +121,7 @@ export const mapOrdersToReceivedCards = (
         customerName: order.user_address?.label || 'Customer',
         orderNumber: order.order_number,
         time: formatTime(order.created_at),
+        expiredTime: formatTime(order.expiry_at),
         serviceQuantity: order.is_express ? undefined : buildQuantityLabel(order.items),
         serviceWeight: order.is_express ? firstItem?.item_name : undefined,
         serviceType: firstItem?.service_name || 'Service',

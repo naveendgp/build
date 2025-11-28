@@ -74,6 +74,7 @@ export interface VendorOrder {
   user_otp: number;
   vendor_otp: string;
   created_at: string;
+  expiry_at: string;
   updated_at: string;
   trip_type?: number;
   __v: number;
