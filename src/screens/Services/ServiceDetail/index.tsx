@@ -674,7 +674,6 @@ const ServiceDetailScreen: React.FC = () => {
                             </View>
                             <CustomText style={[styles.inputNote, { marginBottom: 24 }]}>Note: Clothes will be weighed during pickup and the bill will be generated accordingly.</CustomText>
                         </View>
-
                     }
 
 
