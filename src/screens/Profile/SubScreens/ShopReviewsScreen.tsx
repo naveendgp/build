@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     View,
     ScrollView,
@@ -8,15 +8,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Toolbar from '../../components/Toolbar';
-import CustomText from '../../components/Text';
-import { useProfileStore } from '../../apiService/store/useProfileStore';
-import { RootStackParamList } from '../../navigation/AppNavigator';
-import StarIcon from '../../assets/auto-generated-svg-icons/StarIcon';
-import { COLORS, FONTFAMILY } from '../../constants/colors';
-import styles from './styles';
-import EmptyIcon from '../../assets/auto-generated-svg-icons/EmptyIcon';
-import EmptyScreen from '../../components/EmptyScreen';
+import Toolbar from '../../../components/Toolbar';
+import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { RootStackParamList } from '../../../navigation/AppNavigator';
+import StarIcon from '../../../assets/auto-generated-svg-icons/StarIcon';
+import { COLORS } from '../../../constants/colors';
+import styles from '../styles';
+import EmptyScreen from '../../../components/EmptyScreen';
 
 type ShopReviewsNavProp = NativeStackNavigationProp<
     RootStackParamList,

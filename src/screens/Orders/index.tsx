@@ -11,6 +11,7 @@ import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/Dr
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OrderStatus } from '../../types/order/order.ts';
 import { useOrdersCountStore } from '../../apiService/store/useOrdersCountStore';
+import { useInitializeOrderCounts } from './hooks/useInitializeOrderCounts';
 
 const OrdersScreen: React.FC = () => {
   const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
@@ -18,6 +19,9 @@ const OrdersScreen: React.FC = () => {
   const tabRefs = useRef<{ [key: string]: View | null }>({});
   const tabPositions = useRef<{ [key: string]: number }>({});
   const screenWidth = Dimensions.get('window').width;
+
+  // Initialize all order counts on mount
+  useInitializeOrderCounts();
 
   // Subscribe to counts so badges re-render on updates
   const orderCounts = useOrdersCountStore(state => state.counts);

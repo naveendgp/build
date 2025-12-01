@@ -54,7 +54,7 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
             isVisible={isVisible}
             onClose={onClose}
             bgColor={COLORS.WHITE}
-            height={50}
+            height={25}  // home screen height issue fix
             headerText="Bill Summary"
         >
             <View style={styles.container}>
@@ -93,8 +93,8 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingHorizontal: 16,
-        paddingTop: 20,
+        //   paddingHorizontal: 16,
+        // paddingTop: 20,
     },
     billCard: {
         backgroundColor: COLORS.BUTTON_BACKGROUND,

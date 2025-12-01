@@ -8,19 +8,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginScreen from '../screens/Auth/Login';
 import OTPVerificationScreen from '../screens/Auth/OTPVerification';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import FilePickerScreen from '../utils/FilePicker';
 import VendorVerificationScreen from '../screens/VendorVerification';
 import ReviewDetailsScreen from '../screens/VendorVerification/ReviewDetails';
-import { useAuthStore } from '../apiService/store/useAuthStore';
 import MapScreen from '../screens/VendorVerification/map/MapScreen';
 import ProfileLocation from '../screens/VendorVerification/map/ProfileLocation';
-import { LoginUserStatus } from '../constants/tripStatus';
 import BottomTabNavigator from './BottomTabNavigator';
-import EditProfileScreen from '../screens/Profile/EditProfileScreen';
-import BusinessSettingsScreen from '../screens/Profile/BusinessSettingsScreen';
-import ShopStatusScreen from '../screens/Profile/ShopStatusScreen';
-import ShopReviewsScreen from '../screens/Profile/ShopReviewsScreen';
-import WalletScreen from '../screens/Profile/WalletScreen';
+import ShopReviewsScreen from '../screens/Profile/SubScreens/ShopReviewsScreen';
 import ServicesScreen from '../screens/Services';
 import ActiveServicesPricingScreen from '../screens/Services/ActiveServicesPricing';
 import CategoryListScreen from '../screens/Services/CategoryList';
@@ -42,11 +35,7 @@ export type RootStackParamList = {
   MainTabs: undefined;
   Orders: undefined;
   Profile: undefined;
-  EditProfile: undefined;
-  BusinessSettings: undefined;
   ServicesPricing: undefined;
-  ShopStatus: undefined;
-  Wallet: undefined;
   Services: undefined;
   CategoryListScreen: { service: any; category?: string };
   ServiceDetail: { service: Service };
@@ -54,7 +43,6 @@ export type RootStackParamList = {
   OrdersDrawerScreen: undefined;
   OrderDetails: { orderId: string } | undefined;
   UserProfile: undefined;
-  FilePicker: undefined;
   MapScreen: undefined;
   ProfileLocation: { onSelect?: (data: { address: string; latitude: number; longitude: number }) => void } | undefined;
   ProfileDetails: undefined;
@@ -102,11 +90,7 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
             name="ReviewDetails"
             component={ReviewDetailsScreen}
           />
-          <Stack.Screen
-            name="FilePicker"
-            component={FilePickerScreen}
-            options={{ title: 'Pick a File' }}
-          />
+
           <Stack.Screen
             name="MapScreen"
             component={MapScreen}
@@ -119,27 +103,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
           />
 
           {/* Profile Sub-screens */}
-          <Stack.Screen
-            name="EditProfile"
-            component={EditProfileScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="BusinessSettings"
-            component={BusinessSettingsScreen}
-            options={{ headerShown: false }}
-          />
 
-          <Stack.Screen
-            name="ShopStatus"
-            component={ShopStatusScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="Wallet"
-            component={WalletScreen}
-            options={{ headerShown: false }}
-          />
+
+
+
+
           <Stack.Screen
             name="Services"
             component={ServicesScreen}
