@@ -117,15 +117,25 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {} }) => {
   };
 
   const handleLocationPress = () => {
-    navigation.navigate('MapScreen', {
-      onLocationSelect: (lat: number, lng: number) => {
+    navigation.navigate('ProfileLocation', {
+      onSelect: (data: { address: string; latitude: number; longitude: number }) => {
         setShop({
           ...shop,
-          latitude: lat.toString(),
-          longitude: lng.toString(),
+          address: data.address,
+          latitude: data.latitude.toString(),
+          longitude: data.longitude.toString(),
         });
       },
     });
+    // navigation.navigate('MapScreen', {
+    //   onLocationSelect: (lat: number, lng: number) => {
+    //     setShop({
+    //       ...shop,
+    //       latitude: lat.toString(),
+    //       longitude: lng.toString(),
+    //     });
+    //   },
+    // });
   };
 
   const pickShopPhoto = () => {

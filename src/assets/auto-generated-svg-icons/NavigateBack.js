@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Svg, { Path } from 'react-native-svg';
-const SvgCloseIcon = props => (
+const SvgNavigateBack = props => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
     width={24}
@@ -9,11 +9,12 @@ const SvgCloseIcon = props => (
     {...props}
   >
     <Path
-      stroke="#000"
+      stroke="#111"
       strokeLinecap="round"
       strokeLinejoin="round"
-      d="M18 6 6 18M6 6l12 12"
+      strokeWidth={1.5}
+      d="m6 8-4 4 4 4M2 12h20"
     />
   </Svg>
 );
-export default SvgCloseIcon;
+export default SvgNavigateBack;

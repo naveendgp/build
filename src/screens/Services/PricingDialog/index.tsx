@@ -3,9 +3,12 @@ import { View, Modal, TouchableOpacity, TextInput } from 'react-native';
 import CustomText from '../../../components/Text';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomIcon from '../../../components/Icon';
-import TimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
+import SvgClockIcon from '../../../assets/auto-generated-svg-icons/ClockIcon';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import styles from './style';
+import SvgCloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
+import SvgCountownIcon from '../../../assets/auto-generated-svg-icons/CountownIcon';
+import SvgExpressIcon from '../../../assets/auto-generated-svg-icons/ExpressIcon';
 
 export type DialogType = 'offer' | 'serviceTime';
 
@@ -79,7 +82,7 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
                     <View style={styles.header}>
                         <CustomText style={styles.title}>{title}</CustomText>
                         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <CustomIcon type="Feather" name="x" size={24} color={COLORS.BLACK} />
+                            <SvgCloseIcon />
                         </TouchableOpacity>
                     </View>
 
@@ -139,13 +142,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
                                 {/* Standard Service Time */}
                                 <View style={styles.inputSection}>
                                     <View style={styles.labelRow}>
-                                        <TimerIcon width={18} height={18} color={COLORS.INPUT_TEXT} />
+                                        <SvgCountownIcon />
                                         <CustomText style={styles.inputLabel}>
                                             Standard Service Time <CustomText style={styles.required}>*</CustomText>
                                         </CustomText>
                                     </View>
                                     <View style={styles.inputContainer}>
-                                        <TimerIcon width={20} height={20} color={COLORS.LOGIN_SUBTITLE} />
+                                        <SvgClockIcon color={COLORS.LOGIN_SUBTITLE} />
 
                                         <TextInput
                                             style={styles.input}
@@ -164,18 +167,13 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
                                 {/* Express Service Time */}
                                 <View style={styles.inputSection}>
                                     <View style={styles.labelRow}>
-                                        <CustomIcon
-                                            type="MaterialIcons"
-                                            name="bolt"
-                                            size={20}
-                                            color={COLORS.INPUT_TEXT}
-                                        />
+                                        <SvgExpressIcon />
                                         <CustomText style={styles.inputLabel}>
                                             Express Service Time <CustomText style={styles.required}>*</CustomText>
                                         </CustomText>
                                     </View>
                                     <View style={styles.inputContainer}>
-                                        <TimerIcon width={20} height={20} color={COLORS.LOGIN_SUBTITLE} />
+                                        <SvgClockIcon color={COLORS.LOGIN_SUBTITLE} />
 
                                         <TextInput
                                             style={styles.input}

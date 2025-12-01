@@ -63,6 +63,7 @@ export default StyleSheet.create({
         paddingHorizontal: 16,
         paddingVertical: 10,
         marginBottom: 8,
+        gap: 8,
     },
     input: {
         fontSize: 16,
@@ -77,7 +78,6 @@ export default StyleSheet.create({
         fontFamily: FONTFAMILY.INTER_MEDIUM,
         fontWeight: '500',
         color: COLORS.LOGIN_SUBTITLE,
-        marginRight: 8,
     },
     percentageSymbol: {
         fontSize: 16,

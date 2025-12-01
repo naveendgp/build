@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import SvgArrowLeftIcon from '../../assets/auto-generated-svg-icons/NavigateBack';
 
 interface ToolbarProps {
   title: string;
@@ -26,7 +27,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         style={styles.iconButton}
         onPress={onBackPress || (() => navigation.goBack())}
       >
-        <Text style={styles.backIcon}>←</Text>
+        <SvgArrowLeftIcon />
       </TouchableOpacity>
 
       {/* Title */}
@@ -52,8 +53,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 56,
     paddingHorizontal: 12,
-    
-   
+
+
   },
   iconButton: {
     padding: 8,

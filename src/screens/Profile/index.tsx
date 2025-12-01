@@ -27,6 +27,7 @@ import SvgTermsConditionIcon from '../../assets/auto-generated-svg-icons/TermsCo
 import SvgLogoutIcon from '../../assets/auto-generated-svg-icons/LogoutIcon';
 import SvgLogoutBlackIcon from '../../assets/auto-generated-svg-icons/LogoutBlackIcon';
 import SvgSupportIcon from '../../assets/auto-generated-svg-icons/SupportIcon';
+import SvgTagIcon from '../../assets/auto-generated-svg-icons/TagIcon';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -90,7 +91,7 @@ const ProfileScreen: React.FC = () => {
     {
       id: '5',
       title: 'Item Pricing & Offer Details',
-      icon: SvgServicesIcon,
+      icon: SvgTagIcon,
       iconType: 'svg',
       onPress: () => navigation.navigate('ActiveServicesPricingScreen'),
     },
