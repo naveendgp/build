@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import CustomText from '../Text';
 import { COLORS, FONTFAMILY } from '../../constants/colors';
@@ -8,6 +8,7 @@ export interface CountdownTimerProps {
     expiredTime: string;
     style?: any;
     textStyle?: any;
+    onExpire?: () => void;
 }
 
 const CountdownTimer: React.FC<CountdownTimerProps> = ({
@@ -15,10 +16,15 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
     expiredTime,
     style,
     textStyle,
+    onExpire,
 }) => {
     const [timeRemaining, setTimeRemaining] = useState<string>('00:00:00');
+    const hasExpiredRef = useRef<boolean>(false);
 
     useEffect(() => {
+        // Reset expiration flag when timer props change
+        hasExpiredRef.current = false;
+
         const calculateTimeRemaining = () => {
             try {
                 const now = new Date();
@@ -28,6 +34,10 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
                 // Validate dates
                 if (isNaN(expiryDate.getTime()) || isNaN(createdDate.getTime())) {
                     setTimeRemaining('00:00:00');
+                    if (!hasExpiredRef.current) {
+                        hasExpiredRef.current = true;
+                        onExpire?.();
+                    }
                     return;
                 }
 
@@ -36,6 +46,10 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
                 if (diff <= 0) {
                     setTimeRemaining('00:00:00');
+                    if (!hasExpiredRef.current) {
+                        hasExpiredRef.current = true;
+                        onExpire?.();
+                    }
                     return;
                 }
 
@@ -50,6 +64,10 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
             } catch (error) {
                 console.error('Error calculating countdown:', error);
                 setTimeRemaining('00:00:00');
+                if (!hasExpiredRef.current) {
+                    hasExpiredRef.current = true;
+                    onExpire?.();
+                }
             }
         };
 
@@ -61,11 +79,17 @@ const CountdownTimer: React.FC<CountdownTimerProps> = ({
 
         // Cleanup interval on unmount
         return () => clearInterval(interval);
-    }, [createdAt, expiredTime]);
+    }, [createdAt, expiredTime, onExpire]);
 
     return (
         <View style={[styles.container, style]}>
-            <CustomText style={[styles.timerText, textStyle]}>{timeRemaining}</CustomText>
+            <CustomText
+                style={[styles.timerText, textStyle]}
+                numberOfLines={1}
+                ellipsizeMode="clip"
+            >
+                {timeRemaining}
+            </CustomText>
         </View>
     );
 };
@@ -74,6 +98,8 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: COLORS.LOGIN_SUBTITLE,
         height: 48,
+        minWidth: 100, // Fixed minimum width to prevent layout shifts
+        width: 100, // Fixed width to accommodate "00:00:00" format with proper spacing
         justifyContent: 'center',
         alignItems: 'center',
         paddingHorizontal: 12,
@@ -85,6 +111,9 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
         fontFamily: FONTFAMILY.INTER_MEDIUM,
+        textAlign: 'center',
+        includeFontPadding: false, // Remove extra font padding
+        textAlignVertical: 'center', // Center vertically
     },
 });
 

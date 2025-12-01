@@ -40,6 +40,7 @@ export interface ReceivedOrderCardProps {
   onAccept?: () => void;
   onViewDetails?: () => void;
   onViewBill?: () => void;
+  onExpire?: () => void;
   index?: number;
   trip_type?: number;
   status_type?: number;
@@ -64,6 +65,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   onAccept,
   onViewDetails,
   onViewBill,
+  onExpire,
   tabType,
   trip_type,
   status_type,
@@ -452,22 +454,23 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
           (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 7)
         ) && (
             <View style={styles.actionRow}>
-
-              <GestureHandlerRootView>
-                <DraggableSlider
-                  ref={sliderRef}
-                  onComplete={handleComplete}
-                  text={getSliderText()}
-                />
-              </GestureHandlerRootView>
+              <View style={styles.sliderContainer}>
+                <GestureHandlerRootView>
+                  <DraggableSlider
+                    ref={sliderRef}
+                    onComplete={handleComplete}
+                    text={getSliderText()}
+                  />
+                </GestureHandlerRootView>
+              </View>
 
               {vendorOrderData?.created_at && vendorOrderData?.expiry_at ? (
                 <CountdownTimer
                   createdAt={vendorOrderData.created_at}
                   expiredTime={vendorOrderData.expiry_at}
+                  onExpire={onExpire}
                 />
               ) : null}
-
             </View>
           )}
 
@@ -665,7 +668,16 @@ const styles = StyleSheet.create({
     fontWeight: '400',
   },
 
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, justifyContent: 'space-between' },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  sliderContainer: {
+    flex: 1,
+    minWidth: 0, // Allow flex to shrink if needed
+  },
 
   arrowBtn: {
     width: 46,
