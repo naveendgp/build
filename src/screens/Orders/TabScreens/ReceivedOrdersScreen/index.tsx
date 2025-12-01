@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useCallback, useState } from 'react';
+import React, { useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { View, FlatList, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import ReceivedOrderCard from '../../CardComponents/RecivedOrderCard';
 import CustomText from '../../../../components/Text';
@@ -36,26 +36,90 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
   } = useOrdersPagination(tabType, true, 5);
 
   const setCount = useOrdersCountStore(state => state.setCount);
+  const [expiredOrderIds, setExpiredOrderIds] = useState<Set<string>>(new Set());
+  const previousOrderIdsRef = useRef<string>('');
+  const displayOrderSequenceRef = useRef<string[]>([]); // Track the order of displayed items
 
+  const allDisplayOrders = useMemo(
+    () => mapOrdersToReceivedCards(orders),
+    [orders],
+  );
+
+  // Maintain order: existing items stay in their positions, new items go to the end
+  const displayOrders = useMemo(() => {
+    const filteredOrders = allDisplayOrders.filter(order => !expiredOrderIds.has(order.orderId));
+
+    // If no orders, reset the sequence
+    if (filteredOrders.length === 0) {
+      displayOrderSequenceRef.current = [];
+      return [];
+    }
+
+    // Create a map for quick lookup
+    const orderMap = new Map(filteredOrders.map(order => [order.orderId, order]));
+
+    // Get current order IDs from the filtered orders
+    const currentOrderIds = filteredOrders.map(order => order.orderId);
+
+    // If sequence is empty or completely different, initialize with current order
+    if (displayOrderSequenceRef.current.length === 0 ||
+      displayOrderSequenceRef.current.every(id => !orderMap.has(id))) {
+      displayOrderSequenceRef.current = currentOrderIds;
+      return filteredOrders;
+    }
+
+    // Preserve existing order sequence
+    const existingOrderIds = displayOrderSequenceRef.current.filter(id => orderMap.has(id));
+
+    // Find new order IDs (not in the existing sequence)
+    const newOrderIds = currentOrderIds.filter(id => !displayOrderSequenceRef.current.includes(id));
+
+    // Combine: existing orders in their original order, then new orders
+    const orderedIds = [...existingOrderIds, ...newOrderIds];
+
+    // Update the ref with the new sequence
+    displayOrderSequenceRef.current = orderedIds;
+
+    // Return orders in the preserved order
+    return orderedIds
+      .map(id => orderMap.get(id))
+      .filter((order): order is ReturnType<typeof mapOrdersToReceivedCards>[number] => order !== undefined);
+  }, [allDisplayOrders, expiredOrderIds]);
+
+  // Compute count based on displayed orders (excluding expired ones)
   const computedCount = useMemo(() => {
-    if (typeof total === 'number' && !Number.isNaN(total)) {
-      return total;
-    }
-    if (Array.isArray(orders)) {
-      return orders.length;
-    }
-    return 0;
-  }, [total, orders]);
+    // Use displayOrders.length to account for expired orders that have been removed
+    return displayOrders.length;
+  }, [displayOrders.length]);
 
   // Update store whenever count changes (even if value stays same)
   useEffect(() => {
     setCount(tabType, computedCount);
   }, [computedCount, tabType, setCount]);
 
-  const displayOrders = useMemo(
-    () => mapOrdersToReceivedCards(orders),
-    [orders],
-  );
+  // Clear expired orders when orders are refetched (only when order IDs actually change)
+  useEffect(() => {
+    if (!isRefetching && orders) {
+      const currentOrderIds = new Set(
+        mapOrdersToReceivedCards(orders).map(order => order.orderId)
+      );
+      const currentOrderIdsString = Array.from(currentOrderIds).sort().join(',');
+
+      // Only update if order IDs have actually changed
+      if (currentOrderIdsString !== previousOrderIdsRef.current) {
+        previousOrderIdsRef.current = currentOrderIdsString;
+        setExpiredOrderIds(prev => {
+          const filtered = new Set<string>();
+          prev.forEach(id => {
+            if (currentOrderIds.has(id)) {
+              filtered.add(id);
+            }
+          });
+          return filtered;
+        });
+      }
+    }
+  }, [orders, isRefetching]);
 
   useEffect(() => {
     console.log("[Screen] useEffect triggered");
@@ -86,11 +150,25 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
     refetch();
   }, [refetch]);
 
+  const handleOrderExpire = useCallback((orderId: string) => {
+    setExpiredOrderIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(orderId);
+      return newSet;
+    });
+  }, []);
+
   const renderOrderItem = useCallback(
     ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
-      <ReceivedOrderCard {...item} tabType={tabType} index={index} onAccept={handleOrderAccept} />
+      <ReceivedOrderCard
+        {...item}
+        tabType={tabType}
+        index={index}
+        onAccept={handleOrderAccept}
+        onExpire={() => handleOrderExpire(item.orderId)}
+      />
     ),
-    [tabType, handleOrderAccept],
+    [tabType, handleOrderAccept, handleOrderExpire],
   );
 
   const keyExtractor = useCallback(
