@@ -14,6 +14,21 @@ export interface LoginResponse {
   message: string;
 }
 
+export interface ReSendOtpPayload {
+  phone: string;
+}
+
+export interface ReSendOtpResponse {
+  status: boolean;
+  data: null;
+  message: string;
+}
+
+export interface LogoutResponse {
+  status: boolean;
+  message: string;
+}
+
 export interface OtpPayload {
   phone: string;
   otp: string;

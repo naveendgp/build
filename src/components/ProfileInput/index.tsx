@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { View, TextInput, TextInputProps, ViewStyle } from "react-native";
 import CustomText from "../Text";
 import { COLORS } from "../../constants";
@@ -32,47 +32,46 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
   isWhiteBG = false,
   error,
   ...rest
-
 }) => {
   const [displayValue, setDisplayValue] = useState(value);
   const [mobileValue, setMobileValue] = useState("");
+  const lastSentValueRef = useRef(value);
+  const isUserInputRef = useRef(false);
 
   useEffect(() => {
     if (inputType === "phone") {
-      // Remove country code and spaces from value
-      // const cleaned = value ? value.replace(countryCode, "").replace(/\s/g, "").trim() : "";
       const cleaned = value ? value.replace(/\D/g, "") : "";
+
+      // Skip update if this is from our own onChangeText call
+      if (isUserInputRef.current) {
+        isUserInputRef.current = false;
+        // Only update if the value is different from what we sent
+        if (cleaned === lastSentValueRef.current) {
+          return;
+        }
+      }
+
       setMobileValue(cleaned);
-      setDisplayValue(cleaned ? `${countryCode} ${cleaned}` : countryCode);
+      setDisplayValue(`${countryCode} ${cleaned}`);
+      lastSentValueRef.current = cleaned;
     } else {
+      // Skip update if this is from our own onChangeText call
+      if (isUserInputRef.current) {
+        isUserInputRef.current = false;
+        if (value === lastSentValueRef.current) {
+          return;
+        }
+      }
       setDisplayValue(value);
+      lastSentValueRef.current = value;
     }
   }, [value, inputType, countryCode]);
 
-  // const handleTextChange = (text: string) => {
-  //   if (inputType === "phone") {
-  //     // Handle phone number with country code
-  //     // Remove country code prefix if user tries to type it
-  //     let cleaned = text.replace(new RegExp(countryCode.replace("+", "\\+"), "g"), "");
-  //     cleaned = cleaned.replace(/\s/g, "").trim();
-
-  //     // Only allow digits
-  //     const digitsOnly = cleaned.replace(/\D/g, "");
-
-  //     if (digitsOnly.length <= 10) {
-  //       setMobileValue(digitsOnly);
-  //       const formattedValue = digitsOnly ? `${countryCode} ${digitsOnly}` : countryCode;
-  //       setDisplayValue(formattedValue);
-  //       onChangeText(digitsOnly);
-  //     }
-  //   } else {
-  //     setDisplayValue(text);
-  //     onChangeText(text);
-  //   }
-  // };
   const handleTextChange = (text: string) => {
     if (inputType !== "phone") {
       setDisplayValue(text);
+      isUserInputRef.current = true;
+      lastSentValueRef.current = text;
       onChangeText(text);
       return;
     }
@@ -93,6 +92,10 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
     // 4. Update display + parent state
     setMobileValue(digits);
     setDisplayValue(prefix + digits);
+
+    // Mark as user input and track what we're sending
+    isUserInputRef.current = true;
+    lastSentValueRef.current = digits;
     onChangeText(digits);
   };
   const getKeyboardType = () => {

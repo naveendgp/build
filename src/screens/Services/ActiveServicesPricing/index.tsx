@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
@@ -26,7 +26,12 @@ const ActiveServicesPricingScreen: React.FC = () => {
     const { data: servicesData, isLoading, isError, error, refetch } = useQuery({
         queryKey: ['services-by-state'],
         queryFn: getServicesByState,
+        enabled: false
     });
+
+    useFocusEffect(useCallback(() => {
+        refetch();
+    }, []));
 
     // Get only active services (is_active = true)
     const activeServices = useMemo(() => {

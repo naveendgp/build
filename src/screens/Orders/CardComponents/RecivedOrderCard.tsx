@@ -12,7 +12,7 @@ import SvgLocationLine from '../../../assets/auto-generated-svg-icons/LocationLi
 import SvgForwardRightBlackSvg from '../../../assets/auto-generated-svg-icons/ForwardRightBlackSvg';
 import SvgChevronRight from '../../../assets/auto-generated-svg-icons/ChevronRight';
 import SvgBillIcon from '../../../assets/auto-generated-svg-icons/BillIcon';
-import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ChevronRightBlack';
+import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ArrowRightIcon';
 import { acceptOrder, completeOrder, fetchOrderById } from '../../../apiService/api/ordersApi';
 import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
 import { useQuery } from '@tanstack/react-query';
@@ -389,7 +389,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.serviceTypeText}>
               {serviceType}
             </CustomText>
-            <SvgChevronRight />
+            <SvgChevronRight width={16} height={16} />
 
           </TouchableOpacity>
         </View>

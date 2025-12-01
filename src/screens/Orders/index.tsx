@@ -1,5 +1,6 @@
 import React, { useRef, useState, useCallback } from 'react';
-import { View, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Dimensions, BackHandler } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import CustomText from '../../components/Text';
 import ReceivedOrdersScreen from './TabScreens/ReceivedOrdersScreen';
 import AcceptedOrdersScreen from './TabScreens/AcceptedOrdersScreen';
@@ -7,8 +8,6 @@ import CompletedOrdersScreen from './TabScreens/CompletedOrdersScreen';
 import styles from './styles.ts';
 import { COLORS, FONTFAMILY } from '../../constants/colors.ts';
 import CustomSwitch from '../../components/CustomSwitch/index.tsx';
-import DraggableSlider, { BasicDraggableSliderHandle } from '../../components/DraggableSlider/index.tsx';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { OrderStatus } from '../../types/order/order.ts';
 import { useOrdersCountStore } from '../../apiService/store/useOrdersCountStore';
 import { useInitializeOrderCounts } from './hooks/useInitializeOrderCounts';
@@ -28,6 +27,38 @@ const OrdersScreen: React.FC = () => {
   const getOrderCount = useCallback(
     (status: OrderStatus) => orderCounts[status] ?? 0,
     [orderCounts],
+  );
+
+  // Handle back button/gesture navigation
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // If not on RECEIVED tab, navigate to RECEIVED tab
+        if (activeTab !== OrderStatus.RECEIVED) {
+          setActiveTab(OrderStatus.RECEIVED);
+          // Scroll to RECEIVED tab
+          setTimeout(() => {
+            const tabPosition = tabPositions.current[OrderStatus.RECEIVED];
+            if (tabPosition !== undefined && scrollViewRef.current) {
+              const scrollPosition = tabPosition - (screenWidth / 2);
+              scrollViewRef.current.scrollTo({
+                x: Math.max(0, scrollPosition),
+                animated: true,
+              });
+            }
+          }, 100);
+          return true; // Prevent default back action
+        }
+        // If already on RECEIVED tab, allow default back action (exit app)
+        return false;
+      };
+
+      // Add event listener
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      // Cleanup
+      return () => backHandler.remove();
+    }, [activeTab, screenWidth])
   );
 
   const handleTabPress = (tab: OrderStatus) => {

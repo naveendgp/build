@@ -102,7 +102,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
 
             </View>
             {
-                !isVerified && (
+                !isVerified && item.is_active && (
                     <CustomText style={styles.underVerificationText}>
                         Under Verification
                     </CustomText>

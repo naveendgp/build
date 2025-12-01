@@ -87,7 +87,7 @@ api.interceptors.response.use(
     // 401 HANDLE
     if (error.response?.status === 401) {
       const { showDialog } = useDialogStore.getState();
-      const { logout } = useAuthStore.getState();
+      const { localLogout } = useAuthStore.getState();
 
       setTimeout(() => {
         showDialog(
@@ -96,7 +96,8 @@ api.interceptors.response.use(
           "OK",
           require('../../assets/background/bg.png'),
           () => {
-            logout();
+            // Use localLogout to skip API call and just clear local state
+            localLogout();
             useDialogStore.getState().hideDialog();
           },
           false // Not closable - user must click OK button

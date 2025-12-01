@@ -1,8 +1,8 @@
 // hooks/useOtpResend.ts
 import { useState, useEffect, useCallback } from 'react';
-import { login } from '../../../../apiService/api/authApi';
+import { resendOtp } from '../../../../apiService/api/authApi';
 import { showErrorToast, showSuccessToast } from '../../../../utils/Toast';
-import { LoginPayload, LoginResponse, ErrorResponse as LoginErrorResponse } from '../../../../apiService/types/authTypes';
+import { ReSendOtpPayload, ReSendOtpResponse, ErrorResponse as LoginErrorResponse } from '../../../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 import { useMutation } from '@tanstack/react-query';
 
@@ -13,23 +13,23 @@ export const useOtpResend = (mobile: string) => {
   const [isResendEnabled, setIsResendEnabled] = useState(false);
 
   const resendMutation = useMutation<
-    LoginResponse,
+    ReSendOtpResponse,
     AxiosError<LoginErrorResponse>,
-    LoginPayload
+    ReSendOtpPayload
   >({
-    mutationFn: payload => login(payload),
+    mutationFn: payload => resendOtp(payload),
     onSuccess: data => {
       if (data?.status) {
-        showSuccessToast(data?.message || 'OTP sent successfully');
+        showSuccessToast(data?.message || 'OTP resent successfully');
         setTimer(TIMER_DURATION);
         setIsResendEnabled(false);
       } else {
-        showErrorToast(data?.message || 'Failed to send OTP');
+        showErrorToast(data?.message || 'Failed to resend OTP');
       }
     },
     onError: error => {
       const msg = error.response?.data?.message || error.message;
-      showErrorToast(msg || 'Failed to send OTP');
+      showErrorToast(msg || 'Failed to resend OTP');
     },
   });
 
