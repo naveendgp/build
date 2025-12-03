@@ -71,10 +71,13 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         required
         value={bank.account_number || ''}
         onChangeText={val => {
-          setBank({ ...bank, account_number: val });
+          // Only allow digits and limit to 18 characters
+          const digitsOnly = val.replace(/\D/g, '').slice(0, 18);
+          setBank({ ...bank, account_number: digitsOnly });
           clearError?.('account_number');
         }}
         keyboardType="number-pad"
+        maxLength={18}
         containerStyle={styles.inputContainer}
         error={errors.account_number}
       />
@@ -96,11 +99,14 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         required
         value={bank.ifsc_code || ''}
         onChangeText={val => {
-          setBank({ ...bank, ifsc_code: val });
+          // Convert to uppercase and limit to 11 characters
+          const upperVal = val.toUpperCase().slice(0, 11);
+          setBank({ ...bank, ifsc_code: upperVal });
           clearError?.('ifsc_code');
         }}
         containerStyle={styles.inputContainer}
         autoCapitalize="characters"
+        maxLength={11}
         error={errors.ifsc_code}
       />
 

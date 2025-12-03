@@ -287,7 +287,33 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
           }}
         >
           {marker && (
-            <Marker coordinate={marker} draggable onDragEnd={e => setMarker(e.nativeEvent.coordinate)}>
+            <Marker 
+              coordinate={marker} 
+              draggable 
+              onDragEnd={async (e) => {
+                const newCoordinate = e.nativeEvent.coordinate;
+                setMarker(newCoordinate);
+                
+                // Fetch address when marker is dragged
+                if (googleApiKey && onLocationSelectProp) {
+                  try {
+                    const address = await fetchAddressFromCoordinates(
+                      newCoordinate.latitude,
+                      newCoordinate.longitude,
+                      googleApiKey
+                    );
+                    onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude, address);
+                  } catch (error) {
+                    console.error("Error fetching address after drag:", error);
+                    // Call callback with coordinates only if address fetch fails
+                    onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude);
+                  }
+                } else if (onLocationSelectProp) {
+                  // Call callback without address if no API key
+                  onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude);
+                }
+              }}
+            >
               <View style={{ alignItems: 'center' }}>
                 <SvgLocationRedIcon />
               </View>

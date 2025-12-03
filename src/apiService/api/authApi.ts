@@ -66,6 +66,7 @@ export const registerComplete = async (
   appendIfExists("email", payload.email);
   appendIfExists("gst_number", payload.gst_number);
   appendIfExists("address_line1", payload.address_line1);
+  appendIfExists("address_line2", payload.address_line2);
   appendIfExists("pincode", payload.pincode);
   appendIfExists("landmark", payload.landmark);
   appendIfExists("latitude", payload.latitude);

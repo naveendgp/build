@@ -141,14 +141,22 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
   const handleLocationPress = () => {
     navigation.navigate('ProfileLocation', {
-      onSelect: (data: { address: string; latitude: number; longitude: number }) => {
+      onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
         setShop({
           ...shop,
-          address: data.address,
+          address: data.address, // Full address for address_line1
+          address_line2: data.address_line2 || '', // City, state overview for address_line2
           latitude: data.latitude.toString(),
           longitude: data.longitude.toString(),
         });
       },
+      // Pass existing location data if available
+      existingData: shop.address && shop.latitude && shop.longitude ? {
+        address: shop.address, // Full address (for address_line1)
+        address_line2: shop.address_line2, // City, state (for address_line2)
+        latitude: parseFloat(shop.latitude),
+        longitude: parseFloat(shop.longitude),
+      } : undefined,
     });
     // navigation.navigate('MapScreen', {
     //   onLocationSelect: (lat: number, lng: number) => {
@@ -321,28 +329,40 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <ProfileInput
           label="GST Number"
+          required
           inputType="normal"
           value={shop.gst_number || ''}
           onChangeText={val => {
-            setShop({ ...shop, gst_number: val });
+            // Convert to uppercase and limit to 15 characters
+            const upperVal = val.toUpperCase().slice(0, 15);
+            setShop({ ...shop, gst_number: upperVal });
             clearError?.('gst_number');
           }}
           containerStyle={styles.inputContainer}
+          autoCapitalize="characters"
+          maxLength={15}
           error={errors.gst_number}
         />
 
         <TouchableOpacity
           onPress={() => {
             navigation.navigate('ProfileLocation', {
-              onSelect: (data: { address: string; latitude: number; longitude: number }) => {
+              onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
                 setShop({
                   ...shop,
-                  address: data.address,
+                  address: data.address, // Overview address (city, state) for address_line1
+                  address_line2: data.address_line2 || '', // Full address for address_line2
                   latitude: data.latitude.toString(),
                   longitude: data.longitude.toString(),
                 });
                 clearError?.('address');
               },
+              // Pass existing location data if available
+              existingData: shop.address && shop.latitude && shop.longitude ? {
+                address: shop.address,
+                latitude: parseFloat(shop.latitude),
+                longitude: parseFloat(shop.longitude),
+              } : undefined,
             });
           }}
           style={styles.addressContainer}
@@ -461,7 +481,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <TouchableOpacity
           onPress={handleOpenTimePicker}
-          style={styles.inputContainer}
+
         >
           <ProfileInput
             label="Business Hours"

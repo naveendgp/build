@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { registerComplete } from '../../../../apiService/api/authApi';
 import { toggleServiceActive, listServices } from '../../../../apiService/api/profileApi';
-import { RegisterCompletePayload, OperatingHours, ShopDocumentUploadPayload } from '../../../../apiService/types/authTypes';
+import { RegisterCompletePayload, RegisterCompleteResponse, OperatingHours, ShopDocumentUploadPayload } from '../../../../apiService/types/authTypes';
 import { ToggleServiceActiveInput, ListServiceItem } from '../../../../apiService/types/profileTypes';
 import { showErrorToast, showSuccessToast } from '../../../../utils/Toast';
 import { useVendorVerificationStore } from '../../../../apiService/store/useVendorVerificationStore';
@@ -76,6 +76,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                 shop_license_number: payload.shop_license_number,
                 aadhaar_number: payload.aadhaar_number,
                 address_line1: payload.address_line1,
+                address_line2: payload.address_line2,
                 pincode: payload.pincode,
                 landmark: payload.landmark,
                 latitude: payload.latitude,

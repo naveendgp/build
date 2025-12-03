@@ -89,13 +89,11 @@ const VendorDetailsStep: React.FC<Props> = ({
             ...vendor,
             aadhaar_file: { uri: fileUri, name: fileName },
           });
-          clearError?.('aadhaar_or_pan');
         } else {
           setVendor({
             ...vendor,
             pan_file: { uri: fileUri, name: fileName },
           });
-          clearError?.('aadhaar_or_pan');
         }
       }
     });
@@ -259,11 +257,6 @@ const VendorDetailsStep: React.FC<Props> = ({
           </View>
         )}
       </View>
-
-      {/* Error message for Aadhaar/PAN requirement */}
-      {errors.aadhaar_or_pan && (
-        <CustomText style={styles.dateErrorText}>{errors.aadhaar_or_pan}</CustomText>
-      )}
     </View>
   );
 };

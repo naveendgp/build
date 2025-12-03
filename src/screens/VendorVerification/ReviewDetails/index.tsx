@@ -62,7 +62,7 @@ const ReviewDetailsScreen: React.FC = () => {
       pan_number: vendor.pan_number,
       shop_license_number: shop.shop_license_number,
       address_line1: shop.address,
-      address_line2: shop.landmark || '',
+      address_line2: shop.address_line2 || '',
       city: shop.city || '',
       state: shop.state || '',
       pincode: shop.pincode,

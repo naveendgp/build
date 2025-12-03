@@ -149,7 +149,10 @@ const ProfileInput: React.FC<ProfileInputProps> = ({
         ]}
       >
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            !isEditable && styles.inputDisabledText, // Full opacity for text when disabled
+          ]}
           value={displayValue}
           onChangeText={handleTextChange}
           placeholder={getPlaceholder()}

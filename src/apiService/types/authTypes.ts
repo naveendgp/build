@@ -82,6 +82,7 @@ export interface RegisterCompletePayload {
   shop_license_number: string;
   aadhaar_number: string;
   address_line1: string;
+  address_line2?: string;
   pincode: string;
   landmark: string;
   latitude: number;
