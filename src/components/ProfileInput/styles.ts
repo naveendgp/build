@@ -13,7 +13,7 @@ export default StyleSheet.create({
     marginBottom: 8,
   },
   asterisk: {
-    color: COLORS.ERROR,
+    color: COLORS.INPUT_TEXT,
   },
   inputRow: {
     width: "100%",
@@ -23,7 +23,7 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
-    height:40
+    height: 40
   },
   inputRowError: {
     borderColor: COLORS.ERROR,

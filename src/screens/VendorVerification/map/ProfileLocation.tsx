@@ -25,6 +25,8 @@ import CustomSwitch from "../../../components/CustomSwitch";
 import { requestLocationPermission } from "./useLocPermission";
 import MapScreen, { MapScreenHandle } from "./MapScreen";
 import SvgSearchIcons from "../../../assets/auto-generated-svg-icons/SearchIcons";
+import LocationIcon from "../../../assets/auto-generated-svg-icons/LocationIcon";
+import SvgRightArrowIcon from "../../../assets/auto-generated-svg-icons/RightArrowIcon";
 
 const GOOGLE_API_KEY = "AIzaSyArBDwxwEtcoQ5ssKfnZoTVwd3BJWGyiJA"; // 🔐 Replace with your valid key
 
@@ -196,7 +198,7 @@ const ProfileLocation: React.FC = () => {
   };
 
   return (
-    <LinearGradient colors={[COLORS.GRADIENT_GREEN, COLORS.WHITE]} style={styles.root}>
+    <View style={styles.root}>
       <Toolbar title="Select Location" />
 
       <KeyboardAvoidingView
@@ -267,9 +269,27 @@ const ProfileLocation: React.FC = () => {
             />
           </View>
 
+
+
           {/* 🏠 Address Form */}
           <View style={styles.formCard}>
-            <CustomText style={styles.label}>Address Line 1*</CustomText>
+
+            <CustomText style={styles.label}>Address*</CustomText>
+            <View style={styles.defaultLocBox}>
+              <LocationIcon width={14} height={18} />
+              <TextInput
+                value={addressDetails}
+                onChangeText={setAddressDetails}
+                placeholder="Apartment, suite, etc. (optional)"
+
+                style={styles.input}
+              />
+              <SvgRightArrowIcon />
+            </View>
+
+
+
+            <CustomText style={styles.label}>Address Details*</CustomText>
             <View style={styles.inputBoxMultiline}>
               <TextInput
                 value={addressDetails}
@@ -280,16 +300,7 @@ const ProfileLocation: React.FC = () => {
               />
             </View>
 
-            {/* <CustomText style={styles.label}>Address Line 2</CustomText>
-            <View style={styles.inputBoxMultiline}>
-              <TextInput
-                value={addressLine2}
-                onChangeText={setAddressLine2}
-                placeholder="Apartment, suite, etc. (optional)"
-                multiline
-                style={styles.multilineInput}
-              />
-            </View> */}
+
 
             {/* <CustomText style={styles.label}>Address Name*</CustomText>
             <View style={styles.inputBox}>
@@ -327,14 +338,14 @@ const ProfileLocation: React.FC = () => {
           />
         </View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 };
 
 export default ProfileLocation;
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: COLORS.WHITE },
   scrollContent: { paddingBottom: 10 },
   searchRow: {
     flexDirection: "row",
@@ -387,6 +398,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
+  defaultLocBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    borderRadius: 16,
+
+  },
+
   multilineInput: {
     textAlign: "left",
     fontSize: 16,

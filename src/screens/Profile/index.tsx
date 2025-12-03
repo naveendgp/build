@@ -28,6 +28,7 @@ import SvgLogoutIcon from '../../assets/auto-generated-svg-icons/LogoutIcon';
 import SvgLogoutBlackIcon from '../../assets/auto-generated-svg-icons/LogoutBlackIcon';
 import SvgSupportIcon from '../../assets/auto-generated-svg-icons/SupportIcon';
 import SvgTagIcon from '../../assets/auto-generated-svg-icons/TagIcon';
+import { openWhatsApp } from '../../utils/whatsappUtils';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -105,7 +106,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Help & support',
       icon: SvgSupportIcon,
       iconType: 'svg',
-      onPress: () => console.log('Help & Support'),
+      onPress: () => openWhatsApp('9629031193'),
     },
     {
       id: '8',

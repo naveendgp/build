@@ -97,8 +97,6 @@ export const useVendorValidation = () => {
     }
     if (!bank.ifsc_code?.trim()) {
       errors.ifsc_code = 'IFSC code is required';
-    } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bank.ifsc_code.trim())) {
-      errors.ifsc_code = 'Enter a valid IFSC code';
     }
     if (!bank.cancelled_cheque) {
       errors.cancelled_cheque = 'Cancelled cheque is required';

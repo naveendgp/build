@@ -33,6 +33,7 @@ interface Props {
   vendorAddressRef: React.RefObject<View | null>;
   isMobileFromOtp?: boolean;
   errors?: VendorErrors;
+  clearError?: (field: keyof VendorErrors) => void;
 }
 
 const VendorDetailsStep: React.FC<Props> = ({
@@ -40,6 +41,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   setVendor,
   isMobileFromOtp = false,
   errors = {},
+  clearError,
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
@@ -87,11 +89,13 @@ const VendorDetailsStep: React.FC<Props> = ({
             ...vendor,
             aadhaar_file: { uri: fileUri, name: fileName },
           });
+          clearError?.('aadhaar_or_pan');
         } else {
           setVendor({
             ...vendor,
             pan_file: { uri: fileUri, name: fileName },
           });
+          clearError?.('aadhaar_or_pan');
         }
       }
     });
@@ -135,7 +139,10 @@ const VendorDetailsStep: React.FC<Props> = ({
         required
         inputType="normal"
         value={vendor.owner_name}
-        onChangeText={val => setVendor({ ...vendor, owner_name: val })}
+        onChangeText={val => {
+          setVendor({ ...vendor, owner_name: val });
+          clearError?.('owner_name');
+        }}
         containerStyle={styles.inputContainer}
         error={errors.owner_name}
       />
@@ -146,7 +153,10 @@ const VendorDetailsStep: React.FC<Props> = ({
         inputType="phone"
         countryCode="+91"
         value={vendor.mobile || ''}
-        onChangeText={val => setVendor({ ...vendor, mobile: val })}
+        onChangeText={val => {
+          setVendor({ ...vendor, mobile: val });
+          clearError?.('mobile');
+        }}
         containerStyle={styles.inputContainer}
         isEditable={!isMobileFromOtp}
         error={errors.mobile}
@@ -156,7 +166,10 @@ const VendorDetailsStep: React.FC<Props> = ({
         label="Email ID"
         inputType="email"
         value={vendor.email}
-        onChangeText={val => setVendor({ ...vendor, email: val })}
+        onChangeText={val => {
+          setVendor({ ...vendor, email: val });
+          clearError?.('email');
+        }}
         containerStyle={styles.inputContainer}
         error={errors.email}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   SafeAreaView,
@@ -9,7 +9,9 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import styles from './styles';
 import CustomBtn from '../../components/CustomBtn';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -378,6 +380,30 @@ const VendorVerificationScreen: React.FC = () => {
   });
 
   const handleNext = () => {
+    // If button is disabled, trigger validation to show errors
+    if (isNextButtonDisabled) {
+      if (step === 1) {
+        const vendorErrors = validateVendor(data.vendor);
+        setFormErrors(prev => ({ ...prev, vendor: vendorErrors }));
+        // Scroll to top to show errors
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 2) {
+        const shopErrors = validateShop(data.shop);
+        setFormErrors(prev => ({ ...prev, shop: shopErrors }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 3) {
+        const bankErrors = validateBank(data.bank);
+        setFormErrors(prev => ({ ...prev, bank: bankErrors }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 4) {
+        const servicesError = validateServices(data.services);
+        setFormErrors(prev => ({ ...prev, services: servicesError }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      }
+      return;
+    }
+
+    // Normal flow when button is enabled
     if (step === 1) {
       const vendorErrors = validateVendor(data.vendor);
       setFormErrors(prev => ({ ...prev, vendor: vendorErrors }));
@@ -424,6 +450,113 @@ const VendorVerificationScreen: React.FC = () => {
     setStep(prev => Math.max(prev - 1, 1));
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
+
+  // Handle back button/gesture navigation
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // If on step 2, 3, or 4, go back one step
+        if (step > 1) {
+          setStep(prev => Math.max(prev - 1, 1));
+          setCurrentStep(prev => Math.max(prev - 1, 1));
+          return true; // Prevent default back action
+        }
+        // If on step 1, navigate back (exit the flow)
+        navigation.goBack();
+        return true; // Prevent default back action
+      };
+
+      // Add event listener
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      // Cleanup
+      return () => backHandler.remove();
+    }, [step, navigation])
+  );
+
+  // Functions to clear specific field errors when user starts typing
+  const clearVendorError = (field: keyof VendorErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      vendor: { ...prev.vendor, [field]: undefined },
+    }));
+  };
+
+  const clearShopError = (field: keyof ShopErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      shop: { ...prev.shop, [field]: undefined },
+    }));
+  };
+
+  const clearBankError = (field: keyof BankErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      bank: { ...prev.bank, [field]: undefined },
+    }));
+  };
+
+  // Helper functions to check if mandatory fields are filled (without full validation)
+  const isVendorStepValid = useCallback(() => {
+    const vendor = data.vendor;
+    // Check mandatory fields: owner_name, mobile, and at least one of aadhaar/pan
+    const hasOwnerName = vendor.owner_name?.trim();
+    const hasMobile = vendor.mobile?.trim() && /^\d{10}$/.test(vendor.mobile.trim());
+    const hasAadhaar = vendor.aadhaar_no?.trim() || vendor.aadhaar_file;
+    const hasPan = vendor.pan_number?.trim() || vendor.pan_file;
+    const hasAadhaarOrPan = hasAadhaar || hasPan;
+
+    return hasOwnerName && hasMobile && hasAadhaarOrPan;
+  }, [data.vendor]);
+
+  const isShopStepValid = useCallback(() => {
+    const shop = data.shop;
+    // Check mandatory fields: shop_name, address, contact_number, shop_front_photo, business_hours, pincode, landmark
+    const hasShopName = shop.shop_name?.trim();
+    const hasAddress = shop.address?.trim();
+    const hasContactNumber = shop.contact_number?.trim() && /^\d{10}$/.test(shop.contact_number.trim());
+    const hasShopPhoto = shop.shop_front_photo;
+    const hasBusinessHours = shop.business_hours?.trim();
+    const hasPincode = shop.pincode?.trim() && /^\d{6}$/.test(shop.pincode.trim());
+    const hasLandmark = shop.landmark?.trim();
+
+    return hasShopName && hasAddress && hasContactNumber && hasShopPhoto && hasBusinessHours && hasPincode && hasLandmark;
+  }, [data.shop]);
+
+  const isBankStepValid = useCallback(() => {
+    const bank = data.bank;
+    // Check mandatory fields: account_holder_name, account_number, bank_name, ifsc_code, cancelled_cheque
+    const hasAccountHolderName = bank.account_holder_name?.trim();
+    const hasAccountNumber = bank.account_number?.trim();
+    const hasBankName = bank.bank_name?.trim();
+    const hasIfscCode = bank.ifsc_code?.trim();
+    const hasCancelledCheque = bank.cancelled_cheque;
+
+    return hasAccountHolderName && hasAccountNumber && hasBankName && hasIfscCode && hasCancelledCheque;
+  }, [data.bank]);
+
+  const isServicesStepValid = useCallback(() => {
+    // Check if at least one service is selected
+    return data.services.selectedServices.length > 0;
+  }, [data.services.selectedServices]);
+
+  // Determine if Next button should be disabled based on current step
+  const isNextButtonDisabled = useMemo(() => {
+    if (mutation.isPending) return true;
+
+    switch (step) {
+      case 1:
+        return !isVendorStepValid();
+      case 2:
+        return !isShopStepValid();
+      case 3:
+        return !isBankStepValid();
+      case 4:
+        return !isServicesStepValid();
+      default:
+        return false;
+    }
+  }, [step, isVendorStepValid, isShopStepValid, isBankStepValid, isServicesStepValid, mutation.isPending]);
 
 
   return (
@@ -494,6 +627,7 @@ const VendorVerificationScreen: React.FC = () => {
                 vendorAddressRef={vendorAddressRef}
                 isMobileFromOtp={!!mobileNumber}
                 errors={formErrors.vendor}
+                clearError={clearVendorError}
               />
             )}
             {step === 2 && (
@@ -501,6 +635,7 @@ const VendorVerificationScreen: React.FC = () => {
                 shop={data.shop}
                 setShop={val => setData(d => ({ ...d, shop: val }))}
                 errors={formErrors.shop}
+                clearError={clearShopError}
               />
             )}
             {step === 3 && (
@@ -508,6 +643,7 @@ const VendorVerificationScreen: React.FC = () => {
                 bank={data.bank}
                 setBank={val => setData(d => ({ ...d, bank: val }))}
                 errors={formErrors.bank}
+                clearError={clearBankError}
               />
             )}
             {step === 4 && (
@@ -533,8 +669,11 @@ const VendorVerificationScreen: React.FC = () => {
               <CustomBtn
                 title="Next"
                 onPress={handleNext}
-                disabled={mutation.isPending}
-                style={step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton}
+                disabled={isNextButtonDisabled}
+                style={[
+                  step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton,
+                  isNextButtonDisabled && styles.nextButtonDisabled,
+                ] as any}
                 textStyle={styles.nextButtonText}
               />
             </View>
