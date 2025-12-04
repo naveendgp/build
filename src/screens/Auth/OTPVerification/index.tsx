@@ -23,7 +23,7 @@ const OTPVerificationScreen: React.FC = () => {
     getFcmToken();
   }, []);
 
-  const { digits, otp, handleChange, handleKeyPress, inputsRef } =
+  const { digits, otp, handleChange, handleKeyPress, inputsRef, reset } =
     useOtpInput(4);
   const mutation = useOtpVerification(mobile);
   const { timer, isResendEnabled, handleResend, isResending } = useOtpResend(mobile);
@@ -31,6 +31,11 @@ const OTPVerificationScreen: React.FC = () => {
   const handleVerifyOtp = () => {
     if (!isValidateOTP(otp)) return;
     mutation.mutate(otp);
+  };
+
+  const handleResendWithClear = () => {
+    reset(); // Clear the entered OTP
+    handleResend(); // Call the resend function
   };
 
   const isLoading = mutation.isPending;
@@ -83,7 +88,7 @@ const OTPVerificationScreen: React.FC = () => {
           </View>
           <TouchableOpacity
             disabled={!isResendEnabled || isResending}
-            onPress={handleResend}
+            onPress={handleResendWithClear}
           >
             <CustomText
               style={[

@@ -502,7 +502,8 @@ const VendorVerificationScreen: React.FC = () => {
     });
     setShowDiscardDialog(false);
     // Navigate back
-    navigation.goBack();
+    // navigation.goBack();
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
   const handleCancelDiscard = () => {

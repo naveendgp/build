@@ -52,10 +52,12 @@ export const useOtpVerification = (mobile: string) => {
           break;
 
         case LoginUserStatus.DOC_PENDING_UPLOAD:
-          navigation.navigate('VendorVerification');
+          navigation.reset({ index: 0, routes: [{ name: 'VendorVerification' }] });
+          //  navigation.navigate('VendorVerification');
           break;
         case LoginUserStatus.DOC_REUPLOAD_REQUIRED:
-          navigation.navigate('VendorVerification', { isReupload: true });
+          navigation.reset({ index: 0, routes: [{ name: 'VendorVerification', params: { isReupload: true } }] });
+          //  navigation.navigate('VendorVerification', { isReupload: true });
           break;
 
         case LoginUserStatus.DOC_UNDER_REVIEW:

@@ -78,11 +78,7 @@ export const updateProfile = async (
 
   appendIfExists("owner_name", payload.owner_name);
   appendIfExists("email", payload.email);
-  appendIfExists("address", payload.address);
-  appendIfExists("aadhaar_number", payload.aadhaar_number);
-  appendIfExists("pan_number", payload.pan_number);
   appendIfExists("mobile", payload.mobile);
-  appendIfExists("date_of_birth", payload.date_of_birth);
 
   // Add images
   const addFile = (key: string, file?: { uri: string; name: string; type?: string }) => {

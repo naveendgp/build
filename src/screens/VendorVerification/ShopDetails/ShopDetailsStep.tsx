@@ -629,19 +629,20 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
                 {Array.from({ length: 12 }, (_, hour) => {
                   const time24 = `${hour.toString().padStart(2, '0')}:00`;
                   const time12 = formatTime(time24);
+                  // Highlight if this time is selected as either opening or closing
                   const isSelected =
-                    (timeType === 'start' && tempSelectedStartTime === time12) ||
-                    (timeType === 'end' && tempSelectedEndTime === time12);
+                    tempSelectedStartTime === time12 ||
+                    tempSelectedEndTime === time12;
 
                   // Group hours into rows of 2
                   if (hour % 2 === 0) {
                     const nextHour = hour + 1;
                     const nextTime24 = nextHour < 12 ? `${nextHour.toString().padStart(2, '0')}:00` : null;
                     const nextTime12 = nextTime24 ? formatTime(nextTime24) : null;
-                    const isNextSelected = nextTime12 && (
-                      (timeType === 'start' && tempSelectedStartTime === nextTime12) ||
-                      (timeType === 'end' && tempSelectedEndTime === nextTime12)
-                    );
+                    const isNextSelected =
+                      !!nextTime12 &&
+                      (tempSelectedStartTime === nextTime12 ||
+                        tempSelectedEndTime === nextTime12);
 
                     return (
                       <View key={`am-row-${hour}`} style={styles.hourRow}>
@@ -698,8 +699,8 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
                   const time24 = `${hour24.toString().padStart(2, '0')}:00`;
                   const time12 = formatTime(time24);
                   const isSelected =
-                    (timeType === 'start' && tempSelectedStartTime === time12) ||
-                    (timeType === 'end' && tempSelectedEndTime === time12);
+                    tempSelectedStartTime === time12 ||
+                    tempSelectedEndTime === time12;
 
                   // Group hours into rows of 2
                   if (hour % 2 === 0) {
@@ -707,10 +708,10 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
                     const nextHour24 = nextHour < 12 ? nextHour + 12 : null;
                     const nextTime24 = nextHour24 ? `${nextHour24.toString().padStart(2, '0')}:00` : null;
                     const nextTime12 = nextTime24 ? formatTime(nextTime24) : null;
-                    const isNextSelected = nextTime12 && (
-                      (timeType === 'start' && tempSelectedStartTime === nextTime12) ||
-                      (timeType === 'end' && tempSelectedEndTime === nextTime12)
-                    );
+                    const isNextSelected =
+                      !!nextTime12 &&
+                      (tempSelectedStartTime === nextTime12 ||
+                        tempSelectedEndTime === nextTime12);
 
                     return (
                       <View key={`pm-row-${hour24}`} style={styles.hourRow}>

@@ -51,7 +51,7 @@ export default StyleSheet.create({
         color: COLORS.INPUT_TEXT,
     },
     required: {
-        color: COLORS.ERROR,
+        color: COLORS.BLACK,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -98,6 +98,13 @@ export default StyleSheet.create({
     },
     confirmButton: {
         backgroundColor: COLORS.THEME_GREEN,
+        borderRadius: 16,
+        paddingVertical: 15,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    disabledButton: {
+        backgroundColor: COLORS.BUTTON_DISABLED,
         borderRadius: 16,
         paddingVertical: 15,
         alignItems: 'center',

@@ -8,6 +8,7 @@ import { AxiosError } from 'axios';
 import CustomText from '../../../components/Text';
 import Toolbar from '../../../components/Toolbar';
 import ErrorScreen from '../../../components/ErrorScreen';
+import EmptyScreen from '../../../components/EmptyScreen';
 import ServiceItemCard from '../Components/ServiceItemCard';
 import { getServicesByState, getProfile } from '../../../apiService/api/profileApi';
 import { ServiceByState, Service } from '../../../apiService/types/profileTypes';
@@ -110,6 +111,13 @@ const ActiveServicesPricingScreen: React.FC = () => {
                     onRetry={() => refetch()}
                     retryButtonText="Retry"
                 />
+            ) : activeServices.length === 0 ? (
+                <View style={styles.content}>
+                    <EmptyScreen
+                        title="No Active Services"
+                        subtitle="You don't have any active services yet. Activate services from the Services screen to manage pricing."
+                    />
+                </View>
             ) : (
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     <View style={styles.section}>
@@ -127,6 +135,7 @@ const ActiveServicesPricingScreen: React.FC = () => {
                                         isSelected={service.is_active}
                                         onToggle={handleServiceToggle}
                                         onPress={handleServicePress}
+                                        isPricing={true}
                                         isArrowVisible={true}
                                         showCheckbox={false}
                                         showItemsCount={service.active_items_count > 0}

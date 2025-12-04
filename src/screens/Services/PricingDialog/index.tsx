@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Modal, TouchableOpacity, TextInput } from 'react-native';
 import CustomText from '../../../components/Text';
 import CustomBtn from '../../../components/CustomBtn';
@@ -52,7 +52,33 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
         (initialData as ServiceTimeData)?.expressTime || 0,
     );
 
+    // Reset state when dialog opens or closes without confirming
+    useEffect(() => {
+        if (visible) {
+            // When dialog opens, reset to initialData values
+            if (type === 'offer') {
+                setOfferPercentage((initialData as OfferData)?.offerPercentage || 0);
+                setMaxCap((initialData as OfferData)?.maxCap || 0);
+            } else {
+                setStandardTime((initialData as ServiceTimeData)?.standardTime || 0);
+                setExpressTime((initialData as ServiceTimeData)?.expressTime || 0);
+            }
+        }
+    }, [visible, type, initialData]);
+
+    // Check if confirm button should be disabled
+    const isConfirmDisabled = () => {
+        if (type === 'offer') {
+            return offerPercentage === 0 || maxCap === 0;
+        } else {
+            return standardTime === 0 || expressTime === 0;
+        }
+    };
+
     const handleConfirm = () => {
+        if (isConfirmDisabled()) {
+            return;
+        }
         if (type === 'offer') {
             onConfirm({ offerPercentage, maxCap });
         } else {
@@ -99,13 +125,15 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
 
                                         <TextInput
                                             style={styles.input}
-                                            value={offerPercentage.toString() + " %"}
+                                            value={offerPercentage > 0 ? offerPercentage.toString() + " %" : ""}
                                             onChangeText={(text) => {
-                                                const num = text ? parseInt(text, 10) : 0;
+                                                // Remove " %" if present and parse number
+                                                const cleanText = text.replace(/\s*%\s*/g, '').trim();
+                                                const num = cleanText ? parseInt(cleanText, 10) : 0;
                                                 setOfferPercentage(isNaN(num) ? 0 : num);
                                             }}
                                             keyboardType="number-pad"
-                                            placeholder={offerPercentage.toString()}
+                                            placeholder="0"
                                             placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                         />
 
@@ -197,7 +225,8 @@ const PricingDialog: React.FC<PricingDialogProps> = ({
                         <CustomBtn
                             title="Confirm"
                             onPress={handleConfirm}
-                            style={styles.confirmButton}
+                            disabled={isConfirmDisabled()}
+                            style={isConfirmDisabled() ? styles.disabledButton : styles.confirmButton}
                             textStyle={styles.confirmButtonText}
                         />
                     </View>

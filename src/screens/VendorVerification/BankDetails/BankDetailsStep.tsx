@@ -136,7 +136,8 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
               </CustomText>
             </View>
             <TouchableOpacity onPress={removeCheque} style={styles.removeButton}>
-              <CloseIcon width={16} height={16} color={COLORS.LOGIN_SUBTITLE} />
+              <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
+
             </TouchableOpacity>
           </View>
         )}
