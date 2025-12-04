@@ -13,7 +13,7 @@ export default StyleSheet.create({
     marginBottom: 8,
   },
   asterisk: {
-    color: COLORS.ERROR,
+    color: COLORS.INPUT_TEXT,
   },
   inputRow: {
     width: "100%",
@@ -23,13 +23,14 @@ export default StyleSheet.create({
     paddingVertical: 10,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
-    height:40
+    height: 40
   },
   inputRowError: {
     borderColor: COLORS.ERROR,
   },
   inputRowDisabled: {
-    opacity: 0.6,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    // Remove opacity to keep text at full opacity
   },
   input: {
     fontSize: 16,
@@ -37,6 +38,10 @@ export default StyleSheet.create({
     fontWeight: "500",
     color: COLORS.INPUT_TEXT,
     padding: 0,
+  },
+  inputDisabledText: {
+    opacity: 1, // Full opacity for text when disabled
+    color: COLORS.INPUT_TEXT, // Ensure text color is maintained
   },
   errorText: {
     color: COLORS.ERROR,

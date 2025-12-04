@@ -97,6 +97,9 @@ export default {
       fontFamily: 'Poppins-Medium',
       fontWeight: '500',
     },
+    nextButtonDisabled: {
+      opacity: 0.5,
+    },
     loadingOverlay: {
       ...StyleSheet.absoluteFillObject,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',

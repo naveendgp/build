@@ -14,9 +14,10 @@ interface Props {
   bank: any;
   setBank: (b: any) => void;
   errors?: BankErrors;
+  clearError?: (field: keyof BankErrors) => void;
 }
 
-const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
+const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearError }) => {
   const pickCancelledCheque = () => {
     const options = {
       mediaType: 'photo' as MediaType,
@@ -42,6 +43,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
           ...bank,
           cancelled_cheque: { uri: fileUri, name: fileName },
         });
+        clearError?.('cancelled_cheque');
       }
     });
   };
@@ -56,7 +58,10 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
         label="Account Holder Name"
         required
         value={bank.account_holder_name || ''}
-        onChangeText={val => setBank({ ...bank, account_holder_name: val })}
+        onChangeText={val => {
+          setBank({ ...bank, account_holder_name: val });
+          clearError?.('account_holder_name');
+        }}
         containerStyle={styles.inputContainer}
         error={errors.account_holder_name}
       />
@@ -65,8 +70,14 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
         label="Account Number"
         required
         value={bank.account_number || ''}
-        onChangeText={val => setBank({ ...bank, account_number: val })}
+        onChangeText={val => {
+          // Only allow digits and limit to 18 characters
+          const digitsOnly = val.replace(/\D/g, '').slice(0, 18);
+          setBank({ ...bank, account_number: digitsOnly });
+          clearError?.('account_number');
+        }}
         keyboardType="number-pad"
+        maxLength={18}
         containerStyle={styles.inputContainer}
         error={errors.account_number}
       />
@@ -75,7 +86,10 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
         label="Bank Name"
         required
         value={bank.bank_name || ''}
-        onChangeText={val => setBank({ ...bank, bank_name: val })}
+        onChangeText={val => {
+          setBank({ ...bank, bank_name: val });
+          clearError?.('bank_name');
+        }}
         containerStyle={styles.inputContainer}
         error={errors.bank_name}
       />
@@ -84,9 +98,15 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
         label="IFSC Code"
         required
         value={bank.ifsc_code || ''}
-        onChangeText={val => setBank({ ...bank, ifsc_code: val })}
+        onChangeText={val => {
+          // Convert to uppercase and limit to 11 characters
+          const upperVal = val.toUpperCase().slice(0, 11);
+          setBank({ ...bank, ifsc_code: upperVal });
+          clearError?.('ifsc_code');
+        }}
         containerStyle={styles.inputContainer}
         autoCapitalize="characters"
+        maxLength={11}
         error={errors.ifsc_code}
       />
 
@@ -116,7 +136,8 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {} }) => {
               </CustomText>
             </View>
             <TouchableOpacity onPress={removeCheque} style={styles.removeButton}>
-              <CloseIcon width={16} height={16} color={COLORS.LOGIN_SUBTITLE} />
+              <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
+
             </TouchableOpacity>
           </View>
         )}

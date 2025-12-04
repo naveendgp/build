@@ -8,10 +8,12 @@ export interface VendorProfile {
   _id: string;
   phone: string;
   status: string;
-  shop_status: ShopStatus;
+  shop_status: boolean;
   total_orders: number;
+  express_status: boolean;
   services_offered: Service[];
   rating: Rating;
+  support_phone_number: string;
   wallet: Wallet;
   pickup_zones: any[];
   operating_hours?: OperatingHoursInput;
@@ -248,4 +250,112 @@ export interface ServicesByStateResponse {
   status: boolean;
   message: string;
   data: ServicesByStateData;
+}
+
+// Profile Update API Types
+export interface UpdateProfileInput {
+  owner_name: string;
+  email: string;
+  address: string;
+  aadhaar_number: string;
+  pan_number: string;
+  mobile: string;
+  date_of_birth?: string;
+}
+
+export interface UpdateProfileResponse {
+  status: boolean;
+  message: string;
+}
+
+// Shop Update API Types
+export interface UpdateShopInput {
+  shop_name: string;
+  gst_number: string;
+  address_line1: string;
+  address_line2?: string;
+  pincode: string;
+  landmark: string;
+  latitude: number;
+  longitude: number;
+  contact_number: string;
+  business_hours?: OperatingHoursInput;
+  auto_receive_orders?: boolean;
+  repeat_days?: string;
+}
+
+export interface UpdateShopResponse {
+  status: boolean;
+  message: string;
+}
+
+// Bank Update API Types (extends existing UpdateBankDetailsInput)
+export interface UpdateBankDetailsInputWithCheque {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch?: string;
+  upi_id?: string;
+}
+
+// Vendor Reviews API Types
+export interface ReviewUser {
+  _id: string;
+  name: string;
+}
+
+export interface ReviewOrder {
+  _id: string;
+  order_number: string;
+}
+
+export interface Review {
+  _id: string;
+  user_id: ReviewUser;
+  vendor_id: string;
+  order_id: ReviewOrder;
+  rating: number;
+  serviceName: string | null;
+  comment: string | null;
+  is_verified: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface VendorReviewsData {
+  reviews: Review[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface VendorReviewsResponse {
+  status: boolean;
+  message: string;
+  data: VendorReviewsData;
+}
+
+export interface GetVendorReviewsParams {
+  limit?: number;
+  page?: number;
+}
+
+// Toggle Settings API Types
+export interface ToggleSettingsInput {
+  express_status: boolean;
+  shop_status: boolean;
+}
+
+export interface ToggleSettingsResponse {
+  status: boolean;
+  message: string;
+  data: {
+    express_status: boolean;
+    shop_status: {
+      status: string;
+      close_time: string | null;
+    };
+  };
 }

@@ -45,6 +45,7 @@ type BasicDraggableSliderProps = {
   onDragStart?: () => void;
   onDragEnd?: (completed: boolean) => void;
   reverse?: boolean;
+  isReadyForPickUp?: boolean;
 };
 
 export type BasicDraggableSliderHandle = {
@@ -61,6 +62,7 @@ const DraggableSlider = forwardRef<BasicDraggableSliderHandle, BasicDraggableSli
       onDragStart,
       onDragEnd,
       reverse = I18nManager.isRTL,
+      isReadyForPickUp = false,
     },
     ref
   ) => {
@@ -199,9 +201,9 @@ const DraggableSlider = forwardRef<BasicDraggableSliderHandle, BasicDraggableSli
       <View style={styles.container}>
         <View style={styles.measureContainer} onLayout={onContainerLayout}>
           <Animated.View style={[styles.slider]}>
-            <Animated.View style={[styles.textContainer, animatedTextStyle]}>
+            <Animated.View style={[styles.textContainer, animatedTextStyle, isReadyForPickUp && { paddingHorizontal: 15 }]}>
               <Text
-                style={[styles.sliderText, disabled && styles.disabledText]}
+                style={[styles.sliderText, disabled && styles.disabledText,]}
                 accessible={false}>
                 {text}
               </Text>

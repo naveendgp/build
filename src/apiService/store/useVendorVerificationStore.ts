@@ -19,6 +19,7 @@ interface ShopData {
   gst_number: string;
   shop_license_number: string;
   address: string;
+  address_line2: string;
   city: string;
   state: string;
   pincode: string;
@@ -36,7 +37,7 @@ interface ShopData {
 interface BankData {
   account_number: string;
   account_holder_name: string;
-   ifsc_code: string;
+  ifsc_code: string;
   bank_name: string;
   upi_id: string;
   cancelled_cheque: any;
@@ -81,6 +82,7 @@ const initialShop: ShopData = {
   gst_number: '',
   shop_license_number: '',
   address: '',
+  address_line2: '',
   city: '',
   state: '',
   pincode: '',
@@ -98,7 +100,7 @@ const initialShop: ShopData = {
 const initialBank: BankData = {
   account_number: '',
   account_holder_name: '',
-   ifsc_code: '',
+  ifsc_code: '',
   bank_name: '',
   upi_id: '',
   cancelled_cheque: null,

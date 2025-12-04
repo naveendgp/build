@@ -10,6 +10,7 @@ interface CustomSwitchProps {
   trackWidth?: number;
   trackHeight?: number;
   thumbSize?: number;
+  disabledColor?: string;
 }
 
 const CustomSwitch: React.FC<CustomSwitchProps> = ({
@@ -19,6 +20,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
   trackWidth = 50,
   trackHeight = 28,
   thumbSize = 22,
+  disabledColor = COLORS.BORDER_INPUT,
 }) => {
   const translateX = useRef(new Animated.Value(value ? 1 : 0)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -81,7 +83,7 @@ const CustomSwitch: React.FC<CustomSwitchProps> = ({
             {
               width: trackWidth,
               height: trackHeight,
-              backgroundColor: value ? COLORS.THEME_GREEN : COLORS.BORDER_INPUT,
+              backgroundColor: value ? COLORS.THEME_GREEN : disabledColor,
               transform: [{ scale: scaleAnim }],
             },
           ]}

@@ -426,6 +426,9 @@ export default StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
+  repeatSaveButtonDisabled: {
+    opacity: 0.5,
+  },
   repeatSaveButtonText: {
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_MEDIUM,

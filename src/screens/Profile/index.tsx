@@ -1,9 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   ScrollView,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { COLORS, FONTFAMILY } from '../../constants/colors';
+import DiscardDialog from '../../components/DiscardDialog';
 import SvgProfileIcon from '../../assets/auto-generated-svg-icons/ProfileIcon';
 import SvgShopIcon from '../../assets/auto-generated-svg-icons/ShopIcon';
 import SvgBankIcon from '../../assets/auto-generated-svg-icons/BankIcon';
@@ -27,6 +27,8 @@ import SvgTermsConditionIcon from '../../assets/auto-generated-svg-icons/TermsCo
 import SvgLogoutIcon from '../../assets/auto-generated-svg-icons/LogoutIcon';
 import SvgLogoutBlackIcon from '../../assets/auto-generated-svg-icons/LogoutBlackIcon';
 import SvgSupportIcon from '../../assets/auto-generated-svg-icons/SupportIcon';
+import SvgTagIcon from '../../assets/auto-generated-svg-icons/TagIcon';
+import { openWhatsApp } from '../../utils/whatsappUtils';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -37,25 +39,23 @@ const ProfileScreen: React.FC = () => {
   const navigation = useNavigation<ProfileNavProp>();
   const { logout, token, documentState } = useAuthStore();
   const { profile, isLoading } = useProfileStore();
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   const handleLogout = () => {
-    Alert.alert('Logout', 'Are you sure you want to logout?', [
-      {
-        text: 'Cancel',
-        style: 'cancel',
-      },
-      {
-        text: 'Logout',
-        style: 'destructive',
-        onPress: () => {
-          logout();
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-          });
-        },
-      },
-    ]);
+    setShowLogoutDialog(true);
+  };
+
+  const handleConfirmLogout = async () => {
+    setShowLogoutDialog(false);
+    await logout();
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
+
+  const handleCancelLogout = () => {
+    setShowLogoutDialog(false);
   };
 
   const profileOptions = [
@@ -90,7 +90,7 @@ const ProfileScreen: React.FC = () => {
     {
       id: '5',
       title: 'Item Pricing & Offer Details',
-      icon: SvgServicesIcon,
+      icon: SvgTagIcon,
       iconType: 'svg',
       onPress: () => navigation.navigate('ActiveServicesPricingScreen'),
     },
@@ -106,7 +106,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Help & support',
       icon: SvgSupportIcon,
       iconType: 'svg',
-      onPress: () => console.log('Help & Support'),
+      onPress: () => openWhatsApp(profile?.support_phone_number || ''),
     },
     {
       id: '8',
@@ -231,6 +231,18 @@ const ProfileScreen: React.FC = () => {
           </View>
         </ScrollView>
       )}
+
+      <DiscardDialog
+        visible={showLogoutDialog}
+        title="Logout"
+        subtitle="Are you sure you want to logout?"
+        primaryButtonText="Logout"
+        secondaryButtonText="Cancel"
+        onPrimaryButtonPress={handleConfirmLogout}
+        onSecondaryButtonPress={handleCancelLogout}
+        onClose={handleCancelLogout}
+        closable={true}
+      />
     </SafeAreaView>
   );
 };

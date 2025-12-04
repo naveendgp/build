@@ -23,6 +23,7 @@ type ServicesNavProp = NativeStackNavigationProp<RootStackParamList, 'Services'>
 const ServicesScreen: React.FC = () => {
   const navigation = useNavigation<ServicesNavProp>();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
+  const [showSuccessLoading, setShowSuccessLoading] = useState(false);
 
   // Fetch services by state
   const {
@@ -62,7 +63,12 @@ const ServicesScreen: React.FC = () => {
     mutationFn: (input: ToggleServiceActiveInput) => toggleServiceActive(input),
     onSuccess: (data) => {
       showSuccessToast(data.message || 'Services updated successfully');
-      refetch();
+      // Show loading indicator for 500ms on success
+      setShowSuccessLoading(true);
+      setTimeout(() => {
+        setShowSuccessLoading(false);
+        refetch();
+      }, 300);
     },
     onError: (error: any) => {
       const errorMessage = error?.response?.data?.message || error?.message || 'Failed to update services';
@@ -120,7 +126,7 @@ const ServicesScreen: React.FC = () => {
     <SafeAreaView style={styles.container} edges={['top']}>
       <Toolbar title="Services" />
 
-      {isLoading ? (
+      {isLoading || showSuccessLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
         </View>
@@ -147,6 +153,7 @@ const ServicesScreen: React.FC = () => {
                         isSelected={selectedServices.includes(service.service_id)}
                         onToggle={handleServiceToggle}
                         onPress={handleServicePress}
+                        isPricing={false}
                         isArrowVisible={false}
                       />
                     ))}
@@ -169,6 +176,7 @@ const ServicesScreen: React.FC = () => {
                         isSelected={selectedServices.includes(service.service_id)}
                         onToggle={handleServiceToggle}
                         onPress={handleServicePress}
+                        isPricing={false}
                         isArrowVisible={false}
                       />
                     ))}

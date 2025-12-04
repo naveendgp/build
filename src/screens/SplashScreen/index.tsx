@@ -47,8 +47,10 @@ const SplashScreen: React.FC = () => {
     }, []);
 
     const navigateToScreen = () => {
+        console.log("isLoggedIn", isLoggedIn);
+        console.log("documentState", documentState);
         if (!isLoggedIn) {
-            navigation.replace('MainTabs');
+            navigation.replace('Login');
             return;
         }
 

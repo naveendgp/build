@@ -12,7 +12,7 @@ import SvgLocationLine from '../../../assets/auto-generated-svg-icons/LocationLi
 import SvgForwardRightBlackSvg from '../../../assets/auto-generated-svg-icons/ForwardRightBlackSvg';
 import SvgChevronRight from '../../../assets/auto-generated-svg-icons/ChevronRight';
 import SvgBillIcon from '../../../assets/auto-generated-svg-icons/BillIcon';
-import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ChevronRightBlack';
+import SvgChevronRightBlack from '../../../assets/auto-generated-svg-icons/ArrowRightIcon';
 import { acceptOrder, completeOrder, fetchOrderById } from '../../../apiService/api/ordersApi';
 import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
 import { useQuery } from '@tanstack/react-query';
@@ -294,6 +294,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
     return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-5);
   }, [orderId]);
 
+
+  console.log(tabType, trip_type, status_type);
+  console.log(tabType === OrderStatus.RECEIVED ||
+    (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 10));
+
   return (
     <View style={{ marginBottom: 16 }} >
       <View
@@ -389,7 +394,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.serviceTypeText}>
               {serviceType}
             </CustomText>
-            <SvgChevronRight />
+            <SvgChevronRight width={16} height={16} />
 
           </TouchableOpacity>
         </View>
@@ -449,9 +454,10 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
         {/* Buttons */}
 
+
         {(
           tabType === OrderStatus.RECEIVED ||
-          (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 7)
+          (tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10)
         ) && (
             <View style={styles.actionRow}>
               <View style={styles.sliderContainer}>
@@ -460,6 +466,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
                     ref={sliderRef}
                     onComplete={handleComplete}
                     text={getSliderText()}
+                    isReadyForPickUp={tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10}
                   />
                 </GestureHandlerRootView>
               </View>
@@ -476,7 +483,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
 
 
-        {(tabType !== OrderStatus.RECEIVED) && (
+        {(tabType !== OrderStatus.RECEIVED) && timelineEvents && timelineEvents.length > 0 && !(vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10) && (
           timelineEvents.map((event, index) => (
             <TimeLineCard
               key={event.id}

@@ -68,7 +68,7 @@ export default StyleSheet.create({
     padding: 4,
   },
   asterisk: {
-    color: COLORS.ERROR,
+    color: COLORS.BLACK,
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
   },

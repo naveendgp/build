@@ -10,7 +10,7 @@ import { useOtpVerification } from './hooks/useOtpVerification';
 import { useOtpResend } from './hooks/useOtpResend';
 import BackgroundGradient from '../../../components/backgroundGradient';
 import { COLORS } from '../../../constants/colors';
-import SvgTimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
+import SvgTimerIcon from '../../../assets/auto-generated-svg-icons/ClockIcon';
 import SvgOTPVerificationIcon from '../../../assets/auto-generated-svg-icons/OtpIcon';
 import { getFcmToken } from '../../../services/Notification/useNotifications';
 
@@ -23,7 +23,7 @@ const OTPVerificationScreen: React.FC = () => {
     getFcmToken();
   }, []);
 
-  const { digits, otp, handleChange, handleKeyPress, inputsRef } =
+  const { digits, otp, handleChange, handleKeyPress, inputsRef, reset } =
     useOtpInput(4);
   const mutation = useOtpVerification(mobile);
   const { timer, isResendEnabled, handleResend, isResending } = useOtpResend(mobile);
@@ -31,6 +31,11 @@ const OTPVerificationScreen: React.FC = () => {
   const handleVerifyOtp = () => {
     if (!isValidateOTP(otp)) return;
     mutation.mutate(otp);
+  };
+
+  const handleResendWithClear = () => {
+    reset(); // Clear the entered OTP
+    handleResend(); // Call the resend function
   };
 
   const isLoading = mutation.isPending;
@@ -41,7 +46,7 @@ const OTPVerificationScreen: React.FC = () => {
 
       <View style={styles.mainSection}>
         <View style={styles.iconBox}>
-          <SvgOTPVerificationIcon width={56} height={56} />
+          <SvgOTPVerificationIcon />
         </View>
 
         <CustomText style={styles.title}>Enter Verification Code</CustomText>
@@ -76,14 +81,14 @@ const OTPVerificationScreen: React.FC = () => {
 
         <View style={styles.timerRow}>
           <View style={styles.timerContainer}>
-            <SvgTimerIcon width={14} height={14} color={COLORS.LOGIN_SUBTITLE} />
+            <SvgTimerIcon />
             <CustomText style={styles.timerText}>
               {timer < 10 ? `00:0${timer}` : `00:${timer}`}
             </CustomText>
           </View>
           <TouchableOpacity
             disabled={!isResendEnabled || isResending}
-            onPress={handleResend}
+            onPress={handleResendWithClear}
           >
             <CustomText
               style={[

@@ -1,13 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { View, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import CustomText from '../../../components/Text';
 import Toolbar from '../../../components/Toolbar';
 import ErrorScreen from '../../../components/ErrorScreen';
+import EmptyScreen from '../../../components/EmptyScreen';
 import ServiceItemCard from '../Components/ServiceItemCard';
 import { getServicesByState, getProfile } from '../../../apiService/api/profileApi';
 import { ServiceByState, Service } from '../../../apiService/types/profileTypes';
@@ -26,7 +27,12 @@ const ActiveServicesPricingScreen: React.FC = () => {
     const { data: servicesData, isLoading, isError, error, refetch } = useQuery({
         queryKey: ['services-by-state'],
         queryFn: getServicesByState,
+        enabled: false
     });
+
+    useFocusEffect(useCallback(() => {
+        refetch();
+    }, []));
 
     // Get only active services (is_active = true)
     const activeServices = useMemo(() => {
@@ -105,6 +111,13 @@ const ActiveServicesPricingScreen: React.FC = () => {
                     onRetry={() => refetch()}
                     retryButtonText="Retry"
                 />
+            ) : activeServices.length === 0 ? (
+                <View style={styles.content}>
+                    <EmptyScreen
+                        title="No Active Services"
+                        subtitle="You don't have any active services yet. Activate services from the Services screen to manage pricing."
+                    />
+                </View>
             ) : (
                 <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                     <View style={styles.section}>
@@ -122,6 +135,7 @@ const ActiveServicesPricingScreen: React.FC = () => {
                                         isSelected={service.is_active}
                                         onToggle={handleServiceToggle}
                                         onPress={handleServicePress}
+                                        isPricing={true}
                                         isArrowVisible={true}
                                         showCheckbox={false}
                                         showItemsCount={service.active_items_count > 0}

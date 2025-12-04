@@ -9,6 +9,9 @@ import {
   RegisterResponse,
   RegisterCompletePayload,
   RegisterCompleteResponse,
+  ReSendOtpPayload,
+  ReSendOtpResponse,
+  LogoutResponse,
 } from '../types/authTypes';
 
 export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
@@ -18,6 +21,16 @@ export const login = async (payload: LoginPayload): Promise<LoginResponse> => {
 
 export const verifyOtp = async (payload: OtpPayload): Promise<OtpResponse> => {
   const response = await api.post('/vendor/verify-otp', payload);
+  return response.data;
+};
+
+export const resendOtp = async (payload: ReSendOtpPayload): Promise<ReSendOtpResponse> => {
+  const response = await api.post('/vendor/resend-otp', payload);
+  return response.data;
+};
+
+export const logout = async (): Promise<LogoutResponse> => {
+  const response = await api.post('/vendor/logout');
   return response.data;
 };
 
@@ -38,7 +51,7 @@ export const registerComplete = async (
     cancelled_cheque?: { uri: string; name: string; type?: string };
   }
 ): Promise<RegisterCompleteResponse> => {
-  
+
   const formData = new FormData();
 
   // --- Add Text Fields Exactly Like Postman ---
@@ -53,6 +66,7 @@ export const registerComplete = async (
   appendIfExists("email", payload.email);
   appendIfExists("gst_number", payload.gst_number);
   appendIfExists("address_line1", payload.address_line1);
+  appendIfExists("address_line2", payload.address_line2);
   appendIfExists("pincode", payload.pincode);
   appendIfExists("landmark", payload.landmark);
   appendIfExists("latitude", payload.latitude);
@@ -69,7 +83,7 @@ export const registerComplete = async (
   appendIfExists("operating_hours", JSON.stringify(payload.operating_hours));
 
   appendIfExists("pan_number", payload.pan_number);
-   appendIfExists("aadhaar_number", payload.aadhaar_number);
+  appendIfExists("aadhaar_number", payload.aadhaar_number);
 
   // --- Add Images Exactly as File Objects ---
   const addFile = (key: string, file?: { uri: string; name: string; type?: string }) => {
@@ -90,7 +104,7 @@ export const registerComplete = async (
 
   console.log("FINAL FORMDATA SENT FROM APP:");
   // debug full form data
- 
+
   const response = await api.post("/vendor/register-complete", formData, {
     headers: {
       "Content-Type": "multipart/form-data", // important for mobile Axios

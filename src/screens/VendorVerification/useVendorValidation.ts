@@ -2,7 +2,7 @@ export interface VendorErrors {
   owner_name?: string;
   mobile?: string;
   email?: string;
-  aadhaar_or_pan?: string; // At least one of Aadhaar or PAN is required
+  aadhaar_or_pan?: string;
 }
 
 export interface ShopErrors {
@@ -24,8 +24,8 @@ export interface BankErrors {
   cancelled_cheque?: string;
 }
 
-const hasErrors = (errors: Record<string, string | undefined>) =>
-  Object.values(errors).some(Boolean);
+const hasErrors = (errors: VendorErrors | ShopErrors | BankErrors) =>
+  Object.values(errors as Record<string, string | undefined>).some(Boolean);
 
 export const useVendorValidation = () => {
   const validateVendor = (vendor: any): VendorErrors => {
@@ -38,11 +38,10 @@ export const useVendorValidation = () => {
     } else if (!/^\d{10}$/.test(vendor.mobile)) {
       errors.mobile = 'Enter a valid 10-digit mobile number';
     }
-    // At least one of Aadhaar or PAN (ID number or file) is required
-    const hasAadhaar = (vendor.aadhaar_no?.trim() || vendor.aadhaar_file);
-    const hasPan = (vendor.pan_number?.trim() || vendor.pan_file);
-    if (!hasAadhaar && !hasPan) {
-      errors.aadhaar_or_pan = 'Either Aadhaar ID or PAN ID is required';
+    const hasAadhaarDoc = !!vendor.aadhaar_file;
+    const hasPanDoc = !!vendor.pan_file;
+    if (!hasAadhaarDoc && !hasPanDoc) {
+      errors.aadhaar_or_pan = 'Upload Aadhaar or PAN document';
     }
     if (vendor.email?.trim() && !/^\S+@\S+\.\S+$/.test(vendor.email.trim())) {
       errors.email = 'Enter a valid email address';
@@ -55,10 +54,12 @@ export const useVendorValidation = () => {
     if (!shop.shop_name?.trim()) {
       errors.shop_name = 'Shop name is required';
     }
-    // GST number is optional (not mandatory)
-    // if (!shop.gst_number?.trim()) {
-    //   errors.gst_number = 'GST number is required';
-    // }
+    if (shop.gst_number?.trim()) {
+      const gstNumber = shop.gst_number.trim().toUpperCase();
+      if (!/^\d{2}[A-Z0-9]{10}[0-9]Z[0-9]$/.test(gstNumber)) {
+        errors.gst_number = 'Enter a valid GST number (Example: 22AAAAA0000A1Z5)';
+      }
+    }
     if (!shop.address?.trim()) {
       errors.address = 'Address is required';
     }
@@ -73,13 +74,8 @@ export const useVendorValidation = () => {
     if (!shop.business_hours?.trim()) {
       errors.business_hours = 'Shop timings are required';
     }
-    if (!shop.pincode?.trim()) {
-      errors.pincode = 'Pincode is required';
-    } else if (!/^\d{6}$/.test(shop.pincode.trim())) {
+    if (shop.pincode?.trim() && !/^\d{6}$/.test(shop.pincode.trim())) {
       errors.pincode = 'Pincode must be 6 digits';
-    }
-    if (!shop.landmark?.trim()) {
-      errors.landmark = 'Landmark is required';
     }
     return errors;
   };
@@ -91,14 +87,24 @@ export const useVendorValidation = () => {
     }
     if (!bank.account_number?.trim()) {
       errors.account_number = 'Account number is required';
+    } else {
+      const accountNumber = bank.account_number.trim();
+      // Account number should be between 9 and 18 digits
+      if (!/^\d{9,18}$/.test(accountNumber)) {
+        errors.account_number = 'Account number must be between 9 and 18 digits';
+      }
     }
     if (!bank.bank_name?.trim()) {
       errors.bank_name = 'Bank name is required';
     }
     if (!bank.ifsc_code?.trim()) {
       errors.ifsc_code = 'IFSC code is required';
-    } else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(bank.ifsc_code.trim())) {
-      errors.ifsc_code = 'Enter a valid IFSC code';
+    } else {
+      const ifscCode = bank.ifsc_code.trim().toUpperCase();
+      // IFSC code format: 4 uppercase letters + 0 + 6 alphanumeric characters (total 11 characters)
+      if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifscCode)) {
+        errors.ifsc_code = 'Enter a valid IFSC code (e.g., ABCD0123456)';
+      }
     }
     if (!bank.cancelled_cheque) {
       errors.cancelled_cheque = 'Cancelled cheque is required';

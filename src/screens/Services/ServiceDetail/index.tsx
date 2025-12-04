@@ -11,24 +11,23 @@ import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import CustomSwitch from '../../../components/CustomSwitch';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
-import { ItemsByCategory, Service, ServiceItem, UpdateServiceInput, UpdateServicesResponse } from '../../../apiService/types/profileTypes';
+import { Service, ServiceItem, UpdateServiceInput, UpdateServicesResponse } from '../../../apiService/types/profileTypes';
 import { ErrorResponse } from '../../../apiService/types/authTypes';
 import { updateServicesOffered } from '../../../apiService/api/profileApi';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
 import { useServiceDataStore } from '../../../apiService/store/useServiceDataStore';
 import styles from './style';
-import RightArrowIcon from '../../../assets/auto-generated-svg-icons/RightArrowIcon';
-import EditIcon from '../../../assets/auto-generated-svg-icons/EditIcon';
-import TimerIcon from '../../../assets/auto-generated-svg-icons/TimerIcon';
-import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
-import { COLORS, FONTFAMILY } from '../../../constants/colors';
+import RightArrowIcon from '../../../assets/auto-generated-svg-icons/ArrowRightIcon';
+import SvgOfferIcon from '../../../assets/auto-generated-svg-icons/OfferIcon';
+import SvgClockIcon from '../../../assets/auto-generated-svg-icons/CountownIcon';
+import SvgExpressIcon from '../../../assets/auto-generated-svg-icons/ExpressIcon';
+import { COLORS } from '../../../constants/colors';
 import { PRICING_TYPES } from '../../../constants';
 import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
-import CategoryItemCard from '../Components/CategoryItemCard';
 import categoryItemStyles from '../Components/style';
 import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
 import ServiceAddedDialog from '../ServiceAddedDialog';
-import dialogStyles from '../ServiceAddedDialog/style';
+import SvgServiceEditIcon from '../../../assets/auto-generated-svg-icons/ServiceEditIcon';
 
 type ServiceDetailNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -521,7 +520,7 @@ const ServiceDetailScreen: React.FC = () => {
                             <View style={styles.subOptionsContent}>
                                 <View style={styles.subOptionRow}>
                                     <View style={styles.subOptionLeft}>
-                                        <TimerIcon width={20} height={20} color={COLORS.INPUT_TEXT} />
+                                        <SvgClockIcon />
                                         <CustomText style={styles.subOptionText}>
                                             Standard {serviceTimeData.standardTime} Hours
                                         </CustomText>
@@ -529,7 +528,7 @@ const ServiceDetailScreen: React.FC = () => {
                                 </View>
                                 <View style={styles.subOptionRow}>
                                     <View style={styles.subOptionLeft}>
-                                        <TimerIcon width={20} height={20} color={COLORS.INPUT_TEXT} />
+                                        <SvgExpressIcon />
                                         <CustomText style={styles.subOptionText}>
                                             Express {serviceTimeData.expressTime} Hours
                                         </CustomText>
@@ -540,7 +539,7 @@ const ServiceDetailScreen: React.FC = () => {
                                 style={styles.editButton}
                                 onPress={() => setShowServiceTimeDialog(true)}
                             >
-                                <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+                                <SvgServiceEditIcon />
 
                                 <CustomText style={styles.editText}>Edit</CustomText>
                             </TouchableOpacity>
@@ -558,7 +557,8 @@ const ServiceDetailScreen: React.FC = () => {
                         <View style={styles.subOptionsContainer}>
                             <View style={styles.subOptionRow}>
                                 <View style={styles.subOptionLeft}>
-                                    <CheckIcon width={20} height={20} color={COLORS.THEME_GREEN} />
+                                    <SvgOfferIcon color={COLORS.THEME_GREEN} />
+
                                     <CustomText style={styles.subOptionText}>
                                         Flat {offerData.offerPercentage} % Off
                                     </CustomText>
@@ -567,7 +567,7 @@ const ServiceDetailScreen: React.FC = () => {
                                     style={styles.editButton}
                                     onPress={() => setShowOfferDialog(true)}
                                 >
-                                    <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+                                    <SvgServiceEditIcon />
 
                                     <CustomText style={styles.editText}>Edit</CustomText>
                                 </TouchableOpacity>
@@ -628,7 +628,7 @@ const ServiceDetailScreen: React.FC = () => {
                                                 }}
                                             >
                                                 <CustomText style={styles.categoryItemText}>{category}</CustomText>
-                                                <RightArrowIcon width={24} height={24} color={COLORS.INPUT_TEXT} />
+                                                <RightArrowIcon color={COLORS.INPUT_TEXT} />
                                             </TouchableOpacity>
                                             {(selected > 0) && <CustomText style={styles.categorySubtitle}>
                                                 Selected Items - {selected}/{total}

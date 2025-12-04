@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
 import { useAuthStore } from '../../../apiService/store/useAuthStore';
+import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import { updateProfile } from '../../../apiService/api/profileApi';
+import { UpdateProfileInput } from '../../../apiService/types/profileTypes';
+import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { getMimeTypeFromExtension } from '../../../utils/fileUtils';
 import VendorDetailsStep from './VendorDetailsStep';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
@@ -101,11 +107,71 @@ const ProfileDetailsScreen: React.FC = () => {
     }
   }, [mobileNumber]);
 
+  // Helper function to normalize file object
+  const normalizeFile = (file: any, defaultName: string, defaultType: string = 'image/jpeg') => {
+    if (!file) return undefined;
+    // Handle string URI (from API)
+    if (typeof file === 'string') {
+      return {
+        uri: file,
+        name: defaultName,
+        type: getMimeTypeFromExtension(defaultName),
+      };
+    }
+    // Handle object with uri and name
+    if (file.uri) {
+      const fileName = file.name || defaultName;
+      const mimeType = file.type || getMimeTypeFromExtension(fileName) || defaultType;
+      return {
+        uri: file.uri,
+        name: fileName,
+        type: mimeType,
+      };
+    }
+    return undefined;
+  };
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async () => {
+      const payload: UpdateProfileInput = {
+        owner_name: vendor.owner_name,
+        email: vendor.email,
+        address: vendor.address,
+        aadhaar_number: vendor.aadhaar_no,
+        pan_number: vendor.pan_number,
+        mobile: vendor.mobile,
+        date_of_birth: vendor.date_of_birth || undefined,
+      };
+
+      const images = {
+        profile_pic: normalizeFile(vendor.profile_pic, 'profile_pic.jpg'),
+        aadhaar_card: normalizeFile(vendor.aadhaar_file, 'aadhaar_card.jpg'),
+        pan_card: normalizeFile(vendor.pan_file, 'pan_card.jpg'),
+      };
+
+      return updateProfile(payload, images);
+    },
+    onSuccess: (data) => {
+      if (data.status) {
+        showSuccessToast(data.message || 'Profile updated successfully');
+        // Save to store
+        setVendorData(vendor);
+        // Refresh profile data
+        useProfileStore.getState().refreshProfile();
+        // Navigate back
+        navigation.goBack();
+      } else {
+        showErrorToast(data.message || 'Failed to update profile');
+      }
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      const msg = error.response?.data?.message || error.message;
+      showErrorToast(msg || 'Failed to update profile');
+    },
+  });
+
   const handleSave = () => {
-    // Save to store
-    setVendorData(vendor);
-    // Navigate back
-    navigation.goBack();
+    updateProfileMutation.mutate();
   };
 
   return (
@@ -129,12 +195,18 @@ const ProfileDetailsScreen: React.FC = () => {
             />
             <View style={styles.buttonRow}>
               <CustomBtn
-                title="Save"
+                title={updateProfileMutation.isPending ? "Saving..." : "Save"}
                 onPress={handleSave}
+                disabled={updateProfileMutation.isPending}
                 style={styles.nextButton}
                 textStyle={styles.nextButtonText}
               />
             </View>
+            {updateProfileMutation.isPending && (
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+                <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+              </View>
+            )}
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

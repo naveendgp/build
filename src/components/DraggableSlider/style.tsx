@@ -24,7 +24,7 @@ export default StyleSheet.create({
     right: 0,
     justifyContent: 'flex-end',
     zIndex: 2,
-    paddingHorizontal: 29,
+    paddingHorizontal: 29, //29
   },
   sliderText: {
     color: COLORS.WHITE,

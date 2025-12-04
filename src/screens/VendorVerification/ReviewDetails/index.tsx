@@ -7,7 +7,7 @@ import CustomText from '../../../components/Text';
 import CustomBtn from '../../../components/CustomBtn';
 import DetailItem from './DetailItem';
 import styles from './style';
-import EditIcon from '../../../assets/auto-generated-svg-icons/EditIcon';
+import EditIcon from '../../../assets/auto-generated-svg-icons/ServiceEditIcon';
 import { COLORS } from '../../../constants/colors';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
 import { ShopDocumentUploadPayload } from '../../../apiService/types/authTypes';
@@ -62,7 +62,7 @@ const ReviewDetailsScreen: React.FC = () => {
       pan_number: vendor.pan_number,
       shop_license_number: shop.shop_license_number,
       address_line1: shop.address,
-      address_line2: shop.landmark || '',
+      address_line2: shop.address_line2 || '',
       city: shop.city || '',
       state: shop.state || '',
       pincode: shop.pincode,
@@ -121,7 +121,7 @@ const ReviewDetailsScreen: React.FC = () => {
         <View style={styles.cardHeader}>
           <CustomText style={styles.sectionTitle}>Personal Details</CustomText>
           <TouchableOpacity onPress={handleEditPersonal} style={styles.editButton}>
-            <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+            <EditIcon color={COLORS.THEME_GREEN} />
             <CustomText style={styles.editText}>Edit</CustomText>
           </TouchableOpacity>
         </View>
@@ -157,7 +157,7 @@ const ReviewDetailsScreen: React.FC = () => {
         <View style={styles.cardHeader}>
           <CustomText style={styles.sectionTitle}>Shop Details</CustomText>
           <TouchableOpacity onPress={handleEditShop} style={styles.editButton}>
-            <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+            <EditIcon color={COLORS.THEME_GREEN} />
             <CustomText style={styles.editText}>Edit</CustomText>
           </TouchableOpacity>
         </View>
@@ -179,7 +179,7 @@ const ReviewDetailsScreen: React.FC = () => {
         <View style={styles.cardHeader}>
           <CustomText style={styles.sectionTitle}>Bank Details</CustomText>
           <TouchableOpacity onPress={handleEditBank} style={styles.editButton}>
-            <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+            <EditIcon />
             <CustomText style={styles.editText}>Edit</CustomText>
           </TouchableOpacity>
         </View>
@@ -199,7 +199,7 @@ const ReviewDetailsScreen: React.FC = () => {
         <View style={styles.cardHeader}>
           <CustomText style={styles.sectionTitle}>Selected Services</CustomText>
           <TouchableOpacity onPress={handleEditServices} style={styles.editButton}>
-            <EditIcon width={16} height={16} color={COLORS.THEME_GREEN} />
+            <EditIcon />
             <CustomText style={styles.editText}>Edit</CustomText>
           </TouchableOpacity>
         </View>

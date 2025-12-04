@@ -25,8 +25,84 @@ import CustomSwitch from "../../../components/CustomSwitch";
 import { requestLocationPermission } from "./useLocPermission";
 import MapScreen, { MapScreenHandle } from "./MapScreen";
 import SvgSearchIcons from "../../../assets/auto-generated-svg-icons/SearchIcons";
+import LocationIcon from "../../../assets/auto-generated-svg-icons/LocationIcon";
+import SvgRightArrowIcon from "../../../assets/auto-generated-svg-icons/RightArrowIcon";
+import SvgLocateIcon from "../../../assets/auto-generated-svg-icons/LocateIcon";
 
 const GOOGLE_API_KEY = "AIzaSyArBDwxwEtcoQ5ssKfnZoTVwd3BJWGyiJA"; // 🔐 Replace with your valid key
+
+// Type for address components from Google Geocoding API
+type AddressComponent = {
+  long_name: string;
+  short_name: string;
+  types: string[];
+};
+
+type GeocodeResult = {
+  formatted_address: string;
+  address_components: AddressComponent[];
+};
+
+// Helper function to extract overview address (sublocality, sublocality_level_1, city)
+const extractOverviewAddress = (addressComponents: AddressComponent[]): string => {
+  const parts: string[] = [];
+
+  // Extract sublocality (e.g., "Sri Ammbal Nagar")
+  const sublocality = addressComponents.find(
+    (component) => component.types.includes('sublocality')
+  );
+  if (sublocality) {
+    parts.push(sublocality.long_name);
+  }
+
+  // Extract sublocality_level_1 (e.g., "Keelkattalai")
+  const sublocalityLevel1 = addressComponents.find(
+    (component) => component.types.includes('sublocality_level_1')
+  );
+  if (sublocalityLevel1) {
+    parts.push(sublocalityLevel1.long_name);
+  }
+
+  // Extract city (locality or administrative_area_level_2)
+  const city = addressComponents.find(
+    (component) =>
+      component.types.includes('locality') ||
+      component.types.includes('administrative_area_level_2')
+  );
+  if (city) {
+    parts.push(city.long_name);
+  }
+
+  return parts.join(', ');
+};
+
+// Helper function to fetch address from coordinates using Google Geocoding API
+// Returns both full address and overview address
+const fetchAddressFromCoordinates = async (
+  lat: number,
+  lng: number
+): Promise<{ fullAddress: string; overviewAddress: string }> => {
+  try {
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_API_KEY}`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const result: GeocodeResult = data.results[0];
+      const fullAddress = result.formatted_address;
+      const overviewAddress = extractOverviewAddress(result.address_components);
+
+      return {
+        fullAddress,
+        overviewAddress: overviewAddress || fullAddress, // Fallback to full address if overview is empty
+      };
+    }
+    throw new Error('No address found');
+  } catch (error) {
+    console.error('Reverse geocoding error:', error);
+    throw error;
+  }
+};
 
 type RouteParams = {
   onSelect?: (data: any) => void;
@@ -45,6 +121,12 @@ type RouteParams = {
     is_default?: boolean;
     formattedAddress?: string;
   };
+  existingData?: {
+    address: string;
+    address_line2?: string;
+    latitude: number;
+    longitude: number;
+  };
 } | undefined;
 
 const ProfileLocation: React.FC = () => {
@@ -54,14 +136,20 @@ const ProfileLocation: React.FC = () => {
 
   const isEditMode = params?.isEditMode || false;
   const initialAddressData = params?.addressData;
+  const existingData = params?.existingData; // Existing data from shop details
   const addressId = params?.addressId || initialAddressData?.addressId;
 
+  // City, state overview (for address_line2) - e.g., "Sri Ammbal Nagar, Keelkattalai, Chennai"
+  const [addressOverview, setAddressOverview] = useState(
+    existingData?.address_line2 || initialAddressData?.address_line2 || ""
+  );
+  // Full detailed address (for address_line1) - e.g., "55, Balamurugan Nagar, Sri Ammbal Nagar, Keelkattalai, Chennai, Tamil Nadu 600117, India"
   const [addressDetails, setAddressDetails] = useState(
-    initialAddressData?.address_line1 || initialAddressData?.formattedAddress || ""
+    existingData?.address || initialAddressData?.formattedAddress || initialAddressData?.address_line1 || ""
   );
   const [addressName, setAddressName] = useState(initialAddressData?.label || "Home");
-  const [latitude, setLatitude] = useState(initialAddressData?.latitude || 0);
-  const [longitude, setLongitude] = useState(initialAddressData?.longitude || 0);
+  const [latitude, setLatitude] = useState(existingData?.latitude || initialAddressData?.latitude || 0);
+  const [longitude, setLongitude] = useState(existingData?.longitude || initialAddressData?.longitude || 0);
   const [isDefault, setIsDefault] = useState(initialAddressData?.is_default || false);
 
   // 🔍 New Search State
@@ -71,6 +159,7 @@ const ProfileLocation: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const mapRef = useRef<MapScreenHandle | null>(null);
+  const searchInputRef = useRef<TextInput | null>(null);
 
   useEffect(() => {
     const getCurrentLocation = async () => {
@@ -78,13 +167,21 @@ const ProfileLocation: React.FC = () => {
         const granted = await requestLocationPermission();
         if (!granted) return;
         Geolocation.getCurrentPosition(
-          (position) => {
+          async (position) => {
             const { latitude, longitude } = position.coords;
             setLatitude(latitude);
             setLongitude(longitude);
             // Update map marker with current location
             if (mapRef.current) {
               mapRef.current.updateMarkerPosition(latitude, longitude);
+            }
+            // Fetch address from coordinates
+            try {
+              const { fullAddress, overviewAddress } = await fetchAddressFromCoordinates(latitude, longitude);
+              setAddressOverview(overviewAddress);
+              setAddressDetails(fullAddress);
+            } catch (error) {
+              console.error("Error fetching address:", error);
             }
           },
           (error) => console.error("Error getting current location:", error),
@@ -95,9 +192,41 @@ const ProfileLocation: React.FC = () => {
       }
     };
 
-    if (initialAddressData?.latitude && initialAddressData?.longitude) {
+    // Priority: existingData > initialAddressData > current location
+    if (existingData?.latitude && existingData?.longitude) {
+      // Use existing data from shop details
+      setLatitude(existingData.latitude);
+      setLongitude(existingData.longitude);
+
+      // Set full address (for address_line1) - existingData.address contains full address
+      setAddressDetails(existingData.address || "");
+      // Set city, state overview (for address_line2) - existingData.address_line2 contains city, state
+      setAddressOverview(existingData.address_line2 || "");
+
+      // If address_line2 is not provided, fetch both addresses from coordinates
+      if (!existingData.address_line2 || !existingData.address) {
+        fetchAddressFromCoordinates(existingData.latitude, existingData.longitude)
+          .then(({ fullAddress, overviewAddress }) => {
+            setAddressDetails(fullAddress); // Full address for address_line1
+            setAddressOverview(overviewAddress); // City, state for address_line2
+          })
+          .catch((error) => {
+            console.error("Error fetching address:", error);
+            // Fallback to existing address if fetch fails
+            if (existingData.address) {
+              setAddressDetails(existingData.address);
+              setAddressOverview(existingData.address);
+            }
+          });
+      }
+
+    } else if (initialAddressData?.latitude && initialAddressData?.longitude) {
+      // Use initial address data (from edit mode)
       setLatitude(initialAddressData.latitude);
       setLongitude(initialAddressData.longitude);
+      // Set city, state overview from address_line2, full address from address_line1 or formattedAddress
+      setAddressOverview(initialAddressData.address_line2 || "");
+      setAddressDetails(initialAddressData.formattedAddress || initialAddressData.address_line1 || "");
       // Update map marker with initial address location
       if (mapRef.current) {
         mapRef.current.updateMarkerPosition(
@@ -106,9 +235,23 @@ const ProfileLocation: React.FC = () => {
         );
       }
     } else {
+      // Fetch current location and address when screen loads (no existing data)
       getCurrentLocation();
     }
-  }, [initialAddressData]);
+  }, [existingData, initialAddressData]);
+
+  // Set map marker when map ref is ready and we have existing coordinates
+  useEffect(() => {
+    if (existingData?.latitude && existingData?.longitude) {
+      // Use a delay to ensure map component is fully mounted
+      const timer = setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.updateMarkerPosition(existingData.latitude, existingData.longitude);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [existingData]);
 
   // 🔍 Fetch autocomplete suggestions
   const fetchSuggestions = async (text: string) => {
@@ -144,6 +287,9 @@ const ProfileLocation: React.FC = () => {
   const handleSelectSuggestion = async (place: any) => {
     try {
       setShowSuggestions(false);
+      // Close keyboard when suggestion is selected
+      Keyboard.dismiss();
+
       const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${place.place_id}&fields=name,geometry,formatted_address&key=${GOOGLE_API_KEY}`;
       const res = await fetch(url);
       const data = await res.json();
@@ -151,7 +297,19 @@ const ProfileLocation: React.FC = () => {
         const { lat, lng } = data.result.geometry.location;
         setLatitude(lat);
         setLongitude(lng);
-        setAddressDetails(data.result.formatted_address || place.description);
+
+        // Fetch full geocode result to extract overview and full address
+        try {
+          const { fullAddress, overviewAddress } = await fetchAddressFromCoordinates(lat, lng);
+          setAddressOverview(overviewAddress);
+          setAddressDetails(fullAddress);
+        } catch (error) {
+          console.error("Error fetching address:", error);
+          // Fallback to formatted address if extraction fails
+          const fallbackAddress = data.result.formatted_address || place.description;
+          setAddressOverview(fallbackAddress);
+          setAddressDetails(fallbackAddress);
+        }
 
         // Update map marker position
         if (mapRef.current) {
@@ -178,7 +336,8 @@ const ProfileLocation: React.FC = () => {
     // Otherwise, proceed with normal address save flow
     if (params?.onSelect) {
       params.onSelect({
-        address: addressDetails,
+        address: addressDetails, // Full address for address_line1
+        //  address_line2: addressOverview, // City, state overview for address_line2
         latitude,
         longitude,
       });
@@ -196,7 +355,7 @@ const ProfileLocation: React.FC = () => {
   };
 
   return (
-    <LinearGradient colors={[COLORS.GRADIENT_GREEN, COLORS.WHITE]} style={styles.root}>
+    <View style={styles.root}>
       <Toolbar title="Select Location" />
 
       <KeyboardAvoidingView
@@ -213,6 +372,7 @@ const ProfileLocation: React.FC = () => {
           <View style={styles.searchRow}>
             <SvgSearchIcons />
             <TextInput
+              ref={searchInputRef}
               placeholder="Search"
               placeholderTextColor={COLORS.LOGIN_SUBTITLE}
               style={styles.searchInput}
@@ -237,7 +397,7 @@ const ProfileLocation: React.FC = () => {
                     style={styles.suggestionItem}
                     onPress={() => handleSelectSuggestion(item)}
                   >
-                    <Ionicons name="location-outline" size={18} color={COLORS.GRAY} />
+                    <SvgLocateIcon />
                     <CustomText
                       style={styles.suggestionText}
                       numberOfLines={2}
@@ -256,20 +416,62 @@ const ProfileLocation: React.FC = () => {
               ref={mapRef}
               hideConfirmButton
               googleApiKey={GOOGLE_API_KEY}
-              onLocationSelectProp={(lat, lng, address) => {
+              onLocationSelectProp={async (lat, lng, address) => {
                 setLatitude(lat);
                 setLongitude(lng);
-                // Fill Address Line 1 with the address if provided
-                if (address) {
-                  setAddressDetails(address);
+                // Fetch both overview and full address from coordinates
+                try {
+                  const { fullAddress, overviewAddress } = await fetchAddressFromCoordinates(lat, lng);
+                  setAddressOverview(overviewAddress);
+                  setAddressDetails(fullAddress);
+                } catch (error) {
+                  console.error("Error fetching address:", error);
+                  // Fallback if address is provided
+                  if (address) {
+                    setAddressOverview(address);
+                    setAddressDetails(address);
+                  }
                 }
               }}
             />
           </View>
 
+
+
           {/* 🏠 Address Form */}
           <View style={styles.formCard}>
-            <CustomText style={styles.label}>Address Line 1*</CustomText>
+
+            {/* <CustomText style={styles.label}>Address*</CustomText>
+            <TouchableOpacity
+              style={styles.defaultLocBox}
+              onPress={() => {
+                // Focus the search input and open keyboard
+                searchInputRef.current?.focus();
+              }}
+              activeOpacity={0.7}
+            >
+              <LocationIcon width={14} height={18} />
+              <View style={styles.inputContainer}>
+                {addressOverview ? (
+                  <CustomText
+                    style={styles.inputText}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {addressOverview}
+                  </CustomText>
+                ) : (
+                  <CustomText style={styles.inputPlaceholder}>
+                    Address is fetching...
+                  </CustomText>
+                )}
+              </View>
+              <SvgRightArrowIcon />
+            </TouchableOpacity> */}
+
+
+
+            <CustomText style={styles.label}>Address Details*</CustomText>
             <View style={styles.inputBoxMultiline}>
               <TextInput
                 value={addressDetails}
@@ -280,16 +482,7 @@ const ProfileLocation: React.FC = () => {
               />
             </View>
 
-            {/* <CustomText style={styles.label}>Address Line 2</CustomText>
-            <View style={styles.inputBoxMultiline}>
-              <TextInput
-                value={addressLine2}
-                onChangeText={setAddressLine2}
-                placeholder="Apartment, suite, etc. (optional)"
-                multiline
-                style={styles.multilineInput}
-              />
-            </View> */}
+
 
             {/* <CustomText style={styles.label}>Address Name*</CustomText>
             <View style={styles.inputBox}>
@@ -327,14 +520,14 @@ const ProfileLocation: React.FC = () => {
           />
         </View>
       </KeyboardAvoidingView>
-    </LinearGradient>
+    </View>
   );
 };
 
 export default ProfileLocation;
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: COLORS.WHITE },
   scrollContent: { paddingBottom: 10 },
   searchRow: {
     flexDirection: "row",
@@ -387,6 +580,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
   },
+  defaultLocBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER_INPUT,
+    backgroundColor: COLORS.CARD_BACKGROUND,
+    borderRadius: 16,
+    minHeight: 48,
+  },
+
   multilineInput: {
     textAlign: "left",
     fontSize: 16,
@@ -412,13 +619,43 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginTop: 16,
   },
-  input: {
-    height: 48,
-    paddingHorizontal: 12,
+  inputContainer: {
+    flex: 1,
+    marginLeft: 8,
+    marginRight: 8,
+    justifyContent: 'center',
+    minWidth: 0, // Important for proper text truncation in flex containers
+  },
+  inputText: {
     color: COLORS.BOTTOM_BLACK,
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
     fontWeight: "500",
+    textAlign: 'left',
+    includeFontPadding: false,
+  },
+  inputPlaceholder: {
+    color: COLORS.LOGIN_SUBTITLE,
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontWeight: "400",
+    textAlign: 'left',
+    includeFontPadding: false,
+  },
+  input: {
+    flex: 1,
+    marginLeft: 8,
+    marginRight: 8,
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+    color: COLORS.BOTTOM_BLACK,
+    fontSize: 16,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
+    fontWeight: "500",
+    textAlign: 'left',
+    textAlignVertical: 'center',
+    includeFontPadding: false,
+    minWidth: 0, // Important for proper text truncation in flex containers
   },
   saveWrapper: { padding: 16 },
   saveBtn: {

@@ -16,6 +16,7 @@ interface ServiceItemCardProps {
     isArrowVisible?: boolean;
     showCheckbox?: boolean;
     showItemsCount?: boolean;
+    isPricing?: boolean;
 }
 
 const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
@@ -27,6 +28,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
     isArrowVisible = true,
     showCheckbox = true,
     showItemsCount = false,
+    isPricing = false,
 }) => {
     // Determine if checkbox is in minus state (non-editable)
     const isMinus = !isVerified && item.is_active && !item.is_approved;
@@ -42,7 +44,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
     const textIsSelected = !isMinus && isSelected;
 
     return (
-        <TouchableOpacity onPress={() => onPress(item)} activeOpacity={0.7}>
+        <TouchableOpacity onPress={() => isPricing ? onPress(item) : onToggle(item.service_id)} activeOpacity={0.7}>
             <View
                 style={[
                     styles.serviceOptionCard,
@@ -102,7 +104,7 @@ const ServiceItemCard: React.FC<ServiceItemCardProps> = ({
 
             </View>
             {
-                !isVerified && (
+                !isVerified && item.is_active && (
                     <CustomText style={styles.underVerificationText}>
                         Under Verification
                     </CustomText>

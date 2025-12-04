@@ -4,7 +4,6 @@ import { View, Text } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useNavigation } from '@react-navigation/native';
-import HomeScreen from '../screens/Home';
 import OrdersScreen from '../screens/Orders';
 import ProfileScreen from '../screens/Profile';
 import SvgSelectedOrderIcon from '../assets/auto-generated-svg-icons/SelectedOrdersIcon';
@@ -20,7 +19,6 @@ import { useDialogStore } from '../apiService/store/useDialogStore';
 import { showErrorToast } from '../utils/Toast';
 import ServiceAddedDialog from '../screens/Services/ServiceAddedDialog';
 import { LoginUserStatus } from '../constants/tripStatus';
-import { isNetworkAvailable } from '../utils/network';
 
 export type BottomTabParamList = {
   Home: undefined;

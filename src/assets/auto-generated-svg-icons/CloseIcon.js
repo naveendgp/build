@@ -1,24 +1,19 @@
 import * as React from 'react';
 import Svg, { Path } from 'react-native-svg';
-
 const SvgCloseIcon = props => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
-    width={16}
-    height={16}
+    width={24}
+    height={24}
     fill="none"
-    viewBox="0 0 16 16"
     {...props}
   >
     <Path
-      stroke="currentColor"
+      stroke="#000"
       strokeLinecap="round"
       strokeLinejoin="round"
-      strokeWidth={2}
-      d="M12 4 4 12M4 4l8 8"
+      d="M18 6 6 18M6 6l12 12"
     />
   </Svg>
 );
-
 export default SvgCloseIcon;
-

@@ -14,6 +14,21 @@ export interface LoginResponse {
   message: string;
 }
 
+export interface ReSendOtpPayload {
+  phone: string;
+}
+
+export interface ReSendOtpResponse {
+  status: boolean;
+  data: null;
+  message: string;
+}
+
+export interface LogoutResponse {
+  status: boolean;
+  message: string;
+}
+
 export interface OtpPayload {
   phone: string;
   otp: string;
@@ -67,6 +82,7 @@ export interface RegisterCompletePayload {
   shop_license_number: string;
   aadhaar_number: string;
   address_line1: string;
+  address_line2?: string;
   pincode: string;
   landmark: string;
   latitude: number;

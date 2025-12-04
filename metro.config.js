@@ -18,14 +18,14 @@ const config = {
     resolveRequest: (context, realModuleName, platform, moduleName) => {
       // Handle Node.js specific files in engine.io-client
       // Check both the realModuleName (resolved path) and moduleName (requested path)
-      const checkModule = (name) => {
+      const checkModule = name => {
         if (!name || typeof name !== 'string') return false;
         // Check for .node.js files in engine.io-client
         return (
           (name.includes('engine.io-client') || name.includes('transports')) &&
           (name.includes('websocket.node.js') ||
-           name.includes('polling-xhr.node.js') ||
-           name.endsWith('.node.js'))
+            name.includes('polling-xhr.node.js') ||
+            name.endsWith('.node.js'))
         );
       };
 
@@ -38,7 +38,7 @@ const config = {
         ) {
           mockFileName = 'polling-xhr.node.js';
         }
-        
+
         // Redirect to mock file
         const mockPath = path.resolve(__dirname, 'mocks', mockFileName);
         return {
@@ -46,21 +46,30 @@ const config = {
           filePath: mockPath,
         };
       }
-      
+
       // Use default resolution for other modules
       if (defaultResolveRequest) {
-        return defaultResolveRequest(context, realModuleName, platform, moduleName);
+        return defaultResolveRequest(
+          context,
+          realModuleName,
+          platform,
+          moduleName,
+        );
       }
-      return context.resolveRequest(context, realModuleName, platform, moduleName);
+      return context.resolveRequest(
+        context,
+        realModuleName,
+        platform,
+        moduleName,
+      );
     },
   },
 };
 
 module.exports = mergeConfig(defaultConfig, config);
 
-// auto genrate svg icon command
-//npx @svgr/cli --native "*.svg" --out-dir ../../auto-generated-svg-icons
+// auto genrate svg icon command script
+//npm run svg-icons
 
 //DebugBuild
-//npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
-// cd android && ./gradlew assembleDebug
+//npm run build:debug

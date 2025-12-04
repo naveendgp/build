@@ -19,7 +19,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.CARD_BACKGROUND,
     width: 80,
     height: 80,
-    borderRadius: 40, 
+    borderRadius: 40,
   },
   profilePicPlaceholder: {
     width: 80,
@@ -28,7 +28,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.BOTTOM_BLACK,
     justifyContent: 'center',
     alignItems: 'center',
-    
+
   },
   profilePic: {
     width: 80,
@@ -37,22 +37,22 @@ export default StyleSheet.create({
   },
   plusIconContainer: {
     position: 'absolute',
-     top:48,
-     left:48,
+    top: 48,
+    left: 48,
     width: 32,
     height: 32,
     borderRadius: 6,
     backgroundColor: COLORS.CARD_BACKGROUND,
     justifyContent: 'center',
     alignItems: 'center',
-    
+
   },
   inputContainer: {
     marginBottom: 16,
   },
   dateInputContainer: {
     marginBottom: 16,
-    
+
   },
   dateLabel: {
     fontSize: 16,
@@ -60,7 +60,7 @@ export default StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_MEDIUM,
     color: COLORS.INPUT_TEXT,
     marginBottom: 8,
-    
+
   },
   dateInput: {
     flexDirection: 'row',
@@ -252,7 +252,7 @@ export default StyleSheet.create({
     marginBottom: 12,
   },
   uploadButton: {
-     alignItems: 'center',
+    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
@@ -260,13 +260,13 @@ export default StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: COLORS.CARD_BACKGROUND,
     gap: 6,
-    height:80
+    height: 80
   },
   uploadText: {
     fontSize: 16,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     color: COLORS.INPUT_TEXT,
-    fontWeight:'400'
+    fontWeight: '400'
   },
   uploadedFileContainer: {
     flexDirection: 'row',
@@ -293,6 +293,13 @@ export default StyleSheet.create({
   },
   removeButton: {
     padding: 4,
+  },
+  errorText: {
+    fontSize: 12,
+    fontFamily: FONTFAMILY.INTER_REGULAR,
+    color: COLORS.ERROR,
+    marginTop: 4,
+    marginLeft: 4,
   },
 });
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   SafeAreaView,
@@ -9,7 +9,9 @@ import {
   ScrollView,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import styles from './styles';
 import CustomBtn from '../../components/CustomBtn';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,11 +28,13 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { RegisterCompletePayload, RegisterCompleteResponse, OperatingHours } from '../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 import { showErrorToast, showSuccessToast } from '../../utils/Toast';
+import { getMimeTypeFromExtension } from '../../utils/fileUtils';
 import { COLORS } from '../../constants';
 import CustomText from '../../components/Text';
 import { getProfile } from '../../apiService/api/profileApi';
 import { VendorProfile } from '../../apiService/types/profileTypes';
 import { registerComplete } from '../../apiService/api/authApi';
+import DiscardDialog from '../../components/DiscardDialog';
 
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -50,7 +54,10 @@ const VendorVerificationScreen: React.FC = () => {
   const [step, setStep] = useState(initialStep);
 
   // Store methods
-  const { vendor: storeVendor, shop: storeShop, bank: storeBank, services: storeServices, setVendorData, setShopData, setBankData, setServicesData } = useVendorVerificationStore();
+  const { vendor: storeVendor, shop: storeShop, bank: storeBank, services: storeServices, setVendorData, setShopData, setBankData, setServicesData, clearAll } = useVendorVerificationStore();
+
+  // State for discard dialog
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
   // Fetch profile data when isReupload is true
   const { data: profileData } = useQuery<VendorProfile>({
@@ -114,6 +121,7 @@ const VendorVerificationScreen: React.FC = () => {
           gst_number: profileData.gst_number || '',
           shop_license_number: profileData.shop_license_number || '',
           address: profileData.address?.address_line1 || '',
+          address_line2: profileData.address?.address_line2 || '',
           city: profileData.address?.city || '',
           state: profileData.address?.state || '',
           pincode: profileData.address?.pincode || '',
@@ -161,6 +169,7 @@ const VendorVerificationScreen: React.FC = () => {
         gst_number: profileData.gst_number || '',
         shop_license_number: profileData.shop_license_number || '',
         address: profileData.address?.address_line1 || '',
+        address_line2: profileData.address?.address_line2 || '',
         city: profileData.address?.city || '',
         state: profileData.address?.state || '',
         pincode: profileData.address?.pincode || '',
@@ -210,6 +219,7 @@ const VendorVerificationScreen: React.FC = () => {
       gst_number: '',
       shop_license_number: '',
       address: '',
+      address_line2: '',
       city: '',
       state: '',
       pincode: '',
@@ -270,27 +280,6 @@ const VendorVerificationScreen: React.FC = () => {
     return {};
   };
 
-  // Helper function to get MIME type from file extension
-  const getMimeTypeFromExtension = (fileName: string): string => {
-    if (!fileName) return 'image/jpeg';
-    const extension = fileName.toLowerCase().split('.').pop();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      case 'pdf':
-        return 'application/pdf';
-      default:
-        return 'image/jpeg'; // Default to image format
-    }
-  };
-
   // Helper function to normalize file object
   const normalizeFile = (file: any, defaultName: string, defaultType: string = 'image/jpeg') => {
     if (!file) return undefined;
@@ -333,6 +322,7 @@ const VendorVerificationScreen: React.FC = () => {
         shop_license_number: payload.shop_license_number,
         aadhaar_number: payload.aadhaar_number,
         address_line1: payload.address_line1,
+        address_line2: payload.address_line2,
         pincode: payload.pincode,
         landmark: payload.landmark,
         latitude: payload.latitude,
@@ -378,6 +368,30 @@ const VendorVerificationScreen: React.FC = () => {
   });
 
   const handleNext = () => {
+    // If button is disabled, trigger validation to show errors
+    if (isNextButtonDisabled) {
+      if (step === 1) {
+        const vendorErrors = validateVendor(data.vendor);
+        setFormErrors(prev => ({ ...prev, vendor: vendorErrors }));
+        // Scroll to top to show errors
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 2) {
+        const shopErrors = validateShop(data.shop);
+        setFormErrors(prev => ({ ...prev, shop: shopErrors }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 3) {
+        const bankErrors = validateBank(data.bank);
+        setFormErrors(prev => ({ ...prev, bank: bankErrors }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      } else if (step === 4) {
+        const servicesError = validateServices(data.services);
+        setFormErrors(prev => ({ ...prev, services: servicesError }));
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+      }
+      return;
+    }
+
+    // Normal flow when button is enabled
     if (step === 1) {
       const vendorErrors = validateVendor(data.vendor);
       setFormErrors(prev => ({ ...prev, vendor: vendorErrors }));
@@ -421,9 +435,186 @@ const VendorVerificationScreen: React.FC = () => {
   };
 
   const handleBack = () => {
+    // If on step 1, show discard dialog
+    if (step === 1) {
+      setShowDiscardDialog(true);
+      return;
+    }
+    // Otherwise, go back one step
     setStep(prev => Math.max(prev - 1, 1));
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
+
+  const handleConfirmDiscard = () => {
+    // Clear all vendor verification data from store
+    clearAll();
+    // Reset local form data
+    setData({
+      vendor: {
+        owner_name: '',
+        email: '',
+        address: '',
+        aadhaar_no: '',
+        pan_number: '',
+        mobile: mobileNumber || '',
+        date_of_birth: '',
+        profile_pic: null,
+        aadhaar_file: null,
+        pan_file: null,
+      },
+      shop: {
+        shop_name: '',
+        gst_number: '',
+        shop_license_number: '',
+        address: '',
+        address_line2: '',
+        city: '',
+        state: '',
+        pincode: '',
+        shop_time: '',
+        landmark: '',
+        latitude: '',
+        longitude: '',
+        contact_number: '',
+        shop_front_photo: null,
+        business_hours: '',
+        auto_receive_orders: false,
+        repeat_days: '',
+      },
+      bank: {
+        account_number: '',
+        account_holder_name: '',
+        ifsc_code: '',
+        bank_name: '',
+        upi_id: '',
+        cancelled_cheque: null,
+      },
+      services: {
+        selectedServices: [],
+      },
+    });
+    // Reset form errors
+    setFormErrors({
+      vendor: {},
+      shop: {},
+      bank: {},
+      services: '',
+    });
+    setShowDiscardDialog(false);
+    // Navigate back
+    // navigation.goBack();
+    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+  };
+
+  const handleCancelDiscard = () => {
+    setShowDiscardDialog(false);
+  };
+
+  // Handle back button/gesture navigation
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // If on step 2, 3, or 4, go back one step
+        if (step > 1) {
+          setStep(prev => Math.max(prev - 1, 1));
+          setCurrentStep(prev => Math.max(prev - 1, 1));
+          return true; // Prevent default back action
+        }
+        // If on step 1, show discard dialog
+        if (step === 1) {
+          setShowDiscardDialog(true);
+          return true; // Prevent default back action
+        }
+        return false;
+      };
+
+      // Add event listener
+      const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      // Cleanup
+      return () => backHandler.remove();
+    }, [step])
+  );
+
+  // Functions to clear specific field errors when user starts typing
+  const clearVendorError = (field: keyof VendorErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      vendor: { ...prev.vendor, [field]: undefined },
+    }));
+  };
+
+  const clearShopError = (field: keyof ShopErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      shop: { ...prev.shop, [field]: undefined },
+    }));
+  };
+
+  const clearBankError = (field: keyof BankErrors) => {
+    setFormErrors(prev => ({
+      ...prev,
+      bank: { ...prev.bank, [field]: undefined },
+    }));
+  };
+
+  // Helper functions to check if mandatory fields are filled (without full validation)
+  const isVendorStepValid = useCallback(() => {
+    const vendor = data.vendor;
+    const hasOwnerName = vendor.owner_name?.trim();
+    const hasMobile = vendor.mobile?.trim() && /^\d{10}$/.test(vendor.mobile.trim());
+    const hasDocument = !!(vendor.aadhaar_file || vendor.pan_file);
+
+    return hasOwnerName && hasMobile && hasDocument;
+  }, [data.vendor]);
+
+  const isShopStepValid = useCallback(() => {
+    const shop = data.shop;
+    const hasShopName = shop.shop_name?.trim();
+    const hasAddress = shop.address?.trim();
+    const hasContactNumber = shop.contact_number?.trim() && /^\d{10}$/.test(shop.contact_number.trim());
+    const hasShopPhoto = shop.shop_front_photo;
+    const hasBusinessHours = shop.business_hours?.trim();
+
+    return hasShopName && hasAddress && hasContactNumber && hasShopPhoto && hasBusinessHours;
+  }, [data.shop]);
+
+  const isBankStepValid = useCallback(() => {
+    const bank = data.bank;
+    // Check mandatory fields: account_holder_name, account_number, bank_name, ifsc_code, cancelled_cheque
+    const hasAccountHolderName = bank.account_holder_name?.trim();
+    const accountNumber = bank.account_number?.trim();
+    const hasAccountNumber = accountNumber && /^\d{9,18}$/.test(accountNumber);
+    const hasBankName = bank.bank_name?.trim();
+    const ifscCode = bank.ifsc_code?.trim();
+    const hasIfscCode = ifscCode && /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(ifscCode);
+    const hasCancelledCheque = bank.cancelled_cheque;
+
+    return hasAccountHolderName && hasAccountNumber && hasBankName && hasIfscCode && hasCancelledCheque;
+  }, [data.bank]);
+
+  const isServicesStepValid = useCallback(() => {
+    // Check if at least one service is selected
+    return data.services.selectedServices.length > 0;
+  }, [data.services.selectedServices]);
+
+  // Determine if Next button should be disabled based on current step
+  const isNextButtonDisabled = useMemo(() => {
+    if (mutation.isPending) return true;
+
+    switch (step) {
+      case 1:
+        return !isVendorStepValid();
+      case 2:
+        return !isShopStepValid();
+      case 3:
+        return !isBankStepValid();
+      case 4:
+        return !isServicesStepValid();
+      default:
+        return false;
+    }
+  }, [step, isVendorStepValid, isShopStepValid, isBankStepValid, isServicesStepValid, mutation.isPending]);
 
 
   return (
@@ -494,6 +685,7 @@ const VendorVerificationScreen: React.FC = () => {
                 vendorAddressRef={vendorAddressRef}
                 isMobileFromOtp={!!mobileNumber}
                 errors={formErrors.vendor}
+                clearError={clearVendorError}
               />
             )}
             {step === 2 && (
@@ -501,6 +693,7 @@ const VendorVerificationScreen: React.FC = () => {
                 shop={data.shop}
                 setShop={val => setData(d => ({ ...d, shop: val }))}
                 errors={formErrors.shop}
+                clearError={clearShopError}
               />
             )}
             {step === 3 && (
@@ -508,6 +701,7 @@ const VendorVerificationScreen: React.FC = () => {
                 bank={data.bank}
                 setBank={val => setData(d => ({ ...d, bank: val }))}
                 errors={formErrors.bank}
+                clearError={clearBankError}
               />
             )}
             {step === 4 && (
@@ -533,8 +727,11 @@ const VendorVerificationScreen: React.FC = () => {
               <CustomBtn
                 title="Next"
                 onPress={handleNext}
-                disabled={mutation.isPending}
-                style={step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton}
+                disabled={mutation.isPending} // Only disable when mutation is pending
+                style={[
+                  step === 1 ? { ...styles.nextButton, ...styles.nextButtonFullWidth } : styles.nextButton,
+                  isNextButtonDisabled && styles.nextButtonDisabled, // Visual indication only
+                ] as any}
                 textStyle={styles.nextButtonText}
               />
             </View>
@@ -547,6 +744,19 @@ const VendorVerificationScreen: React.FC = () => {
           <ActivityIndicator size="large" color="#fff" />
         </View>
       )}
+
+      {/* Discard Dialog for step 1 back navigation */}
+      <DiscardDialog
+        visible={showDiscardDialog}
+        title="Discard Changes?"
+        subtitle="Are you sure you want to go back? All entered data will be cleared."
+        primaryButtonText="Discard"
+        secondaryButtonText="Cancel"
+        onPrimaryButtonPress={handleConfirmDiscard}
+        onSecondaryButtonPress={handleCancelDiscard}
+        onClose={handleCancelDiscard}
+        closable={true}
+      />
     </SafeAreaView>
   );
 };
