@@ -329,7 +329,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <ProfileInput
           label="GST Number"
-          required
           inputType="normal"
           value={shop.gst_number || ''}
           onChangeText={val => {
@@ -397,7 +396,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <ProfileInput
           label="Pin Code"
-          required
           inputType="normal"
           value={shop.pincode || ''}
           keyboardType="number-pad"
@@ -412,7 +410,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <ProfileInput
           label="Landmark"
-          required
           inputType="normal"
           value={shop.landmark || ''}
           onChangeText={val => {
@@ -488,7 +485,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             required
             inputType="normal"
             value={businessHoursDisplay || ''}
-            placeholder="9 AM - 6 PM"
+            placeholder="Enter Business Hours"
             onChangeText={() => { }}
             containerStyle={{ marginBottom: 16, }}
             isEditable={false}

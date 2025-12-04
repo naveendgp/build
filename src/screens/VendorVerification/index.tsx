@@ -560,27 +560,22 @@ const VendorVerificationScreen: React.FC = () => {
   // Helper functions to check if mandatory fields are filled (without full validation)
   const isVendorStepValid = useCallback(() => {
     const vendor = data.vendor;
-    // Check mandatory fields: owner_name, mobile (Aadhaar and PAN are optional)
     const hasOwnerName = vendor.owner_name?.trim();
     const hasMobile = vendor.mobile?.trim() && /^\d{10}$/.test(vendor.mobile.trim());
+    const hasDocument = !!(vendor.aadhaar_file || vendor.pan_file);
 
-    return hasOwnerName && hasMobile;
+    return hasOwnerName && hasMobile && hasDocument;
   }, [data.vendor]);
 
   const isShopStepValid = useCallback(() => {
     const shop = data.shop;
-    // Check mandatory fields: shop_name, gst_number, address, contact_number, shop_front_photo, business_hours, pincode, landmark
     const hasShopName = shop.shop_name?.trim();
-    const gstNumber = shop.gst_number?.trim();
-    const hasGstNumber = gstNumber && /^\d{2}[A-Z0-9]{10}[0-9]Z[0-9]$/i.test(gstNumber);
     const hasAddress = shop.address?.trim();
     const hasContactNumber = shop.contact_number?.trim() && /^\d{10}$/.test(shop.contact_number.trim());
     const hasShopPhoto = shop.shop_front_photo;
     const hasBusinessHours = shop.business_hours?.trim();
-    const hasPincode = shop.pincode?.trim() && /^\d{6}$/.test(shop.pincode.trim());
-    const hasLandmark = shop.landmark?.trim();
 
-    return hasShopName && hasGstNumber && hasAddress && hasContactNumber && hasShopPhoto && hasBusinessHours && hasPincode && hasLandmark;
+    return hasShopName && hasAddress && hasContactNumber && hasShopPhoto && hasBusinessHours;
   }, [data.shop]);
 
   const isBankStepValid = useCallback(() => {

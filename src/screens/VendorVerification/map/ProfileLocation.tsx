@@ -337,7 +337,7 @@ const ProfileLocation: React.FC = () => {
     if (params?.onSelect) {
       params.onSelect({
         address: addressDetails, // Full address for address_line1
-        address_line2: addressOverview, // City, state overview for address_line2
+        //  address_line2: addressOverview, // City, state overview for address_line2
         latitude,
         longitude,
       });
@@ -441,7 +441,7 @@ const ProfileLocation: React.FC = () => {
           {/* 🏠 Address Form */}
           <View style={styles.formCard}>
 
-            <CustomText style={styles.label}>Address*</CustomText>
+            {/* <CustomText style={styles.label}>Address*</CustomText>
             <TouchableOpacity
               style={styles.defaultLocBox}
               onPress={() => {
@@ -467,7 +467,7 @@ const ProfileLocation: React.FC = () => {
                 )}
               </View>
               <SvgRightArrowIcon />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
 
 

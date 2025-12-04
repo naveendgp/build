@@ -2,7 +2,7 @@ export interface VendorErrors {
   owner_name?: string;
   mobile?: string;
   email?: string;
-  // aadhaar_or_pan removed - Aadhaar and PAN are optional
+  aadhaar_or_pan?: string;
 }
 
 export interface ShopErrors {
@@ -38,8 +38,11 @@ export const useVendorValidation = () => {
     } else if (!/^\d{10}$/.test(vendor.mobile)) {
       errors.mobile = 'Enter a valid 10-digit mobile number';
     }
-    // Aadhaar and PAN are optional (not mandatory)
-    // Removed validation requirement for aadhaar_or_pan
+    const hasAadhaarDoc = !!vendor.aadhaar_file;
+    const hasPanDoc = !!vendor.pan_file;
+    if (!hasAadhaarDoc && !hasPanDoc) {
+      errors.aadhaar_or_pan = 'Upload Aadhaar or PAN document';
+    }
     if (vendor.email?.trim() && !/^\S+@\S+\.\S+$/.test(vendor.email.trim())) {
       errors.email = 'Enter a valid email address';
     }
@@ -51,12 +54,8 @@ export const useVendorValidation = () => {
     if (!shop.shop_name?.trim()) {
       errors.shop_name = 'Shop name is required';
     }
-    // GST number is mandatory - 15 characters: State code (2 digits) + PAN (10 alphanumeric) + Entity number (1 digit) + Z (1 letter) + Checksum (1 digit)
-    if (!shop.gst_number?.trim()) {
-      errors.gst_number = 'GST number is required';
-    } else {
+    if (shop.gst_number?.trim()) {
       const gstNumber = shop.gst_number.trim().toUpperCase();
-      // Format: 2 digits + 10 alphanumeric + 1 digit + Z + 1 digit = 15 characters
       if (!/^\d{2}[A-Z0-9]{10}[0-9]Z[0-9]$/.test(gstNumber)) {
         errors.gst_number = 'Enter a valid GST number (Example: 22AAAAA0000A1Z5)';
       }
@@ -75,13 +74,8 @@ export const useVendorValidation = () => {
     if (!shop.business_hours?.trim()) {
       errors.business_hours = 'Shop timings are required';
     }
-    if (!shop.pincode?.trim()) {
-      errors.pincode = 'Pincode is required';
-    } else if (!/^\d{6}$/.test(shop.pincode.trim())) {
+    if (shop.pincode?.trim() && !/^\d{6}$/.test(shop.pincode.trim())) {
       errors.pincode = 'Pincode must be 6 digits';
-    }
-    if (!shop.landmark?.trim()) {
-      errors.landmark = 'Landmark is required';
     }
     return errors;
   };
