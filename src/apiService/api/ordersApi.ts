@@ -35,12 +35,14 @@ export const acceptOrder = async (
   return response.data;
 };
 
+
+
 export const completeOrder = async (
   orderId: string,
 ): Promise<CompleteOrderResponse> => {
-  const response = await api.get(API_ENDPOINTS.COMPLETE_ORDER, {
-    params: { order_id: orderId },
-  });
+  const response = await api.patch(
+    `${API_ENDPOINTS.COMPLETE_ORDER}/${orderId}`
+  );
   return response.data;
 };
 

@@ -58,7 +58,7 @@ export const useVendorValidation = () => {
       const gstNumber = shop.gst_number.trim().toUpperCase();
       // Format: 2 digits + 10 alphanumeric + 1 digit + Z + 1 digit = 15 characters
       if (!/^\d{2}[A-Z0-9]{10}[0-9]Z[0-9]$/.test(gstNumber)) {
-        errors.gst_number = 'Enter a valid GST number (15 characters: XXAAAAA0000AZ0)';
+        errors.gst_number = 'Enter a valid GST number (Example: 22AAAAA0000A1Z5)';
       }
     }
     if (!shop.address?.trim()) {

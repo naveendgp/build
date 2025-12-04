@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useCallback, useEffect } from 'react';
 import {
     View,
-    ScrollView,
+    FlatList,
     Text,
     ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AxiosError } from 'axios';
 import Toolbar from '../../../components/Toolbar';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
@@ -15,6 +16,9 @@ import StarIcon from '../../../assets/auto-generated-svg-icons/StarIcon';
 import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
 import EmptyScreen from '../../../components/EmptyScreen';
+import { Review } from '../../../apiService/types/profileTypes';
+import { useVendorReviewsPagination } from './hooks/useVendorReviewsPagination';
+import { showErrorToast } from '../../../utils/Toast';
 
 type ShopReviewsNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -65,24 +69,57 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 
 const ShopReviewsScreen: React.FC = () => {
     const navigation = useNavigation<ShopReviewsNavProp>();
-    const { profile, isLoading } = useProfileStore();
-    const [isLoadingReviews, setIsLoadingReviews] = useState(false);
-    const [isLoadingMoreReviews, setIsLoadingMoreReviews] = useState(false);
+    const { profile } = useProfileStore();
 
-    // Use mock data if profile data is not available
-    const reviewsData = profile?.rating?.reviews && profile.rating.reviews.length > 0
-        ? profile.rating.reviews
-        : [];
+    // Fetch reviews using useQuery with pagination
+    const {
+        data: reviews,
+        isLoading: isLoadingReviews,
+        isError,
+        error,
+        hasNextPage,
+        loadMore,
+        isFetchingMore: isLoadingMoreReviews,
+        total,
+        refetch,
+        isRefetching,
+    } = useVendorReviewsPagination(true, 10);
+
+    // Handle error - show toast notification
+    useEffect(() => {
+        if (isError && error) {
+            const errorMessage = (error as AxiosError<{ message: string }>).response?.data?.message || (error as Error).message || 'Failed to load reviews';
+            showErrorToast(errorMessage);
+        }
+    }, [isError, error]);
+
+    // Load more when reaching end
+    const handleEndReached = useCallback(() => {
+        if (hasNextPage && !isLoadingMoreReviews && !isLoadingReviews) {
+            loadMore();
+        }
+    }, [hasNextPage, isLoadingMoreReviews, isLoadingReviews, loadMore]);
+
+    // Type for transformed review item
+    type TransformedReview = {
+        id: string;
+        reviewerName: string;
+        reviewDate: string;
+        reviewService: string;
+        rating: number;
+        reviewText: string;
+        avatarText: string;
+    };
 
     // Transform reviews data
-    const transformedReviews = useMemo(() => {
-        if (!reviewsData || !Array.isArray(reviewsData)) {
+    const transformedReviews = useMemo<TransformedReview[]>(() => {
+        if (!reviews || !Array.isArray(reviews)) {
             return [];
         }
 
-        return reviewsData.map((review: any, index: number) => {
-            // Extract reviewer name (could be from review.user_name, review.customer_name, etc.)
-            const reviewerName = review.user_name || review.customer_name || review.name || `Customer ${index + 1}`;
+        return reviews.map((review: Review) => {
+            // Extract reviewer name
+            const reviewerName = review.user_id?.name || 'Customer';
 
             // Get first letter for avatar
             const avatarText = reviewerName.charAt(0).toUpperCase();
@@ -94,19 +131,19 @@ const ShopReviewsScreen: React.FC = () => {
                     month: 'short',
                     day: 'numeric'
                 })
-                : review.date || 'N/A';
+                : 'N/A';
 
             // Get service name
-            const reviewService = review.service_name || review.service || 'Service';
+            const reviewService = review.serviceName || 'Service';
 
             // Get rating
-            const rating = review.rating || review.star_rating || 0;
+            const rating = review.rating || 0;
 
             // Get review text
-            const reviewText = review.comment || review.review || review.feedback || 'No comment provided.';
+            const reviewText = review.comment || 'No comment provided.';
 
             return {
-                id: review._id || review.id || `review-${index}`,
+                id: review._id,
                 reviewerName,
                 reviewDate,
                 reviewService,
@@ -115,9 +152,9 @@ const ShopReviewsScreen: React.FC = () => {
                 avatarText,
             };
         });
-    }, [reviewsData]);
+    }, [reviews]);
 
-    // Display data for rating summary - use mock data if profile data is not available
+    // Display data for rating summary
     const displayData = useMemo(() => {
         if (profile?.rating?.average && profile.rating.total_reviews) {
             return {
@@ -125,83 +162,136 @@ const ShopReviewsScreen: React.FC = () => {
                 totalReviews: profile.rating.total_reviews,
             };
         }
+        // Fallback to total from API if profile data not available
+        return {
+            rating: profile?.rating?.average || 0,
+            totalReviews: total || 0,
+        };
+    }, [profile?.rating, total]);
 
-    }, [profile?.rating]);
+    // Render review item
+    const renderReviewItem = useCallback(({ item, index }: { item: TransformedReview; index: number }) => {
+        return (
+            <View style={index > 0 ? { marginTop: 12 } : undefined}>
+                <ReviewCard
+                    reviewerName={item.reviewerName}
+                    reviewDate={item.reviewDate}
+                    reviewService={item.reviewService}
+                    rating={item.rating}
+                    reviewText={item.reviewText}
+                    avatarText={item.avatarText}
+                />
+            </View>
+        );
+    }, []);
+
+    // Key extractor
+    const keyExtractor = useCallback((item: TransformedReview) => item.id, []);
+
+    // List header component (rating summary)
+    const renderHeader = useCallback(() => {
+        if (isLoadingReviews) {
+            return (
+                <View style={[styles.reviewSection, { padding: 20, alignItems: 'center' }]}>
+                    <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
+                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
+                        Loading reviews...
+                    </Text>
+                </View>
+            );
+        }
+
+        if (transformedReviews.length === 0) {
+            return null;
+        }
+
+        return (
+            <View style={styles.reviewSection}>
+                <Text style={styles.sectionTitle2}>Reviews</Text>
+                <View style={styles.ratingSummary}>
+                    <View style={styles.ratingContainer}>
+                        <Text style={styles.largeRatingText}>
+                            {displayData?.rating?.toFixed(1) || '0.0'}
+                        </Text>
+                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        <Text style={styles.ratingCount}>
+                            By {displayData?.totalReviews || 0}+
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    }, [isLoadingReviews, transformedReviews.length, displayData]);
+
+    // List footer component (loading more indicator)
+    const renderFooter = useCallback(() => {
+        if (!hasNextPage) {
+            return <View style={{ height: 32 }} />;
+        }
+
+        if (isLoadingMoreReviews) {
+            return (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
+                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
+                        Loading more reviews...
+                    </Text>
+                </View>
+            );
+        }
+
+        return <View style={{ height: 32 }} />;
+    }, [hasNextPage, isLoadingMoreReviews]);
+
+    // Empty component
+    const renderEmpty = useCallback(() => {
+        if (isLoadingReviews) {
+            return (
+                <View style={[styles.reviewSection, styles.reviewSectionEmpty, { padding: 20, alignItems: 'center' }]}>
+                    <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
+                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
+                        Loading reviews...
+                    </Text>
+                </View>
+            );
+        }
+
+        return (
+            <View style={[styles.reviewSection, styles.reviewSectionEmpty]}>
+                <EmptyScreen
+                    title="No reviews found"
+                    subtitle="No reviews found for this shop."
+                />
+            </View>
+        );
+    }, [isLoadingReviews]);
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
             <Toolbar title="Shop Review" />
 
-            <ScrollView
-                style={styles.content}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={transformedReviews.length === 0
-                    ? { flexGrow: 1, paddingBottom: 32 }
-                    : { paddingBottom: 32 }
+            <FlatList
+                data={transformedReviews}
+                renderItem={renderReviewItem}
+                keyExtractor={keyExtractor}
+                ListHeaderComponent={renderHeader}
+                ListFooterComponent={renderFooter}
+                ListEmptyComponent={renderEmpty}
+                contentContainerStyle={
+                    transformedReviews.length === 0
+                        ? { flexGrow: 1 }
+                        : { paddingBottom: 32 }
                 }
-            >
-                <View style={[
-                    styles.reviewSection,
-                    transformedReviews.length === 0 && styles.reviewSectionEmpty
-                ]}>
-
-
-                    {isLoadingReviews ? (
-                        <View style={{ padding: 20, alignItems: 'center' }}>
-                            <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
-                            <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
-                                Loading reviews...
-                            </Text>
-                        </View>
-                    ) : transformedReviews.length === 0 ? (
-                        <EmptyScreen
-                            title="No reviews found"
-                            subtitle="No reviews found for this shop."
-                        />
-                    ) : (
-                        <>
-                            <Text style={styles.sectionTitle2}>Reviews</Text>
-
-                            <View style={styles.ratingSummary}>
-                                <View style={styles.ratingContainer}>
-                                    <Text style={styles.largeRatingText}>
-                                        {displayData?.rating?.toFixed(1) || '0.0'}
-                                    </Text>
-                                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                                    <Text style={styles.ratingCount}>
-                                        By {displayData?.totalReviews || 0}+
-                                    </Text>
-                                </View>
-                            </View>
-                            {transformedReviews.map((item, index) => (
-                                <View key={item.id}>
-                                    {index > 0 && <View style={{ height: 12 }} />}
-                                    <ReviewCard
-                                        reviewerName={item.reviewerName}
-                                        reviewDate={item.reviewDate}
-                                        reviewService={item.reviewService}
-                                        rating={item.rating}
-                                        reviewText={item.reviewText}
-                                        avatarText={item.avatarText}
-                                    />
-                                </View>
-                            ))}
-                            {isLoadingMoreReviews && (
-                                <View style={{ padding: 20, alignItems: 'center' }}>
-                                    <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
-                                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
-                                        Loading more reviews...
-                                    </Text>
-                                </View>
-                            )}
-                        </>
-                    )}
-                </View>
-            </ScrollView>
+                showsVerticalScrollIndicator={false}
+                onEndReached={handleEndReached}
+                onEndReachedThreshold={0.1}
+                refreshing={isRefetching}
+                onRefresh={refetch}
+            />
         </SafeAreaView>
     );
 };

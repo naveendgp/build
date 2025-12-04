@@ -106,7 +106,7 @@ const ProfileScreen: React.FC = () => {
       title: 'Help & support',
       icon: SvgSupportIcon,
       iconType: 'svg',
-      onPress: () => openWhatsApp('9629031193'),
+      onPress: () => openWhatsApp(profile?.support_phone_number || ''),
     },
     {
       id: '8',

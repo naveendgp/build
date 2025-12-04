@@ -16,6 +16,10 @@ import {
   UpdateShopInput,
   UpdateShopResponse,
   UpdateBankDetailsInputWithCheque,
+  VendorReviewsResponse,
+  GetVendorReviewsParams,
+  ToggleSettingsInput,
+  ToggleSettingsResponse,
 } from '../types/profileTypes';
 
 export const getProfile = async (): Promise<ProfileResponse> => {
@@ -199,5 +203,20 @@ export const updateBankDetailsWithCheque = async (
     },
   });
 
+  return response.data;
+};
+
+export const getVendorReviews = async (params?: GetVendorReviewsParams): Promise<VendorReviewsResponse> => {
+  const response = await api.get('/vendor/reviews', {
+    params: {
+      limit: params?.limit || 10,
+      page: params?.page || 1,
+    },
+  });
+  return response.data;
+};
+
+export const toggleSettings = async (input: ToggleSettingsInput): Promise<ToggleSettingsResponse> => {
+  const response = await api.post('/vendor/toggle-settings', input);
   return response.data;
 };
