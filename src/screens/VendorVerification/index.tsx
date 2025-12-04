@@ -28,6 +28,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { RegisterCompletePayload, RegisterCompleteResponse, OperatingHours } from '../../apiService/types/authTypes';
 import { AxiosError } from 'axios';
 import { showErrorToast, showSuccessToast } from '../../utils/Toast';
+import { getMimeTypeFromExtension } from '../../utils/fileUtils';
 import { COLORS } from '../../constants';
 import CustomText from '../../components/Text';
 import { getProfile } from '../../apiService/api/profileApi';
@@ -277,27 +278,6 @@ const VendorVerificationScreen: React.FC = () => {
       // If not JSON, return empty object
     }
     return {};
-  };
-
-  // Helper function to get MIME type from file extension
-  const getMimeTypeFromExtension = (fileName: string): string => {
-    if (!fileName) return 'image/jpeg';
-    const extension = fileName.toLowerCase().split('.').pop();
-    switch (extension) {
-      case 'jpg':
-      case 'jpeg':
-        return 'image/jpeg';
-      case 'png':
-        return 'image/png';
-      case 'gif':
-        return 'image/gif';
-      case 'webp':
-        return 'image/webp';
-      case 'pdf':
-        return 'application/pdf';
-      default:
-        return 'image/jpeg'; // Default to image format
-    }
   };
 
   // Helper function to normalize file object

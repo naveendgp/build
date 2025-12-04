@@ -249,3 +249,50 @@ export interface ServicesByStateResponse {
   message: string;
   data: ServicesByStateData;
 }
+
+// Profile Update API Types
+export interface UpdateProfileInput {
+  owner_name: string;
+  email: string;
+  address: string;
+  aadhaar_number: string;
+  pan_number: string;
+  mobile: string;
+  date_of_birth?: string;
+}
+
+export interface UpdateProfileResponse {
+  status: boolean;
+  message: string;
+}
+
+// Shop Update API Types
+export interface UpdateShopInput {
+  shop_name: string;
+  gst_number: string;
+  address_line1: string;
+  address_line2?: string;
+  pincode: string;
+  landmark: string;
+  latitude: number;
+  longitude: number;
+  contact_number: string;
+  business_hours?: OperatingHoursInput;
+  auto_receive_orders?: boolean;
+  repeat_days?: string;
+}
+
+export interface UpdateShopResponse {
+  status: boolean;
+  message: string;
+}
+
+// Bank Update API Types (extends existing UpdateBankDetailsInput)
+export interface UpdateBankDetailsInputWithCheque {
+  account_holder_name: string;
+  account_number: string;
+  ifsc_code: string;
+  bank_name: string;
+  branch?: string;
+  upi_id?: string;
+}

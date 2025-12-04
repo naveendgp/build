@@ -6,6 +6,7 @@ import { toggleServiceActive, listServices } from '../../../../apiService/api/pr
 import { RegisterCompletePayload, RegisterCompleteResponse, OperatingHours, ShopDocumentUploadPayload } from '../../../../apiService/types/authTypes';
 import { ToggleServiceActiveInput, ListServiceItem } from '../../../../apiService/types/profileTypes';
 import { showErrorToast, showSuccessToast } from '../../../../utils/Toast';
+import { getMimeTypeFromExtension } from '../../../../utils/fileUtils';
 import { useVendorVerificationStore } from '../../../../apiService/store/useVendorVerificationStore';
 import { useAuthStore } from '../../../../apiService/store/useAuthStore';
 
@@ -89,27 +90,6 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                 branch: '', // Optional field, not in current payload
                 upi_id: bank.upi_id || '',
                 operating_hours: parseOperatingHours(shop.business_hours || ''),
-            };
-
-            // Helper function to get MIME type from file extension
-            const getMimeTypeFromExtension = (fileName: string): string => {
-                if (!fileName) return 'image/jpeg';
-                const extension = fileName.toLowerCase().split('.').pop();
-                switch (extension) {
-                    case 'jpg':
-                    case 'jpeg':
-                        return 'image/jpeg';
-                    case 'png':
-                        return 'image/png';
-                    case 'gif':
-                        return 'image/gif';
-                    case 'webp':
-                        return 'image/webp';
-                    case 'pdf':
-                        return 'application/pdf';
-                    default:
-                        return 'image/jpeg'; // Default to image format
-                }
             };
 
             // Helper function to normalize file object

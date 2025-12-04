@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback } from 'react-native';
+import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { useMutation } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import { updateBankDetailsWithCheque } from '../../../apiService/api/profileApi';
+import { UpdateBankDetailsInputWithCheque } from '../../../apiService/types/profileTypes';
+import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { getMimeTypeFromExtension } from '../../../utils/fileUtils';
 import BankDetailsStep from './BankDetailsStep';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
@@ -74,11 +80,68 @@ const BankDetailsScreen: React.FC = () => {
     }
   }, [storeBank, profile]);
 
+  // Helper function to normalize file object
+  const normalizeFile = (file: any, defaultName: string) => {
+    if (!file) return undefined;
+    // Handle string URI (from API)
+    if (typeof file === 'string') {
+      return {
+        uri: file,
+        name: defaultName,
+        type: getMimeTypeFromExtension(defaultName),
+      };
+    }
+    // Handle object with uri and name
+    if (file.uri) {
+      const fileName = file.name || defaultName;
+      const mimeType = getMimeTypeFromExtension(fileName);
+      return {
+        uri: file.uri,
+        name: fileName,
+        type: mimeType,
+      };
+    }
+    return undefined;
+  };
+
+  const updateBankMutation = useMutation({
+    mutationFn: async () => {
+      const payload: UpdateBankDetailsInputWithCheque = {
+        account_holder_name: bank.account_holder_name,
+        account_number: bank.account_number,
+        ifsc_code: bank.ifsc_code,
+        bank_name: bank.bank_name,
+        branch: '', // Optional field
+        upi_id: bank.upi_id,
+      };
+
+      const images = {
+        cancelled_cheque: normalizeFile(bank.cancelled_cheque, 'cancelled_cheque.jpg'),
+      };
+
+      return updateBankDetailsWithCheque(payload, images);
+    },
+    onSuccess: (data) => {
+      if (data.status) {
+        showSuccessToast(data.message || 'Bank details updated successfully');
+        // Save to store
+        setBankData(bank);
+        // Refresh profile data
+        useProfileStore.getState().refreshProfile();
+        // Navigate back
+        navigation.goBack();
+      } else {
+        showErrorToast(data.message || 'Failed to update bank details');
+      }
+    },
+    onError: (error: AxiosError<{ message: string }>) => {
+      const msg = error.response?.data?.message || error.message;
+      showErrorToast(msg || 'Failed to update bank details');
+    },
+  });
+
   const handleSave = () => {
-    // Save to store
-    setBankData(bank);
-    // Navigate back
-    navigation.goBack();
+    updateBankMutation.mutate();
   };
 
   return (
@@ -99,12 +162,18 @@ const BankDetailsScreen: React.FC = () => {
             />
             <View style={styles.buttonRow}>
               <CustomBtn
-                title="Save"
+                title={updateBankMutation.isPending ? "Saving..." : "Save"}
                 onPress={handleSave}
+                disabled={updateBankMutation.isPending}
                 style={styles.nextButton}
                 textStyle={styles.nextButtonText}
               />
             </View>
+            {updateBankMutation.isPending && (
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
+                <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
+              </View>
+            )}
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
