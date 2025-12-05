@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, forwardRef, useImperativeHandle } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE, Region } from 'react-native-maps';
 import Geolocation from '@react-native-community/geolocation';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -7,6 +7,7 @@ import { requestLocationPermission } from './useLocPermission';
 import { COLORS, FONTFAMILY } from '../../../constants';
 import SvgLocationFocusIcon from '../../../assets/auto-generated-svg-icons/LocateFocusIcon';
 import SvgLocationRedIcon from '../../../assets/auto-generated-svg-icons/LocationRedIcon';
+
 // Helper function to fetch address from coordinates using Google Geocoding API
 const fetchAddressFromCoordinates = async (lat: number, lng: number, apiKey: string): Promise<string> => {
   try {
@@ -36,30 +37,41 @@ export type MapScreenHandle = {
   updateMarkerPosition: (latitude: number, longitude: number) => void;
 };
 
+const CHENNAI_FALLBACK: Region = {
+  latitude: 12.9716,
+  longitude: 80.2206,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05,
+};
+
 const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelectProp, hideConfirmButton, googleApiKey }, ref) => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const mapRef = useRef<MapView | null>(null);
   const isProgrammaticUpdate = useRef(false);
+
   const regionRef = useRef<Region | null>(null);
-
   const [region, setRegion] = useState<Region | null>(null);
-  const [marker, setMarker] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
+  const [marker, setMarker] = useState<{ latitude: number; longitude: number } | null>(null);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isResolvingInitialLocation, setIsResolvingInitialLocation] = useState(true);
 
-  // Get current location
+  // Get current location on mount and set as initial region
   useEffect(() => {
     (async () => {
       const granted = await requestLocationPermission();
-      if (!granted) return;
+      if (!granted) {
+        // permission denied — use fallback
+        setRegion(CHENNAI_FALLBACK);
+        regionRef.current = CHENNAI_FALLBACK;
+        setIsResolvingInitialLocation(false);
+        return;
+      }
 
       Geolocation.getCurrentPosition(
         pos => {
           const { latitude, longitude } = pos.coords;
-          const initialRegion = {
+          const initialRegion: Region = {
             latitude,
             longitude,
             latitudeDelta: 0.01,
@@ -68,8 +80,15 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
           setRegion(initialRegion);
           regionRef.current = initialRegion;
           setMarker({ latitude, longitude });
+          setIsResolvingInitialLocation(false);
         },
-        err => console.log(err),
+        err => {
+          console.log('Error getting initial location:', err);
+          // fallback on error
+          setRegion(CHENNAI_FALLBACK);
+          regionRef.current = CHENNAI_FALLBACK;
+          setIsResolvingInitialLocation(false);
+        },
         { enableHighAccuracy: true, timeout: 15000 },
       );
     })();
@@ -78,12 +97,12 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
   useImperativeHandle(ref, () => ({
     centerOnMarker: () => {
       if (marker && mapRef.current) {
-        const currentRegion = regionRef.current;
+        const currentRegion = regionRef.current ?? CHENNAI_FALLBACK;
         const targetRegion = {
           latitude: marker.latitude,
           longitude: marker.longitude,
-          latitudeDelta: currentRegion?.latitudeDelta ?? 0.01,
-          longitudeDelta: currentRegion?.longitudeDelta ?? 0.01,
+          latitudeDelta: currentRegion.latitudeDelta ?? 0.01,
+          longitudeDelta: currentRegion.longitudeDelta ?? 0.01,
         };
         mapRef.current.animateToRegion(targetRegion, 500);
       }
@@ -92,13 +111,12 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
       const newMarker = { latitude: lat, longitude: lng };
       setMarker(newMarker);
 
-      // Use current region from ref or fallback to defaults
-      const currentRegion = regionRef.current;
+      const currentRegion = regionRef.current ?? CHENNAI_FALLBACK;
       const newRegion = {
         latitude: lat,
         longitude: lng,
-        latitudeDelta: currentRegion?.latitudeDelta ?? 0.01,
-        longitudeDelta: currentRegion?.longitudeDelta ?? 0.01,
+        latitudeDelta: currentRegion.latitudeDelta ?? 0.01,
+        longitudeDelta: currentRegion.longitudeDelta ?? 0.01,
       };
 
       // Set flag to prevent onRegionChangeComplete from interfering
@@ -270,57 +288,67 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
     }
   };
 
+  // While resolving initial location, show loader (or placeholder)
+  if (isResolvingInitialLocation) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12 }}>Finding your location…</Text>
+      </View>
+    );
+  }
+
+  // Now region is guaranteed non-null (either current location or fallback)
   return (
-    <View style={{ flex: 1, }}>
-      {region && (
-        <MapView
-          ref={mapRef}
-          provider={PROVIDER_GOOGLE}
-          style={{ flex: 1 }}
-          region={region}
-          onRegionChangeComplete={r => {
-            // Don't update region if we're programmatically updating
-            if (!isProgrammaticUpdate.current) {
-              setRegion(r);
-              regionRef.current = r;
-            }
-          }}
-        >
-          {marker && (
-            <Marker 
-              coordinate={marker} 
-              draggable 
-              onDragEnd={async (e) => {
-                const newCoordinate = e.nativeEvent.coordinate;
-                setMarker(newCoordinate);
-                
-                // Fetch address when marker is dragged
-                if (googleApiKey && onLocationSelectProp) {
-                  try {
-                    const address = await fetchAddressFromCoordinates(
-                      newCoordinate.latitude,
-                      newCoordinate.longitude,
-                      googleApiKey
-                    );
-                    onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude, address);
-                  } catch (error) {
-                    console.error("Error fetching address after drag:", error);
-                    // Call callback with coordinates only if address fetch fails
-                    onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude);
-                  }
-                } else if (onLocationSelectProp) {
-                  // Call callback without address if no API key
+    <View style={{ flex: 1 }}>
+      <MapView
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        style={{ flex: 1 }}
+        initialRegion={region ?? CHENNAI_FALLBACK}
+        region={region ?? CHENNAI_FALLBACK}
+        onRegionChangeComplete={r => {
+          // Don't update region if we're programmatically updating
+          if (!isProgrammaticUpdate.current) {
+            setRegion(r);
+            regionRef.current = r;
+          }
+        }}
+      >
+        {marker && (
+          <Marker
+            coordinate={marker}
+            draggable
+            onDragEnd={async (e) => {
+              const newCoordinate = e.nativeEvent.coordinate;
+              setMarker(newCoordinate);
+
+              // Fetch address when marker is dragged
+              if (googleApiKey && onLocationSelectProp) {
+                try {
+                  const address = await fetchAddressFromCoordinates(
+                    newCoordinate.latitude,
+                    newCoordinate.longitude,
+                    googleApiKey
+                  );
+                  onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude, address);
+                } catch (error) {
+                  console.error("Error fetching address after drag:", error);
+                  // Call callback with coordinates only if address fetch fails
                   onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude);
                 }
-              }}
-            >
-              <View style={{ alignItems: 'center' }}>
-                <SvgLocationRedIcon />
-              </View>
-            </Marker>
-          )}
-        </MapView>
-      )}
+              } else if (onLocationSelectProp) {
+                // Call callback without address if no API key
+                onLocationSelectProp(newCoordinate.latitude, newCoordinate.longitude);
+              }
+            }}
+          >
+            <View style={{ alignItems: 'center' }}>
+              <SvgLocationRedIcon />
+            </View>
+          </Marker>
+        )}
+      </MapView>
 
       {/* Use Current Location button */}
       <View style={styles.currentLocationBtnContainer}>
@@ -329,7 +357,7 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
           onPress={() => handleUseCurrentLocation(0)}
           disabled={isLoadingLocation}
         >
-         <SvgLocationFocusIcon />
+          <SvgLocationFocusIcon />
           <Text style={[styles.currentLocationBtnText, isLoadingLocation && styles.currentLocationBtnTextDisabled]}>
             {isLoadingLocation ? "Getting Location..." : "Use Current Location"}
           </Text>
@@ -349,6 +377,11 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
 });
 
 const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   currentLocationBtnContainer: {
     position: 'absolute',
     bottom: 20,
@@ -366,7 +399,6 @@ const styles = StyleSheet.create({
     padding: 8,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
-
   },
   currentLocationBtnText: {
     marginLeft: 8,
