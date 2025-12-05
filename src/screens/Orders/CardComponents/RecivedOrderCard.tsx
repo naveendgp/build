@@ -473,8 +473,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
               {vendorOrderData?.created_at && vendorOrderData?.expiry_at ? (
                 <CountdownTimer
-                  createdAt={vendorOrderData.created_at}
-                  expiredTime={vendorOrderData.expiry_at}
+                  createdAt={tabType === OrderStatus.RECEIVED ? vendorOrderData.created_at : vendorOrderData.eta_start_time || ''}
+                  expiredTime={tabType === OrderStatus.RECEIVED ? vendorOrderData.expiry_at : vendorOrderData.eta_end_time || ''}
                   onExpire={onExpire}
                 />
               ) : null}
