@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
@@ -22,9 +22,11 @@ type ProfileDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'Prof
 
 const ProfileDetailsScreen: React.FC = () => {
   const navigation = useNavigation<ProfileDetailsNavProp>();
+  const route = useRoute();
   const { vendor: storeVendor, setVendorData } = useVendorVerificationStore();
   const { profile } = useProfileStore();
   const mobileNumber = useAuthStore(state => state.mobileNumber);
+  const isReadOnly = !!(route.params as any)?.readOnly;
 
   const buildDocumentFile = (uri?: string, fallback?: { uri: string; name?: string } | null, defaultName?: string) => {
     if (uri) {
@@ -140,7 +142,6 @@ const ProfileDetailsScreen: React.FC = () => {
         aadhaar_number: vendor.aadhaar_no,
         pan_number: vendor.pan_number,
         mobile: vendor.mobile,
-        date_of_birth: vendor.date_of_birth || undefined,
       };
 
       const images = {
@@ -171,6 +172,7 @@ const ProfileDetailsScreen: React.FC = () => {
   });
 
   const handleSave = () => {
+    if (isReadOnly) return;
     updateProfileMutation.mutate();
   };
 
@@ -192,16 +194,22 @@ const ProfileDetailsScreen: React.FC = () => {
               handleFocusScroll={() => { }}
               vendorAddressRef={vendorAddressRef}
               isMobileFromOtp={!!mobileNumber}
+              isEditable={!isReadOnly}
             />
-            <View style={styles.buttonRow}>
-              <CustomBtn
-                title={updateProfileMutation.isPending ? "Saving..." : "Save"}
-                onPress={handleSave}
-                disabled={updateProfileMutation.isPending}
-                style={styles.nextButton}
-                textStyle={styles.nextButtonText}
-              />
-            </View>
+
+            {!isReadOnly ? (
+              <View style={styles.buttonRow}>
+                <CustomBtn
+                  title={isReadOnly ? "View Only" : updateProfileMutation.isPending ? "Saving..." : "Save"}
+                  onPress={handleSave}
+                  disabled={updateProfileMutation.isPending || isReadOnly}
+                  style={styles.nextButton}
+                  textStyle={styles.nextButtonText}
+                />
+              </View>
+            ) : null}
+
+
             {updateProfileMutation.isPending && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
                 <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />

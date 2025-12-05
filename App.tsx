@@ -17,8 +17,7 @@ import { useAuthStore } from './src/apiService/store/useAuthStore';
 import { useDialogStore } from './src/apiService/store/useDialogStore';
 import { useNotifications } from './src/services/Notification/useNotifications';
 import socket from './src/apiService/socket/socket';
-
-const queryClient = new QueryClient();
+import { queryClient } from './src/services/api/queryClient';
 
 
 const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {

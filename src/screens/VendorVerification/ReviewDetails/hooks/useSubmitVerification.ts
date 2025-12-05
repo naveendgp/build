@@ -30,21 +30,94 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
     const [servicesError, setServicesError] = useState<string | null>(null);
     const successHandledRef = useRef(false);
 
+    const to24Hour = (time: string): string => {
+        if (!time) return '';
+        const parts = time.trim().toUpperCase().split(/\s+/);
+        const timePart = parts[0] || '';
+        const period = parts[1] || '';
+        let [h, m = '00'] = timePart.split(':');
+        let hour = parseInt(h || '0', 10);
+        const minutes = parseInt(m || '0', 10);
+        if (isNaN(hour) || isNaN(minutes)) return '';
+        if (period === 'PM' && hour < 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    };
+
     // Helper function to parse operating hours from business_hours string
-    const parseOperatingHours = (businessHours: string): OperatingHours => {
+    const parseOperatingHours = (businessHours: string, repeatDays?: string): OperatingHours => {
         if (!businessHours) {
             return {};
         }
+        // Try JSON first
         try {
-            // Try to parse as JSON first
             const parsed = JSON.parse(businessHours);
             if (typeof parsed === 'object' && parsed !== null) {
                 return parsed as OperatingHours;
             }
-        } catch (e) {
-            // If not JSON, return empty object (or you could parse string format if needed)
+        } catch (_) {
+            // fallthrough
         }
-        return {};
+
+        const parts = businessHours.split('-').map(p => p.trim());
+        if (parts.length !== 2 || !parts[0] || !parts[1]) {
+            return {};
+        }
+        const open = to24Hour(parts[0]);
+        const close = to24Hour(parts[1]);
+        if (!open || !close) return {};
+
+        const dayMap: Record<string, keyof OperatingHours> = {
+            Mon: 'monday',
+            Tue: 'tuesday',
+            Wed: 'wednesday',
+            Thu: 'thursday',
+            Fri: 'friday',
+            Sat: 'saturday',
+            Sun: 'sunday',
+        };
+
+        const buildAllDays = (): OperatingHours => ({
+            monday: { open, close },
+            tuesday: { open, close },
+            wednesday: { open, close },
+            thursday: { open, close },
+            friday: { open, close },
+            saturday: { open, close },
+            sunday: { open, close },
+        });
+
+        if (!repeatDays) {
+            return buildAllDays();
+        }
+
+        const days = repeatDays
+            .split(',')
+            .map(d => d.trim())
+            .map(short => dayMap[short] || short.toLowerCase())
+            .filter(Boolean);
+
+        if (!days.length) {
+            return buildAllDays();
+        }
+
+        const allowedDays: Array<keyof OperatingHours> = [
+            'monday',
+            'tuesday',
+            'wednesday',
+            'thursday',
+            'friday',
+            'saturday',
+            'sunday',
+        ];
+
+        return days.reduce<OperatingHours>((acc, dayKey) => {
+            if (allowedDays.includes(dayKey as keyof OperatingHours)) {
+                const typedDay = dayKey as keyof OperatingHours;
+                acc[typedDay] = { open, close };
+            }
+            return acc;
+        }, {});
     };
 
     // Check if both APIs succeeded
@@ -89,7 +162,7 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                 bank_name: payload.bank_name,
                 branch: '', // Optional field, not in current payload
                 upi_id: bank.upi_id || '',
-                operating_hours: parseOperatingHours(shop.business_hours || ''),
+                operating_hours: parseOperatingHours(shop.business_hours || '', shop.repeat_days),
             };
 
             // Helper function to normalize file object
@@ -126,6 +199,10 @@ export const useSubmitVerification = ({ onSuccess }: UseSubmitVerificationProps)
                 shop_image: normalizeFile(shop.shop_front_photo, 'shop_image.jpg'),
                 cancelled_cheque: normalizeFile(bank.cancelled_cheque, 'cancelled_cheque.jpg'),
             };
+
+            console.log("registerPayload:-------------------------------");
+            console.log("business_hours_raw:", shop.business_hours, "repeat_days:", shop.repeat_days);
+            console.log("operating_hours:", registerPayload?.operating_hours);
 
             return registerComplete(registerPayload, images);
         },

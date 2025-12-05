@@ -260,7 +260,6 @@ export interface UpdateProfileInput {
   aadhaar_number: string;
   pan_number: string;
   mobile: string;
-  date_of_birth?: string;
 }
 
 export interface UpdateProfileResponse {

@@ -291,7 +291,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
       return '';
     }
     const orderIdStr = orderId.toString();
-    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-5);
+    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
   }, [orderId]);
 
 
@@ -473,8 +473,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
               {vendorOrderData?.created_at && vendorOrderData?.expiry_at ? (
                 <CountdownTimer
-                  createdAt={vendorOrderData.created_at}
-                  expiredTime={vendorOrderData.expiry_at}
+                  createdAt={tabType === OrderStatus.RECEIVED ? vendorOrderData.created_at : vendorOrderData.eta_start_time || ''}
+                  expiredTime={tabType === OrderStatus.RECEIVED ? vendorOrderData.expiry_at : vendorOrderData.eta_end_time || ''}
                   onExpire={onExpire}
                 />
               ) : null}
@@ -559,10 +559,10 @@ const styles = StyleSheet.create({
   },
   orderId: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: '700',
     color: COLORS.TEXT_PRIMARY,
     lineHeight: 18 * (120 / 100),
-    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
   },
 
   locationContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
@@ -578,8 +578,8 @@ const styles = StyleSheet.create({
   },
 
   orderTypeText: {
-    fontSize: 18,
-    fontWeight: '400',
+    fontSize: 15,
+    fontWeight: '500',
     color: COLORS.TEXT_PRIMARY,
     lineHeight: 18 * (120 / 100),
     fontFamily: FONTFAMILY.INTER_REGULAR,
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 16,
   },
-  billCenter: { flex: 1, marginLeft: 12 },
+  billCenter: { flex: 1, },
   billMain: {
     fontSize: 16,
     fontWeight: '500',

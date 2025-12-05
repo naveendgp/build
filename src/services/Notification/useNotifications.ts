@@ -2,6 +2,8 @@ import { useEffect } from 'react';
 import messaging from '@react-native-firebase/messaging';
 import notifee, { AndroidImportance } from '@notifee/react-native';
 import { useAuthStore } from '../../apiService/store/useAuthStore';
+import { useProfileStore } from '../../apiService/store/useProfileStore';
+import { queryClient } from '../api/queryClient';
 
 // 🪪 1️⃣ Request Firebase and Notifee permissions
 async function requestPermissions() {
@@ -90,6 +92,20 @@ export const useNotifications = () => {
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       const title = remoteMessage.notification?.title || 'Notification';
       const body = remoteMessage.notification?.body || '';
+
+      console.log('Title:', title);
+      console.log('Body:', body);
+
+      // Refresh profile when documents are approved
+      if (title === 'Documents Approved') {
+        try {
+          await useProfileStore.getState().refreshProfile();
+          await queryClient.refetchQueries({ queryKey: ['profile'] });
+
+        } catch (err) {
+          console.log('Failed to refresh profile after Documents Approved notification', err);
+        }
+      }
 
       await displayNotification(title, body);
     });

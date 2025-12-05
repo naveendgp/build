@@ -78,7 +78,7 @@ export const updateProfile = async (
 
   appendIfExists("owner_name", payload.owner_name);
   appendIfExists("email", payload.email);
-  appendIfExists("mobile", payload.mobile);
+  appendIfExists("contactNum", payload.mobile);
 
   // Add images
   const addFile = (key: string, file?: { uri: string; name: string; type?: string }) => {
@@ -95,7 +95,7 @@ export const updateProfile = async (
   addFile("aadhaar_card", images?.aadhaar_card);
   addFile("pan_card", images?.pan_card);
 
-  const response = await api.post("/vendor/profile-update", formData, {
+  const response = await api.patch("/vendor/vendor-user-update", formData, {
     headers: {
       "Content-Type": "multipart/form-data",
     },

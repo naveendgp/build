@@ -34,6 +34,7 @@ interface Props {
   isMobileFromOtp?: boolean;
   errors?: VendorErrors;
   clearError?: (field: keyof VendorErrors) => void;
+  isEditable?: boolean;
 }
 
 const VendorDetailsStep: React.FC<Props> = ({
@@ -42,6 +43,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   isMobileFromOtp = false,
   errors = {},
   clearError,
+  isEditable = true,
 }) => {
   const [ageError, setAgeError] = useState<string>('');
 
@@ -58,6 +60,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   };
 
   const pickProfilePic = () => {
+    if (!isEditable) return;
     launchImageLibrary({ mediaType: 'photo', includeBase64: false }, res => {
       if (res.assets?.[0]?.uri) {
         setVendor({ ...vendor, profile_pic: res.assets[0].uri });
@@ -66,6 +69,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   };
 
   const pickDocument = (type: 'aadhaar' | 'pan') => {
+    if (!isEditable) return;
     const options = {
       mediaType: 'mixed' as MediaType,
       includeBase64: false,
@@ -101,6 +105,7 @@ const VendorDetailsStep: React.FC<Props> = ({
   };
 
   const removeDocument = (type: 'aadhaar' | 'pan') => {
+    if (!isEditable) return;
     if (type === 'aadhaar') {
       setVendor({ ...vendor, aadhaar_file: null });
     } else {
@@ -116,6 +121,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         <TouchableOpacity
           onPress={pickProfilePic}
           style={styles.profilePicPlaceholder}
+          disabled={!isEditable}
         >
           {getProfilePicUri() ? (
             <Image
@@ -127,6 +133,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         <TouchableOpacity
           onPress={pickProfilePic}
           style={styles.plusIconContainer}
+          disabled={!isEditable}
         >
           <PlusIcon width={16} height={16} color={COLORS.GREEN} />
         </TouchableOpacity>
@@ -144,6 +151,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         }}
         containerStyle={styles.inputContainer}
         error={errors.owner_name}
+        isEditable={isEditable}
       />
 
       <ProfileInput
@@ -157,7 +165,7 @@ const VendorDetailsStep: React.FC<Props> = ({
           clearError?.('mobile');
         }}
         containerStyle={styles.inputContainer}
-        isEditable={!isMobileFromOtp}
+        isEditable={isEditable && !isMobileFromOtp}
         error={errors.mobile}
       />
 
@@ -171,6 +179,7 @@ const VendorDetailsStep: React.FC<Props> = ({
         }}
         containerStyle={styles.inputContainer}
         error={errors.email}
+        isEditable={isEditable}
       />
 
       {/* <View style={styles.dateInputContainer}>
@@ -206,6 +215,7 @@ const VendorDetailsStep: React.FC<Props> = ({
           <TouchableOpacity
             onPress={() => pickDocument('aadhaar')}
             style={styles.uploadButton}
+            disabled={!isEditable}
           >
             <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
             <CustomText style={styles.uploadText}>Upload files</CustomText>
@@ -221,6 +231,7 @@ const VendorDetailsStep: React.FC<Props> = ({
             <TouchableOpacity
               onPress={() => removeDocument('aadhaar')}
               style={styles.removeButton}
+              disabled={!isEditable}
             >
               <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
             </TouchableOpacity>
@@ -237,6 +248,7 @@ const VendorDetailsStep: React.FC<Props> = ({
           <TouchableOpacity
             onPress={() => pickDocument('pan')}
             style={styles.uploadButton}
+            disabled={!isEditable}
           >
             <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
             <CustomText style={styles.uploadText}>Upload files</CustomText>
@@ -252,6 +264,7 @@ const VendorDetailsStep: React.FC<Props> = ({
             <TouchableOpacity
               onPress={() => removeDocument('pan')}
               style={styles.removeButton}
+              disabled={!isEditable}
             >
               <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
             </TouchableOpacity>

@@ -80,7 +80,10 @@ export interface VendorOrder {
   __v: number;
   updateLogs?: OrderUpdateLog[];
   rider?: OrderRider;
+  eta_end_time?: string;
+  eta_start_time?: string;
 }
+
 
 export interface OrderRider {
   name: string;

@@ -22,9 +22,10 @@ interface Props {
   setShop: (s: any) => void;
   errors?: ShopErrors;
   clearError?: (field: keyof ShopErrors) => void;
+  isEditable?: boolean;
 }
 
-const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearError }) => {
+const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearError, isEditable = true }) => {
   const navigation = useNavigation<any>();
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
@@ -98,6 +99,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
   // Handle time selection (works with temporary state)
   const handleTimeSelect = (time24: string) => {
+    if (!isEditable) return;
     const time12 = formatTime(time24);
     if (timeType === 'start') {
       setTempSelectedStartTime(time12);
@@ -105,8 +107,9 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     } else {
       setTempSelectedEndTime(time12);
       // Both times selected - save immediately
-      const businessHours = `${tempSelectedStartTime} - ${time12}`;
-      setSelectedStartTime(tempSelectedStartTime);
+      const nextStart = tempSelectedStartTime || time12; // fallback in case state lags
+      const businessHours = `${nextStart} - ${time12}`;
+      setSelectedStartTime(nextStart);
       setSelectedEndTime(time12);
       setShop({ ...shop, business_hours: businessHours });
       clearError?.('business_hours');
@@ -117,6 +120,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
   // Open time picker - initialize temporary state with current saved data
   const handleOpenTimePicker = () => {
+    if (!isEditable) return;
     // Initialize temporary state with current saved values
     setTempSelectedStartTime(selectedStartTime);
     setTempSelectedEndTime(selectedEndTime);
@@ -140,6 +144,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   };
 
   const handleLocationPress = () => {
+    if (!isEditable) return;
     navigation.navigate('ProfileLocation', {
       onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
         setShop({
@@ -170,6 +175,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   };
 
   const pickShopPhoto = () => {
+    if (!isEditable) return;
     const options = {
       mediaType: 'photo' as MediaType,
       includeBase64: false,
@@ -198,16 +204,19 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   };
 
   const removeShopPhoto = () => {
+    if (!isEditable) return;
     setShop({ ...shop, shop_front_photo: null });
   };
 
   const handleRepeatPress = () => {
+    if (!isEditable) return;
     // Initialize temp state with current saved data when opening bottom sheet
     setTempSelectedDays(parseRepeatDays(shop.repeat_days || ''));
     setShowRepeatSheet(true);
   };
 
   const toggleDay = (dayKey: string) => {
+    if (!isEditable) return;
     // Update temporary state only (not saved until "Save" is clicked)
     setTempSelectedDays(prev => {
       if (prev.includes(dayKey)) {
@@ -219,6 +228,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   };
 
   const handleSaveRepeatDays = () => {
+    if (!isEditable) return;
     // Save the temporary state to actual state and shop data
     const selectedDayLabels = tempSelectedDays
       .map(dayKey => {
@@ -325,6 +335,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           }}
           containerStyle={styles.inputContainer}
           error={errors.shop_name}
+          isEditable={isEditable}
         />
 
         <ProfileInput
@@ -341,10 +352,12 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           autoCapitalize="characters"
           maxLength={15}
           error={errors.gst_number}
+          isEditable={isEditable}
         />
 
         <TouchableOpacity
           onPress={() => {
+            if (!isEditable) return;
             navigation.navigate('ProfileLocation', {
               onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
                 setShop({
@@ -387,6 +400,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
         <TouchableOpacity
           onPress={handleLocationPress}
           style={styles.locationButton}
+          disabled={!isEditable}
         >
           <LocationIcon />
           <CustomText style={styles.locationButtonText}>
@@ -406,6 +420,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           }}
           containerStyle={styles.inputContainer}
           error={errors.pincode}
+          isEditable={isEditable}
         />
 
         <ProfileInput
@@ -418,6 +433,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           }}
           containerStyle={styles.inputContainer}
           error={errors.landmark}
+          isEditable={isEditable}
         />
 
         <ProfileInput
@@ -432,6 +448,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           }}
           containerStyle={styles.inputContainer}
           error={errors.contact_number}
+          isEditable={isEditable}
         />
 
         {/* Shop Front Photo Upload Section */}
@@ -443,6 +460,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             <TouchableOpacity
               onPress={pickShopPhoto}
               style={styles.uploadButton}
+              disabled={!isEditable}
             >
               <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
               <CustomText style={styles.uploadText}>Upload files</CustomText>
@@ -458,6 +476,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
               <TouchableOpacity
                 onPress={removeShopPhoto}
                 style={styles.removeButton}
+                disabled={!isEditable}
               >
                 <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
               </TouchableOpacity>
@@ -478,6 +497,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <TouchableOpacity
           onPress={handleOpenTimePicker}
+          disabled={!isEditable}
 
         >
           <ProfileInput
@@ -502,12 +522,14 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             onValueChange={val =>
               setShop({ ...shop, auto_receive_orders: val })
             }
+            disabled={!isEditable}
           />
         </View>
 
         <TouchableOpacity
           onPress={handleRepeatPress}
           style={styles.repeatContainer}
+          disabled={!isEditable}
         >
           <CustomText style={styles.repeatLabel}>Repeat</CustomText>
           <View style={styles.repeatValueContainer}>

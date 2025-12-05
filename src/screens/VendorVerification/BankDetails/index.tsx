@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
@@ -21,8 +21,10 @@ type BankDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'BankDet
 
 const BankDetailsScreen: React.FC = () => {
   const navigation = useNavigation<BankDetailsNavProp>();
+  const route = useRoute();
   const { bank: storeBank, setBankData } = useVendorVerificationStore();
   const { profile } = useProfileStore();
+  const isReadOnly = !!(route.params as any)?.readOnly;
 
   // Initialize from profile store if available, otherwise from vendor verification store
   const buildDocumentFile = (uri?: string, fallback?: { uri: string; name?: string } | null, defaultName?: string) => {
@@ -141,6 +143,7 @@ const BankDetailsScreen: React.FC = () => {
   });
 
   const handleSave = () => {
+    if (isReadOnly) return;
     updateBankMutation.mutate();
   };
 
@@ -159,16 +162,19 @@ const BankDetailsScreen: React.FC = () => {
             <BankDetailsStep
               bank={bank}
               setBank={setBank}
+              isEditable={!isReadOnly}
             />
-            <View style={styles.buttonRow}>
-              <CustomBtn
-                title={updateBankMutation.isPending ? "Saving..." : "Save"}
-                onPress={handleSave}
-                disabled={updateBankMutation.isPending}
-                style={styles.nextButton}
-                textStyle={styles.nextButtonText}
-              />
-            </View>
+            {!isReadOnly ? (
+              <View style={styles.buttonRow}>
+                <CustomBtn
+                  title={isReadOnly ? "View Only" : updateBankMutation.isPending ? "Saving..." : "Save"}
+                  onPress={handleSave}
+                  disabled={updateBankMutation.isPending || isReadOnly}
+                  style={styles.nextButton}
+                  textStyle={styles.nextButtonText}
+                />
+              </View>
+            ) : null}
             {updateBankMutation.isPending && (
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
                 <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
