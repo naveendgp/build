@@ -105,6 +105,9 @@ export const registerComplete = async (
   console.log("FINAL FORMDATA SENT FROM APP:");
   // debug full form data
 
+  console.log("PAYLOAD:", payload?.operating_hours);
+  console.log("FORMDATA:", formData);
+
   const response = await api.post("/vendor/register-complete", formData, {
     headers: {
       "Content-Type": "multipart/form-data", // important for mobile Axios

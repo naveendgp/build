@@ -45,9 +45,9 @@ export type RootStackParamList = {
   UserProfile: undefined;
   MapScreen: undefined;
   ProfileLocation: { onSelect?: (data: { address: string; latitude: number; longitude: number }) => void } | undefined;
-  ProfileDetails: undefined;
-  ShopDetails: undefined;
-  BankDetails: undefined;
+  ProfileDetails: { readOnly?: boolean } | undefined;
+  ShopDetails: { readOnly?: boolean } | undefined;
+  BankDetails: { readOnly?: boolean } | undefined;
   ActiveServicesPricingScreen: undefined;
   ShopReviewsScreen: undefined;
 };

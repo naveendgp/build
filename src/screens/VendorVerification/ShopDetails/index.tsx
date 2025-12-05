@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import { useVendorVerificationStore } from '../../../apiService/store/useVendorVerificationStore';
@@ -21,6 +21,8 @@ type ShopDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'ShopDet
 
 const ShopDetailsScreen: React.FC = () => {
     const navigation = useNavigation<ShopDetailsNavProp>();
+    const route = useRoute();
+    const isReadOnly = !!(route.params as any)?.readOnly;
     const { shop: storeShop, setShopData } = useVendorVerificationStore();
     const { profile } = useProfileStore();
 
@@ -263,6 +265,7 @@ const ShopDetailsScreen: React.FC = () => {
     });
 
     const handleSave = () => {
+        if (isReadOnly) return;
         updateShopMutation.mutate();
     };
 
@@ -281,16 +284,21 @@ const ShopDetailsScreen: React.FC = () => {
                         <ShopDetailsStep
                             shop={shop}
                             setShop={setShop}
+                            isEditable={!isReadOnly}
                         />
-                        <View style={styles.buttonRow}>
-                            <CustomBtn
-                                title={updateShopMutation.isPending ? "Saving..." : "Save"}
-                                onPress={handleSave}
-                                disabled={updateShopMutation.isPending}
-                                style={styles.nextButton}
-                                textStyle={styles.nextButtonText}
-                            />
-                        </View>
+
+                        {!isReadOnly ? (
+                            <View style={styles.buttonRow}>
+                                <CustomBtn
+                                    title={isReadOnly ? "View Only" : updateShopMutation.isPending ? "Saving..." : "Save"}
+                                    onPress={handleSave}
+                                    disabled={updateShopMutation.isPending || isReadOnly}
+                                    style={styles.nextButton}
+                                    textStyle={styles.nextButtonText}
+                                />
+                            </View>
+                        ) : null}
+
                         {updateShopMutation.isPending && (
                             <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
                                 <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />

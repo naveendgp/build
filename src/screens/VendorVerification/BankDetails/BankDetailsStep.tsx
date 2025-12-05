@@ -15,10 +15,12 @@ interface Props {
   setBank: (b: any) => void;
   errors?: BankErrors;
   clearError?: (field: keyof BankErrors) => void;
+  isEditable?: boolean;
 }
 
-const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearError }) => {
+const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearError, isEditable = true }) => {
   const pickCancelledCheque = () => {
+    if (!isEditable) return;
     const options = {
       mediaType: 'photo' as MediaType,
       includeBase64: false,
@@ -49,6 +51,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
   };
 
   const removeCheque = () => {
+    if (!isEditable) return;
     setBank({ ...bank, cancelled_cheque: null });
   };
 
@@ -64,6 +67,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         }}
         containerStyle={styles.inputContainer}
         error={errors.account_holder_name}
+        isEditable={isEditable}
       />
 
       <ProfileInput
@@ -80,6 +84,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         maxLength={18}
         containerStyle={styles.inputContainer}
         error={errors.account_number}
+        isEditable={isEditable}
       />
 
       <ProfileInput
@@ -92,6 +97,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         }}
         containerStyle={styles.inputContainer}
         error={errors.bank_name}
+        isEditable={isEditable}
       />
 
       <ProfileInput
@@ -108,6 +114,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         autoCapitalize="characters"
         maxLength={11}
         error={errors.ifsc_code}
+        isEditable={isEditable}
       />
 
       <ProfileInput
@@ -116,6 +123,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
         placeholder="example@upi"
         onChangeText={val => setBank({ ...bank, upi_id: val })}
         containerStyle={styles.inputContainer}
+        isEditable={isEditable}
       />
 
       <View style={styles.uploadSection}>
@@ -123,7 +131,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
           Upload Cancelled Cheque<CustomText style={styles.asterisk}>*</CustomText>
         </CustomText>
         {!bank.cancelled_cheque ? (
-          <TouchableOpacity style={styles.uploadButton} onPress={pickCancelledCheque}>
+          <TouchableOpacity style={styles.uploadButton} onPress={pickCancelledCheque} disabled={!isEditable}>
             <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
             <CustomText style={styles.uploadText}>Upload files</CustomText>
           </TouchableOpacity>
@@ -135,7 +143,7 @@ const BankDetailsStep: React.FC<Props> = ({ bank, setBank, errors = {}, clearErr
                 {bank.cancelled_cheque.name || 'Filename.pdf'}
               </CustomText>
             </View>
-            <TouchableOpacity onPress={removeCheque} style={styles.removeButton}>
+            <TouchableOpacity onPress={removeCheque} style={styles.removeButton} disabled={!isEditable}>
               <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
 
             </TouchableOpacity>

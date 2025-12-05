@@ -263,21 +263,97 @@ const VendorVerificationScreen: React.FC = () => {
     services: '',
   });
 
+  const to24Hour = (time: string): string => {
+    if (!time) return '';
+    const parts = time.trim().toUpperCase().split(/\s+/);
+    // handle formats like "09:00", "09:00 AM", "9 AM"
+    const timePart = parts[0] || '';
+    const period = parts[1] || '';
+    let [h, m = '00'] = timePart.split(':');
+    let hour = parseInt(h || '0', 10);
+    const minutes = parseInt(m || '0', 10);
+    if (isNaN(hour)) hour = 0;
+    if (isNaN(minutes)) return '';
+    if (period === 'PM' && hour < 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    return `${hour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   // Helper function to parse operating hours from business_hours string
-  const parseOperatingHours = (businessHours: string): OperatingHours => {
+  const parseOperatingHours = (businessHours: string, repeatDays?: string): OperatingHours => {
     if (!businessHours) {
       return {};
     }
+    // 1) Try JSON first
     try {
-      // Try to parse as JSON first
       const parsed = JSON.parse(businessHours);
       if (typeof parsed === 'object' && parsed !== null) {
         return parsed as OperatingHours;
       }
-    } catch (e) {
-      // If not JSON, return empty object
+    } catch (_) {
+      // fallthrough to string parsing
     }
-    return {};
+
+    // 2) Fallback: parse "OPEN - CLOSE" string and map to days
+    const parts = businessHours.split('-').map(p => p.trim());
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return {};
+    }
+    const open = to24Hour(parts[0]);
+    const close = to24Hour(parts[1]);
+    if (!open || !close) return {};
+
+    const dayMap: Record<string, string> = {
+      Mon: 'monday',
+      Tue: 'tuesday',
+      Wed: 'wednesday',
+      Thu: 'thursday',
+      Fri: 'friday',
+      Sat: 'saturday',
+      Sun: 'sunday',
+    };
+
+    const buildAllDays = (): OperatingHours => ({
+      monday: { open, close },
+      tuesday: { open, close },
+      wednesday: { open, close },
+      thursday: { open, close },
+      friday: { open, close },
+      saturday: { open, close },
+      sunday: { open, close },
+    });
+
+    if (!repeatDays) {
+      return buildAllDays();
+    }
+
+    const days = repeatDays
+      .split(',')
+      .map(d => d.trim())
+      .map(short => dayMap[short] || short.toLowerCase())
+      .filter(Boolean);
+
+    if (!days.length) {
+      return buildAllDays();
+    }
+
+    const allowedDays: Array<keyof OperatingHours> = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
+
+    return days.reduce<OperatingHours>((acc, dayKey) => {
+      if (allowedDays.includes(dayKey as keyof OperatingHours)) {
+        const typedDay = dayKey as keyof OperatingHours;
+        acc[typedDay] = { open, close };
+      }
+      return acc;
+    }, {});
   };
 
   // Helper function to normalize file object
@@ -334,8 +410,14 @@ const VendorVerificationScreen: React.FC = () => {
         bank_name: payload.bank_name,
         branch: '', // Optional field
         upi_id: data.bank.upi_id || '',
-        operating_hours: parseOperatingHours(data.shop.business_hours || ''),
+        operating_hours: parseOperatingHours(data.shop.business_hours || '', data.shop.repeat_days),
       };
+
+      console.log('[VendorVerification] Submitting registerComplete', {
+        business_hours_raw: data.shop.business_hours,
+        repeat_days: data.shop.repeat_days,
+        operating_hours: registerPayload.operating_hours,
+      });
 
       // Prepare images object
       const images = {
@@ -346,6 +428,7 @@ const VendorVerificationScreen: React.FC = () => {
         shop_image: normalizeFile(data.shop.shop_front_photo, 'shop_image.jpg'),
         cancelled_cheque: normalizeFile(data.bank.cancelled_cheque, 'cancelled_cheque.jpg'),
       };
+
 
       return registerComplete(registerPayload, images);
     },
@@ -403,6 +486,14 @@ const VendorVerificationScreen: React.FC = () => {
       setStep(prev => prev + 1);
       setCurrentStep(prev => prev + 1);
     } else if (step === 2) {
+      // Debug: log business hours before moving ahead
+      const parsedHours = parseOperatingHours(data.shop.business_hours || '', data.shop.repeat_days);
+      console.log('[VendorVerification] Next step from Shop -> parsed hours', {
+        business_hours_raw: data.shop.business_hours,
+        repeat_days: data.shop.repeat_days,
+        parsed_hours: parsedHours,
+      });
+
       const shopErrors = validateShop(data.shop);
       setFormErrors(prev => ({ ...prev, shop: shopErrors }));
       if (Object.values(shopErrors).some(Boolean)) {
