@@ -30,7 +30,7 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
     const totalItems = items.length;
 
     const renderItemCard = (item: OrderItem) => {
-        if (item.type === 'iron') {
+        if (item.type === 'iron' || 'Dry Clean') {
             return (
                 <OrderedIronCard
                     key={item.id}

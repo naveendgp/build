@@ -457,7 +457,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
         {(
           tabType === OrderStatus.RECEIVED ||
-          (tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10)
+          (tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 8)
         ) && (
             <View style={styles.actionRow}>
               <View style={styles.sliderContainer}>
@@ -466,7 +466,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
                     ref={sliderRef}
                     onComplete={handleComplete}
                     text={getSliderText()}
-                    isReadyForPickUp={tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10}
+                    isReadyForPickUp={tabType === OrderStatus.ACCEPTED && vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 8}
                   />
                 </GestureHandlerRootView>
               </View>
@@ -483,7 +483,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
 
 
-        {(tabType !== OrderStatus.RECEIVED) && timelineEvents && timelineEvents.length > 0 && !(vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 10) && (
+        {(tabType !== OrderStatus.RECEIVED) && timelineEvents && timelineEvents.length > 0 && !(vendorOrderData?.trip_type === 1 && vendorOrderData?.status_type === 8) && (
           timelineEvents.map((event, index) => (
             <TimeLineCard
               key={event.id}
