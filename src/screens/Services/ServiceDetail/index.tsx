@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, ScrollView, TouchableOpacity, TextInput, BackHandler } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,6 +28,7 @@ import categoryItemStyles from '../Components/style';
 import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
 import ServiceAddedDialog from '../ServiceAddedDialog';
 import SvgServiceEditIcon from '../../../assets/auto-generated-svg-icons/ServiceEditIcon';
+import DiscardDialog from '../../../components/DiscardDialog';
 
 type ServiceDetailNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -48,6 +49,13 @@ const ServiceDetailScreen: React.FC = () => {
     const hasRestoredRef = useRef(false);
     const previousItemsStrRef = useRef<string>('');
     const justUpdatedFromCategoryListRef = useRef(false);
+
+    // Store initial service values for comparison (to detect unsaved changes)
+    const initialServiceRef = useRef<Service>(initialService);
+
+    // Refs to track navigation state
+    const isNavigatingAfterSaveRef = useRef(false);
+    const shouldAllowNavigationRef = useRef(false);
 
     // Use state to track current service (can be updated from CategoryList)
     const [service, setService] = useState<Service>(initialService);
@@ -75,6 +83,10 @@ const ServiceDetailScreen: React.FC = () => {
     const [showServiceTimeDialog, setShowServiceTimeDialog] = useState(false);
     const [showOfferDialog, setShowOfferDialog] = useState(false);
     const [showDialog, setShowDialog] = useState(false);
+    const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+
+    // Track if navigation should be prevented
+    const [shouldPreventNavigation, setShouldPreventNavigation] = useState(false);
 
     // Service time and offer data - initialize from service with defaults
     const [serviceTimeData, setServiceTimeData] = useState<ServiceTimeData>({
@@ -410,6 +422,12 @@ const ServiceDetailScreen: React.FC = () => {
     >({
         mutationFn: updateServicesOffered,
         onSuccess: async () => {
+            // Mark that we're navigating after successful save (to prevent discard dialog)
+            // Set this BEFORE refreshProfile to ensure it's set when navigation happens
+            isNavigatingAfterSaveRef.current = true;
+            shouldAllowNavigationRef.current = true;
+            setShouldPreventNavigation(false);
+
             // Refresh profile
             await refreshProfile();
             queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -417,6 +435,25 @@ const ServiceDetailScreen: React.FC = () => {
             // Clear saved form data since it's been saved
             if (service?.service_name) {
                 clearServiceFormData(service.service_name);
+            }
+
+            // Update initial service ref with current form values (the values that were just saved)
+            // This ensures hasUnsavedChanges() returns false after save
+            if (service) {
+                const updatedService: Service = {
+                    ...service,
+                    is_express_available: expressServiceEnabled,
+                    is_offer: offerEnabled,
+                    max_count_per_day: parseInt(maxItemsPerDay) || service.max_count_per_day || 0,
+                    standard_time: serviceTimeData.standardTime,
+                    express_time: serviceTimeData.expressTime,
+                    offer_percentage: offerData.offerPercentage,
+                    offer_max_cap: offerData.maxCap,
+                    standard_price_per_kg: standardPricePerKg ? Number(standardPricePerKg) : service.standard_price_per_kg,
+                    express_price_per_kg: expressPricePerKg ? Number(expressPricePerKg) : service.express_price_per_kg,
+                    items: service.pricing_type === PRICING_TYPES.PER_PC ? Object.values(editableItems) : service.items,
+                };
+                initialServiceRef.current = updatedService;
             }
 
             // Show success dialog for 1 second
@@ -497,10 +534,206 @@ const ServiceDetailScreen: React.FC = () => {
         updateServicesMutation.mutate(apiInput);
     };
 
+    // Function to check if there are unsaved changes
+    const hasUnsavedChanges = useCallback((): boolean => {
+        const initialService = initialServiceRef.current;
+        if (!initialService) return false;
+
+        // Check if express service enabled changed
+        if (expressServiceEnabled !== (initialService.is_express_available ?? true)) {
+            return true;
+        }
+
+        // Check if offer enabled changed
+        if (offerEnabled !== (initialService.is_offer ?? true)) {
+            return true;
+        }
+
+        // Check if max items per day changed
+        if (maxItemsPerDay !== (initialService.max_count_per_day?.toString() || '100')) {
+            return true;
+        }
+
+        // Check if service time data changed
+        if (
+            serviceTimeData.standardTime !== (initialService.standard_time ?? 48) ||
+            serviceTimeData.expressTime !== (initialService.express_time ?? 8)
+        ) {
+            return true;
+        }
+
+        // Check if offer data changed
+        if (
+            offerData.offerPercentage !== (initialService.offer_percentage ?? 50) ||
+            offerData.maxCap !== (initialService.offer_max_cap ?? 100)
+        ) {
+            return true;
+        }
+
+        // Check if price per kg changed (for PER_KG services)
+        if (initialService.pricing_type === PRICING_TYPES.PER_KG) {
+            const currentStandardPrice = standardPricePerKg !== '' ? standardPricePerKg : (initialService.standard_price_per_kg?.toString() || '');
+            const initialStandardPrice = initialService.standard_price_per_kg?.toString() || '';
+            if (currentStandardPrice !== initialStandardPrice) {
+                return true;
+            }
+
+            const currentExpressPrice = expressPricePerKg !== '' ? expressPricePerKg : (initialService.express_price_per_kg?.toString() || '');
+            const initialExpressPrice = initialService.express_price_per_kg?.toString() || '';
+            if (currentExpressPrice !== initialExpressPrice) {
+                return true;
+            }
+        }
+
+        // Check if editable items changed (for PER_PC services)
+        if (initialService.pricing_type === PRICING_TYPES.PER_PC && initialService.items) {
+            const currentItemsStr = JSON.stringify(
+                Object.values(editableItems).sort((a, b) =>
+                    `${a.item_name}_${a.category}`.localeCompare(`${b.item_name}_${b.category}`)
+                )
+            );
+            const initialItemsStr = JSON.stringify(
+                [...initialService.items].sort((a, b) =>
+                    `${a.item_name}_${a.category}`.localeCompare(`${b.item_name}_${b.category}`)
+                )
+            );
+            if (currentItemsStr !== initialItemsStr) {
+                return true;
+            }
+        }
+
+        return false;
+    }, [
+        expressServiceEnabled,
+        offerEnabled,
+        maxItemsPerDay,
+        serviceTimeData,
+        offerData,
+        standardPricePerKg,
+        expressPricePerKg,
+        editableItems,
+    ]);
+
+    // Handle navigation back with unsaved changes check
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+            // Allow navigation if we're navigating after successful save or after discard
+            if (isNavigatingAfterSaveRef.current || shouldAllowNavigationRef.current) {
+                // Don't reset refs here - let them reset on unmount or after navigation completes
+                return;
+            }
+
+            // Don't prevent navigation if we're saving or if navigation is already allowed
+            if (updateServicesMutation.isPending || !shouldPreventNavigation) {
+                return;
+            }
+
+            // Check if there are unsaved changes
+            if (hasUnsavedChanges()) {
+                // Prevent default behavior of leaving the screen
+                e.preventDefault();
+
+                // Show discard dialog
+                setShowDiscardDialog(true);
+            }
+        });
+
+        return () => {
+            // Reset refs when component unmounts or listener is removed
+            isNavigatingAfterSaveRef.current = false;
+            shouldAllowNavigationRef.current = false;
+            unsubscribe();
+        };
+    }, [navigation, hasUnsavedChanges, shouldPreventNavigation, updateServicesMutation.isPending]);
+
+    // Handle discard confirmation
+    const handleDiscardChanges = useCallback(() => {
+        const initialService = initialServiceRef.current;
+
+        // Clear saved form data
+        if (initialService?.service_name) {
+            clearServiceFormData(initialService.service_name);
+        }
+
+        // Reset all form states to initial values
+        if (initialService) {
+            setExpressServiceEnabled(initialService.is_express_available ?? true);
+            setOfferEnabled(initialService.is_offer ?? true);
+            setMaxItemsPerDay(initialService.max_count_per_day?.toString() || '100');
+            setServiceTimeData({
+                standardTime: initialService.standard_time ?? 48,
+                expressTime: initialService.express_time ?? 8,
+            });
+            setOfferData({
+                offerPercentage: initialService.offer_percentage ?? 50,
+                maxCap: initialService.offer_max_cap ?? 100,
+            });
+            setStandardPricePerKg(initialService.standard_price_per_kg?.toString() || '');
+            setExpressPricePerKg(initialService.express_price_per_kg?.toString() || '');
+
+            // Reset editable items for PER_PC services
+            if (initialService.pricing_type === PRICING_TYPES.PER_PC && initialService.items) {
+                const items: { [key: string]: ServiceItem } = {};
+                initialService.items.forEach((item: ServiceItem) => {
+                    const itemKey = `${item.item_name}_${item.category}`;
+                    items[itemKey] = { ...item };
+                });
+                setEditableItems(items);
+            }
+        }
+
+        // Close dialog first
+        setShowDiscardDialog(false);
+
+        // Mark that navigation should be allowed (this prevents the beforeRemove listener from blocking)
+        shouldAllowNavigationRef.current = true;
+        setShouldPreventNavigation(false);
+
+        // Navigate back immediately
+        navigation.goBack();
+    }, [clearServiceFormData, navigation]);
+
+    // Handle cancel discard (stay on screen)
+    const handleCancelDiscard = useCallback(() => {
+        setShowDiscardDialog(false);
+    }, []);
+
+    // Handle back button when discard dialog is open
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+                if (showDiscardDialog) {
+                    // Close dialog if it's open
+                    setShowDiscardDialog(false);
+                    return true; // Prevent default back action
+                }
+                return false; // Allow default back action
+            };
+
+            const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => backHandler.remove();
+        }, [showDiscardDialog])
+    );
+
+    // Update shouldPreventNavigation when changes are detected
+    useEffect(() => {
+        setShouldPreventNavigation(hasUnsavedChanges());
+    }, [hasUnsavedChanges]);
+
+    // Custom back handler for Toolbar
+    const handleBackPress = useCallback(() => {
+        if (hasUnsavedChanges()) {
+            setShowDiscardDialog(true);
+        } else {
+            navigation.goBack();
+        }
+    }, [hasUnsavedChanges, navigation]);
+
 
     return (
         <SafeAreaView style={styles.container} edges={['top']}>
-            <Toolbar title={service?.service_name || 'Service Details'} />
+            <Toolbar title={service?.service_name} onBackPress={handleBackPress} />
 
             <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 <View style={styles.section}>
@@ -586,7 +819,7 @@ const ServiceDetailScreen: React.FC = () => {
                                 style={styles.input}
                                 value={maxItemsPerDay}
                                 onChangeText={setMaxItemsPerDay}
-                                placeholder="100 Items"
+                                placeholder="0"
                                 keyboardType="number-pad"
                                 placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                             />
@@ -717,6 +950,19 @@ const ServiceDetailScreen: React.FC = () => {
                 onClose={() => setShowDialog(false)}
                 title={'Successfully Updated'}
                 bodyText={'Your service details have been updated successfully.'}
+            />
+
+            {/* Discard Changes Dialog */}
+            <DiscardDialog
+                visible={showDiscardDialog}
+                onClose={handleCancelDiscard}
+                title="Discard Changes?"
+                subtitle="You have unsaved changes. Are you sure you want to discard them?"
+                primaryButtonText="Discard"
+                secondaryButtonText="Cancel"
+                onPrimaryButtonPress={handleDiscardChanges}
+                onSecondaryButtonPress={handleCancelDiscard}
+                closable={true}
             />
 
         </SafeAreaView>
