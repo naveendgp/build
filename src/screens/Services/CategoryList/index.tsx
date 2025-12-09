@@ -23,6 +23,7 @@ import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import CategoryItemCard from '../Components/CategoryItemCard';
 import { useServiceDataStore } from '../../../apiService/store/useServiceDataStore';
 import styles from './style';
+import { showErrorToast } from '../../../utils/Toast';
 
 type CategoryListNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -104,7 +105,7 @@ const CategoryListScreen: React.FC = () => {
 
     const handleSubmit = () => {
         if (!hasChanges) {
-            Alert.alert('No Changes', 'No changes have been made to save.');
+            showErrorToast('No changes have been made to save.');
             return;
         }
 
@@ -226,14 +227,13 @@ const CategoryListScreen: React.FC = () => {
                 keyExtractor={(item, index) => `${item.item_name}_${index}`}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.itemsList}
-                ListFooterComponent={() => <View style={{ height: 100 }} />}
+                ListFooterComponent={() => <View style={{ height: 300 }} />}
             />
 
             <View style={styles.submitContainer}>
                 <CustomBtn
                     title="Save"
                     onPress={handleSubmit}
-                    disabled={!hasChanges}
                     style={styles.confirmButton}
                     textStyle={styles.continueText}
                 />
