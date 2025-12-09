@@ -1,0 +1,973 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { View, ScrollView, TouchableOpacity, TextInput, BackHandler } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import CustomText from '../../../components/Text';
+import Toolbar from '../../../components/Toolbar';
+import CustomBtn from '../../../components/CustomBtn';
+import CustomSwitch from '../../../components/CustomSwitch';
+import { RootStackParamList } from '../../../navigation/AppNavigator';
+import { Service, ServiceItem, UpdateServiceInput, UpdateServicesResponse } from '../../../apiService/types/profileTypes';
+import { ErrorResponse } from '../../../apiService/types/authTypes';
+import { updateServicesOffered } from '../../../apiService/api/profileApi';
+import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { useServiceDataStore } from '../../../apiService/store/useServiceDataStore';
+import styles from './style';
+import RightArrowIcon from '../../../assets/auto-generated-svg-icons/ArrowRightIcon';
+import SvgOfferIcon from '../../../assets/auto-generated-svg-icons/OfferIcon';
+import SvgClockIcon from '../../../assets/auto-generated-svg-icons/CountownIcon';
+import SvgExpressIcon from '../../../assets/auto-generated-svg-icons/ExpressIcon';
+import { COLORS } from '../../../constants/colors';
+import { PRICING_TYPES } from '../../../constants';
+import { showSuccessToast, showErrorToast } from '../../../utils/Toast';
+import categoryItemStyles from '../Components/style';
+import PricingDialog, { OfferData, ServiceTimeData } from '../PricingDialog';
+import ServiceAddedDialog from '../ServiceAddedDialog';
+import SvgServiceEditIcon from '../../../assets/auto-generated-svg-icons/ServiceEditIcon';
+import DiscardDialog from '../../../components/DiscardDialog';
+
+type ServiceDetailNavProp = NativeStackNavigationProp<
+    RootStackParamList,
+    'ServiceDetail'
+>;
+type ServiceDetailRouteProp = RouteProp<RootStackParamList, 'ServiceDetail'>;
+
+const ServiceDetailScreen: React.FC = () => {
+    const navigation = useNavigation<ServiceDetailNavProp>();
+    const route = useRoute<ServiceDetailRouteProp>();
+    const { service: initialService } = route.params;
+    const queryClient = useQueryClient();
+    const { refreshProfile, profile } = useProfileStore();
+    const { updatedService, clearUpdatedService, serviceFormData, setServiceFormData, clearServiceFormData } = useServiceDataStore();
+
+    // Ref to track if we're currently restoring values (to prevent infinite loops)
+    const isRestoringRef = useRef(false);
+    const hasRestoredRef = useRef(false);
+    const previousItemsStrRef = useRef<string>('');
+    const justUpdatedFromCategoryListRef = useRef(false);
+
+    // Store initial service values for comparison (to detect unsaved changes)
+    const initialServiceRef = useRef<Service>(initialService);
+
+    // Refs to track navigation state
+    const isNavigatingAfterSaveRef = useRef(false);
+    const shouldAllowNavigationRef = useRef(false);
+
+    // Use state to track current service (can be updated from CategoryList)
+    const [service, setService] = useState<Service>(initialService);
+
+    const [expressServiceEnabled, setExpressServiceEnabled] = useState<boolean>(
+        initialService?.is_express_available ?? true,
+    );
+    const [offerEnabled, setOfferEnabled] = useState<boolean>(
+        initialService?.is_offer ?? true,
+    );
+    const [maxItemsPerDay, setMaxItemsPerDay] = useState<string>(
+        initialService?.max_count_per_day?.toString() || '100',
+    );
+    const [editableItems, setEditableItems] = useState<{
+        [key: string]: ServiceItem;
+    }>({});
+    const [standardPricePerKg, setStandardPricePerKg] = useState<string>(
+        service?.standard_price_per_kg?.toString() || ''
+    );
+    const [expressPricePerKg, setExpressPricePerKg] = useState<string>(
+        service?.express_price_per_kg?.toString() || ''
+    );
+
+    // Dialog states
+    const [showServiceTimeDialog, setShowServiceTimeDialog] = useState(false);
+    const [showOfferDialog, setShowOfferDialog] = useState(false);
+    const [showDialog, setShowDialog] = useState(false);
+    const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+
+    // Track if navigation should be prevented
+    const [shouldPreventNavigation, setShouldPreventNavigation] = useState(false);
+
+    // Service time and offer data - initialize from service with defaults
+    const [serviceTimeData, setServiceTimeData] = useState<ServiceTimeData>({
+        standardTime: initialService?.standard_time ?? 48,
+        expressTime: initialService?.express_time ?? 8,
+    });
+    const [offerData, setOfferData] = useState<OfferData>({
+        offerPercentage: initialService?.offer_percentage ?? 50,
+        maxCap: initialService?.offer_max_cap ?? 100,
+    });
+
+    // Restore form values when screen comes into focus
+    useFocusEffect(
+        React.useCallback(() => {
+            const serviceName = service?.service_name;
+
+            // Get fresh serviceFormData from store to avoid stale closure
+            const currentFormData = useServiceDataStore.getState().serviceFormData;
+
+            // First, check if profile has updated service data (from server refresh)
+            if (profile?.services_offered && serviceName) {
+                const updatedServiceFromProfile = profile.services_offered.find(
+                    (s: Service) => s.service_name === serviceName
+                );
+
+                if (updatedServiceFromProfile) {
+                    // Check if profile data is different from current service
+                    const hasChanges =
+                        updatedServiceFromProfile.is_express_available !== service.is_express_available ||
+                        updatedServiceFromProfile.is_offer !== service.is_offer ||
+                        updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
+                        updatedServiceFromProfile.standard_time !== service.standard_time ||
+                        updatedServiceFromProfile.express_time !== service.express_time ||
+                        updatedServiceFromProfile.offer_percentage !== service.offer_percentage ||
+                        updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
+                        JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
+                        JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
+
+                    if (hasChanges) {
+                        // Clear saved form data since we have fresh data from server
+                        clearServiceFormData(serviceName);
+                        // Reset restore flag to allow fresh data to be used
+                        hasRestoredRef.current = false;
+                        // Update service state with fresh data
+                        setService(updatedServiceFromProfile);
+                        // Don't restore form data if we just updated from profile
+                        return;
+                    }
+                }
+            }
+
+            // Restore form values from saved data (only if no profile update)
+            if (serviceName && currentFormData[serviceName] && !hasRestoredRef.current) {
+                isRestoringRef.current = true;
+                hasRestoredRef.current = true;
+                const savedData = currentFormData[serviceName];
+                // Restore form values from store
+                if (savedData.expressServiceEnabled !== undefined) {
+                    setExpressServiceEnabled(savedData.expressServiceEnabled);
+                }
+                if (savedData.offerEnabled !== undefined) {
+                    setOfferEnabled(savedData.offerEnabled);
+                }
+                if (savedData.maxItemsPerDay !== undefined) {
+                    setMaxItemsPerDay(savedData.maxItemsPerDay);
+                }
+                if (savedData.serviceTimeData) {
+                    setServiceTimeData(savedData.serviceTimeData);
+                }
+                if (savedData.offerData) {
+                    setOfferData(savedData.offerData);
+                }
+                if (savedData.standardPricePerKg !== undefined) {
+                    setStandardPricePerKg(savedData.standardPricePerKg);
+                }
+                if (savedData.expressPricePerKg !== undefined) {
+                    setExpressPricePerKg(savedData.expressPricePerKg);
+                }
+                // Reset flag after state updates complete
+                setTimeout(() => {
+                    isRestoringRef.current = false;
+                }, 200);
+            }
+
+            // Update service when coming back from CategoryList (only for PER_PC)
+            if (service?.pricing_type === PRICING_TYPES.PER_PC) {
+                // Check if there's updated service data from CategoryList
+                if (updatedService && updatedService.service_name === service.service_name) {
+                    // Check if items or items_by_category have changed
+                    const itemsChanged = JSON.stringify(updatedService.items) !== JSON.stringify(service.items);
+                    const itemsByCategoryChanged = JSON.stringify(updatedService.items_by_category) !== JSON.stringify(service.items_by_category);
+                    if (itemsChanged || itemsByCategoryChanged) {
+                        console.log('📦 Updated service data from CategoryList:', {
+                            serviceName: updatedService.service_name,
+                            items: updatedService.items,
+                            itemsCount: updatedService.items?.length || 0,
+                            selectedItems: updatedService.items?.filter((item: ServiceItem) => item.is_active).length || 0,
+                            itemsByCategory: updatedService.items_by_category,
+                        });
+
+                        // Update editableItems directly from the updated service
+                        const newEditableItems: { [key: string]: ServiceItem } = {};
+                        if (updatedService.items && updatedService.items.length > 0) {
+                            updatedService.items.forEach((item: ServiceItem) => {
+                                const itemKey = `${item.item_name}_${item.category}`;
+                                newEditableItems[itemKey] = { ...item };
+                            });
+                        }
+
+                        console.log('📦 Directly updating editableItems:', {
+                            editableItemsCount: Object.keys(newEditableItems).length,
+                            selectedItems: Object.values(newEditableItems).filter(item => item.is_active).length,
+                        });
+
+                        setEditableItems(newEditableItems);
+                        previousItemsStrRef.current = JSON.stringify(newEditableItems);
+
+                        // Set flag to prevent useEffect from overwriting
+                        justUpdatedFromCategoryListRef.current = true;
+
+                        setService(updatedService);
+                        // Clear the temporary store after using it
+                        clearUpdatedService();
+                        // Force refresh by resetting the restore flag
+                        hasRestoredRef.current = false;
+
+                        // Reset flag after a short delay to allow useEffect to skip this update
+                        setTimeout(() => {
+                            justUpdatedFromCategoryListRef.current = false;
+                        }, 100);
+                    }
+                }
+            }
+        }, [updatedService, service, clearUpdatedService, profile?.services_offered, clearServiceFormData]),
+    );
+
+    // Sync service data from refreshed profile (when profile updates while on screen)
+    useEffect(() => {
+        if (profile?.services_offered && service?.service_name && !isRestoringRef.current) {
+            // Find the updated service in the refreshed profile
+            const updatedServiceFromProfile = profile.services_offered.find(
+                (s: Service) => s.service_name === service.service_name
+            );
+
+            if (updatedServiceFromProfile) {
+                // Only update if the service data has actually changed
+                // Compare key fields to avoid unnecessary updates
+                const hasChanges =
+                    updatedServiceFromProfile.is_express_available !== service.is_express_available ||
+                    updatedServiceFromProfile.is_offer !== service.is_offer ||
+                    updatedServiceFromProfile.max_count_per_day !== service.max_count_per_day ||
+                    updatedServiceFromProfile.standard_time !== service.standard_time ||
+                    updatedServiceFromProfile.express_time !== service.express_time ||
+                    updatedServiceFromProfile.offer_percentage !== service.offer_percentage ||
+                    updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
+                    JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
+                    JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
+
+                if (hasChanges) {
+                    // Clear saved form data since we have fresh data from server
+                    clearServiceFormData(service.service_name);
+                    // Reset restore flag to allow fresh data to be used
+                    hasRestoredRef.current = false;
+                    // Update service state with fresh data
+                    setService(updatedServiceFromProfile);
+                }
+            }
+        }
+    }, [profile?.services_offered, service?.service_name, clearServiceFormData]);
+
+    // Reset restore flag when service changes
+    useEffect(() => {
+        hasRestoredRef.current = false;
+    }, [service?.service_name]);
+
+    // Update state when service changes (including when updated from CategoryList or refreshed)
+    // Only update if we don't have saved form data (to avoid overwriting user edits)
+    useEffect(() => {
+        if (service && !isRestoringRef.current) {
+            const serviceName = service.service_name;
+            const hasSavedData = serviceName && serviceFormData[serviceName];
+
+            // Only update from service if we don't have saved form data
+            if (!hasSavedData) {
+                // Update express service toggle
+                if (service.is_express_available !== undefined) {
+                    setExpressServiceEnabled(service.is_express_available);
+                }
+                // Update offer toggle
+                if (service.is_offer !== undefined) {
+                    setOfferEnabled(service.is_offer);
+                }
+                // Update max items per day
+                if (service.max_count_per_day !== undefined) {
+                    setMaxItemsPerDay(service.max_count_per_day.toString());
+                }
+                // Update service time data
+                if (service.standard_time !== undefined || service.express_time !== undefined) {
+                    setServiceTimeData({
+                        standardTime: service.standard_time ?? 48,
+                        expressTime: service.express_time ?? 8,
+                    });
+                }
+                // Update offer data
+                if (service.offer_percentage !== undefined || service.offer_max_cap !== undefined) {
+                    setOfferData({
+                        offerPercentage: service.offer_percentage ?? 50,
+                        maxCap: service.offer_max_cap ?? 100,
+                    });
+                }
+                if (service.standard_price_per_kg !== undefined) {
+                    setStandardPricePerKg((service.standard_price_per_kg ?? '').toString());
+                }
+                if (service.express_price_per_kg !== undefined) {
+                    setExpressPricePerKg((service.express_price_per_kg ?? '').toString());
+                }
+            }
+        }
+    }, [service, serviceFormData]);
+
+    // Save form values to store whenever they change (but not during restore)
+    useEffect(() => {
+        if (isRestoringRef.current) return; // Skip saving during restore
+        if (service?.service_name) {
+            setServiceFormData(service.service_name, {
+                expressServiceEnabled,
+                offerEnabled,
+                maxItemsPerDay,
+                serviceTimeData,
+                offerData,
+                standardPricePerKg,
+                expressPricePerKg,
+            });
+        }
+    }, [expressServiceEnabled, offerEnabled, maxItemsPerDay, serviceTimeData, offerData, standardPricePerKg, expressPricePerKg, service?.service_name, setServiceFormData]);
+
+    // Initialize editable items from service items
+    useEffect(() => {
+        if (!service) return;
+
+        // Skip if we just updated from CategoryList (to prevent overwriting the direct update)
+        if (justUpdatedFromCategoryListRef.current) {
+            console.log('⏭️ Skipping editableItems update - just updated from CategoryList');
+            return;
+        }
+
+        const items: { [key: string]: ServiceItem } = {};
+
+        // Prefer items array if available (it has all items, including updates from CategoryList)
+        // items_by_category might only have partial data after CategoryList updates
+        if (service.items && service.items.length > 0) {
+            service.items.forEach((item: ServiceItem) => {
+                const itemKey = `${item.item_name}_${item.category}`;
+                items[itemKey] = { ...item };
+            });
+        } else if (service.items_by_category && Object.keys(service.items_by_category).length > 0) {
+            // Fallback to items_by_category if items array is not available
+            Object.values(service.items_by_category)
+                .flat()
+                .forEach((item: ServiceItem) => {
+                    const itemKey = `${item.item_name}_${item.category}`;
+                    items[itemKey] = { ...item };
+                });
+        }
+
+        // Create a string representation of items for comparison
+        const itemsStr = JSON.stringify(items);
+
+        // Always update if service changed (don't rely on string comparison alone)
+        // The previousItemsStrRef check helps avoid unnecessary updates, but we need to ensure updates happen
+        const shouldUpdate = itemsStr !== previousItemsStrRef.current || Object.keys(items).length !== Object.keys(editableItems).length;
+
+        if (shouldUpdate) {
+            console.log('🔄 Updating editableItems from service:', {
+                serviceName: service.service_name,
+                itemsCount: Object.keys(items).length,
+                previousCount: Object.keys(editableItems).length,
+                selectedItems: Object.values(items).filter(item => item.is_active).length,
+                sampleItem: Object.values(items)[0],
+                usingItemsArray: !!(service.items && service.items.length > 0),
+            });
+            setEditableItems(items);
+            previousItemsStrRef.current = itemsStr;
+        }
+    }, [service]);
+
+    // Debug: Log when editableItems changes
+    useEffect(() => {
+        const selectedCount = Object.values(editableItems).filter(item => item.is_active).length;
+        console.log('📊 editableItems state updated:', {
+            totalItems: Object.keys(editableItems).length,
+            selectedItems: selectedCount,
+            sampleActiveItem: Object.values(editableItems).find(item => item.is_active),
+        });
+    }, [editableItems]);
+
+    const updateItemField = (
+        itemKey: string,
+        field: keyof ServiceItem,
+        value: any,
+    ) => {
+        setEditableItems(prev => ({
+            ...prev,
+            [itemKey]: {
+                ...prev[itemKey],
+                [field]: value,
+            },
+        }));
+    };
+
+    // Get categories from service items
+    const categories = service?.items_by_category
+        ? Object.keys(service.items_by_category).filter(
+            (cat: string) => cat && cat !== 'null' && cat !== 'undefined',
+        )
+        : ['Men', 'Woman', 'Kids', 'Household', 'Pet'];
+
+    // Helper function to get selected items count for a specific category
+    const getCategoryItemCounts = (categoryName: string) => {
+        const categoryItems = Object.values(editableItems).filter(
+            (item: ServiceItem) => item.category === categoryName,
+        );
+        const total = categoryItems.length;
+        const selected = categoryItems.filter((item: ServiceItem) => item.is_active).length;
+        return { total, selected };
+    };
+
+    // React Query mutation for updating services
+    const updateServicesMutation = useMutation<
+        UpdateServicesResponse,
+        AxiosError<ErrorResponse>,
+        UpdateServiceInput
+    >({
+        mutationFn: updateServicesOffered,
+        onSuccess: async () => {
+            // Mark that we're navigating after successful save (to prevent discard dialog)
+            // Set this BEFORE refreshProfile to ensure it's set when navigation happens
+            isNavigatingAfterSaveRef.current = true;
+            shouldAllowNavigationRef.current = true;
+            setShouldPreventNavigation(false);
+
+            // Refresh profile
+            await refreshProfile();
+            queryClient.invalidateQueries({ queryKey: ['profile'] });
+
+            // Clear saved form data since it's been saved
+            if (service?.service_name) {
+                clearServiceFormData(service.service_name);
+            }
+
+            // Update initial service ref with current form values (the values that were just saved)
+            // This ensures hasUnsavedChanges() returns false after save
+            if (service) {
+                const updatedService: Service = {
+                    ...service,
+                    is_express_available: expressServiceEnabled,
+                    is_offer: offerEnabled,
+                    max_count_per_day: parseInt(maxItemsPerDay) || service.max_count_per_day || 0,
+                    standard_time: serviceTimeData.standardTime,
+                    express_time: serviceTimeData.expressTime,
+                    offer_percentage: offerData.offerPercentage,
+                    offer_max_cap: offerData.maxCap,
+                    standard_price_per_kg: standardPricePerKg ? Number(standardPricePerKg) : service.standard_price_per_kg,
+                    express_price_per_kg: expressPricePerKg ? Number(expressPricePerKg) : service.express_price_per_kg,
+                    items: service.pricing_type === PRICING_TYPES.PER_PC ? Object.values(editableItems) : service.items,
+                };
+                initialServiceRef.current = updatedService;
+            }
+
+            // Show success dialog for 1 second
+            setShowDialog(true);
+            setTimeout(() => {
+                showSuccessToast('Service updated successfully');
+                navigation.goBack();
+            }, 1000);
+        },
+        onError: (error: AxiosError<ErrorResponse>) => {
+            console.error('Error updating service:', error);
+            const errorMessage =
+                error.response?.data?.message ||
+                error.message ||
+                'Failed to update service. Please try again.';
+            showErrorToast(errorMessage);
+        },
+    });
+
+    const convertToApiFormat = (): UpdateServiceInput => {
+        // Use editableItems which contains all items (from all categories for PER_PC, or direct edits for PER_KG)
+        const allItems: ServiceItem[] = Object.values(editableItems);
+
+        console.log('📤 Converting to API format:', {
+            pricingType: service?.pricing_type,
+            editableItemsCount: allItems.length,
+            selectedItems: allItems.filter(item => item.is_active).length,
+            editableItemsKeys: Object.keys(editableItems).length,
+            serviceItemsCount: service?.items?.length || 0,
+            serviceItemsByCategoryKeys: service?.items_by_category ? Object.keys(service.items_by_category).length : 0,
+            sampleEditableItem: allItems[0],
+            items: allItems.slice(0, 5).map(item => ({
+                name: item.item_name,
+                category: item.category,
+                is_active: item.is_active,
+                item_price: item.item_price,
+                express_price: item.express_price,
+            })),
+        });
+
+        const parsedStandardPerKg =
+            standardPricePerKg !== '' ? Number(standardPricePerKg) : service?.standard_price_per_kg || 0;
+        const parsedExpressPerKg =
+            expressPricePerKg !== '' ? Number(expressPricePerKg) : service?.express_price_per_kg || 0;
+
+        const apiInput: UpdateServiceInput = {
+            service: {
+                service_id: (service as any)?._id || (service as any)?.service_id || '',
+                service_name: service?.service_name || '',
+                max_count_per_day: parseInt(maxItemsPerDay) || service?.max_count_per_day || 0,
+                is_express: expressServiceEnabled,
+                is_offer: offerEnabled,
+                offer_max_cap: offerData.maxCap || 0,
+                offer_percentage: offerData.offerPercentage || 0,
+                express_time: serviceTimeData.expressTime || 0,
+                standard_time: serviceTimeData.standardTime || 0,
+                standard_price_per_kg: parsedStandardPerKg,
+                express_price_per_kg: parsedExpressPerKg,
+                items: allItems.map(item => ({
+                    item_name: item.item_name,
+                    item_price: item.item_price,
+                    item_category: item.category,
+                    express_price: item.express_price,
+                    discount_percentage: item.discount_percentage,
+                    is_active: item.is_active,
+                })),
+
+            },
+        };
+
+        console.log('📤 API Payload:', JSON.stringify(apiInput, null, 2));
+
+        return apiInput;
+    };
+
+    const handleConfirm = () => {
+        const apiInput = convertToApiFormat();
+        updateServicesMutation.mutate(apiInput);
+    };
+
+    // Function to check if there are unsaved changes
+    const hasUnsavedChanges = useCallback((): boolean => {
+        const initialService = initialServiceRef.current;
+        if (!initialService) return false;
+
+        // Check if express service enabled changed
+        if (expressServiceEnabled !== (initialService.is_express_available ?? true)) {
+            return true;
+        }
+
+        // Check if offer enabled changed
+        if (offerEnabled !== (initialService.is_offer ?? true)) {
+            return true;
+        }
+
+        // Check if max items per day changed
+        if (maxItemsPerDay !== (initialService.max_count_per_day?.toString() || '100')) {
+            return true;
+        }
+
+        // Check if service time data changed
+        if (
+            serviceTimeData.standardTime !== (initialService.standard_time ?? 48) ||
+            serviceTimeData.expressTime !== (initialService.express_time ?? 8)
+        ) {
+            return true;
+        }
+
+        // Check if offer data changed
+        if (
+            offerData.offerPercentage !== (initialService.offer_percentage ?? 50) ||
+            offerData.maxCap !== (initialService.offer_max_cap ?? 100)
+        ) {
+            return true;
+        }
+
+        // Check if price per kg changed (for PER_KG services)
+        if (initialService.pricing_type === PRICING_TYPES.PER_KG) {
+            const currentStandardPrice = standardPricePerKg !== '' ? standardPricePerKg : (initialService.standard_price_per_kg?.toString() || '');
+            const initialStandardPrice = initialService.standard_price_per_kg?.toString() || '';
+            if (currentStandardPrice !== initialStandardPrice) {
+                return true;
+            }
+
+            const currentExpressPrice = expressPricePerKg !== '' ? expressPricePerKg : (initialService.express_price_per_kg?.toString() || '');
+            const initialExpressPrice = initialService.express_price_per_kg?.toString() || '';
+            if (currentExpressPrice !== initialExpressPrice) {
+                return true;
+            }
+        }
+
+        // Check if editable items changed (for PER_PC services)
+        if (initialService.pricing_type === PRICING_TYPES.PER_PC && initialService.items) {
+            const currentItemsStr = JSON.stringify(
+                Object.values(editableItems).sort((a, b) =>
+                    `${a.item_name}_${a.category}`.localeCompare(`${b.item_name}_${b.category}`)
+                )
+            );
+            const initialItemsStr = JSON.stringify(
+                [...initialService.items].sort((a, b) =>
+                    `${a.item_name}_${a.category}`.localeCompare(`${b.item_name}_${b.category}`)
+                )
+            );
+            if (currentItemsStr !== initialItemsStr) {
+                return true;
+            }
+        }
+
+        return false;
+    }, [
+        expressServiceEnabled,
+        offerEnabled,
+        maxItemsPerDay,
+        serviceTimeData,
+        offerData,
+        standardPricePerKg,
+        expressPricePerKg,
+        editableItems,
+    ]);
+
+    // Handle navigation back with unsaved changes check
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+            // Allow navigation if we're navigating after successful save or after discard
+            if (isNavigatingAfterSaveRef.current || shouldAllowNavigationRef.current) {
+                // Don't reset refs here - let them reset on unmount or after navigation completes
+                return;
+            }
+
+            // Don't prevent navigation if we're saving or if navigation is already allowed
+            if (updateServicesMutation.isPending || !shouldPreventNavigation) {
+                return;
+            }
+
+            // Check if there are unsaved changes
+            if (hasUnsavedChanges()) {
+                // Prevent default behavior of leaving the screen
+                e.preventDefault();
+
+                // Show discard dialog
+                setShowDiscardDialog(true);
+            }
+        });
+
+        return () => {
+            // Reset refs when component unmounts or listener is removed
+            isNavigatingAfterSaveRef.current = false;
+            shouldAllowNavigationRef.current = false;
+            unsubscribe();
+        };
+    }, [navigation, hasUnsavedChanges, shouldPreventNavigation, updateServicesMutation.isPending]);
+
+    // Handle discard confirmation
+    const handleDiscardChanges = useCallback(() => {
+        const initialService = initialServiceRef.current;
+
+        // Clear saved form data
+        if (initialService?.service_name) {
+            clearServiceFormData(initialService.service_name);
+        }
+
+        // Reset all form states to initial values
+        if (initialService) {
+            setExpressServiceEnabled(initialService.is_express_available ?? true);
+            setOfferEnabled(initialService.is_offer ?? true);
+            setMaxItemsPerDay(initialService.max_count_per_day?.toString() || '100');
+            setServiceTimeData({
+                standardTime: initialService.standard_time ?? 48,
+                expressTime: initialService.express_time ?? 8,
+            });
+            setOfferData({
+                offerPercentage: initialService.offer_percentage ?? 50,
+                maxCap: initialService.offer_max_cap ?? 100,
+            });
+            setStandardPricePerKg(initialService.standard_price_per_kg?.toString() || '');
+            setExpressPricePerKg(initialService.express_price_per_kg?.toString() || '');
+
+            // Reset editable items for PER_PC services
+            if (initialService.pricing_type === PRICING_TYPES.PER_PC && initialService.items) {
+                const items: { [key: string]: ServiceItem } = {};
+                initialService.items.forEach((item: ServiceItem) => {
+                    const itemKey = `${item.item_name}_${item.category}`;
+                    items[itemKey] = { ...item };
+                });
+                setEditableItems(items);
+            }
+        }
+
+        // Close dialog first
+        setShowDiscardDialog(false);
+
+        // Mark that navigation should be allowed (this prevents the beforeRemove listener from blocking)
+        shouldAllowNavigationRef.current = true;
+        setShouldPreventNavigation(false);
+
+        // Navigate back immediately
+        navigation.goBack();
+    }, [clearServiceFormData, navigation]);
+
+    // Handle cancel discard (stay on screen)
+    const handleCancelDiscard = useCallback(() => {
+        setShowDiscardDialog(false);
+    }, []);
+
+    // Handle back button when discard dialog is open
+    useFocusEffect(
+        React.useCallback(() => {
+            const onBackPress = () => {
+                if (showDiscardDialog) {
+                    // Close dialog if it's open
+                    setShowDiscardDialog(false);
+                    return true; // Prevent default back action
+                }
+                return false; // Allow default back action
+            };
+
+            const backHandler = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+            return () => backHandler.remove();
+        }, [showDiscardDialog])
+    );
+
+    // Update shouldPreventNavigation when changes are detected
+    useEffect(() => {
+        setShouldPreventNavigation(hasUnsavedChanges());
+    }, [hasUnsavedChanges]);
+
+    // Custom back handler for Toolbar
+    const handleBackPress = useCallback(() => {
+        if (hasUnsavedChanges()) {
+            setShowDiscardDialog(true);
+        } else {
+            navigation.goBack();
+        }
+    }, [hasUnsavedChanges, navigation]);
+
+
+    return (
+        <SafeAreaView style={styles.container} edges={['top']}>
+            <Toolbar title={service?.service_name} onBackPress={handleBackPress} />
+
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                <View style={styles.section}>
+                    <CustomText style={styles.sectionTitle}>Service Details</CustomText>
+
+                    {/* Express Service Card */}
+                    <View style={styles.toggleCard}>
+                        <View style={styles.toggleCardHeader}>
+                            <CustomText style={styles.toggleCardTitle}>Express Service</CustomText>
+                            <CustomSwitch
+                                value={expressServiceEnabled}
+                                onValueChange={setExpressServiceEnabled}
+                            />
+                        </View>
+
+                        <View style={styles.subOptionsContainer}>
+                            <View style={styles.subOptionsContent}>
+                                <View style={styles.subOptionRow}>
+                                    <View style={styles.subOptionLeft}>
+                                        <SvgClockIcon />
+                                        <CustomText style={styles.subOptionText}>
+                                            Standard {serviceTimeData.standardTime} Hours
+                                        </CustomText>
+                                    </View>
+                                </View>
+                                <View style={styles.subOptionRow}>
+                                    <View style={styles.subOptionLeft}>
+                                        <SvgExpressIcon />
+                                        <CustomText style={styles.subOptionText}>
+                                            Express {serviceTimeData.expressTime} Hours
+                                        </CustomText>
+                                    </View>
+                                </View>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.editButton}
+                                onPress={() => setShowServiceTimeDialog(true)}
+                            >
+                                <SvgServiceEditIcon />
+
+                                <CustomText style={styles.editText}>Edit</CustomText>
+                            </TouchableOpacity>
+                        </View>
+
+                    </View>
+
+                    {/* Offer Card */}
+                    <View style={[styles.toggleCard, styles.offerCard]}>
+                        <View style={[styles.toggleCardHeader, { backgroundColor: COLORS.OFFER_BACKGROUND, borderColor: COLORS.OFFER_BORDER }]}>
+                            <CustomText style={styles.toggleCardTitle}>Offer for this service</CustomText>
+                            <CustomSwitch value={offerEnabled} onValueChange={setOfferEnabled} />
+                        </View>
+
+                        <View style={styles.subOptionsContainer}>
+                            <View style={styles.subOptionRow}>
+                                <View style={styles.subOptionLeft}>
+                                    <SvgOfferIcon color={COLORS.THEME_GREEN} />
+
+                                    <CustomText style={styles.subOptionText}>
+                                        Flat {offerData.offerPercentage} % Off
+                                    </CustomText>
+                                </View>
+                                <TouchableOpacity
+                                    style={styles.editButton}
+                                    onPress={() => setShowOfferDialog(true)}
+                                >
+                                    <SvgServiceEditIcon />
+
+                                    <CustomText style={styles.editText}>Edit</CustomText>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                    </View>
+
+                    {/* Max Items Per Day */}
+                    <View style={styles.inputSection}>
+                        <CustomText style={styles.inputLabel}>
+                            {service?.pricing_type === PRICING_TYPES.PER_PC ? 'Max Number Of Items Per Day' : 'Max Number of Kgs Per day'}
+                        </CustomText>
+                        <View style={styles.inputContainer}>
+                            <TextInput
+                                style={styles.input}
+                                value={maxItemsPerDay}
+                                onChangeText={setMaxItemsPerDay}
+                                placeholder="0"
+                                keyboardType="number-pad"
+                                placeholderTextColor={COLORS.LOGIN_SUBTITLE}
+                            />
+                        </View>
+                        <CustomText style={styles.inputNote}>
+                            Note: This will be the max number of items you will be receiving for this
+                            service
+                        </CustomText>
+                    </View>
+
+                    {service?.pricing_type === PRICING_TYPES.PER_PC
+                        ?
+                        <View style={styles.categorySection}>
+                            <CustomText style={styles.categoryTitle}>Category</CustomText>
+
+
+                            <View style={styles.categoryList}>
+                                {categories.map((category, index) => {
+                                    const { total, selected } = getCategoryItemCounts(category);
+                                    return (
+                                        <View key={index} style={{ marginBottom: 16 }}>
+                                            <TouchableOpacity
+                                                style={styles.categoryItem}
+                                                onPress={() => {
+                                                    // Create service with current editableItems merged in
+                                                    // This ensures CategoryList has the latest item states
+                                                    const serviceWithEditableItems = {
+                                                        ...service,
+                                                        items: Object.values(editableItems),
+                                                        items_by_category: {
+                                                            ...(service?.items_by_category || {}),
+                                                            [category]: Object.values(editableItems).filter(
+                                                                (item: ServiceItem) => item.category === category
+                                                            ),
+                                                        },
+                                                    };
+                                                    // Navigate to CategoryList with service and selected category
+                                                    navigation.navigate('CategoryListScreen', { service: serviceWithEditableItems, category });
+                                                }}
+                                            >
+                                                <CustomText style={styles.categoryItemText}>{category}</CustomText>
+                                                <RightArrowIcon color={COLORS.INPUT_TEXT} />
+                                            </TouchableOpacity>
+                                            {(selected > 0) && <CustomText style={styles.categorySubtitle}>
+                                                Selected Items - {selected}/{total}
+                                            </CustomText>}
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        </View>
+                        :
+                        <View>
+                            <CustomText style={styles.categoryTitle}>Price</CustomText>
+                            <View style={categoryItemStyles.itemCard}>
+                                <CustomText style={categoryItemStyles.itemName}>1kg</CustomText>
+                                <View style={[categoryItemStyles.priceRow, { marginTop: 16 }]}>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Standard</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={standardPricePerKg}
+                                                onChangeText={setStandardPricePerKg}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Express</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={expressPricePerKg}
+                                                onChangeText={setExpressPricePerKg}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+                            <CustomText style={[styles.inputNote, { marginBottom: 24 }]}>Note: Clothes will be weighed during pickup and the bill will be generated accordingly.</CustomText>
+                        </View>
+                    }
+
+
+                    <CustomBtn
+                        title={updateServicesMutation.isPending ? 'Saving...' : 'Confirm'}
+                        onPress={handleConfirm}
+                        disabled={updateServicesMutation.isPending}
+                        style={styles.confirmButton}
+                        textStyle={styles.continueText}
+                    />
+                </View>
+            </ScrollView>
+
+            {/* Service Time Dialog */}
+            <PricingDialog
+                visible={showServiceTimeDialog}
+                onClose={() => setShowServiceTimeDialog(false)}
+                type="serviceTime"
+                title={`${service?.service_name || 'Service'} Service Time`}
+                onConfirm={(data) => {
+                    setServiceTimeData(data as ServiceTimeData);
+                }}
+                initialData={serviceTimeData}
+            />
+
+            {/* Offer Dialog */}
+            <PricingDialog
+                visible={showOfferDialog}
+                onClose={() => setShowOfferDialog(false)}
+                type="offer"
+                title={`${service?.service_name || 'Service'} Offer`}
+                onConfirm={(data) => {
+                    setOfferData(data as OfferData);
+                }}
+                initialData={offerData}
+            />
+
+            {/* Success Dialog */}
+            <ServiceAddedDialog
+                visible={showDialog}
+                onClose={() => setShowDialog(false)}
+                title={'Successfully Updated'}
+                bodyText={'Your service details have been updated successfully.'}
+            />
+
+            {/* Discard Changes Dialog */}
+            <DiscardDialog
+                visible={showDiscardDialog}
+                onClose={handleCancelDiscard}
+                title="Discard Changes?"
+                subtitle="You have unsaved changes. Are you sure you want to discard them?"
+                primaryButtonText="Discard"
+                secondaryButtonText="Cancel"
+                onPrimaryButtonPress={handleDiscardChanges}
+                onSecondaryButtonPress={handleCancelDiscard}
+                closable={true}
+            />
+
+        </SafeAreaView>
+    );
+};
+
+export default ServiceDetailScreen;
+
