@@ -9,6 +9,7 @@ export default StyleSheet.create({
         marginBottom: 16,
         borderWidth: 1,
         borderColor: COLORS.BORDER_INPUT,
+
     },
     itemRow: {
         flexDirection: 'row',

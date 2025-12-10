@@ -51,7 +51,8 @@ const OrdersScreen: React.FC = () => {
 
   // Update local state when profile changes
   useEffect(() => {
-    if (profile?.shop_status) {
+    if (typeof profile?.shop_status !== 'undefined') {
+      console.log('profile.shop_status---------', profile.shop_status);
       setShopStatus(profile.shop_status);
     }
     if (typeof profile?.express_status !== 'undefined') {

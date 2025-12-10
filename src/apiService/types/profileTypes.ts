@@ -37,6 +37,10 @@ export interface VendorProfile {
   total_accepted_orders: number;
   pending_settlement_amount: number;
 }
+
+
+
+
 export interface Documents {
   aadhaar_card: string;
   pan_card: string;

@@ -19,6 +19,9 @@ import { useDialogStore } from '../apiService/store/useDialogStore';
 import { showErrorToast } from '../utils/Toast';
 import ServiceAddedDialog from '../screens/Services/ServiceAddedDialog';
 import { LoginUserStatus } from '../constants/tripStatus';
+import CustomeDialog from '../components/Dialog';
+import { compareVersions, getCurrentAppVersion, openAppStore } from '../utils/appVersionUtils';
+import { Platform } from 'react-native';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -59,6 +62,7 @@ const BottomTabNavigator = () => {
   const showDialog = useDialogStore(state => state.showDialog);
   const hideDialog = useDialogStore(state => state.hideDialog);
   const [showReviewDialog, setShowReviewDialog] = useState(false);
+  const [showForceUpdateDialog, setShowForceUpdateDialog] = useState(false);
   const navigation = useNavigation<any>();
 
 
@@ -80,6 +84,14 @@ const BottomTabNavigator = () => {
     );
   }, [hideDialog, navigation, setIsLoggedIn, showDialog]);
 
+  const handleForceUpdate = useCallback(() => {
+    setShowForceUpdateDialog(true);
+  }, []);
+
+  const handleUpdateButtonPress = useCallback(() => {
+    openAppStore();
+  }, []);
+
   // Fetch profile data when entering the application
   const { data, error, isLoading } = useQuery<
     ProfileResponse,
@@ -98,6 +110,37 @@ const BottomTabNavigator = () => {
   useEffect(() => {
     if (data) {
       setProfile(data.data);
+
+      // Check for force update
+      if (data.data.app_version) {
+        const appVersion = data.data.app_version;
+        // Check if the app_type matches the current platform
+        const currentPlatform = Platform.OS === 'ios' ? 'vendor_ios' : 'vendor_android';
+
+        if (appVersion.app_type === currentPlatform) {
+          const currentVersion = getCurrentAppVersion();
+          const serverVersion = appVersion.version;
+
+          console.log('appVersion---------------------------------------------------------');
+          console.log('currentVersion', currentVersion);
+          console.log('serverVersion', serverVersion);
+
+
+          const versionComparison = compareVersions(currentVersion, serverVersion);
+
+          // Check if force update is required
+          // Only show force update dialog if:
+          // 1. is_forceupdate is true AND
+          // 2. Current version is less than server version
+          // This ensures that once user updates, dialog won't show again even if is_forceupdate is still true
+          if (appVersion.is_forceupdate && versionComparison < 0) {
+            // Force update is enabled and current version is outdated
+            handleForceUpdate();
+          }
+          // If versionComparison >= 0, user has updated to required version, so no dialog needed
+        }
+      }
+
       // Update document state from profile status
       if (data.data.status) {
         const status = data.data.status as LoginUserStatus;
@@ -117,7 +160,7 @@ const BottomTabNavigator = () => {
       setError(msg);
       showErrorToast(msg);
     }
-  }, [data, error, setProfile, setError, setDocumentState, handleRestrictedStatus]);
+  }, [data, error, setProfile, setError, setDocumentState, handleRestrictedStatus, handleForceUpdate]);
 
   return (
     <>
@@ -170,6 +213,15 @@ const BottomTabNavigator = () => {
       <ServiceAddedDialog
         visible={showReviewDialog}
         onClose={() => { }}
+      />
+      <CustomeDialog
+        visible={showForceUpdateDialog}
+        title="Update Required"
+        subtitle="A new version of the app is available. Please update to continue using the app."
+        buttonText="Update Now"
+        onButtonPress={handleUpdateButtonPress}
+        closable={false}
+        btnVisible={true}
       />
     </>
   );
