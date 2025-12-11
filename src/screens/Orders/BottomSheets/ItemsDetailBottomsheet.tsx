@@ -19,6 +19,7 @@ interface ItemsDetailBottomsheetProps {
     onClose: () => void;
     title: string; // e.g., "Iron Item Details" or "Wash Item Details"
     items: OrderItem[];
+    isWeightBased: boolean;
 }
 
 const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
@@ -26,11 +27,12 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
     onClose,
     title,
     items,
+    isWeightBased,
 }) => {
     const totalItems = items.length;
 
     const renderItemCard = (item: OrderItem) => {
-        if (item.type === 'iron' || 'Dry Clean') {
+        if (!isWeightBased) {
             return (
                 <OrderedIronCard
                     key={item.id}
@@ -63,7 +65,7 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
                 {/* Header Section */}
                 <View style={styles.header}>
                     <Text style={styles.title}>{title}</Text>
-                    <Text style={styles.totalItems}>Total Items - {totalItems}</Text>
+                    {!isWeightBased ? <Text style={styles.totalItems}>Total Items - {totalItems}</Text> : null}
                 </View>
 
                 {/* Items List - CustomBottomSheet already has ScrollView */}

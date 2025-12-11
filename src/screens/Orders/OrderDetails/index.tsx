@@ -338,9 +338,7 @@ const OrderDetailsScreen: React.FC = () => {
                         <View style={styles.itemDetailsLeft}>
                             <View style={styles.quantityBadge}>
                                 <CustomText style={styles.quantityBadgeText}>
-                                    {orderData.orderType === 'express'
-                                        ? `${orderData.serviceWeight?.split(' ')[0] || '15'} X`
-                                        : `${orderData.serviceQuantity?.replace(' X', '') || '1'}X`}
+                                    {vendorOrder?.service_type === 2 ? `${orderData.serviceQuantity} kg` : `${orderData.serviceQuantity?.replace(' X', '') || '1'}X`}
                                 </CustomText>
                             </View>
                             <TouchableOpacity
@@ -355,7 +353,7 @@ const OrderDetailsScreen: React.FC = () => {
                             </TouchableOpacity>
                         </View>
                         <View style={styles.itemDetailsRight}>
-                            <CustomText style={styles.itemPrice}>₹{orderData.itemTotal}.00</CustomText>
+                            <CustomText style={styles.itemPrice}>₹{orderData.itemTotal}</CustomText>
                         </View>
                     </View>
                 </View>
@@ -397,6 +395,7 @@ const OrderDetailsScreen: React.FC = () => {
                 onClose={handleCloseBottomSheet}
                 title={`${orderData.serviceType} Item Details`}
                 items={getItemsData()}
+                isWeightBased={vendorOrder?.service_type === 2 ? true : false}
             />
         </View>
     );

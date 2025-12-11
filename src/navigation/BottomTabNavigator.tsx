@@ -173,18 +173,8 @@ const BottomTabNavigator = () => {
           tabBarActiveTintColor: '#1B2A4A',
           tabBarInactiveTintColor: '#7B869A',
           tabBarStyle: {
-            backgroundColor: '#FFFFFF',
-            borderTopWidth: 1,
-            borderTopColor: '#E0E0E0',
+            backgroundColor: '#F6F6F6',
             height: 60,
-
-            shadowColor: '#000',
-            shadowOffset: {
-              width: 0,
-              height: -2,
-            },
-            shadowOpacity: 0.1,
-            shadowRadius: 4,
             elevation: 5,
           },
           tabBarLabelStyle: {

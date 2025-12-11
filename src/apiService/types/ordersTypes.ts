@@ -64,6 +64,7 @@ export interface VendorOrder {
   status: string;
   status_timestamps: StatusTimestamps;
   is_express: boolean;
+  service_type: number; // 1: per_piece, 2: per_kg
   payment_status: string;
   payment_details: PaymentDetails;
   total_amount: number;
