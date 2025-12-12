@@ -118,7 +118,7 @@ export const mapOrdersToReceivedCards = (
         orderId: order._id ?? "",
         location: formatAddress(order),
         orderType: order.is_express ? 'express' : 'standard',
-        customerName: order.user_address?.label || 'Customer',
+        customerName: order.user?.name || 'Customer',
         orderNumber: order.order_number,
         time: formatTime(order.created_at),
         expiredTime: formatTime(order.expiry_at),

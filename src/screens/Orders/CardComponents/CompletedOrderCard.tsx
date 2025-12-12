@@ -81,21 +81,23 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
       <View style={styles.timelineLine} />
       {/* Order Timeline */}
       <View style={styles.timelineContainer}>
-        {timeline.map((item, index) => (
-          <View key={index} style={styles.timelineItem}>
-            <View style={styles.timelineContent}>
-              <CustomText style={styles.timelineText}>
-                {item.status} - {item.date}, {item.time}
-              </CustomText>
-              {index === 0 && (
-                <CustomText style={styles.priceText}>
-                  ₹ {parseFloat(totalPrice || '0').toFixed(2)}
+        <View style={styles.timelineWrapper}>
+          <View style={styles.timelineItemsContainer}>
+            {timeline.slice(0, 3).map((item, index) => (
+              <View key={index} style={styles.timelineItem}>
+                <CustomText style={styles.timelineText}>
+                  {item.status} - {item.date}, {item.time}
                 </CustomText>
-              )}
-            </View>
-
+              </View>
+            ))}
           </View>
-        ))}
+
+          <View style={styles.priceContainer}>
+            <CustomText style={styles.priceText}>
+              ₹ {parseFloat(totalPrice || '0').toFixed(2)}
+            </CustomText>
+          </View>
+        </View>
 
         {/* Current Status Indicator */}
         {timeline.length > 0 && !timeline[timeline.length - 1].isCompleted && (
@@ -107,6 +109,9 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
           </View>
         )}
       </View>
+
+      {/* Price Display */}
+
 
       {/* View Details Button */}
       <TouchableOpacity
@@ -208,27 +213,36 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     marginTop: 8
   },
+  timelineWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  timelineItemsContainer: {
+    flex: 1,
+  },
   timelineItem: {
     marginBottom: 8,
-  },
-  timelineContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   timelineText: {
     fontSize: 14,
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
-    flex: 1,
+  },
+  priceContainer: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingLeft: 16,
+    paddingTop: 0,
+    position: 'absolute',
+    right: 0,
+    alignSelf: 'center',
   },
   priceText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '700',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
-    marginLeft: 8,
   },
   timelineLine: {
     width: '100%',

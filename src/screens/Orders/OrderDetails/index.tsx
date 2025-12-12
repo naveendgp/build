@@ -17,6 +17,8 @@ import SvgHelpSupportIcon from '../../../assets/auto-generated-svg-icons/HelpSup
 import ItemsDetailBottomsheet, { OrderItem } from '../BottomSheets/ItemsDetailBottomsheet';
 import { fetchOrderById } from '../../../apiService/api/ordersApi';
 import { VendorOrder } from '../../../apiService/types/ordersTypes';
+import { openWhatsApp } from '../../../utils/whatsappUtils';
+import { useProfileStore } from '../../../apiService/store/useProfileStore';
 
 type OrderDetailsRouteProp = RouteProp<RootStackParamList, 'OrderDetails'>;
 type OrderDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'OrderDetails'>;
@@ -31,6 +33,7 @@ interface TimelineItem {
 
 interface OrderDetailsData {
     orderId: string;
+    displayOrderId: string;
     location: string;
     orderType: 'standard' | 'express';
     serviceType: string;
@@ -49,7 +52,7 @@ const OrderDetailsScreen: React.FC = () => {
     const route = useRoute<OrderDetailsRouteProp>();
     const orderId = route.params?.orderId;
     const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-
+    const { profile } = useProfileStore();
     // Helper functions to format dates (defined before useMemo)
     const getOrdinalSuffix = (n: number) => {
         const j = n % 10;
@@ -114,6 +117,14 @@ const OrderDetailsScreen: React.FC = () => {
         // Calculate total quantity
         const totalQuantity = vendorOrder.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
+        const displayOrderId = (() => {
+            if (!vendorOrder?._id) {
+                return '';
+            }
+            const orderIdStr = vendorOrder?._id.toString();
+            return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
+        })();
+
         // Build timeline based on status
         const timeline: TimelineItem[] = [];
         const statusTimestamps = vendorOrder.status_timestamps || {};
@@ -152,7 +163,8 @@ const OrderDetailsScreen: React.FC = () => {
         }
 
         return {
-            orderId: vendorOrder.order_number?.toString() || vendorOrder._id,
+            orderId: vendorOrder._id,
+            displayOrderId,
             location,
             orderType: vendorOrder.is_express ? 'express' : 'standard',
             serviceType,
@@ -170,13 +182,14 @@ const OrderDetailsScreen: React.FC = () => {
             gst: gst.toFixed(2),
             gstPercentage,
             grandTotal: grandTotal.toFixed(2),
-            customerName: address.label || 'Customer',
+            customerName: vendorOrder.user?.name || 'Customer',
         };
     }, [vendorOrder, formatDate, formatTime]);
 
     const handleSupportPress = () => {
         // Handle support action
         console.log('Support pressed');
+        openWhatsApp(profile?.support_phone_number || '');
     };
 
     const handleArrowPress = () => {
@@ -327,7 +340,7 @@ const OrderDetailsScreen: React.FC = () => {
                 {/* Order ID and Item Details Card */}
                 <View style={styles.orderInfoCard}>
                     <View style={styles.orderIdRow}>
-                        <CustomText style={styles.orderIdText}>#{orderData.orderId}</CustomText>
+                        <CustomText style={styles.orderIdText}>#{orderData.displayOrderId}</CustomText>
                     </View>
                     <View style={styles.locationRow}>
                         <SvgLocationLine />

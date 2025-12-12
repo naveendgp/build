@@ -83,6 +83,11 @@ export interface VendorOrder {
   rider?: OrderRider;
   eta_end_time?: string;
   eta_start_time?: string;
+  user?: User;
+}
+
+export interface User {
+  name: string;
 }
 
 
