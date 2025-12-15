@@ -29,6 +29,7 @@ import SvgLogoutBlackIcon from '../../assets/auto-generated-svg-icons/LogoutBlac
 import SvgSupportIcon from '../../assets/auto-generated-svg-icons/SupportIcon';
 import SvgTagIcon from '../../assets/auto-generated-svg-icons/TagIcon';
 import { openWhatsApp } from '../../utils/whatsappUtils';
+import { showErrorToast } from '../../utils/Toast';
 
 export type ProfileNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -113,14 +114,30 @@ const ProfileScreen: React.FC = () => {
       title: 'Privacy & Security',
       icon: SvgHepSupportIcon,
       iconType: 'svg',
-      onPress: () => console.log('Privacy & Security'),
+      onPress: () => {
+        if (profile?.privacy_policy_url) {
+          navigation.navigate('WebViewScreen', {
+            url: profile.privacy_policy_url,
+            title: 'Privacy & Security',
+          });
+        }
+      },
     },
     {
       id: '9',
       title: 'Terms & Condition',
       icon: SvgTermsConditionIcon,
       iconType: 'svg',
-      onPress: () => console.log('Terms & Condition'),
+      onPress: () => {
+        if (profile?.terms_url) {
+          navigation.navigate('WebViewScreen', {
+            url: profile.terms_url,
+            title: 'Terms & Condition',
+          });
+        } else {
+          showErrorToast('Terms & Condition Coming Soon');
+        }
+      },
     },
     {
       id: '10',

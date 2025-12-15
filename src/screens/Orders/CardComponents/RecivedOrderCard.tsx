@@ -46,6 +46,7 @@ export interface ReceivedOrderCardProps {
   status_type?: number;
   updateLogs?: OrderUpdateLog[];
   vendorOrderData?: VendorOrder;
+  isWeightBased: boolean;
 }
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
@@ -72,6 +73,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   index,
   updateLogs,
   vendorOrderData,
+  isWeightBased,
 }) => {
   const isExpress = orderType === 'express';
   const CONTAINER_WIDTH = 235;
@@ -249,9 +251,12 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
   // Prepare items data for bottom sheet - memoized to prevent recalculation
   const itemsData = useMemo((): OrderItem[] => {
-    if (!vendorOrder?.items) return [];
+    const orderData = vendorOrder || vendorOrderData;
+    if (!orderData?.items) return [];
 
-    return vendorOrder.items.map((item, index) => ({
+
+
+    return orderData.items.map((item, index) => ({
       id: item.item_id || index.toString(),
       type: item.service_name.toLowerCase().includes('iron') ? 'iron' : 'wash',
       itemName: item.item_name,
@@ -259,21 +264,22 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
       quantity: item.quantity,
       amount: item.price_per_item,
     }));
-  }, [vendorOrder?.items]);
+  }, [vendorOrder?.items, vendorOrderData?.items]);
 
   // Prepare bill summary data for bottom sheet - memoized to prevent recalculation
   const billSummaryData = useMemo((): BillSummaryData | null => {
-    if (!vendorOrder) return null;
+    const orderData = vendorOrder || vendorOrderData;
+    if (!orderData) return null;
 
     // Calculate item total from items
-    const itemTotal = vendorOrder.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
+    const itemTotal = orderData.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
 
     // Get GST from payment_details
-    const gst = vendorOrder.payment_details?.gst || 0;
+    const gst = orderData.payment_details?.gst || 0;
     const gstPercentage = itemTotal > 0 ? ((gst / itemTotal) * 100).toFixed(0) : '18';
 
     // Get grand total
-    const grandTotal = vendorOrder.total_amount || vendorOrder.payment_details?.totalPayableAmount || 0;
+    const grandTotal = orderData.total_amount || orderData.payment_details?.totalPayableAmount || 0;
 
     return {
       itemTotal: itemTotal.toFixed(2),
@@ -281,7 +287,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
       gstPercentage,
       grandTotal: grandTotal.toFixed(2),
     };
-  }, [vendorOrder]);
+  }, [vendorOrder, vendorOrderData]);
 
   // Memoize the items bottom sheet title
   const itemsBottomSheetTitle = useMemo(() => `${serviceType} Item Details`, [serviceType]);
@@ -298,6 +304,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   console.log(tabType, trip_type, status_type);
   console.log(tabType === OrderStatus.RECEIVED ||
     (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 10));
+
+  console.log('-------------------', vendorOrder);
 
   return (
     <View style={{ marginBottom: 16 }} >
@@ -382,7 +390,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         <View style={styles.tagRow}>
           <View style={styles.pillTag}>
             <CustomText style={styles.pillText}>
-              {isExpress ? serviceWeight : serviceQuantity}
+              {
+                isWeightBased
+                  ? (tabType === OrderStatus.RECEIVED ? (vendorOrder || vendorOrderData)?.items?.[0]?.item_name : `${serviceQuantity} kg `)
+                  : `${serviceQuantity} X `
+              }
             </CustomText>
           </View>
 
@@ -426,31 +438,35 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         />
 
         {/* Bill Container */}
-        <TouchableOpacity
-          style={styles.billBox}
-          onPress={handleBillPress}
-          activeOpacity={0.7}
-        >
-          <View style={styles.billCenter}>
-            <View
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-            >
-              <SvgBillIcon />
+        {tabType === OrderStatus.RECEIVED && isWeightBased ?
+          null : (<TouchableOpacity
+            style={styles.billBox}
+            onPress={handleBillPress}
+            activeOpacity={0.7}
+          >
+            <View style={styles.billCenter}>
+              <View
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+              >
+                <SvgBillIcon />
 
-              <View>
-                <CustomText style={styles.billMain}>
-                  Total Bill {totalBill ? `₹${totalBill}` : '-'}
-                </CustomText>
-                <CustomText style={styles.billSub}>
-                  Incl. All taxes & Charges
-                </CustomText>
+                <View>
+                  <CustomText style={styles.billMain}>
+                    Total Bill {totalBill ? `₹${totalBill}` : '-'}
+                  </CustomText>
+                  <CustomText style={styles.billSub}>
+                    Incl. All taxes & Charges
+                  </CustomText>
+                </View>
               </View>
+
+
             </View>
+            <SvgChevronRightBlack />
+          </TouchableOpacity>)
 
+        }
 
-          </View>
-          <SvgChevronRightBlack />
-        </TouchableOpacity>
 
         {/* Buttons */}
 
@@ -514,6 +530,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         onClose={handleCloseBottomSheet}
         title={itemsBottomSheetTitle}
         items={itemsData}
+        isWeightBased={isWeightBased}
+
       />
 
       {/* Bill Summary Bottom Sheet */}

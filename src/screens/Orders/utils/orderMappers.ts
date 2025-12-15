@@ -100,7 +100,7 @@ const buildTimeline = (order: VendorOrder) => {
 
 const buildQuantityLabel = (items: VendorOrder['items'] = []) => {
   const totalQuantity = items.reduce((acc, item) => acc + (item.quantity || 0), 0);
-  return `${totalQuantity} X`;
+  return `${totalQuantity}`;
 };
 
 export const mapOrdersToReceivedCards = (
@@ -118,18 +118,18 @@ export const mapOrdersToReceivedCards = (
         orderId: order._id ?? "",
         location: formatAddress(order),
         orderType: order.is_express ? 'express' : 'standard',
-        customerName: order.user_address?.label || 'Customer',
+        customerName: order.user?.name || 'Customer',
         orderNumber: order.order_number,
         time: formatTime(order.created_at),
         expiredTime: formatTime(order.expiry_at),
-        serviceQuantity: order.is_express ? undefined : buildQuantityLabel(order.items),
-        serviceWeight: order.is_express ? firstItem?.item_name : undefined,
+        serviceQuantity: buildQuantityLabel(order.items),
         serviceType: firstItem?.service_name || 'Service',
         customerNote: order.order_notes || 'No notes provided',
         totalBill: order.total_amount ? order.total_amount.toFixed(2) : undefined,
         timer: undefined,
         updateLogs: order.updateLogs,
         vendorOrderData: order,
+        isWeightBased: order.service_type === 2 ? true : false,
       };
     });
 };
@@ -160,7 +160,7 @@ export const mapOrdersToCompletedSections = (
       const section = getSectionTitle(order.updated_at || order.created_at);
       const entry: CompletedSectionItem = {
         card: {
-          orderId: order.order_number?.toString() ?? order._id,
+          orderId: order._id,
           location: formatAddress(order),
           orderType: order.is_express ? 'express' : 'standard',
           serviceQuantity: buildQuantityLabel(order.items),
@@ -168,6 +168,7 @@ export const mapOrdersToCompletedSections = (
           serviceWeight: order.is_express ? firstItem?.item_name : undefined,
           timeline: buildTimeline(order),
           totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
+          isWeightBased: order.service_type === 2 ? true : false,
         },
         source: order,
       };

@@ -13,20 +13,27 @@ export const openWhatsApp = async (phoneNumber: string, orderId?: string) => {
         // Encode the message for URL
         const encodedMessage = message ? encodeURIComponent(message) : "";
 
-        // Construct WhatsApp URLs
+        // Construct WhatsApp URL
         const whatsappUrl = `whatsapp://send?phone=${phoneNumber}${encodedMessage ? `&text=${encodedMessage}` : ""}`;
-        const whatsappWebUrl = `https://wa.me/${phoneNumber}${encodedMessage ? `?text=${encodedMessage}` : ""}`;
+
+        // Construct phone call URL as fallback
+        const phoneCallUrl = `tel:${phoneNumber}`;
 
         // Try to open WhatsApp app first
-        const canOpen = await Linking.canOpenURL(whatsappUrl);
-        if (canOpen) {
+        const canOpenWhatsApp = await Linking.canOpenURL(whatsappUrl);
+        if (canOpenWhatsApp) {
             await Linking.openURL(whatsappUrl);
         } else {
-            // Fallback to web URL
-            await Linking.openURL(whatsappWebUrl);
+            // Fallback to phone call
+            const canOpenPhone = await Linking.canOpenURL(phoneCallUrl);
+            if (canOpenPhone) {
+                await Linking.openURL(phoneCallUrl);
+            } else {
+                Alert.alert("Error", "Unable to open WhatsApp or make a phone call.");
+            }
         }
     } catch (error) {
-        Alert.alert("Error", "Unable to open WhatsApp. Please make sure WhatsApp is installed.");
+        Alert.alert("Error", "Unable to open WhatsApp or make a phone call.");
     }
 };
 

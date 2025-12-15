@@ -36,6 +36,8 @@ export interface VendorProfile {
   profile_pic: string;
   total_accepted_orders: number;
   pending_settlement_amount: number;
+  privacy_policy_url: string;
+  terms_url?: string;
 }
 
 

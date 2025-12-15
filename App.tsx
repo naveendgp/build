@@ -31,7 +31,7 @@ const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
         flex: 1,
         paddingTop: insets.top, // Need to adjust this based Gradient Bg req
         paddingBottom: insets.bottom,
-        backgroundColor: "#ffffff",
+        backgroundColor: "#F6F6F6",
       }}
     >
       {children}

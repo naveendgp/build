@@ -506,7 +506,6 @@ export default StyleSheet.create({
   reviewSection: {
     paddingHorizontal: 16,
     paddingTop: 24,
-    paddingBottom: 32,
   },
   reviewSectionEmpty: {
     flex: 1,
@@ -562,6 +561,7 @@ export default StyleSheet.create({
     padding: 16,
 
     marginBottom: 12,
+    marginHorizontal: 12
   },
   reviewHeader: {
     flexDirection: 'row',

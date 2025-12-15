@@ -8,7 +8,7 @@ import { LoginUserStatus } from '../../constants/tripStatus';
 import { COLORS } from '../../constants/colors';
 import styles from './style';
 import BackgroundGradient from '../../components/backgroundGradient';
-import OtterLogo from '../../assets/auto-generated-svg-icons/OtterLogo';
+import OtterLogo from '../../assets/auto-generated-svg-icons/OtterPartner';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 
@@ -77,7 +77,7 @@ const SplashScreen: React.FC = () => {
     return (
         <View style={styles.container}>
 
-            <OtterLogo width={280} height={100} />
+            <OtterLogo />
 
         </View>
     );

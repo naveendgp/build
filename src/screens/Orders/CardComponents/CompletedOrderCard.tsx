@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import CustomText from '../../../components/Text';
 import { COLORS, FONTFAMILY } from '../../../constants/colors';
 import SvgLocationLine from '../../../assets/auto-generated-svg-icons/LocationLine';
+import { Text } from 'react-native-gesture-handler';
 
 export interface CompletedOrderCardProps {
   orderId: string;
@@ -11,6 +12,7 @@ export interface CompletedOrderCardProps {
   serviceQuantity?: string;
   serviceWeight?: string;
   serviceType: string;
+  isWeightBased: boolean;
   timeline: Array<{
     status: string;
     date: string;
@@ -30,21 +32,34 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
   serviceType,
   timeline,
   totalPrice,
+  isWeightBased,
   onViewDetails,
 }) => {
   const isExpress = orderType === 'express';
+
+
+  console.log(serviceWeight, serviceQuantity);
+
+  const displayOrderId = useMemo(() => {
+    if (!orderId) {
+      return '';
+    }
+    const orderIdStr = orderId.toString();
+    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
+  }, [orderId]);
 
   return (
     <View style={[styles.card, isExpress && styles.cardExpress]}>
       {/* Order Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <CustomText style={styles.orderId}>#{orderId}</CustomText>
+          <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
           <View style={styles.locationContainer}>
             <SvgLocationLine />
-            <CustomText style={styles.location}>{location}</CustomText>
+            <Text numberOfLines={1} ellipsizeMode="tail" style={styles.location}>{location}</Text>
           </View>
         </View>
+
         <CustomText style={styles.orderTypeText}>
           {isExpress ? 'Express' : 'Standard'}
         </CustomText>
@@ -57,33 +72,33 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
       <View style={styles.itemRow}>
         <View style={styles.quantityBox}>
           <CustomText style={styles.quantityText}>
-            {isExpress 
-              ? serviceWeight?.split(' ')[0] || '1' 
-              : serviceQuantity?.replace(' X', '') || '1'}X
+            {serviceQuantity?.replace(' X', '')} {isWeightBased ? 'kg' : 'X'}
           </CustomText>
         </View>
         <CustomText style={styles.serviceTypeText}>{serviceType}</CustomText>
       </View>
-      
+
       <View style={styles.timelineLine} />
       {/* Order Timeline */}
       <View style={styles.timelineContainer}>
-        {timeline.map((item, index) => (
-          <View key={index} style={styles.timelineItem}>
-            <View style={styles.timelineContent}>
-              <CustomText style={styles.timelineText}>
-                {item.status} - {item.date}, {item.time}
-              </CustomText>
-              {index === 0 && (
-                <CustomText style={styles.priceText}>
-                  ₹ {parseFloat(totalPrice || '0').toFixed(2)}
+        <View style={styles.timelineWrapper}>
+          <View style={styles.timelineItemsContainer}>
+            {timeline.slice(0, 3).map((item, index) => (
+              <View key={index} style={styles.timelineItem}>
+                <CustomText style={styles.timelineText}>
+                  {item.status} - {item.date}, {item.time}
                 </CustomText>
-              )}
-            </View>
-        
+              </View>
+            ))}
           </View>
-        ))}
-        
+
+          <View style={styles.priceContainer}>
+            <CustomText style={styles.priceText}>
+              ₹ {parseFloat(totalPrice || '0').toFixed(2)}
+            </CustomText>
+          </View>
+        </View>
+
         {/* Current Status Indicator */}
         {timeline.length > 0 && !timeline[timeline.length - 1].isCompleted && (
           <View style={styles.currentStatusContainer}>
@@ -94,6 +109,9 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
           </View>
         )}
       </View>
+
+      {/* Price Display */}
+
 
       {/* View Details Button */}
       <TouchableOpacity
@@ -114,7 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.BUTTON_BACKGROUND,
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
-    marginBottom: 0,
+    marginBottom: 16,
   },
   cardExpress: {
     backgroundColor: COLORS.EXPRESS_BACKGROUND,
@@ -122,18 +140,20 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
     marginBottom: 12,
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerLeft: {
     flex: 1,
   },
   orderId: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: '700',
     color: COLORS.TEXT_PRIMARY,
-    fontFamily: FONTFAMILY.INTER_REGULAR,
+    lineHeight: 18 * (120 / 100),
+    fontFamily: FONTFAMILY.INTER_MEDIUM,
     marginBottom: 4,
   },
   locationContainer: {
@@ -147,6 +167,7 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT_GRAY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     fontWeight: '400',
+    maxWidth: '80%'
   },
   orderTypeText: {
     fontSize: 16,
@@ -165,7 +186,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
-    marginTop:8
+    marginTop: 8
   },
   quantityBox: {
     backgroundColor: COLORS.BORDER_INPUT,
@@ -190,29 +211,38 @@ const styles = StyleSheet.create({
   },
   timelineContainer: {
     marginBottom: 16,
-    marginTop:8
+    marginTop: 8
+  },
+  timelineWrapper: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  timelineItemsContainer: {
+    flex: 1,
   },
   timelineItem: {
     marginBottom: 8,
-  },
-  timelineContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   timelineText: {
     fontSize: 14,
     fontWeight: '400',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_REGULAR,
-    flex: 1,
+  },
+  priceContainer: {
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+    paddingLeft: 16,
+    paddingTop: 0,
+    position: 'absolute',
+    right: 0,
+    alignSelf: 'center',
   },
   priceText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '700',
     color: COLORS.TEXT_PRIMARY,
     fontFamily: FONTFAMILY.INTER_MEDIUM,
-    marginLeft: 8,
   },
   timelineLine: {
     width: '100%',
@@ -239,11 +269,11 @@ const styles = StyleSheet.create({
     fontFamily: FONTFAMILY.INTER_REGULAR,
   },
   viewDetailsButton: {
-    backgroundColor: COLORS.WHITE,
+    backgroundColor: COLORS.CARD_BACKGROUND,
     borderWidth: 1,
     borderColor: COLORS.THEME_GREEN,
     borderRadius: 12,
-    height:45,
+    height: 45,
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: 'center',

@@ -19,6 +19,9 @@ import EmptyScreen from '../../../components/EmptyScreen';
 import { Review } from '../../../apiService/types/profileTypes';
 import { useVendorReviewsPagination } from './hooks/useVendorReviewsPagination';
 import { showErrorToast } from '../../../utils/Toast';
+import HalfStarIcon from '../../../assets/auto-generated-svg-icons/HalfStar';
+import RatingStarIcon from '../../../assets/auto-generated-svg-icons/RatingStar';
+import RatingUserIcon from '../../../assets/auto-generated-svg-icons/RatingUser';
 
 type ShopReviewsNavProp = NativeStackNavigationProp<
     RootStackParamList,
@@ -46,16 +49,14 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
         <View style={styles.reviewCard}>
             <View style={styles.reviewHeader}>
                 <View style={styles.reviewerInfo}>
-                    <View style={styles.avatar2}>
-                        <Text style={styles.avatarText2}>{avatarText}</Text>
-                    </View>
+                    <RatingUserIcon />
                     <View>
                         <Text style={styles.reviewerName}>{reviewerName}</Text>
                         <Text style={styles.reviewDate}>{reviewDate}</Text>
                     </View>
                 </View>
                 <View style={styles.reviewRating}>
-                    <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                    <RatingStarIcon width={24} height={24} fill={COLORS.SUCCESS} />
                     <Text style={styles.reviewRatingText}>{rating}</Text>
                 </View>
             </View>
@@ -205,6 +206,34 @@ const ShopReviewsScreen: React.FC = () => {
             return null;
         }
 
+        const renderStars = () => {
+            const rating = displayData?.rating || 0;
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            const stars = [];
+
+            // Render full stars
+            for (let i = 0; i < fullStars; i++) {
+                stars.push(
+                    <RatingStarIcon key={`full-${i}`} width={24} height={24} fill={COLORS.SUCCESS} />
+                );
+            }
+
+            // Render half star if applicable
+            if (hasHalfStar) {
+                stars.push(
+                    <HalfStarIcon key="half" width={24} height={24} fill={COLORS.SUCCESS} />
+                );
+            }
+
+            // Render empty stars
+
+
+            return stars;
+        };
+
         return (
             <View style={styles.reviewSection}>
                 <Text style={styles.sectionTitle2}>Reviews</Text>
@@ -213,13 +242,9 @@ const ShopReviewsScreen: React.FC = () => {
                         <Text style={styles.largeRatingText}>
                             {displayData?.rating?.toFixed(1) || '0.0'}
                         </Text>
-                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
-                        <StarIcon width={24} height={24} fill={COLORS.SUCCESS} />
+                        {renderStars()}
                         <Text style={styles.ratingCount}>
-                            By {displayData?.totalReviews || 0}+
+                            By {displayData?.totalReviews || 0}{displayData?.totalReviews > 99 ? '+' : ''}
                         </Text>
                     </View>
                 </View>

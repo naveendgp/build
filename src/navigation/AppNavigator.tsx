@@ -24,6 +24,7 @@ import ProfileDetailsScreen from '../screens/VendorVerification/ProfileDetails';
 import ShopDetailsScreen from '../screens/VendorVerification/ShopDetails';
 import BankDetailsScreen from '../screens/VendorVerification/BankDetails';
 import SplashScreen from '../screens/SplashScreen';
+import WebViewScreen from '../screens/Profile/SubScreens/WebViewScreen';
 
 export type RootStackParamList = {
   Splash: undefined;
@@ -50,6 +51,7 @@ export type RootStackParamList = {
   BankDetails: { readOnly?: boolean } | undefined;
   ActiveServicesPricingScreen: undefined;
   ShopReviewsScreen: undefined;
+  WebViewScreen: { url: string; title?: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -152,6 +154,11 @@ const AppNavigator = forwardRef<NavigationContainerRef<any>>((props, ref) => {
           <Stack.Screen
             name="ShopReviewsScreen"
             component={ShopReviewsScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="WebViewScreen"
+            component={WebViewScreen}
             options={{ headerShown: false }}
           />
 
