@@ -1,16 +1,18 @@
 import React, { useEffect, useMemo, useCallback, useState } from 'react';
 import { View, FlatList, RefreshControl, ActivityIndicator, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import ReceivedOrderCard from '../../CardComponents/RecivedOrderCard';
 import CustomText from '../../../../components/Text';
 import styles from './style';
 import { OrderStatus } from '../../../../types/order/order';
 import { mapOrdersToReceivedCards } from '../../utils/orderMappers';
-import { useOrdersPagination } from '../../hooks/useOrdersPagination';
+import { useOrdersPagination, ORDERS_QUERY_KEY } from '../../hooks/useOrdersPagination';
 import { useOrdersCountStore } from '../../../../apiService/store/useOrdersCountStore';
 import { COLORS, FONTFAMILY } from '../../../../constants/colors';
 import EmptyScreen from '../../../../components/EmptyScreen';
 import LoadingScreen from '../../../../components/LoadingScreen';
 import ErrorScreen from '../../../../components/ErrorScreen';
+import { OrderStatusCode } from '../../../../apiService/types/ordersTypes';
 
 interface AcceptedOrdersScreenProps {
   tabType: OrderStatus;
@@ -54,9 +56,22 @@ const AcceptedOrdersScreen: React.FC<AcceptedOrdersScreenProps> = ({
     [orders],
   );
 
+  const queryClient = useQueryClient();
+
   const handleOrderAccept = useCallback(() => {
+    // Refetch current tab's data
     refetch();
-  }, [refetch]);
+
+    // Invalidate queries for COMPLETED and READY_FOR_PICKUP tabs
+    // This ensures when an order moves from ACCEPTED -> READY_FOR_PICKUP/COMPLETED,
+    // all related lists update properly
+    queryClient.invalidateQueries({
+      queryKey: [ORDERS_QUERY_KEY, OrderStatusCode.COMPLETED]
+    });
+    queryClient.invalidateQueries({
+      queryKey: [ORDERS_QUERY_KEY, OrderStatusCode.READY_FOR_PICKUP]
+    });
+  }, [refetch, queryClient]);
 
   const renderOrderItem = useCallback(
     ({ item, index }: { item: ReturnType<typeof mapOrdersToReceivedCards>[number]; index: number }) => (
