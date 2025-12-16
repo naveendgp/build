@@ -6,6 +6,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
 import Toolbar from '../../../components/Toolbar';
 import { COLORS } from '../../../constants/colors';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type WebViewScreenRouteProp = RouteProp<RootStackParamList, 'WebViewScreen'>;
 type WebViewScreenNavProp = NativeStackNavigationProp<RootStackParamList, 'WebViewScreen'>;
@@ -16,7 +17,7 @@ const WebViewScreen: React.FC = () => {
     const { url, title } = route.params;
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
             <Toolbar title={title || 'Web View'} onBackPress={() => navigation.goBack()} />
             <WebView
                 source={{ uri: url }}
@@ -28,7 +29,7 @@ const WebViewScreen: React.FC = () => {
                     </View>
                 )}
             />
-        </View>
+        </SafeAreaView>
     );
 };
 

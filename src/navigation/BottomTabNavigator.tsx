@@ -22,6 +22,7 @@ import { LoginUserStatus } from '../constants/tripStatus';
 import CustomeDialog from '../components/Dialog';
 import { compareVersions, getCurrentAppVersion, openAppStore } from '../utils/appVersionUtils';
 import { Platform } from 'react-native';
+import { COLORS } from '../constants';
 
 export type BottomTabParamList = {
   Home: undefined;
@@ -165,24 +166,26 @@ const BottomTabNavigator = () => {
   return (
     <>
       <Tab.Navigator
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon name={route.name} focused={focused} />
-          ),
-          tabBarActiveTintColor: '#1B2A4A',
-          tabBarInactiveTintColor: '#7B869A',
-          tabBarStyle: {
-            backgroundColor: '#F6F6F6',
-            height: 60,
-            elevation: 5,
-          },
-          tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: '500',
-            marginTop: 4,
-          },
-        })}
+
+        screenOptions={
+          ({ route }) => ({
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <TabBarIcon name={route.name} focused={focused} />
+            ),
+            tabBarActiveTintColor: '#1B2A4A',
+            tabBarInactiveTintColor: '#7B869A',
+            tabBarStyle: {
+              backgroundColor: COLORS.CARD_BACKGROUND,
+              height: 60,
+              elevation: 5,
+            },
+            tabBarLabelStyle: {
+              fontSize: 12,
+              fontWeight: '500',
+              marginTop: 4,
+            },
+          })}
       >
 
         <Tab.Screen

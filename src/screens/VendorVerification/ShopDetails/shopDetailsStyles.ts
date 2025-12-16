@@ -8,7 +8,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.BUTTON_BACKGROUND,
     borderRadius: 16,
     padding: 16,
-    marginTop: 24,
+    marginTop: 0, // i removed this to align with the top of the screen
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
   },

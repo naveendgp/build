@@ -4,12 +4,12 @@ import { COLORS, FONTFAMILY } from '../../constants/colors';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.WHITE
+    backgroundColor: COLORS.CARD_BACKGROUND
   },
   header: {
     paddingHorizontal: 12,
     paddingVertical: 16,
-    marginBottom: 24,
+    paddingBottom: 24,
     backgroundColor: COLORS.CARD_BACKGROUND,
   },
   title: {

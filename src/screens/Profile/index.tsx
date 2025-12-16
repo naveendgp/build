@@ -187,66 +187,70 @@ const ProfileScreen: React.FC = () => {
           <CustomText style={styles.loadingText}>Loading profile...</CustomText>
         </View>
       ) : (
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Title */}
+        <View style={{ flex: 1 }}>
           <View style={styles.header}>
             <CustomText style={styles.title}>Profile</CustomText>
           </View>
+          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            {/* Title */}
 
-          {/* Summary Card */}
-          <View style={styles.summaryCard}>
-            <CustomText style={styles.summaryTitle}>To Be Received</CustomText>
-            <CustomText style={styles.summaryAmount}>{profile?.pending_settlement_amount}</CustomText>
-            <View style={styles.summaryStats}>
-              <View style={styles.statItem}>
-                <CustomText style={styles.statLabel}>
-                  Total Orders Received
-                </CustomText>
-                <CustomText style={styles.statValue}>{profile?.total_orders}</CustomText>
-              </View>
-              <View style={styles.statItem}>
-                <CustomText style={styles.statLabel}>
-                  Accepted Orders
-                </CustomText>
-                <CustomText style={styles.statValue}>{profile?.total_accepted_orders}</CustomText>
+
+            {/* Summary Card */}
+            <View style={styles.summaryCard}>
+              <CustomText style={styles.summaryTitle}>To Be Received</CustomText>
+              <CustomText style={styles.summaryAmount}>{profile?.pending_settlement_amount}</CustomText>
+              <View style={styles.summaryStats}>
+                <View style={styles.statItem}>
+                  <CustomText style={styles.statLabel}>
+                    Total Orders Received
+                  </CustomText>
+                  <CustomText style={styles.statValue}>{profile?.total_orders}</CustomText>
+                </View>
+                <View style={styles.statItem}>
+                  <CustomText style={styles.statLabel}>
+                    Accepted Orders
+                  </CustomText>
+                  <CustomText style={styles.statValue}>{profile?.total_accepted_orders}</CustomText>
+                </View>
               </View>
             </View>
-          </View>
 
-          {/* Profile Options */}
-          <View style={styles.optionsContainer}>
-            {profileOptions.map((option, index) => {
-              const isLogout = (option as any).isLogout;
-              return (
-                <TouchableOpacity
-                  key={option.id}
-                  style={[
-                    styles.optionItem,
-                    index === profileOptions.length - 1 && styles.optionItemLast,
-                    isLogout && styles.logoutOptionItem,
-                  ]}
-                  onPress={option.onPress}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.optionLeft}>
-                    <CustomIcon
-                      type={option.iconType}
-                      name={option.icon as any}
-                    />
-                    <CustomText
-                      style={[
-                        styles.optionTitle,
-                        isLogout && styles.logoutOptionTitle,
-                      ]}
-                    >
-                      {option.title}
-                    </CustomText>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </ScrollView>
+            {/* Profile Options */}
+            <View style={styles.optionsContainer}>
+              {profileOptions.map((option, index) => {
+                const isLogout = (option as any).isLogout;
+                return (
+                  <TouchableOpacity
+                    key={option.id}
+                    style={[
+                      styles.optionItem,
+                      index === profileOptions.length - 1 && styles.optionItemLast,
+                      isLogout && styles.logoutOptionItem,
+                    ]}
+                    onPress={option.onPress}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.optionLeft}>
+                      <CustomIcon
+                        type={option.iconType}
+                        name={option.icon as any}
+                      />
+                      <CustomText
+                        style={[
+                          styles.optionTitle,
+                          isLogout && styles.logoutOptionTitle,
+                        ]}
+                      >
+                        {option.title}
+                      </CustomText>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </View>
+
       )}
 
       <DiscardDialog

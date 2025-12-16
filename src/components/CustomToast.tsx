@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { COLORS } from '../constants';
 import { theme } from '../utils/theme';
-
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { height: screenHeight } = Dimensions.get('window');
 
 const {
@@ -41,6 +41,8 @@ interface CustomToastComponent extends React.FC {
 
 // ---- Component ---- //
 const CustomToast: CustomToastComponent = () => {
+
+  const insets = useSafeAreaInsets();
   const [visible, setVisible] = useState(false);
   const [options, setOptions] = useState<ToastInternal | null>(null);
   const slideAnim = useRef(new Animated.Value(-screenHeight)).current;
@@ -112,6 +114,7 @@ const CustomToast: CustomToastComponent = () => {
         {
           backgroundColor: options.bgColor || COLORS.BLACK,
           transform: [{ translateY: slideAnim }],
+          marginTop: insets.top,
         },
       ]}
     >

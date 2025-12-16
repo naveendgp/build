@@ -15,6 +15,7 @@ import { showErrorToast } from '../../../utils/Toast';
 import { useAuthStore } from '../../../apiService/store/useAuthStore';
 import { useVendorValidation } from '../useVendorValidation';
 import { useSubmitVerification } from './hooks/useSubmitVerification';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type ReviewDetailsNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -113,130 +114,133 @@ const ReviewDetailsScreen: React.FC = () => {
   };
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
       <CustomText style={styles.title}>Review Details</CustomText>
 
-      {/* Personal Details Section */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <CustomText style={styles.sectionTitle}>Personal Details</CustomText>
-          <TouchableOpacity onPress={handleEditPersonal} style={styles.editButton}>
-            <EditIcon color={COLORS.THEME_GREEN} />
-            <CustomText style={styles.editText}>Edit</CustomText>
-          </TouchableOpacity>
-        </View>
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
 
-        <DetailItem label="Full Name" value={vendor.owner_name} />
-        <DetailItem label="Number" value={formatPhoneNumber(vendor.mobile)} />
-        <DetailItem label="Mail ID" value={vendor.email} />
-
-
-        {(vendor.aadhaar_file || vendor.pan_file) && (
-          <View style={styles.detailItem}>
-            <CustomText style={styles.label}>Government ID (Aadhar & PAN)</CustomText>
-            {vendor.aadhaar_file && (
-              <View style={styles.fileItem}>
-                <CustomText style={styles.fileName}>
-                  {vendor.aadhaar_file.name || 'Aadhaar Document'}
-                </CustomText>
-              </View>
-            )}
-            {vendor.pan_file && (
-              <View style={styles.fileItem}>
-                <CustomText style={styles.fileName}>
-                  {vendor.pan_file.name || 'PAN Document'}
-                </CustomText>
-              </View>
-            )}
+        {/* Personal Details Section */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <CustomText style={styles.sectionTitle}>Personal Details</CustomText>
+            <TouchableOpacity onPress={handleEditPersonal} style={styles.editButton}>
+              <EditIcon color={COLORS.THEME_GREEN} />
+              <CustomText style={styles.editText}>Edit</CustomText>
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
 
-      {/* Shop Details Section */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <CustomText style={styles.sectionTitle}>Shop Details</CustomText>
-          <TouchableOpacity onPress={handleEditShop} style={styles.editButton}>
-            <EditIcon color={COLORS.THEME_GREEN} />
-            <CustomText style={styles.editText}>Edit</CustomText>
-          </TouchableOpacity>
-        </View>
+          <DetailItem label="Full Name" value={vendor.owner_name} />
+          <DetailItem label="Number" value={formatPhoneNumber(vendor.mobile)} />
+          <DetailItem label="Mail ID" value={vendor.email} />
 
-        <DetailItem label="Shop Name" value={shop.shop_name} />
-        <DetailItem label="GST Number" value={shop.gst_number} />
-        <DetailItem label="Shop Address" value={shop.address} />
-        <DetailItem label="Pincode" value={shop.pincode} />
-        <DetailItem label="Landmark" value={shop.landmark} />
-        <DetailItem label="Business Hours" value={shop.business_hours} />
-        <DetailItem label="Contact Number" value={formatPhoneNumber(shop.contact_number)} />
-        {shop.shop_front_photo && (
-          <DetailItem label="Shop Front Photo" value={shop.shop_front_photo.name} isFile />
-        )}
-      </View>
 
-      {/* Bank Details Section */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <CustomText style={styles.sectionTitle}>Bank Details</CustomText>
-          <TouchableOpacity onPress={handleEditBank} style={styles.editButton}>
-            <EditIcon />
-            <CustomText style={styles.editText}>Edit</CustomText>
-          </TouchableOpacity>
-        </View>
-
-        <DetailItem label="Account Holder Name" value={bank.account_holder_name} />
-        <DetailItem label="Account Number*" value={bank.account_number || '-'} />
-        <DetailItem label="Bank Name" value={bank.bank_name} />
-        <DetailItem label="IFSC Code" value={bank.ifsc_code} />
-        <DetailItem label="UPI ID" value={bank.upi_id} />
-        {bank.cancelled_cheque && (
-          <DetailItem label="Cancelled Cheque" value={bank.cancelled_cheque.name} isFile />
-        )}
-      </View>
-
-      {/* Services Section */}
-      <View style={styles.card}>
-        <View style={styles.cardHeader}>
-          <CustomText style={styles.sectionTitle}>Selected Services</CustomText>
-          <TouchableOpacity onPress={handleEditServices} style={styles.editButton}>
-            <EditIcon />
-            <CustomText style={styles.editText}>Edit</CustomText>
-          </TouchableOpacity>
-        </View>
-
-        {services.selectedServices.length > 0 ? (
-          <View style={styles.detailItem}>
-            <View style={{ marginTop: 4 }}>
-              {services.selectedServices.map((serviceName, index) => (
-                <CustomText key={index} style={[styles.value, { marginTop: index > 0 ? 4 : 0 }]}>
-                  {serviceName}
-                </CustomText>
-              ))}
+          {(vendor.aadhaar_file || vendor.pan_file) && (
+            <View style={styles.detailItem}>
+              <CustomText style={styles.label}>Government ID (Aadhar & PAN)</CustomText>
+              {vendor.aadhaar_file && (
+                <View style={styles.fileItem}>
+                  <CustomText style={styles.fileName}>
+                    {vendor.aadhaar_file.name || 'Aadhaar Document'}
+                  </CustomText>
+                </View>
+              )}
+              {vendor.pan_file && (
+                <View style={styles.fileItem}>
+                  <CustomText style={styles.fileName}>
+                    {vendor.pan_file.name || 'PAN Document'}
+                  </CustomText>
+                </View>
+              )}
             </View>
-          </View>
-        ) : (
-          <DetailItem label="Selected Services" value="No services selected" />
-        )}
-      </View>
+          )}
+        </View>
 
-      {/* Buttons */}
-      <View style={styles.buttonRow}>
-        <CustomBtn
-          title="Previous"
-          onPress={() => navigation.goBack()}
-          style={styles.previousButton}
-          textStyle={styles.previousButtonText}
-        />
-        <CustomBtn
-          title="Save"
-          onPress={handleSubmit}
-          disabled={isLoading || bothSuccess}
-          loading={isLoading}
-          style={styles.nextButton}
-          textStyle={styles.nextButtonText}
-        />
-      </View>
-    </ScrollView>
+        {/* Shop Details Section */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <CustomText style={styles.sectionTitle}>Shop Details</CustomText>
+            <TouchableOpacity onPress={handleEditShop} style={styles.editButton}>
+              <EditIcon color={COLORS.THEME_GREEN} />
+              <CustomText style={styles.editText}>Edit</CustomText>
+            </TouchableOpacity>
+          </View>
+
+          <DetailItem label="Shop Name" value={shop.shop_name} />
+          <DetailItem label="GST Number" value={shop.gst_number} />
+          <DetailItem label="Shop Address" value={shop.address} />
+          <DetailItem label="Pincode" value={shop.pincode} />
+          <DetailItem label="Landmark" value={shop.landmark} />
+          <DetailItem label="Business Hours" value={shop.business_hours} />
+          <DetailItem label="Contact Number" value={formatPhoneNumber(shop.contact_number)} />
+          {shop.shop_front_photo && (
+            <DetailItem label="Shop Front Photo" value={shop.shop_front_photo.name} isFile />
+          )}
+        </View>
+
+        {/* Bank Details Section */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <CustomText style={styles.sectionTitle}>Bank Details</CustomText>
+            <TouchableOpacity onPress={handleEditBank} style={styles.editButton}>
+              <EditIcon />
+              <CustomText style={styles.editText}>Edit</CustomText>
+            </TouchableOpacity>
+          </View>
+
+          <DetailItem label="Account Holder Name" value={bank.account_holder_name} />
+          <DetailItem label="Account Number*" value={bank.account_number || '-'} />
+          <DetailItem label="Bank Name" value={bank.bank_name} />
+          <DetailItem label="IFSC Code" value={bank.ifsc_code} />
+          <DetailItem label="UPI ID" value={bank.upi_id} />
+          {bank.cancelled_cheque && (
+            <DetailItem label="Cancelled Cheque" value={bank.cancelled_cheque.name} isFile />
+          )}
+        </View>
+
+        {/* Services Section */}
+        <View style={styles.card}>
+          <View style={styles.cardHeader}>
+            <CustomText style={styles.sectionTitle}>Selected Services</CustomText>
+            <TouchableOpacity onPress={handleEditServices} style={styles.editButton}>
+              <EditIcon />
+              <CustomText style={styles.editText}>Edit</CustomText>
+            </TouchableOpacity>
+          </View>
+
+          {services.selectedServices.length > 0 ? (
+            <View style={styles.detailItem}>
+              <View style={{ marginTop: 4 }}>
+                {services.selectedServices.map((serviceName, index) => (
+                  <CustomText key={index} style={[styles.value, { marginTop: index > 0 ? 4 : 0 }]}>
+                    {serviceName}
+                  </CustomText>
+                ))}
+              </View>
+            </View>
+          ) : (
+            <DetailItem label="Selected Services" value="No services selected" />
+          )}
+        </View>
+
+        {/* Buttons */}
+        <View style={styles.buttonRow}>
+          <CustomBtn
+            title="Previous"
+            onPress={() => navigation.goBack()}
+            style={styles.previousButton}
+            textStyle={styles.previousButtonText}
+          />
+          <CustomBtn
+            title="Save"
+            onPress={handleSubmit}
+            disabled={isLoading || bothSuccess}
+            loading={isLoading}
+            style={styles.nextButton}
+            textStyle={styles.nextButtonText}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 

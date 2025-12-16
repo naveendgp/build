@@ -382,16 +382,19 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           <CustomText style={styles.addressLabel}>
             Shop Address<CustomText style={styles.asterisk}>*</CustomText>
           </CustomText>
-          <CustomTextInput
-            placeholder="Type here"
-            value={shop.address || ''}
-            multiline
-            numberOfLines={4}
-            style={styles.addressInput}
-            containerStyle={styles.addressInputContainer}
-            label=""
-            editable={false}
-          />
+          <View style={styles.addressInputContainer}>
+            <CustomText
+              style={[
+                styles.addressInput,
+                { paddingVertical: 12 },
+                !shop.address && { color: '#9AA0A6' },
+              ]}
+              numberOfLines={3}
+              ellipsizeMode="tail"
+            >
+              {shop.address || 'Type here'}
+            </CustomText>
+          </View>
         </TouchableOpacity>
         {errors.address && (
           <CustomText style={styles.errorText}>{errors.address}</CustomText>

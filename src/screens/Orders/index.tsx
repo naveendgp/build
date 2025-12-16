@@ -18,8 +18,10 @@ import { useProfileStore } from '../../apiService/store/useProfileStore';
 import { toggleSettings } from '../../apiService/api/profileApi'; // <-- named import
 import { ToggleSettingsInput, ToggleSettingsResponse } from '../../apiService/types/profileTypes';
 import { showSuccessToast, showErrorToast } from '../../utils/Toast';
-
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 const OrdersScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+
   const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
   const scrollViewRef = useRef<ScrollView | null>(null);
   const tabRefs = useRef<{ [key: string]: any }>({});
@@ -184,7 +186,7 @@ const OrdersScreen: React.FC = () => {
   const isMutationPending = toggleSettingsMutation.isPending ?? false;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container,]}>
       <View style={styles.header}>
         <View
           style={{
@@ -385,7 +387,7 @@ const OrdersScreen: React.FC = () => {
       {activeTab === OrderStatus.COMPLETED && (
         <CompletedOrdersScreen tabType={activeTab} />
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

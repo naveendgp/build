@@ -19,6 +19,7 @@ import { fetchOrderById } from '../../../apiService/api/ordersApi';
 import { VendorOrder } from '../../../apiService/types/ordersTypes';
 import { openWhatsApp } from '../../../utils/whatsappUtils';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OrderDetailsRouteProp = RouteProp<RootStackParamList, 'OrderDetails'>;
 type OrderDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'OrderDetails'>;
@@ -306,7 +307,7 @@ const OrderDetailsScreen: React.FC = () => {
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
                 <View style={styles.toolbarContainer}>
                     <Toolbar
@@ -410,7 +411,7 @@ const OrderDetailsScreen: React.FC = () => {
                 items={getItemsData()}
                 isWeightBased={vendorOrder?.service_type === 2 ? true : false}
             />
-        </View>
+        </SafeAreaView>
     );
 };
 
