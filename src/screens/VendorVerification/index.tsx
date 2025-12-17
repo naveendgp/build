@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
-  SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
@@ -35,7 +34,7 @@ import { getProfile } from '../../apiService/api/profileApi';
 import { VendorProfile } from '../../apiService/types/profileTypes';
 import { registerComplete } from '../../apiService/api/authApi';
 import DiscardDialog from '../../components/DiscardDialog';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
   'VendorVerification'

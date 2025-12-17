@@ -9,13 +9,14 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { updateBankDetailsWithCheque } from '../../../apiService/api/profileApi';
 import { UpdateBankDetailsInputWithCheque } from '../../../apiService/types/profileTypes';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { showErrorToast, showSuccessToast, showToast } from '../../../utils/Toast';
 import { getMimeTypeFromExtension } from '../../../utils/fileUtils';
 import BankDetailsStep from './BankDetailsStep';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type BankDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'BankDetails'>;
 
@@ -26,6 +27,7 @@ const BankDetailsScreen: React.FC = () => {
   const { profile } = useProfileStore();
   const isReadOnly = !!(route.params as any)?.readOnly;
 
+  const insets = useSafeAreaInsets();
   // Initialize from profile store if available, otherwise from vendor verification store
   const buildDocumentFile = (uri?: string, fallback?: { uri: string; name?: string } | null, defaultName?: string) => {
     if (uri) {
@@ -147,8 +149,13 @@ const BankDetailsScreen: React.FC = () => {
     updateBankMutation.mutate();
   };
 
+  useEffect(() => {
+    showToast('If you want to edit your Bank Details contact admin using Help & Support')
+  }, []);
+
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE, paddingTop: insets.top }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

@@ -10,17 +10,21 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { updateProfile } from '../../../apiService/api/profileApi';
 import { UpdateProfileInput } from '../../../apiService/types/profileTypes';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { showErrorToast, showSuccessToast, showToast } from '../../../utils/Toast';
 import { getMimeTypeFromExtension } from '../../../utils/fileUtils';
 import VendorDetailsStep from './VendorDetailsStep';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'ProfileDetails'>;
 
 const ProfileDetailsScreen: React.FC = () => {
+
+  const insets = useSafeAreaInsets();
+
   const navigation = useNavigation<ProfileDetailsNavProp>();
   const route = useRoute();
   const { vendor: storeVendor, setVendorData } = useVendorVerificationStore();
@@ -176,8 +180,12 @@ const ProfileDetailsScreen: React.FC = () => {
     updateProfileMutation.mutate();
   };
 
+  useEffect(() => {
+    showToast('If you want to edit your Profile Details contact admin using Help & Support')
+  }, []);
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE, paddingTop: insets.top }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

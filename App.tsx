@@ -20,24 +20,6 @@ import socket from './src/apiService/socket/socket';
 import { queryClient } from './src/services/api/queryClient';
 
 
-const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
-  const insets = useSafeAreaInsets();
-  const token = useAuthStore(state => state.token);
-
-
-  return (
-    <View
-      style={{
-        flex: 1,
-        paddingTop: insets.top, // Need to adjust this based Gradient Bg req
-        paddingBottom: insets.bottom,
-        backgroundColor: "#F6F6F6",
-      }}
-    >
-      {children}
-    </View>
-  );
-};
 
 const App = () => {
 
@@ -88,22 +70,25 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
-          <ScreenWrapper>
-            <GestureHandlerRootView style={styles.container}>
-              <StatusBar barStyle={'dark-content'} />
-              <AppNavigator ref={navigationRef} />
-              <CustomToast />
-              <CustomeDialog
-                visible={visible}
-                title={title}
-                subtitle={subtitle}
-                buttonText={buttonText}
-                onButtonPress={handleDialogButtonPress}
-                closable={closable}
-                onClose={closable ? handleDialogButtonPress : undefined}
-              />
-            </GestureHandlerRootView>
-          </ScreenWrapper>
+
+          <GestureHandlerRootView style={styles.container}>
+            <StatusBar
+              translucent
+              backgroundColor="transparent"
+              barStyle="dark-content"
+            />
+            <AppNavigator ref={navigationRef} />
+            <CustomToast />
+            <CustomeDialog
+              visible={visible}
+              title={title}
+              subtitle={subtitle}
+              buttonText={buttonText}
+              onButtonPress={handleDialogButtonPress}
+              closable={closable}
+              onClose={closable ? handleDialogButtonPress : undefined}
+            />
+          </GestureHandlerRootView>
         </SafeAreaView>
       </SafeAreaProvider>
     </QueryClientProvider>

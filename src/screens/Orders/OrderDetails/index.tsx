@@ -19,6 +19,7 @@ import { fetchOrderById } from '../../../apiService/api/ordersApi';
 import { VendorOrder } from '../../../apiService/types/ordersTypes';
 import { openWhatsApp } from '../../../utils/whatsappUtils';
 import { useProfileStore } from '../../../apiService/store/useProfileStore';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OrderDetailsRouteProp = RouteProp<RootStackParamList, 'OrderDetails'>;
 type OrderDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'OrderDetails'>;
@@ -260,7 +261,7 @@ const OrderDetailsScreen: React.FC = () => {
     // Show loader while fetching
     if (isLoading) {
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 <View style={styles.headerContainer}>
                     <View style={styles.toolbarContainer}>
                         <Toolbar
@@ -276,14 +277,14 @@ const OrderDetailsScreen: React.FC = () => {
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color={COLORS.THEME_GREEN} />
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 
     // Show error state
     if (isError || !orderData) {
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 <View style={styles.headerContainer}>
                     <View style={styles.toolbarContainer}>
                         <Toolbar
@@ -301,12 +302,12 @@ const OrderDetailsScreen: React.FC = () => {
                         {error?.message || 'Failed to load order details. Please try again.'}
                     </CustomText>
                 </View>
-            </View>
+            </SafeAreaView>
         );
     }
 
     return (
-        <View style={styles.container}>
+        <SafeAreaView style={styles.container}>
             <View style={styles.headerContainer}>
                 <View style={styles.toolbarContainer}>
                     <Toolbar
@@ -410,7 +411,7 @@ const OrderDetailsScreen: React.FC = () => {
                 items={getItemsData()}
                 isWeightBased={vendorOrder?.service_type === 2 ? true : false}
             />
-        </View>
+        </SafeAreaView>
     );
 };
 

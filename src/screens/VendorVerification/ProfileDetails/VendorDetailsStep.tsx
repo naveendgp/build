@@ -12,6 +12,7 @@ import CheckIcon from '../../../assets/auto-generated-svg-icons/CheckIcon';
 import CloseIcon from '../../../assets/auto-generated-svg-icons/CloseIcon';
 import { COLORS } from '../../../constants/colors';
 import { VendorErrors } from '../useVendorValidation';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface VendorData {
   owner_name: string;
@@ -115,7 +116,7 @@ const VendorDetailsStep: React.FC<Props> = ({
 
 
   return (
-    <View style={styles.card}>
+    <SafeAreaView style={styles.card}>
       {/* Profile Picture Section */}
       <View style={styles.profilePicContainer}>
         <TouchableOpacity
@@ -212,6 +213,7 @@ const VendorDetailsStep: React.FC<Props> = ({
           Government ID (Aadhaar)
         </CustomText>
         {!vendor.aadhaar_file ? (
+
           <TouchableOpacity
             onPress={() => pickDocument('aadhaar')}
             style={styles.uploadButton}
@@ -275,7 +277,7 @@ const VendorDetailsStep: React.FC<Props> = ({
       {errors.aadhaar_or_pan && (
         <CustomText style={styles.errorText}>{errors.aadhaar_or_pan}</CustomText>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 

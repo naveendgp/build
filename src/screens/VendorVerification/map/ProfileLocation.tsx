@@ -28,6 +28,7 @@ import SvgSearchIcons from "../../../assets/auto-generated-svg-icons/SearchIcons
 import LocationIcon from "../../../assets/auto-generated-svg-icons/LocationIcon";
 import SvgRightArrowIcon from "../../../assets/auto-generated-svg-icons/RightArrowIcon";
 import SvgLocateIcon from "../../../assets/auto-generated-svg-icons/LocateIcon";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const GOOGLE_API_KEY = "AIzaSyArBDwxwEtcoQ5ssKfnZoTVwd3BJWGyiJA"; // 🔐 Replace with your valid key
 
@@ -89,7 +90,12 @@ const fetchAddressFromCoordinates = async (
 
     if (data.status === 'OK' && data.results && data.results.length > 0) {
       const result: GeocodeResult = data.results[0];
-      const fullAddress = result.formatted_address;
+      let fullAddress = result.formatted_address;
+
+      // Remove Google Plus Code (e.g., "W5VH+HGG", "8FVC9G8F+5W") if present at the start
+      const plusCodeRegex = /^[A-Z0-9]{4,}\+[A-Z0-9]{2,}[\s,]*/;
+      fullAddress = fullAddress.replace(plusCodeRegex, '');
+
       const overviewAddress = extractOverviewAddress(result.address_components);
 
       return {
@@ -235,23 +241,13 @@ const ProfileLocation: React.FC = () => {
         );
       }
     } else {
-      // Fetch current location and address when screen loads (no existing data)
-      getCurrentLocation();
+      // Do nothing here - let MapScreen handle the initial current location fetch
+      // and report back via onLocationSelectProp
     }
   }, [existingData, initialAddressData]);
 
   // Set map marker when map ref is ready and we have existing coordinates
-  useEffect(() => {
-    if (existingData?.latitude && existingData?.longitude) {
-      // Use a delay to ensure map component is fully mounted
-      const timer = setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.updateMarkerPosition(existingData.latitude, existingData.longitude);
-        }
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [existingData]);
+
 
   // 🔍 Fetch autocomplete suggestions
   const fetchSuggestions = async (text: string) => {
@@ -355,7 +351,7 @@ const ProfileLocation: React.FC = () => {
   };
 
   return (
-    <View style={styles.root}>
+    <SafeAreaView style={styles.root}>
       <Toolbar title="Select Location" />
 
       <KeyboardAvoidingView
@@ -412,28 +408,39 @@ const ProfileLocation: React.FC = () => {
 
           {/* 🗺 Map Section */}
           <View style={styles.mapWrapper}>
-            <MapScreen
-              ref={mapRef}
-              hideConfirmButton
-              googleApiKey={GOOGLE_API_KEY}
-              onLocationSelectProp={async (lat, lng, address) => {
-                setLatitude(lat);
-                setLongitude(lng);
-                // Fetch both overview and full address from coordinates
-                try {
-                  const { fullAddress, overviewAddress } = await fetchAddressFromCoordinates(lat, lng);
-                  setAddressOverview(overviewAddress);
-                  setAddressDetails(fullAddress);
-                } catch (error) {
-                  console.error("Error fetching address:", error);
-                  // Fallback if address is provided
-                  if (address) {
-                    setAddressOverview(address);
-                    setAddressDetails(address);
-                  }
+
+            {/* 🗺 Map Section */}
+            <View style={styles.mapWrapper}>
+              <MapScreen
+                ref={mapRef}
+                hideConfirmButton
+                googleApiKey={GOOGLE_API_KEY}
+                initialLocation={
+                  (existingData?.latitude && existingData?.longitude)
+                    ? { latitude: existingData.latitude, longitude: existingData.longitude }
+                    : (initialAddressData?.latitude && initialAddressData?.longitude)
+                      ? { latitude: initialAddressData.latitude, longitude: initialAddressData.longitude }
+                      : undefined
                 }
-              }}
-            />
+                onLocationSelectProp={async (lat, lng, address) => {
+                  setLatitude(lat);
+                  setLongitude(lng);
+                  // Fetch both overview and full address from coordinates
+                  try {
+                    const { fullAddress, overviewAddress } = await fetchAddressFromCoordinates(lat, lng);
+                    setAddressOverview(overviewAddress);
+                    setAddressDetails(fullAddress);
+                  } catch (error) {
+                    console.error("Error fetching address:", error);
+                    // Fallback if address is provided
+                    if (address) {
+                      setAddressOverview(address);
+                      setAddressDetails(address);
+                    }
+                  }
+                }}
+              />
+            </View>
           </View>
 
 
@@ -520,7 +527,7 @@ const ProfileLocation: React.FC = () => {
           />
         </View>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 };
 

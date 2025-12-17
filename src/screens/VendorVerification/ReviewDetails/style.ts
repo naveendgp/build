@@ -6,7 +6,6 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.WHITE,
     paddingHorizontal: 12,
-    paddingTop: 24,
   },
   title: {
     fontSize: 18,
@@ -14,6 +13,10 @@ export default StyleSheet.create({
     color: COLORS.TEXT_PRIMARY,
     fontWeight: '700',
     marginBottom: 24,
+
+    paddingTop: 24,
+    paddingHorizontal: 12,
+
   },
   card: {
     backgroundColor: COLORS.BUTTON_BACKGROUND,

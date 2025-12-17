@@ -54,7 +54,7 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
             isVisible={isVisible}
             onClose={onClose}
             bgColor={COLORS.WHITE}
-            height={25}  // home screen height issue fix
+            height={32}  // home screen height issue fix
             headerText="Bill Summary"
         >
             <View style={styles.container}>

@@ -8,7 +8,7 @@ export default StyleSheet.create({
     backgroundColor: COLORS.BUTTON_BACKGROUND,
     borderRadius: 16,
     padding: 16,
-    marginTop: 20,
+    marginTop: 0, // i removed this
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
   },

@@ -70,7 +70,6 @@ const OTPVerificationScreen: React.FC = () => {
                 i < digits.length - 1 && { marginRight: 12 },
               ]}
               keyboardType="number-pad"
-              maxLength={1}
               value={d}
               onChangeText={val => handleChange(i, val)}
               onKeyPress={e => handleKeyPress(i, e)}

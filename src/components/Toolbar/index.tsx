@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import SvgArrowLeftIcon from '../../assets/auto-generated-svg-icons/NavigateBack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface ToolbarProps {
   title: string;
@@ -19,7 +20,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onBackPress,
 }) => {
   const navigation = useNavigation();
-
+  const insets = useSafeAreaInsets();
   return (
     <View style={styles.container}>
       {/* Back Button */}

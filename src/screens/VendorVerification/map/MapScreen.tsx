@@ -17,7 +17,13 @@ const fetchAddressFromCoordinates = async (lat: number, lng: number, apiKey: str
 
     if (data.status === 'OK' && data.results && data.results.length > 0) {
       // Return the formatted address from the first result
-      return data.results[0].formatted_address;
+      const address = data.results[0].formatted_address;
+
+      // Remove Google Plus Code (e.g., "W5VH+HGG", "8FVC9G8F+5W") if present at the start
+      // Pattern matches: Start of string, 4+ alphanumeric chars, '+', 2+ alphanumeric chars, followed by optional comma/whitespace
+      const cleanAddress = address.replace(/^[A-Z0-9]{4,}\+[A-Z0-9]{2,}[\s,]*/, '');
+
+      return cleanAddress || address;
     }
     throw new Error('No address found');
   } catch (error) {
@@ -30,6 +36,7 @@ type MapScreenProps = {
   onLocationSelectProp?: (latitude: number, longitude: number, address?: string) => void;
   hideConfirmButton?: boolean;
   googleApiKey?: string;
+  initialLocation?: { latitude: number; longitude: number };
 };
 
 export type MapScreenHandle = {
@@ -44,20 +51,30 @@ const CHENNAI_FALLBACK: Region = {
   longitudeDelta: 0.05,
 };
 
-const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelectProp, hideConfirmButton, googleApiKey }, ref) => {
+const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelectProp, hideConfirmButton, googleApiKey, initialLocation }, ref) => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const mapRef = useRef<MapView | null>(null);
   const isProgrammaticUpdate = useRef(false);
 
-  const regionRef = useRef<Region | null>(null);
-  const [region, setRegion] = useState<Region | null>(null);
-  const [marker, setMarker] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
-  const [isResolvingInitialLocation, setIsResolvingInitialLocation] = useState(true);
+  // Initialize with initialLocation if provided
+  const initialRegion = initialLocation ? {
+    latitude: initialLocation.latitude,
+    longitude: initialLocation.longitude,
+    latitudeDelta: 0.01,
+    longitudeDelta: 0.01,
+  } : null;
 
-  // Get current location on mount and set as initial region
+  const regionRef = useRef<Region | null>(initialRegion);
+  const [region, setRegion] = useState<Region | null>(initialRegion);
+  const [marker, setMarker] = useState<{ latitude: number; longitude: number } | null>(initialLocation || null);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isResolvingInitialLocation, setIsResolvingInitialLocation] = useState(!initialLocation);
+
+  // Get current location on mount and set as initial region ONLY if no initialLocation provided
   useEffect(() => {
+    if (initialLocation) return;
+
     (async () => {
       const granted = await requestLocationPermission();
       if (!granted) {
@@ -81,6 +98,23 @@ const MapScreen = forwardRef<MapScreenHandle, MapScreenProps>(({ onLocationSelec
           regionRef.current = initialRegion;
           setMarker({ latitude, longitude });
           setIsResolvingInitialLocation(false);
+
+          // Notify parent of the automatically found location
+          if (onLocationSelectProp) {
+            // We pass coordinates only; let parent or component logic handle address fetching
+            // (Note: ProfileLocation will automatically fetch address when this is called)
+            if (googleApiKey) {
+              // Ideally we should fetch address here too if we want to pass it
+              fetchAddressFromCoordinates(latitude, longitude, googleApiKey)
+                .then(addr => onLocationSelectProp(latitude, longitude, addr))
+                .catch(err => {
+                  console.error("Error fetching initial address:", err);
+                  onLocationSelectProp(latitude, longitude);
+                });
+            } else {
+              onLocationSelectProp(latitude, longitude);
+            }
+          }
         },
         err => {
           console.log('Error getting initial location:', err);

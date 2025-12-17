@@ -9,17 +9,20 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { updateShop } from '../../../apiService/api/profileApi';
 import { UpdateShopInput, OperatingHoursInput } from '../../../apiService/types/profileTypes';
-import { showErrorToast, showSuccessToast } from '../../../utils/Toast';
+import { showErrorToast, showSuccessToast, showToast } from '../../../utils/Toast';
 import { getMimeTypeFromExtension } from '../../../utils/fileUtils';
 import ShopDetailsStep from './ShopDetailsStep';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ShopDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'ShopDetails'>;
 
 const ShopDetailsScreen: React.FC = () => {
+
+    const insets = useSafeAreaInsets();
     const navigation = useNavigation<ShopDetailsNavProp>();
     const route = useRoute();
     const isReadOnly = !!(route.params as any)?.readOnly;
@@ -269,8 +272,12 @@ const ShopDetailsScreen: React.FC = () => {
         updateShopMutation.mutate();
     };
 
+    useEffect(() => {
+        showToast('If you want to edit your Shop Details contact admin using Help & Support')
+    }, []);
+
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE, paddingTop: insets.top }}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
