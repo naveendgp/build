@@ -5,32 +5,27 @@ import {
   TextInput,
   ScrollView,
   StyleSheet,
-  StatusBar,
   ActivityIndicator,
   Alert,
   KeyboardAvoidingView,
   Platform,
   Keyboard,
 } from "react-native";
-import LinearGradient from "react-native-linear-gradient";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Toolbar from "../../../components/Toolbar";
 import CustomText from "../../../components/Text";
 import { COLORS, FONTFAMILY } from "../../../constants";
 import Geolocation from "@react-native-community/geolocation";
-import Ionicons from "react-native-vector-icons/Ionicons";
 import CustomBtn from "../../../components/CustomBtn";
 
 import CustomSwitch from "../../../components/CustomSwitch";
 import { requestLocationPermission } from "./useLocPermission";
 import MapScreen, { MapScreenHandle } from "./MapScreen";
 import SvgSearchIcons from "../../../assets/auto-generated-svg-icons/SearchIcons";
-import LocationIcon from "../../../assets/auto-generated-svg-icons/LocationIcon";
-import SvgRightArrowIcon from "../../../assets/auto-generated-svg-icons/RightArrowIcon";
 import SvgLocateIcon from "../../../assets/auto-generated-svg-icons/LocateIcon";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const GOOGLE_API_KEY = "AIzaSyArBDwxwEtcoQ5ssKfnZoTVwd3BJWGyiJA"; // 🔐 Replace with your valid key
+const GOOGLE_API_KEY = "AIzaSyDVlpYuw_2TA2c8gETZnSXyEiEvYXvYTzU";
 
 // Type for address components from Google Geocoding API
 type AddressComponent = {
