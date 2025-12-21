@@ -7,7 +7,7 @@ import {
     TextInput,
     Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import CustomText from '../../../components/Text';
 import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
@@ -34,6 +34,7 @@ type CategoryListRouteProp = RouteProp<RootStackParamList, 'CategoryListScreen'>
 const CategoryListScreen: React.FC = () => {
     const navigation = useNavigation<CategoryListNavProp>();
     const route = useRoute<CategoryListRouteProp>();
+    const insets = useSafeAreaInsets();
     const { service, category } = route.params;
     const { setUpdatedService } = useServiceDataStore();
 
@@ -209,7 +210,7 @@ const CategoryListScreen: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }} edges={['top', 'left', 'right', 'bottom']}>
             <Toolbar title={category || 'Category'} />
 
             <View style={styles.summaryBar}>
@@ -230,7 +231,7 @@ const CategoryListScreen: React.FC = () => {
                 ListFooterComponent={() => <View style={{ height: 300 }} />}
             />
 
-            <View style={styles.submitContainer}>
+            <View style={[styles.submitContainer, { paddingBottom: insets.bottom + 16 }]}>
                 <CustomBtn
                     title="Save"
                     onPress={handleSubmit}

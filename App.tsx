@@ -69,7 +69,7 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
 
           <GestureHandlerRootView style={styles.container}>
             <StatusBar
@@ -89,7 +89,7 @@ const App = () => {
               onClose={closable ? handleDialogButtonPress : undefined}
             />
           </GestureHandlerRootView>
-        </SafeAreaView>
+        </View>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

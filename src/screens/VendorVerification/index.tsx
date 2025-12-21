@@ -11,6 +11,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import styles from './styles';
 import CustomBtn from '../../components/CustomBtn';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -34,13 +35,13 @@ import { getProfile } from '../../apiService/api/profileApi';
 import { VendorProfile } from '../../apiService/types/profileTypes';
 import { registerComplete } from '../../apiService/api/authApi';
 import DiscardDialog from '../../components/DiscardDialog';
-import { SafeAreaView } from 'react-native-safe-area-context';
 type VendorNavProp = NativeStackNavigationProp<
   RootStackParamList,
   'VendorVerification'
 >;
 
 const VendorVerificationScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<VendorNavProp>();
   const route = useRoute();
   const setLoggedIn = useAuthStore(state => state.setIsLoggedIn);

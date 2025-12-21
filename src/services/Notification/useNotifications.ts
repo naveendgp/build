@@ -162,6 +162,18 @@ export const useNotifications = () => {
       const body = remoteMessage.notification?.body || '';
       console.log('FCM Foreground Message:', remoteMessage);
 
+
+      //For Disable the Dialog
+      if (title === 'Documents Approved') {
+        try {
+          await useProfileStore.getState().refreshProfile();
+          await queryClient.refetchQueries({ queryKey: ['profile'] });
+
+        } catch (err) {
+          console.log('Failed to refresh profile after Documents Approved notification', err);
+        }
+      }
+
       await displayNotification(title, body, remoteMessage.data);
     });
 

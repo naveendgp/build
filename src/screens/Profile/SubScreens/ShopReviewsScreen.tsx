@@ -5,7 +5,7 @@ import {
     Text,
     ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AxiosError } from 'axios';
@@ -70,6 +70,7 @@ const ReviewCard: React.FC<ReviewCardProps> = ({
 
 const ShopReviewsScreen: React.FC = () => {
     const navigation = useNavigation<ShopReviewsNavProp>();
+    const insets = useSafeAreaInsets();
     const { profile } = useProfileStore();
 
     // Fetch reviews using useQuery with pagination
@@ -296,7 +297,7 @@ const ShopReviewsScreen: React.FC = () => {
     }, [isLoadingReviews]);
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
             <Toolbar title="Shop Review" />
 
             <FlatList
@@ -309,7 +310,7 @@ const ShopReviewsScreen: React.FC = () => {
                 contentContainerStyle={
                     transformedReviews.length === 0
                         ? { flexGrow: 1 }
-                        : { paddingBottom: 32 }
+                        : { paddingBottom: insets.bottom + 32 }
                 }
                 showsVerticalScrollIndicator={false}
                 onEndReached={handleEndReached}

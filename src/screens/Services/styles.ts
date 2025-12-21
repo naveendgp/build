@@ -128,7 +128,6 @@ export default StyleSheet.create({
   },
   updateButtonContainer: {
     paddingHorizontal: 12,
-    paddingBottom: 24,
     paddingTop: 16,
     backgroundColor: COLORS.WHITE,
   },

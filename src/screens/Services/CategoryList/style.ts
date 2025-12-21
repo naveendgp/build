@@ -51,7 +51,7 @@ export default StyleSheet.create({
         backgroundColor: COLORS.BUTTON_BACKGROUND,
         borderTopWidth: 1,
         borderTopColor: COLORS.BORDER_INPUT,
-        paddingVertical: 16,
+        paddingTop: 16,
         paddingHorizontal: 12
     },
 });

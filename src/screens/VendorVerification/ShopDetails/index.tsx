@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, Keyboard, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
+import {
+    View,
+    ScrollView,
+    KeyboardAvoidingView,
+    Platform,
+    Keyboard,
+    TouchableWithoutFeedback,
+    ActivityIndicator,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../../navigation/AppNavigator';
@@ -16,7 +24,7 @@ import Toolbar from '../../../components/Toolbar';
 import CustomBtn from '../../../components/CustomBtn';
 import { COLORS } from '../../../constants/colors';
 import styles from '../styles';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 
 type ShopDetailsNavProp = NativeStackNavigationProp<RootStackParamList, 'ShopDetails'>;
 
@@ -277,7 +285,7 @@ const ShopDetailsScreen: React.FC = () => {
     }, []);
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE, paddingTop: insets.top }}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }} edges={['top', 'left', 'right', 'bottom']}>
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -286,7 +294,7 @@ const ShopDetailsScreen: React.FC = () => {
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                     <ScrollView
                         keyboardShouldPersistTaps="handled"
-                        contentContainerStyle={{ padding: 20 }}
+                        contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom + 20 }}
                     >
                         <ShopDetailsStep
                             shop={shop}
@@ -319,4 +327,3 @@ const ShopDetailsScreen: React.FC = () => {
 };
 
 export default ShopDetailsScreen;
-

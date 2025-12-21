@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
+import { View, TouchableOpacity, Image, Alert } from 'react-native';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import ProfileInput from '../../../components/ProfileInput';
 import CustomText from '../../../components/Text';
@@ -31,13 +31,11 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedEndTime, setSelectedEndTime] = useState<string>('');
   const [timeType, setTimeType] = useState<'start' | 'end'>('start');
-  // Temporary state for time picker (only saved when both times are selected)
   const [tempSelectedStartTime, setTempSelectedStartTime] = useState<string>('');
   const [tempSelectedEndTime, setTempSelectedEndTime] = useState<string>('');
   const [showRepeatSheet, setShowRepeatSheet] = useState(false);
   const DEFAULT_REPEAT_DISPLAY = 'Mon, Tue, Wed, Thu, Fri';
 
-  // Days of the week
   const daysOfWeek = [
     { key: 'sunday', label: 'Every Sunday', short: 'Sun' },
     { key: 'monday', label: 'Every Monday', short: 'Mon' },
@@ -48,7 +46,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     { key: 'saturday', label: 'Every Saturday', short: 'Sat' },
   ];
 
-  // Parse existing repeat_days to selected days
   const parseRepeatDays = (repeatDays: string): string[] => {
     if (!repeatDays) return ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const selected: string[] = [];
@@ -65,15 +62,12 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     parseRepeatDays(shop.repeat_days || '')
   );
 
-  // Temporary state for bottom sheet (only saved when "Save" is clicked)
   const [tempSelectedDays, setTempSelectedDays] = useState<string[]>([]);
 
-  // Update selected days when shop.repeat_days changes
   useEffect(() => {
     setSelectedDays(parseRepeatDays(shop.repeat_days || ''));
   }, [shop.repeat_days]);
 
-  // Parse existing business hours if available
   React.useEffect(() => {
     if (shop.business_hours) {
       const parts = shop.business_hours.split(' - ');
@@ -87,7 +81,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     }
   }, [shop.business_hours]);
 
-  // Format time to 12-hour format with AM/PM
   const formatTime = (time24: string): string => {
     const [hours, minutes] = time24.split(':');
     const hour = parseInt(hours, 10);
@@ -96,8 +89,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     return `${hour12.toString().padStart(2, '0')}:${minutes} ${ampm}`;
   };
 
-
-  // Handle time selection (works with temporary state)
   const handleTimeSelect = (time24: string) => {
     if (!isEditable) return;
     const time12 = formatTime(time24);
@@ -106,8 +97,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
       setTimeType('end');
     } else {
       setTempSelectedEndTime(time12);
-      // Both times selected - save immediately
-      const nextStart = tempSelectedStartTime || time12; // fallback in case state lags
+      const nextStart = tempSelectedStartTime || time12;
       const businessHours = `${nextStart} - ${time12}`;
       setSelectedStartTime(nextStart);
       setSelectedEndTime(time12);
@@ -118,14 +108,10 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     }
   };
 
-  // Open time picker - initialize temporary state with current saved data
   const handleOpenTimePicker = () => {
     if (!isEditable) return;
-    // Initialize temporary state with current saved values
     setTempSelectedStartTime(selectedStartTime);
     setTempSelectedEndTime(selectedEndTime);
-
-    // Determine which time to select next
     if (!selectedStartTime) {
       setTimeType('start');
     } else if (!selectedEndTime) {
@@ -136,11 +122,9 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
     setShowTimePicker(true);
   };
 
-  // Close time picker without saving
   const handleCloseTimePicker = () => {
     setShowTimePicker(false);
     setTimeType('start');
-    // Reset temporary state (will be reinitialized when reopened)
   };
 
   const handleLocationPress = () => {
@@ -149,29 +133,19 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
       onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
         setShop({
           ...shop,
-          address: data.address, // Full address for address_line1
-          address_line2: data.address_line2 || '', // City, state overview for address_line2
+          address: data.address,
+          address_line2: data.address_line2 || '',
           latitude: data.latitude.toString(),
           longitude: data.longitude.toString(),
         });
       },
-      // Pass existing location data if available
       existingData: shop.address && shop.latitude && shop.longitude ? {
-        address: shop.address, // Full address (for address_line1)
-        address_line2: shop.address_line2, // City, state (for address_line2)
+        address: shop.address,
+        address_line2: shop.address_line2,
         latitude: parseFloat(shop.latitude),
         longitude: parseFloat(shop.longitude),
       } : undefined,
     });
-    // navigation.navigate('MapScreen', {
-    //   onLocationSelect: (lat: number, lng: number) => {
-    //     setShop({
-    //       ...shop,
-    //       latitude: lat.toString(),
-    //       longitude: lng.toString(),
-    //     });
-    //   },
-    // });
   };
 
   const pickShopPhoto = () => {
@@ -210,14 +184,12 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
   const handleRepeatPress = () => {
     if (!isEditable) return;
-    // Initialize temp state with current saved data when opening bottom sheet
     setTempSelectedDays(parseRepeatDays(shop.repeat_days || ''));
     setShowRepeatSheet(true);
   };
 
   const toggleDay = (dayKey: string) => {
     if (!isEditable) return;
-    // Update temporary state only (not saved until "Save" is clicked)
     setTempSelectedDays(prev => {
       if (prev.includes(dayKey)) {
         return prev.filter(d => d !== dayKey);
@@ -229,7 +201,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
   const handleSaveRepeatDays = () => {
     if (!isEditable) return;
-    // Save the temporary state to actual state and shop data
     const selectedDayLabels = tempSelectedDays
       .map(dayKey => {
         const day = daysOfWeek.find(d => d.key === dayKey);
@@ -251,9 +222,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   };
 
   const handleCloseRepeatSheet = () => {
-    // Discard temporary changes and close
     setShowRepeatSheet(false);
-    // Reset temp state will happen when sheet reopens
   };
 
   const formatRepeatDaysDisplay = (repeatDays: string): string => {
@@ -303,9 +272,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           }
         }
       }
-    } catch (error) {
-      // Not JSON, fall back to string parsing
-    }
+    } catch (error) { }
     const [startRaw, endRaw] = trimmed.split('-').map(part => part.trim());
     if (startRaw && endRaw) {
       return `${formatTimeForDisplay(startRaw)} - ${formatTimeForDisplay(endRaw)}`;
@@ -319,11 +286,8 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
   );
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
+    <>
       <View style={styles.card}>
-        {/* Shop Details Section */}
-
-
         <ProfileInput
           label="Shop Name"
           required
@@ -343,7 +307,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           inputType="normal"
           value={shop.gst_number || ''}
           onChangeText={val => {
-            // Convert to uppercase and limit to 15 characters
             const upperVal = val.toUpperCase().slice(0, 15);
             setShop({ ...shop, gst_number: upperVal });
             clearError?.('gst_number');
@@ -362,14 +325,13 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
               onSelect: (data: { address: string; address_line2?: string; latitude: number; longitude: number }) => {
                 setShop({
                   ...shop,
-                  address: data.address, // Overview address (city, state) for address_line1
-                  address_line2: data.address_line2 || '', // Full address for address_line2
+                  address: data.address,
+                  address_line2: data.address_line2 || '',
                   latitude: data.latitude.toString(),
                   longitude: data.longitude.toString(),
                 });
                 clearError?.('address');
               },
-              // Pass existing location data if available
               existingData: shop.address && shop.latitude && shop.longitude ? {
                 address: shop.address,
                 latitude: parseFloat(shop.latitude),
@@ -454,7 +416,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           isEditable={isEditable}
         />
 
-        {/* Shop Front Photo Upload Section */}
         <View style={styles.uploadSection}>
           <CustomText style={styles.uploadLabel}>
             Shop Front Photo<CustomText style={styles.asterisk}>*</CustomText>
@@ -492,16 +453,11 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
       </View>
 
       <View style={styles.card}>
-
-
-
-        {/* Timings Details Section */}
         <CustomText style={styles.sectionTitle}>Timings Details</CustomText>
 
         <TouchableOpacity
           onPress={handleOpenTimePicker}
           disabled={!isEditable}
-
         >
           <ProfileInput
             label="Business Hours"
@@ -536,7 +492,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
         >
           <CustomText style={styles.repeatLabel}>Repeat</CustomText>
           <View style={styles.repeatValueContainer}>
-            <CustomText style={styles.repeatValue}>
+            <CustomText style={styles.repeatValue} numberOfLines={1} ellipsizeMode="tail">
               {formatRepeatDaysDisplay(shop.repeat_days)}
             </CustomText>
             <RightArrowIcon
@@ -548,7 +504,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
         </TouchableOpacity>
       </View>
 
-      {/* Repeat Days Selection Bottom Sheet */}
       <CustomBottomSheet
         isVisible={showRepeatSheet}
         onClose={handleCloseRepeatSheet}
@@ -558,7 +513,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
         <View style={styles.repeatSheetContent}>
           <CustomText style={styles.repeatSheetTitle}>Repeat</CustomText>
           {daysOfWeek.map((day, index) => {
-            // Use tempSelectedDays instead of selectedDays for UI
             const isSelected = tempSelectedDays.includes(day.key);
             return (
               <TouchableOpacity
@@ -599,7 +553,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
         </View>
       </CustomBottomSheet>
 
-      {/* Time Picker Bottom Sheet */}
       <CustomBottomSheet
         isVisible={showTimePicker}
         onClose={handleCloseTimePicker}
@@ -611,7 +564,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             Select Business Hours
           </CustomText>
 
-          {/* Selected Times Display */}
           <View style={styles.selectedTimesContainer}>
             <View style={styles.selectedTimeBox}>
               <CustomText style={styles.selectedTimeLabel}>Opening Time</CustomText>
@@ -636,7 +588,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             </View>
           </View>
 
-          {/* Time Selection Indicator */}
           <View style={styles.selectionIndicator}>
             <CustomText style={styles.selectionIndicatorText}>
               {timeType === 'start'
@@ -645,21 +596,17 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             </CustomText>
           </View>
 
-          {/* Time Picker - Grouped by AM/PM */}
           <View style={styles.timePickerContainer}>
-            {/* AM Section */}
             <View style={styles.timeSection}>
               <CustomText style={styles.timeSectionTitle}>AM</CustomText>
               <View style={styles.timeGrid}>
                 {Array.from({ length: 12 }, (_, hour) => {
                   const time24 = `${hour.toString().padStart(2, '0')}:00`;
                   const time12 = formatTime(time24);
-                  // Highlight if this time is selected as either opening or closing
                   const isSelected =
                     tempSelectedStartTime === time12 ||
                     tempSelectedEndTime === time12;
 
-                  // Group hours into rows of 2
                   if (hour % 2 === 0) {
                     const nextHour = hour + 1;
                     const nextTime24 = nextHour < 12 ? `${nextHour.toString().padStart(2, '0')}:00` : null;
@@ -715,7 +662,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
               </View>
             </View>
 
-            {/* PM Section */}
             <View style={styles.timeSection}>
               <CustomText style={styles.timeSectionTitle}>PM</CustomText>
               <View style={styles.timeGrid}>
@@ -727,7 +673,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
                     tempSelectedStartTime === time12 ||
                     tempSelectedEndTime === time12;
 
-                  // Group hours into rows of 2
                   if (hour % 2 === 0) {
                     const nextHour = hour + 1;
                     const nextHour24 = nextHour < 12 ? nextHour + 12 : null;
@@ -785,7 +730,6 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             </View>
           </View>
 
-          {/* Action Buttons */}
           <View style={styles.timePickerButtonRow}>
             {tempSelectedStartTime && timeType === 'end' && (
               <CustomBtn
@@ -808,7 +752,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           </View>
         </View>
       </CustomBottomSheet>
-    </ScrollView>
+    </>
   );
 };
 

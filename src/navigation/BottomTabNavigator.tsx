@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { View, Text } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import OrdersScreen from '../screens/Orders';
 import ProfileScreen from '../screens/Profile';
 import SvgSelectedOrderIcon from '../assets/auto-generated-svg-icons/SelectedOrdersIcon';
@@ -21,7 +22,6 @@ import ServiceAddedDialog from '../screens/Services/ServiceAddedDialog';
 import { LoginUserStatus } from '../constants/tripStatus';
 import CustomeDialog from '../components/Dialog';
 import { compareVersions, getCurrentAppVersion, openAppStore } from '../utils/appVersionUtils';
-import { Platform } from 'react-native';
 import { COLORS } from '../constants';
 
 export type BottomTabParamList = {
@@ -58,6 +58,7 @@ const TabBarIcon = ({ name, focused }: { name: string; focused: boolean }) => {
 };
 
 const BottomTabNavigator = () => {
+  const insets = useSafeAreaInsets();
   const { setProfile, setError, setLoading } = useProfileStore();
   const { setDocumentState, setIsLoggedIn } = useAuthStore();
   const showDialog = useDialogStore(state => state.showDialog);
@@ -177,8 +178,10 @@ const BottomTabNavigator = () => {
             tabBarInactiveTintColor: '#7B869A',
             tabBarStyle: {
               backgroundColor: COLORS.CARD_BACKGROUND,
-              height: 60,
+              height: Platform.OS === 'ios' ? 70 + insets.bottom : 60 + insets.bottom,
+              paddingBottom: insets.bottom > 0 ? insets.bottom : 0,
               elevation: 5,
+              borderTopWidth: 0,
             },
             tabBarLabelStyle: {
               fontSize: 12,

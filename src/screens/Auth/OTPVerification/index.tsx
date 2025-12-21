@@ -13,8 +13,10 @@ import { COLORS } from '../../../constants/colors';
 import SvgTimerIcon from '../../../assets/auto-generated-svg-icons/ClockIcon';
 import SvgOTPVerificationIcon from '../../../assets/auto-generated-svg-icons/OtpIcon';
 import { getFcmToken } from '../../../services/Notification/useNotifications';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const OTPVerificationScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const route = useRoute<any>();
   const { mobile, isRegister } = route.params;
 
@@ -41,7 +43,7 @@ const OTPVerificationScreen: React.FC = () => {
   const isLoading = mutation.isPending;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, }}>
       <BackgroundGradient />
 
       <View style={styles.mainSection}>

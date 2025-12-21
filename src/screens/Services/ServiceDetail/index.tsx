@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -39,6 +39,7 @@ type ServiceDetailRouteProp = RouteProp<RootStackParamList, 'ServiceDetail'>;
 const ServiceDetailScreen: React.FC = () => {
     const navigation = useNavigation<ServiceDetailNavProp>();
     const route = useRoute<ServiceDetailRouteProp>();
+    const insets = useSafeAreaInsets();
     const { service: initialService } = route.params;
 
     // Refs to track navigation state
@@ -152,10 +153,10 @@ const ServiceDetailScreen: React.FC = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['top']}>
+        <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
             <Toolbar title={service?.service_name} onBackPress={handleBackPress} />
 
-            <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <ScrollView style={styles.content} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 100 }}>
                 <View style={styles.section}>
                     <CustomText style={styles.sectionTitle}>Service Details</CustomText>
 

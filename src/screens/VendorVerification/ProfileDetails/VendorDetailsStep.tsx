@@ -116,7 +116,7 @@ const VendorDetailsStep: React.FC<Props> = ({
 
 
   return (
-    <SafeAreaView style={styles.card}>
+    <View style={styles.card}>
       {/* Profile Picture Section */}
       <View style={styles.profilePicContainer}>
         <TouchableOpacity
@@ -277,7 +277,7 @@ const VendorDetailsStep: React.FC<Props> = ({
       {errors.aadhaar_or_pan && (
         <CustomText style={styles.errorText}>{errors.aadhaar_or_pan}</CustomText>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 

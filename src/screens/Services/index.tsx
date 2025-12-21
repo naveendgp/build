@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, ScrollView, ActivityIndicator, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -22,6 +22,7 @@ type ServicesNavProp = NativeStackNavigationProp<RootStackParamList, 'Services'>
 
 const ServicesScreen: React.FC = () => {
   const navigation = useNavigation<ServicesNavProp>();
+  const insets = useSafeAreaInsets();
   const [selectedServices, setSelectedServices] = useState<string[]>([]);
   const [showSuccessLoading, setShowSuccessLoading] = useState(false);
 
@@ -123,7 +124,7 @@ const ServicesScreen: React.FC = () => {
   const unverifiedServices = servicesData?.data?.unverified || [];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
       <Toolbar title="Services" />
 
       {isLoading || showSuccessLoading ? (
@@ -196,7 +197,7 @@ const ServicesScreen: React.FC = () => {
             </View>
           </ScrollView>
 
-          <View style={styles.updateButtonContainer}>
+          <View style={[styles.updateButtonContainer, { paddingBottom: insets.bottom + 24 }]}>
             <CustomBtn
               title="Update"
               onPress={handleUpdate}

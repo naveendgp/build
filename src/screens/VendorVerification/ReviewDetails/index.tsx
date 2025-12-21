@@ -15,7 +15,7 @@ import { showErrorToast } from '../../../utils/Toast';
 import { useAuthStore } from '../../../apiService/store/useAuthStore';
 import { useVendorValidation } from '../useVendorValidation';
 import { useSubmitVerification } from './hooks/useSubmitVerification';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ReviewDetailsNavProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -113,11 +113,17 @@ const ReviewDetailsScreen: React.FC = () => {
     return phone.length === 10 ? `91+${phone}` : phone;
   };
 
+  const insets = useSafeAreaInsets();
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }} edges={['top', 'left', 'right', 'bottom']}>
       <CustomText style={styles.title}>Review Details</CustomText>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+      >
 
         {/* Personal Details Section */}
         <View style={styles.card}>

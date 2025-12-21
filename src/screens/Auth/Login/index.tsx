@@ -18,10 +18,12 @@ import BackgroundGradient from "../../../components/backgroundGradient";
 import { showErrorToast } from "../../../utils/Toast";
 import CustomText from "../../../components/Text";
 import { useLogin } from "./hooks/useLogin";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get("window");
 
 const LoginScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [mobile, setMobile] = useState("");
   const mutation = useLogin();
 
@@ -42,42 +44,42 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
-     
+    <View style={{ flex: 1, }}>
+
       <BackgroundGradient />
 
-     
-            <View style={styles.gradientContainer}>
-              <View style={styles.iconContainer}>
-                <LoginIcon width={58} height={58} />
-              </View>
 
-              <CustomText style={styles.title}>Enter Mobile Number</CustomText>
+      <View style={styles.gradientContainer}>
+        <View style={styles.iconContainer}>
+          <LoginIcon width={58} height={58} />
+        </View>
 
-              <ProfileInput
-                inputType="phone"
-                value={mobile}
-                onChangeText={setMobile}
-                countryCode="+91"
-                containerStyle={styles.profileInputContainer}
-                isWhiteBG={true}
-              />
+        <CustomText style={styles.title}>Enter Mobile Number</CustomText>
 
-              <CustomBtn
-                title={mutation.isPending ? "Please wait..." : "Continue"}
-                onPress={handleContinue}
-                disabled={mutation.isPending}
-                style={styles.continueButton}
-                textStyle={styles.continueText}
-              />
+        <ProfileInput
+          inputType="phone"
+          value={mobile}
+          onChangeText={setMobile}
+          countryCode="+91"
+          containerStyle={styles.profileInputContainer}
+          isWhiteBG={true}
+        />
 
-              <CustomText style={styles.footerText}>
-                By continuing, you agree to our
-                <CustomText style={styles.linkText}>  T&C </CustomText> and
-                <CustomText style={styles.linkText}>  Privacy policy.</CustomText>
-              </CustomText>
-            </View>
-          
+        <CustomBtn
+          title={mutation.isPending ? "Please wait..." : "Continue"}
+          onPress={handleContinue}
+          disabled={mutation.isPending}
+          style={styles.continueButton}
+          textStyle={styles.continueText}
+        />
+
+        <CustomText style={styles.footerText}>
+          By continuing, you agree to our
+          <CustomText style={styles.linkText}>  T&C </CustomText> and
+          <CustomText style={styles.linkText}>  Privacy policy.</CustomText>
+        </CustomText>
+      </View>
+
     </View>
   );
 };

@@ -11,6 +11,7 @@ export default StyleSheet.create({
     marginTop: 0, // i removed this to align with the top of the screen
     borderWidth: 1,
     borderColor: COLORS.BORDER_INPUT,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 24,
@@ -174,7 +175,10 @@ export default StyleSheet.create({
     fontSize: 14,
     fontFamily: FONTFAMILY.INTER_REGULAR,
     color: COLORS.INPUT_TEXT,
-    fontWeight: '400'
+    fontWeight: '400',
+    flexShrink: 1,
+    textAlign: 'right',
+    marginStart: 20
   },
   modalOverlay: {
     flex: 1,
