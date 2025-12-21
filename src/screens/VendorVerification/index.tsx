@@ -714,6 +714,7 @@ const VendorVerificationScreen: React.FC = () => {
         flex: 1,
         backgroundColor: COLORS.WHITE,
       }}
+      edges={['top', 'left', 'right']}
     >
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -764,7 +765,7 @@ const VendorVerificationScreen: React.FC = () => {
           <ScrollView
             ref={scrollRef}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={step === 4 ? { paddingHorizontal: 12, paddingBottom: 20 } : { padding: 20 }}
+            contentContainerStyle={step === 4 ? { paddingHorizontal: 12, paddingBottom: 20 } : { padding: 20, paddingBottom: 20 }}
           >
 
 

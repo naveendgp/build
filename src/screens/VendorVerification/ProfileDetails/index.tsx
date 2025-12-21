@@ -193,7 +193,7 @@ const ProfileDetailsScreen: React.FC = () => {
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.WHITE, paddingTop: insets.top }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.WHITE }} edges={['top', 'left', 'right']}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -202,7 +202,7 @@ const ProfileDetailsScreen: React.FC = () => {
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ padding: 20, paddingBottom: insets.bottom > 0 ? insets.bottom : 20 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 20 }}
           >
             <VendorDetailsStep
               vendor={vendor}
@@ -234,7 +234,7 @@ const ProfileDetailsScreen: React.FC = () => {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </View>
+    </SafeAreaView>
   );
 };
 
