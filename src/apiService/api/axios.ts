@@ -6,7 +6,7 @@ import { useDialogStore } from '../store/useDialogStore';
 
 const api = axios.create({
   // baseURL: 'http://192.168.0.144:3000',
-  baseURL: 'https://adah-rotatory-evelina.ngrok-free.dev',
+  baseURL: 'http://13.203.97.158:3000',
   timeout: 10000,
 });
 

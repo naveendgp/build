@@ -139,7 +139,7 @@ const ReceivedOrdersScreen: React.FC<ReceivedOrdersScreenProps> = ({
     return () => {
       socket.off(SOCKET_ENDPOINTS.VENDOR_ORDER, handleData);
     };
-  }, []);
+  }, [refetch]);
 
 
 

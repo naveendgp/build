@@ -16,6 +16,7 @@ const socket = new socketService({
   params: {
     target: 'vendor',
   },
+  autoSuspendOnBackground: false,
 });
 
 export default socket;

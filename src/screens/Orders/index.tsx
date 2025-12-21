@@ -1,7 +1,7 @@
 // src/screens/Orders/OrdersScreen.tsx
 import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { View, TouchableOpacity, ScrollView, Dimensions, BackHandler } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRoute, RouteProp } from '@react-navigation/native';
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import CustomText from '../../components/Text';
@@ -19,8 +19,13 @@ import { toggleSettings } from '../../apiService/api/profileApi'; // <-- named i
 import { ToggleSettingsInput, ToggleSettingsResponse } from '../../apiService/types/profileTypes';
 import { showSuccessToast, showErrorToast } from '../../utils/Toast';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RootStackParamList } from '../../navigation/AppNavigator';
+
+type OrdersScreenRouteProp = RouteProp<RootStackParamList, 'Orders'>;
+
 const OrdersScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
+  const route = useRoute<OrdersScreenRouteProp>();
 
   const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.RECEIVED);
   const scrollViewRef = useRef<ScrollView | null>(null);
@@ -28,6 +33,27 @@ const OrdersScreen: React.FC = () => {
   const tabPositions = useRef<{ [key: string]: number }>({});
   const screenWidth = Dimensions.get('window').width;
   const { profile, refreshProfile } = useProfileStore();
+
+  // Handle navigation from notifications
+  useEffect(() => {
+    if (route.params?.initialTab === 'RECEIVED') {
+      console.log('[OrdersScreen] Notification trigger: Switching to RECEIVED tab');
+      setActiveTab(OrderStatus.RECEIVED);
+
+      // Scroll to the top of the list if needed (handled by the tab components usually)
+      // but we should ensure the tab bar scrolls too
+      setTimeout(() => {
+        const tabPosition = tabPositions.current[OrderStatus.RECEIVED];
+        if (tabPosition !== undefined && scrollViewRef.current) {
+          const scrollPosition = tabPosition - (screenWidth / 2);
+          scrollViewRef.current.scrollTo({
+            x: Math.max(0, scrollPosition),
+            animated: true,
+          });
+        }
+      }, 300);
+    }
+  }, [route.params?.timestamp]); // Use timestamp to trigger even if same tab requested multiple times
 
   // Initialize all order counts on mount
   useInitializeOrderCounts();

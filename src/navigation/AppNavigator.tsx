@@ -34,7 +34,7 @@ export type RootStackParamList = {
   VendorVerification: { step?: number; isReupload?: boolean } | undefined;
   ReviewDetails: undefined;
   MainTabs: undefined;
-  Orders: undefined;
+  Orders: { initialTab?: string; refresh?: boolean; timestamp?: number } | undefined;
   Profile: undefined;
   ServicesPricing: undefined;
   Services: undefined;
