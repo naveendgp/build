@@ -13,6 +13,10 @@ const OrderWashCard: React.FC<OrderWashCardProps> = ({
     amount,
 }) => {
     // Format quantity - if number, add 'kg', otherwise use as is
+
+    console.log("🚀 ~ OrderWashCard ~ quantity:", quantity)
+
+
     const formattedQuantity = typeof quantity === 'number'
         ? `${quantity}kg`
         : quantity;
@@ -23,13 +27,13 @@ const OrderWashCard: React.FC<OrderWashCardProps> = ({
                 {/* Quantity Section */}
                 <View style={orderedItemStyles.section}>
                     <Text style={orderedItemStyles.label}>Quantity</Text>
-                    <Text style={orderedItemStyles.value}>{formattedQuantity}</Text>
+                    <Text style={orderedItemStyles.value}>{quantity}kg</Text>
                 </View>
 
                 {/* Amount Section */}
                 <View style={orderedItemStyles.section}>
                     <Text style={orderedItemStyles.label}>Amount</Text>
-                    <Text style={orderedItemStyles.value}>₹{amount}</Text>
+                    <Text style={orderedItemStyles.value}>₹{amount}/kg</Text>
                 </View>
             </View>
         </View>

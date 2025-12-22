@@ -84,6 +84,7 @@ export interface VendorOrder {
   eta_end_time?: string;
   eta_start_time?: string;
   user?: User;
+  is_verified?: boolean;
 }
 
 export interface User {

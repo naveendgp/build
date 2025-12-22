@@ -47,6 +47,7 @@ export interface ReceivedOrderCardProps {
   updateLogs?: OrderUpdateLog[];
   vendorOrderData?: VendorOrder;
   isWeightBased: boolean;
+  isVerified?: boolean;
 }
 
 const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
@@ -74,6 +75,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   updateLogs,
   vendorOrderData,
   isWeightBased,
+  isVerified
 }) => {
   const isExpress = orderType === 'express';
   const CONTAINER_WIDTH = 235;
@@ -438,16 +440,14 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         />
 
         {/* Bill Container */}
-        {tabType === OrderStatus.RECEIVED && isWeightBased ?
-          null : (<TouchableOpacity
+        {(!isWeightBased || isVerified) && (
+          <TouchableOpacity
             style={styles.billBox}
             onPress={handleBillPress}
             activeOpacity={0.7}
           >
             <View style={styles.billCenter}>
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-              >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <SvgBillIcon />
 
                 <View>
@@ -459,13 +459,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
                   </CustomText>
                 </View>
               </View>
-
-
             </View>
             <SvgChevronRightBlack />
-          </TouchableOpacity>)
+          </TouchableOpacity>
+        )}
 
-        }
 
 
         {/* Buttons */}

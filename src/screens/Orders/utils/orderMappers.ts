@@ -130,6 +130,7 @@ export const mapOrdersToReceivedCards = (
         updateLogs: order.updateLogs,
         vendorOrderData: order,
         isWeightBased: order.service_type === 2 ? true : false,
+        isVerified: order.is_verified,
       };
     });
 };

@@ -117,7 +117,7 @@ const ProfileScreen: React.FC = () => {
       onPress: () => {
         if (profile?.privacy_policy_url) {
           navigation.navigate('WebViewScreen', {
-            url: profile.privacy_policy_url,
+            url: 'https://www.otterlaundry.com/privacy',
             title: 'Privacy & Security',
           });
         }
@@ -131,7 +131,7 @@ const ProfileScreen: React.FC = () => {
       onPress: () => {
         if (profile?.terms_url) {
           navigation.navigate('WebViewScreen', {
-            url: profile.terms_url,
+            url: 'https://www.otterlaundry.com/terms',
             title: 'Terms & Condition',
           });
         } else {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Image, Animated, Easing } from 'react-native';
+import { View, Image, Animated, Easing, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -8,7 +8,7 @@ import { LoginUserStatus } from '../../constants/tripStatus';
 import { COLORS } from '../../constants/colors';
 import styles from './style';
 import BackgroundGradient from '../../components/backgroundGradient';
-import OtterLogo from '../../assets/auto-generated-svg-icons/OtterPartner';
+import OtterLogo from '../../assets/auto-generated-svg-icons/OtterWhite';
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Splash'>;
 
@@ -76,8 +76,8 @@ const SplashScreen: React.FC = () => {
 
     return (
         <View style={styles.container}>
-
-            <OtterLogo />
+            <StatusBar barStyle="light-content" />
+            <OtterLogo tintColor={COLORS.WHITE} />
 
         </View>
     );

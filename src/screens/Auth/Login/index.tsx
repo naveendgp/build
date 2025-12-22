@@ -25,7 +25,7 @@ const { width } = Dimensions.get("window");
 const LoginScreen: React.FC = () => {
   const insets = useSafeAreaInsets();
   const [mobile, setMobile] = useState("");
-  const mutation = useLogin();
+  const { mutation, handlePrivacyPolicy, handleTermsAndConditions } = useLogin();
 
   const handleContinue = async () => {
     const digitsOnly = mobile.replace(/\D/g, "");
@@ -75,8 +75,14 @@ const LoginScreen: React.FC = () => {
 
         <CustomText style={styles.footerText}>
           By continuing, you agree to our
-          <CustomText style={styles.linkText}>  T&C </CustomText> and
-          <CustomText style={styles.linkText}>  Privacy policy.</CustomText>
+          <CustomText
+            style={styles.linkText}
+            onPress={handleTermsAndConditions}
+          > T&C </CustomText> and
+          <CustomText
+            style={styles.linkText}
+            onPress={handlePrivacyPolicy}
+          > Privacy policy.</CustomText>
         </CustomText>
       </View>
 

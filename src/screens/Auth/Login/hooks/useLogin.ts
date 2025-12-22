@@ -17,6 +17,20 @@ type LoginNavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 export const useLogin = () => {
   const navigation = useNavigation<LoginNavProp>();
 
+  const handlePrivacyPolicy = () => {
+    navigation.navigate('WebViewScreen', {
+      url: 'https://www.otterlaundry.com/privacy',
+      title: 'Privacy Policy',
+    });
+  };
+
+  const handleTermsAndConditions = () => {
+    navigation.navigate('WebViewScreen', {
+      url: 'https://www.otterlaundry.com/terms',
+      title: 'Terms & Conditions',
+    });
+  };
+
   const mutation = useMutation<
     LoginResponse,
     AxiosError<LoginErrorResponse>,
@@ -42,6 +56,10 @@ export const useLogin = () => {
     },
   });
 
-  return mutation;
+  return {
+    mutation,
+    handlePrivacyPolicy,
+    handleTermsAndConditions,
+  };
 };
 
