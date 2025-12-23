@@ -31,6 +31,7 @@ export interface PaymentDetails {
   isOfferApplied: boolean;
   offerDiscountAmount: number;
   totalPayableAmount: number;
+  amount_to_vendor_after_commission: number;
 }
 
 export interface OrderItem {
@@ -144,12 +145,12 @@ export enum OrderStatus {
 export const OrderStatusMessages: Record<OrderStatus, string> = {
   [OrderStatus.CREATED]: 'Order has been created',
   [OrderStatus.ACCEPTED]: 'Shop has accepted your order request',
-  [OrderStatus.DRIVER_ACCEPTED]: 'Driver has accepted your order',
-  [OrderStatus.ARRIVED]: 'Driver has arrived at your location',
+  [OrderStatus.DRIVER_ACCEPTED]: 'Agent has accepted your order',
+  [OrderStatus.ARRIVED]: 'Agent has arrived at your location',
   [OrderStatus.VERIFIED]: 'Items have been verified',
   [OrderStatus.PICKED_UP]: 'Order has been picked up',
   [OrderStatus.PAID]: 'Payment has been confirmed',
-  [OrderStatus.REACHED]: 'Driver has reached the vendor',
+  [OrderStatus.REACHED]: 'Agent has reached the vendor',
   [OrderStatus.DELIVERED]: 'Order has been delivered',
   [OrderStatus.PROCESSING]: 'Order is being processed',
   [OrderStatus.PROCESSED]: 'Order has been processed',
@@ -158,9 +159,9 @@ export const OrderStatusMessages: Record<OrderStatus, string> = {
   [OrderStatus.UNACCEPTED]: 'Order was not accepted',
   [OrderStatus.OUT_FOR_DELIVERY]: 'Order is out for delivery',
   [OrderStatus.VENDOR_PENDING]: 'Order will be accepted shortly',
-  [OrderStatus.RIDER_PENDING]: 'Rider is being assigned',
-  [OrderStatus.CALL_BUTTON_VISIBLE]: ' is your rider',
-  [OrderStatus.OTP_VISIBLE]: 'OTP for the rider',
+  [OrderStatus.RIDER_PENDING]: 'Agent is being assigned',
+  [OrderStatus.CALL_BUTTON_VISIBLE]: ' is your Agent',
+  [OrderStatus.OTP_VISIBLE]: 'OTP for the Agent',
 };
 
 // Helper function to get status message

@@ -505,7 +505,7 @@ export default StyleSheet.create({
   // Review Section Styles
   reviewSection: {
     paddingHorizontal: 16,
-    paddingTop: 24,
+    paddingTop: 12,
   },
   reviewSectionEmpty: {
     flex: 1,

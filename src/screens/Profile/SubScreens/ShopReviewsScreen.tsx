@@ -241,7 +241,7 @@ const ShopReviewsScreen: React.FC = () => {
                 <View style={styles.ratingSummary}>
                     <View style={styles.ratingContainer}>
                         <Text style={styles.largeRatingText}>
-                            {displayData?.rating?.toFixed(1) || '0.0'}
+                            {displayData?.rating || '0'}
                         </Text>
                         {renderStars()}
                         <Text style={styles.ratingCount}>
@@ -263,9 +263,7 @@ const ShopReviewsScreen: React.FC = () => {
             return (
                 <View style={{ padding: 20, alignItems: 'center' }}>
                     <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
-                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
-                        Loading more reviews...
-                    </Text>
+
                 </View>
             );
         }
@@ -279,9 +277,7 @@ const ShopReviewsScreen: React.FC = () => {
             return (
                 <View style={[styles.reviewSection, styles.reviewSectionEmpty, { padding: 20, alignItems: 'center' }]}>
                     <ActivityIndicator size="small" color={COLORS.THEME_GREEN} />
-                    <Text style={{ marginTop: 8, color: COLORS.LOGIN_SUBTITLE }}>
-                        Loading reviews...
-                    </Text>
+
                 </View>
             );
         }

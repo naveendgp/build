@@ -20,6 +20,7 @@ interface ItemsDetailBottomsheetProps {
     title: string; // e.g., "Iron Item Details" or "Wash Item Details"
     items: OrderItem[];
     isWeightBased: boolean;
+    isVerified: boolean | undefined;
 }
 
 const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
@@ -28,6 +29,7 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
     title,
     items,
     isWeightBased,
+    isVerified,
 }) => {
     const totalItems = items.length;
 
@@ -49,6 +51,8 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
                     key={item.id}
                     quantity={item.quantity}
                     amount={item.amount}
+                    itemName={item.itemName || ''}
+                    isVerified={isVerified}
                 />
             );
         }

@@ -6,11 +6,15 @@ import { orderedItemStyles } from "./OrderedIronCard";
 interface OrderWashCardProps {
     quantity: string | number;
     amount: number;
+    itemName?: string;
+    isVerified?: boolean;
 }
 
 const OrderWashCard: React.FC<OrderWashCardProps> = ({
     quantity,
     amount,
+    itemName,
+    isVerified,
 }) => {
     // Format quantity - if number, add 'kg', otherwise use as is
 
@@ -27,7 +31,7 @@ const OrderWashCard: React.FC<OrderWashCardProps> = ({
                 {/* Quantity Section */}
                 <View style={orderedItemStyles.section}>
                     <Text style={orderedItemStyles.label}>Quantity</Text>
-                    <Text style={orderedItemStyles.value}>{quantity}kg</Text>
+                    <Text style={orderedItemStyles.value}>{isVerified ? `${quantity}kg` : `${itemName}`}</Text>
                 </View>
 
                 {/* Amount Section */}

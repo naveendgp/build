@@ -30,9 +30,8 @@ const formatAddress = (order: VendorOrder) => {
   }
   const { user_address } = order;
   const parts = [
-    user_address.label,
-    user_address.address_line1,
     user_address.city,
+    user_address.state,
   ].filter(Boolean);
   return parts.join(', ') || 'Address not available';
 };
@@ -125,7 +124,7 @@ export const mapOrdersToReceivedCards = (
         serviceQuantity: buildQuantityLabel(order.items),
         serviceType: firstItem?.service_name || 'Service',
         customerNote: order.order_notes || 'No notes provided',
-        totalBill: order.total_amount ? order.total_amount.toFixed(2) : undefined,
+        totalBill: order.payment_details?.amount_to_vendor_after_commission,
         timer: undefined,
         updateLogs: order.updateLogs,
         vendorOrderData: order,

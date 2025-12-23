@@ -41,10 +41,10 @@ interface OrderDetailsData {
     serviceQuantity?: string;
     serviceWeight?: string;
     timeline: TimelineItem[];
-    itemTotal: string;
-    gst: string;
+    itemTotal: number;
+    gst: number;
     gstPercentage: string;
-    grandTotal: string;
+    grandTotal: number;
     customerName: string;
 }
 
@@ -99,7 +99,12 @@ const OrderDetailsScreen: React.FC = () => {
 
         // Format address
         const address = vendorOrder.user_address;
-        const location = `${address.address_line1}${address.address_line2 ? ', ' + address.address_line2 : ''}, ${address.city}, ${address.state}`;
+
+        const loc = `${address.city}, ${address.state}`;
+
+        const location = loc || `${address?.address_line1}`;
+
+
 
         // Calculate item total from items
         const itemTotal = vendorOrder.items?.reduce((sum, item) => sum + item.total_price, 0) || 0;
@@ -109,7 +114,7 @@ const OrderDetailsScreen: React.FC = () => {
         const gstPercentage = itemTotal > 0 ? ((gst / itemTotal) * 100).toFixed(0) : '18';
 
         // Get grand total
-        const grandTotal = vendorOrder.total_amount || vendorOrder.payment_details?.totalPayableAmount || 0;
+        const grandTotal = vendorOrder.payment_details?.amount_to_vendor_after_commission || 0;
 
         // Get service type from first item
         const firstItem = vendorOrder.items?.[0];
@@ -170,7 +175,7 @@ const OrderDetailsScreen: React.FC = () => {
             orderType: vendorOrder.is_express ? 'express' : 'standard',
             serviceType,
             serviceQuantity: totalQuantity.toString(),
-            serviceWeight: vendorOrder.is_express ? `${totalQuantity} Kg` : undefined,
+            serviceWeight: vendorOrder.is_express ? `${totalQuantity} kg` : undefined,
             timeline: timeline.length > 0 ? timeline : [
                 {
                     status: 'Order Received',
@@ -179,10 +184,10 @@ const OrderDetailsScreen: React.FC = () => {
                     isCompleted: true,
                 },
             ],
-            itemTotal: itemTotal.toFixed(2),
-            gst: gst.toFixed(2),
+            itemTotal: itemTotal,
+            gst: gst,
             gstPercentage,
-            grandTotal: grandTotal.toFixed(2),
+            grandTotal: grandTotal,
             customerName: vendorOrder.user?.name || 'Customer',
         };
     }, [vendorOrder, formatDate, formatTime]);
@@ -384,7 +389,6 @@ const OrderDetailsScreen: React.FC = () => {
                         <CustomText style={styles.billLabelUnderlined}>
                             GST (Govt. Taxes) ₹{orderData.gst} ({orderData.gstPercentage}% of Item Total)
                         </CustomText>
-                        <CustomText style={styles.billValue}>₹{orderData.gst}</CustomText>
                     </View>
                     <View style={styles.billDivider} />
                     <View style={styles.billRow}>
@@ -410,6 +414,7 @@ const OrderDetailsScreen: React.FC = () => {
                 title={`${orderData.serviceType} Item Details`}
                 items={getItemsData()}
                 isWeightBased={vendorOrder?.service_type === 2 ? true : false}
+                isVerified={true}
             />
         </SafeAreaView>
     );

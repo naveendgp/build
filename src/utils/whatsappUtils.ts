@@ -1,39 +1,53 @@
 import { Linking, Alert } from "react-native";
+import { showErrorToast } from "./Toast";
 
 /**
  * Opens WhatsApp with a phone number and optional order ID
  * @param phoneNumber - The phone number to contact (without country code prefix)
  * @param orderId - Optional order ID to include in the message
  */
-export const openWhatsApp = async (phoneNumber: string, orderId?: string) => {
+
+export const openWhatsApp = async (
+    phoneNumber: string,
+    orderId?: string
+) => {
     try {
-        // Construct the message text if orderId is provided
-        const message = orderId ? `Hello, I need support for Order ID: ${orderId}` : "";
-
-        // Encode the message for URL
-        const encodedMessage = message ? encodeURIComponent(message) : "";
-
-        // Construct WhatsApp URL
-        const whatsappUrl = `whatsapp://send?phone=${phoneNumber}${encodedMessage ? `&text=${encodedMessage}` : ""}`;
-
-        // Construct phone call URL as fallback
-        const phoneCallUrl = `tel:${phoneNumber}`;
-
-        // Try to open WhatsApp app first
-        const canOpenWhatsApp = await Linking.canOpenURL(whatsappUrl);
-        if (canOpenWhatsApp) {
-            await Linking.openURL(whatsappUrl);
-        } else {
-            // Fallback to phone call
-            const canOpenPhone = await Linking.canOpenURL(phoneCallUrl);
-            if (canOpenPhone) {
-                await Linking.openURL(phoneCallUrl);
-            } else {
-                Alert.alert("Error", "Unable to open WhatsApp or make a phone call.");
-            }
+        if (!phoneNumber) {
+            showErrorToast("Phone number is missing.");
+            return;
         }
+
+        // 🔹 Normalize number (India default)
+        // Remove spaces, +, -
+        const cleanedNumber = phoneNumber.replace(/[^\d]/g, "");
+
+        const formattedNumber = cleanedNumber.startsWith("91")
+            ? cleanedNumber
+            : `91${cleanedNumber}`;
+
+        console.log("Opening WhatsApp for:", formattedNumber);
+
+        // 🔹 Message
+        const message = orderId
+            ? `Hello, I need support for Order ID: ${orderId}`
+            : "Hello, I need support";
+
+        const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(
+            message
+        )}`;
+
+        // 🔹 Open WhatsApp (works even without canOpenURL)
+        await Linking.openURL(whatsappUrl);
     } catch (error) {
-        Alert.alert("Error", "Unable to open WhatsApp or make a phone call.");
+        console.log("WhatsApp open failed:", error);
+
+        // ☎️ Fallback: Phone call
+        try {
+            await Linking.openURL(`tel:${phoneNumber}`);
+        } catch {
+            showErrorToast("Unable to open WhatsApp or make a phone call. Please try again later.");
+        }
     }
 };
+
 

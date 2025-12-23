@@ -93,8 +93,8 @@ const transformLogToEvent = (
         showCallButton: log.status === OrderStatus.CALL_BUTTON_VISIBLE,
         showOtp: log.status === OrderStatus.OTP_VISIBLE,
         otp: orderData?.user_otp ? orderData.user_otp.toString() : undefined,
-        riderName: orderData?.rider?.name || 'John Doe',
-        riderPhone: orderData?.rider?.phone || '+91 9876543210',
+        riderName: orderData?.rider?.name,
+        riderPhone: orderData?.rider?.phone,
     };
 };
 

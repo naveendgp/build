@@ -76,7 +76,6 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
                             <CustomText style={styles.billLabelUnderlined}>
                                 GST (Govt. Taxes) ₹{billData.gst} ({billData.gstPercentage}% of Item Total)
                             </CustomText>
-                            <CustomText style={styles.billValue}>₹{billData.gst}</CustomText>
                         </View>
                         <View style={styles.billDivider} />
                         <View style={styles.billRow}>

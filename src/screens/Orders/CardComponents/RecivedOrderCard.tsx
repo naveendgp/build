@@ -34,8 +34,8 @@ export interface ReceivedOrderCardProps {
   serviceQuantity?: string;
   serviceWeight?: string;
   serviceType: string;
-  customerNote: string;
-  totalBill?: string;
+  customerNote?: string;
+  totalBill?: number;
   timer?: string;
   onAccept?: () => void;
   onViewDetails?: () => void;
@@ -61,9 +61,9 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   serviceQuantity,
   serviceWeight,
   serviceType,
-  customerNote,
+  customerNote = '',
   totalBill,
-  timer = '00:04:59',
+  timer = '00:00:00',
   onAccept,
   onViewDetails,
   onViewBill,
@@ -281,13 +281,13 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
     const gstPercentage = itemTotal > 0 ? ((gst / itemTotal) * 100).toFixed(0) : '18';
 
     // Get grand total
-    const grandTotal = orderData.total_amount || orderData.payment_details?.totalPayableAmount || 0;
+    const grandTotal = orderData.payment_details?.amount_to_vendor_after_commission || 0;
 
     return {
-      itemTotal: itemTotal.toFixed(2),
-      gst: gst.toFixed(2),
+      itemTotal: itemTotal.toString(),
+      gst: gst.toString(),
       gstPercentage,
-      grandTotal: grandTotal.toFixed(2),
+      grandTotal: grandTotal.toString(),
     };
   }, [vendorOrder, vendorOrderData]);
 
@@ -307,7 +307,6 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   console.log(tabType === OrderStatus.RECEIVED ||
     (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 10));
 
-  console.log('-------------------', vendorOrder);
 
   return (
     <View style={{ marginBottom: 16 }} >
@@ -347,7 +346,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <View style={styles.locationContainer}>
 
               <SvgLocationLine />
-              <CustomText style={styles.location} numberOfLines={1} ellipsizeMode="tail">{location}</CustomText>
+              <CustomText style={styles.location} numberOfLines={1} ellipsizeMode="tail">{vendorOrder?.user_address?.city}</CustomText>
             </View>
           </View>
 
@@ -394,7 +393,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.pillText}>
               {
                 isWeightBased
-                  ? (tabType === OrderStatus.RECEIVED ? (vendorOrder || vendorOrderData)?.items?.[0]?.item_name : `${serviceQuantity} kg `)
+                  ? (!isVerified ? (vendorOrder || vendorOrderData)?.items?.[0]?.item_name : `${serviceQuantity} kg `)
                   : `${serviceQuantity} X `
               }
             </CustomText>
@@ -425,19 +424,21 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
 
         {/* Note */}
-        <View>
+        {(customerNote && customerNote !== '' && customerNote !== 'No notes provided') ? <View>
           <CustomText style={styles.noteTitle}>Note from customer</CustomText>
           <CustomText style={styles.noteText}>{customerNote}</CustomText>
-        </View>
+          <View
+            style={{
+              width: '100%',
+              height: 1,
+              backgroundColor: COLORS.SEPARATOR,
+              marginVertical: 16,
+            }}
+          />
 
-        <View
-          style={{
-            width: '100%',
-            height: 1,
-            backgroundColor: COLORS.SEPARATOR,
-            marginVertical: 16,
-          }}
-        />
+        </View> : null}
+
+
 
         {/* Bill Container */}
         {(!isWeightBased || isVerified) && (
@@ -529,7 +530,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         title={itemsBottomSheetTitle}
         items={itemsData}
         isWeightBased={isWeightBased}
-
+        isVerified={isVerified}
       />
 
       {/* Bill Summary Bottom Sheet */}
