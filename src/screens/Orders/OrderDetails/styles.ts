@@ -141,7 +141,7 @@ export default StyleSheet.create({
     borderColor: COLORS.BORDER_INPUT,
   },
   orderIdRow: {
-    marginBottom: 2,
+    marginBottom: 12,
   },
   orderIdText: {
     fontSize: 18,

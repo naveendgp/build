@@ -54,10 +54,10 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
-          <View style={styles.locationContainer}>
+          {/* <View style={styles.locationContainer}>
             <SvgLocationLine />
             <Text numberOfLines={1} ellipsizeMode="tail" style={styles.location}>{location}</Text>
-          </View>
+          </View> */}
         </View>
 
         <CustomText style={styles.orderTypeText}>

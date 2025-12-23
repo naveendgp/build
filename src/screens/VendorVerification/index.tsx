@@ -716,9 +716,8 @@ const VendorVerificationScreen: React.FC = () => {
       }}
       edges={['top', 'left', 'right']}
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      <View
+        style={{ flex: 1, paddingBottom: insets.bottom }}
       >
 
         <View style={{ paddingHorizontal: 12, gap: 24, marginTop: 24 }}>
@@ -829,7 +828,7 @@ const VendorVerificationScreen: React.FC = () => {
             </View>
           </ScrollView>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+      </View>
 
       {mutation.isPending && (
         <View style={styles.loadingOverlay} pointerEvents="none">

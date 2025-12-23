@@ -354,8 +354,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
             <View style={styles.locationContainer}>
 
-              <SvgLocationLine />
-              <CustomText style={styles.location} numberOfLines={1} ellipsizeMode="tail">{vendorOrder?.user_address?.city}</CustomText>
+              {/* <SvgLocationLine /> */}
+              {/* <CustomText style={styles.location} numberOfLines={1} ellipsizeMode="tail">{vendorOrder?.user_address?.city}</CustomText> */}
             </View>
           </View>
 

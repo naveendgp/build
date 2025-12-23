@@ -472,7 +472,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
           />
         </TouchableOpacity>
 
-        <View style={styles.switchContainer}>
+        {/* <View style={styles.switchContainer}>
           <CustomText style={styles.switchLabel}>
             Automatically Receive Orders During Business Hours
           </CustomText>
@@ -483,7 +483,7 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
             }
             disabled={!isEditable}
           />
-        </View>
+        </View> */}
 
         <TouchableOpacity
           onPress={handleRepeatPress}

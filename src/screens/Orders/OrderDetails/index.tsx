@@ -351,10 +351,10 @@ const OrderDetailsScreen: React.FC = () => {
                     <View style={styles.orderIdRow}>
                         <CustomText style={styles.orderIdText}>#{orderData.displayOrderId}</CustomText>
                     </View>
-                    <View style={styles.locationRow}>
+                    {/* <View style={styles.locationRow}>
                         <SvgLocationLine />
                         <CustomText style={styles.locationText}>{orderData.location}</CustomText>
-                    </View>
+                    </View> */}
                     <View style={styles.separatorLine} />
                     <View style={styles.itemDetailsRow}>
                         <View style={styles.itemDetailsLeft}>
