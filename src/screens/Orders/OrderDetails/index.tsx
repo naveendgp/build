@@ -47,6 +47,7 @@ interface OrderDetailsData {
     grandTotal: number;
     customerName: string;
     offerAmount?: number;
+    orderNumber: number;
 }
 
 const OrderDetailsScreen: React.FC = () => {
@@ -191,6 +192,7 @@ const OrderDetailsScreen: React.FC = () => {
             grandTotal: grandTotal,
             offerAmount: vendorOrder.payment_details?.offerDiscountAmount,
             customerName: vendorOrder.user?.name || 'Customer',
+            orderNumber: vendorOrder?.order_number,
         };
     }, [vendorOrder, formatDate, formatTime]);
 
@@ -349,7 +351,7 @@ const OrderDetailsScreen: React.FC = () => {
                 {/* Order ID and Item Details Card */}
                 <View style={styles.orderInfoCard}>
                     <View style={styles.orderIdRow}>
-                        <CustomText style={styles.orderIdText}>#{orderData.displayOrderId}</CustomText>
+                        <CustomText style={styles.orderIdText}>#{orderData.orderNumber}</CustomText>
                     </View>
                     {/* <View style={styles.locationRow}>
                         <SvgLocationLine />

@@ -21,6 +21,7 @@ export interface CompletedOrderCardProps {
   }>;
   totalPrice: string;
   onViewDetails?: () => void;
+  orderNumber?: number;
 }
 
 const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
@@ -34,26 +35,21 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
   totalPrice,
   isWeightBased,
   onViewDetails,
+  orderNumber,
 }) => {
   const isExpress = orderType === 'express';
 
 
   console.log(serviceWeight, serviceQuantity);
 
-  const displayOrderId = useMemo(() => {
-    if (!orderId) {
-      return '';
-    }
-    const orderIdStr = orderId.toString();
-    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
-  }, [orderId]);
+
 
   return (
     <View style={[styles.card, isExpress && styles.cardExpress]}>
       {/* Order Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
+          <CustomText style={styles.orderId}>#{orderNumber}</CustomText>
           {/* <View style={styles.locationContainer}>
             <SvgLocationLine />
             <Text numberOfLines={1} ellipsizeMode="tail" style={styles.location}>{location}</Text>

@@ -145,9 +145,9 @@ export default StyleSheet.create({
   },
   orderIdText: {
     fontSize: 18,
-    fontWeight: '400',
+    fontWeight: '600',
     color: COLORS.TEXT_PRIMARY,
-    fontFamily: FONTFAMILY.INTER_REGULAR,
+    fontFamily: FONTFAMILY.INTER_SEMIBOLD,
   },
   locationRow: {
     flexDirection: 'row',

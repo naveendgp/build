@@ -174,6 +174,7 @@ export const mapOrdersToCompletedSections = (
           timeline: buildTimeline(order),
           totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
           isWeightBased: order.service_type === 2 ? true : false,
+          orderNumber: order.order_number,
         },
         source: order,
       };

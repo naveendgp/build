@@ -296,13 +296,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   // Memoize the items bottom sheet title
   const itemsBottomSheetTitle = useMemo(() => `${serviceType} Item Details`, [serviceType]);
 
-  const displayOrderId = useMemo(() => {
-    if (!orderId) {
-      return '';
-    }
-    const orderIdStr = orderId.toString();
-    return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
-  }, [orderId]);
+
 
   const verifiedWeight = useMemo(() => {
     const orderData = vendorOrderData;
@@ -351,7 +345,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Order Header */}
         <View style={styles.header}>
           <View>
-            <CustomText style={styles.orderId}>#{displayOrderId}</CustomText>
+            <CustomText style={styles.orderId}>#{orderNumber}</CustomText>
             <View style={styles.locationContainer}>
 
               {/* <SvgLocationLine /> */}
@@ -378,11 +372,12 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         {/* Customer Row */}
         <View style={styles.customerRow}>
           <CustomText style={styles.customerName}>
-            {isExpress && orderNumber
+            {customerName}
+            {/* {isExpress && orderNumber
               ? `${customerName}'s ${orderNumber}${getOrdinalSuffix(
                 orderNumber,
               )} Order`
-              : customerName}
+              : customerName} */}
           </CustomText>
           <CustomText style={styles.time}>{time}</CustomText>
         </View>
