@@ -42,6 +42,7 @@ export interface OrderItem {
   quantity: number;
   price_per_item: number;
   total_price: number;
+  weight?: number;
 }
 
 export interface StatusTimestamps {

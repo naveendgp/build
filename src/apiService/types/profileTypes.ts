@@ -38,8 +38,17 @@ export interface VendorProfile {
   pending_settlement_amount: number;
   privacy_policy_url: string;
   terms_url?: string;
+
+  payment_config: PaymentConfig;
 }
 
+
+export interface PaymentConfig {
+  delivery_fee: number;
+  gst_percentage: number;
+  platform_fee: number;
+  vendor_comission_percentage: number;
+}
 
 
 

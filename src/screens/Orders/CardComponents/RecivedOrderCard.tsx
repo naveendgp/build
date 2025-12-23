@@ -265,6 +265,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
       category: item.service_name,
       quantity: item.quantity,
       amount: item.price_per_item,
+      weight: item.weight,
     }));
   }, [vendorOrder?.items, vendorOrderData?.items]);
 
@@ -284,10 +285,11 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
     const grandTotal = orderData.payment_details?.amount_to_vendor_after_commission || 0;
 
     return {
-      itemTotal: itemTotal.toString(),
-      gst: gst.toString(),
-      gstPercentage,
-      grandTotal: grandTotal.toString(),
+      itemTotal: itemTotal,
+      gst: gst,
+      gstPercentage: parseFloat(gstPercentage),
+      grandTotal: grandTotal,
+      offerAmount: orderData.payment_details?.offerDiscountAmount,
     };
   }, [vendorOrder, vendorOrderData]);
 
@@ -302,11 +304,18 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
     return orderIdStr.length <= 5 ? orderIdStr : "......" + orderIdStr.slice(-7);
   }, [orderId]);
 
+  const verifiedWeight = useMemo(() => {
+    const orderData = vendorOrder || vendorOrderData;
+    return orderData?.items?.reduce((sum, item) => sum + (item.weight || 0), 0);
+  }, [vendorOrder, vendorOrderData]);
+
 
   console.log(tabType, trip_type, status_type);
   console.log(tabType === OrderStatus.RECEIVED ||
     (tabType === OrderStatus.ACCEPTED && trip_type === 1 && status_type === 10));
 
+
+  console.log('verifiedWeight', verifiedWeight);
 
   return (
     <View style={{ marginBottom: 16 }} >
@@ -393,7 +402,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
             <CustomText style={styles.pillText}>
               {
                 isWeightBased
-                  ? (!isVerified ? (vendorOrder || vendorOrderData)?.items?.[0]?.item_name : `${serviceQuantity} kg `)
+                  ? (!isVerified ? (vendorOrder || vendorOrderData)?.items?.[0]?.item_name : `${verifiedWeight} kg `)
                   : `${serviceQuantity} X `
               }
             </CustomText>

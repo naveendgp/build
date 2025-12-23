@@ -46,6 +46,7 @@ interface OrderDetailsData {
     gstPercentage: string;
     grandTotal: number;
     customerName: string;
+    offerAmount?: number;
 }
 
 const OrderDetailsScreen: React.FC = () => {
@@ -188,6 +189,7 @@ const OrderDetailsScreen: React.FC = () => {
             gst: gst,
             gstPercentage,
             grandTotal: grandTotal,
+            offerAmount: vendorOrder.payment_details?.offerDiscountAmount,
             customerName: vendorOrder.user?.name || 'Customer',
         };
     }, [vendorOrder, formatDate, formatTime]);
@@ -217,6 +219,7 @@ const OrderDetailsScreen: React.FC = () => {
             category: item.service_name,
             quantity: item.quantity,
             amount: item.price_per_item,
+            weight: item.weight,
         }));
     };
 
@@ -387,9 +390,16 @@ const OrderDetailsScreen: React.FC = () => {
                     </View>
                     <View style={styles.billRow}>
                         <CustomText style={styles.billLabelUnderlined}>
-                            GST (Govt. Taxes) ₹{orderData.gst} ({orderData.gstPercentage}% of Item Total)
+                            GST (Govt. Taxes) ₹{orderData.gst} ({profile?.payment_config?.gst_percentage}% of Item Total)
                         </CustomText>
                     </View>
+
+                    {(orderData?.offerAmount || 0) > 0 && <View style={styles.billRow}>
+                        <CustomText style={styles.billLabel}>Offer Amount</CustomText>
+                        <CustomText style={styles.billValue}>₹{orderData.offerAmount}</CustomText>
+                    </View>
+                    }
+
                     <View style={styles.billDivider} />
                     <View style={styles.billRow}>
                         <CustomText style={styles.grandTotalLabel}>Grand Total</CustomText>

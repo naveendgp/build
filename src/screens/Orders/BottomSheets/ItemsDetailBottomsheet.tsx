@@ -12,6 +12,7 @@ export interface OrderItem {
     category?: string; // Required for iron items
     quantity: string | number;
     amount: number;
+    weight?: number;
 }
 
 interface ItemsDetailBottomsheetProps {
@@ -48,11 +49,10 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
         } else {
             return (
                 <OrderWashCard
-                    key={item.id}
-                    quantity={item.quantity}
                     amount={item.amount}
                     itemName={item.itemName || ''}
                     isVerified={isVerified}
+                    quantity={isVerified && item.weight ? item.weight : item.quantity}
                 />
             );
         }

@@ -3,12 +3,14 @@ import { View, StyleSheet, ActivityIndicator } from "react-native";
 import { COLORS, FONTFAMILY } from "../../../constants";
 import CustomBottomSheet from "../../../components/BottomSheet";
 import CustomText from "../../../components/Text";
+import { useProfileStore } from "../../../apiService/store/useProfileStore";
 
 export interface BillSummaryData {
-    itemTotal: string;
-    gst: string;
-    gstPercentage: string;
-    grandTotal: string;
+    itemTotal: number;
+    gst: number;
+    gstPercentage: number;
+    grandTotal: number;
+    offerAmount?: number;
 }
 
 interface BillSummaryBottomsheetProps {
@@ -25,6 +27,8 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
     isLoading = false,
 }) => {
     const [showLoader, setShowLoader] = useState(false);
+
+    const { profile } = useProfileStore();
 
     useEffect(() => {
         if (isVisible) {
@@ -74,9 +78,15 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
                         </View>
                         <View style={styles.billRow}>
                             <CustomText style={styles.billLabelUnderlined}>
-                                GST (Govt. Taxes) ₹{billData.gst} ({billData.gstPercentage}% of Item Total)
+                                GST (Govt. Taxes) ₹{billData.gst} ({profile?.payment_config?.gst_percentage}% of Item Total)
                             </CustomText>
                         </View>
+
+                        {(billData?.offerAmount || 0) > 0 && <View style={styles.billRow}>
+                            <CustomText style={styles.billLabel}>Offer Amount</CustomText>
+                            <CustomText style={styles.billValue}>₹{billData.offerAmount}</CustomText>
+                        </View>
+                        }
                         <View style={styles.billDivider} />
                         <View style={styles.billRow}>
                             <CustomText style={styles.grandTotalLabel}>Grand Total</CustomText>
@@ -85,7 +95,7 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
                     </View>
                 ) : null}
             </View>
-        </CustomBottomSheet>
+        </CustomBottomSheet >
     );
 };
 
