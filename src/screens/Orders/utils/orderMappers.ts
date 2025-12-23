@@ -102,6 +102,11 @@ const buildQuantityLabel = (items: VendorOrder['items'] = []) => {
   return `${totalQuantity}`;
 };
 
+const buildWeightLabel = (items: VendorOrder['items'] = []) => {
+  const totalWeight = items.reduce((acc, item) => acc + (item.weight || 0), 0);
+  return `${totalWeight}`;
+};
+
 export const mapOrdersToReceivedCards = (
   orders?: VendorOrder[] | null,
 ): ReceivedOrderCardProps[] => {
@@ -165,7 +170,7 @@ export const mapOrdersToCompletedSections = (
           orderType: order.is_express ? 'express' : 'standard',
           serviceQuantity: buildQuantityLabel(order.items),
           serviceType: firstItem?.service_name || 'Service',
-          serviceWeight: order.is_express ? firstItem?.item_name : undefined,
+          serviceWeight: buildWeightLabel(order.items),
           timeline: buildTimeline(order),
           totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
           isWeightBased: order.service_type === 2 ? true : false,

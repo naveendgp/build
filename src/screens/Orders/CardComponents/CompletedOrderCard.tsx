@@ -72,7 +72,7 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
       <View style={styles.itemRow}>
         <View style={styles.quantityBox}>
           <CustomText style={styles.quantityText}>
-            {serviceQuantity?.replace(' X', '')} {isWeightBased ? 'kg' : 'X'}
+            {isWeightBased ? serviceWeight : serviceQuantity} {isWeightBased ? 'kg' : 'X'}
           </CustomText>
         </View>
         <CustomText style={styles.serviceTypeText}>{serviceType}</CustomText>

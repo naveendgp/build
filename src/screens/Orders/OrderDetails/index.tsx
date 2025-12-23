@@ -122,7 +122,7 @@ const OrderDetailsScreen: React.FC = () => {
         const serviceType = firstItem?.service_name || 'Service';
 
         // Calculate total quantity
-        const totalQuantity = vendorOrder.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        const totalQuantity = vendorOrder.service_type === 2 ? vendorOrder.items?.reduce((sum, item) => sum + (item?.weight || 0), 0) || 0 : vendorOrder.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
 
         const displayOrderId = (() => {
             if (!vendorOrder?._id) {
@@ -176,7 +176,7 @@ const OrderDetailsScreen: React.FC = () => {
             orderType: vendorOrder.is_express ? 'express' : 'standard',
             serviceType,
             serviceQuantity: totalQuantity.toString(),
-            serviceWeight: vendorOrder.is_express ? `${totalQuantity} kg` : undefined,
+            serviceWeight: totalQuantity.toString(),
             timeline: timeline.length > 0 ? timeline : [
                 {
                     status: 'Order Received',
@@ -360,7 +360,7 @@ const OrderDetailsScreen: React.FC = () => {
                         <View style={styles.itemDetailsLeft}>
                             <View style={styles.quantityBadge}>
                                 <CustomText style={styles.quantityBadgeText}>
-                                    {vendorOrder?.service_type === 2 ? `${orderData.serviceQuantity} kg` : `${orderData.serviceQuantity?.replace(' X', '') || '1'}X`}
+                                    {vendorOrder?.service_type === 2 ? `${orderData.serviceWeight} kg` : `${orderData.serviceQuantity?.replace(' X', '') || '1'}X`}
                                 </CustomText>
                             </View>
                             <TouchableOpacity

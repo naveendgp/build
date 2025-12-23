@@ -253,7 +253,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
   // Prepare items data for bottom sheet - memoized to prevent recalculation
   const itemsData = useMemo((): OrderItem[] => {
-    const orderData = vendorOrder || vendorOrderData;
+    const orderData = vendorOrderData;
     if (!orderData?.items) return [];
 
 
@@ -305,7 +305,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
   }, [orderId]);
 
   const verifiedWeight = useMemo(() => {
-    const orderData = vendorOrder || vendorOrderData;
+    const orderData = vendorOrderData;
     return orderData?.items?.reduce((sum, item) => sum + (item.weight || 0), 0);
   }, [vendorOrder, vendorOrderData]);
 

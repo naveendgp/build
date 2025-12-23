@@ -34,6 +34,7 @@ const ItemsDetailBottomsheet: React.FC<ItemsDetailBottomsheetProps> = ({
 }) => {
     const totalItems = items.length;
 
+    console.log('items-----', items)
 
     const renderItemCard = (item: OrderItem) => {
         if (!isWeightBased) {
