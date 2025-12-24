@@ -283,7 +283,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
     // Get grand total
     const grandTotal = orderData.payment_details?.amount_to_vendor_after_commission || 0;
-    const platformFee = orderData.payment_details?.amount_to_platform || 0;
+    const platformFee = (orderData.payment_details?.amount_to_vendor - orderData.payment_details?.amount_to_vendor_after_commission) || 0;
 
     return {
       itemTotal: itemTotal,

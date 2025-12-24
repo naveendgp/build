@@ -118,7 +118,7 @@ const OrderDetailsScreen: React.FC = () => {
 
         // Get grand total
         const grandTotal = vendorOrder.payment_details?.amount_to_vendor_after_commission || 0;
-        const platformFee = vendorOrder.payment_details?.amount_to_platform || 0;
+        const platformFee = (vendorOrder?.payment_details?.amount_to_vendor - vendorOrder?.payment_details?.amount_to_vendor_after_commission) || 0;
 
 
         // Get service type from first item
