@@ -53,6 +53,9 @@ export const useVendorReviewsPagination = (
     const totalPages = firstPage?.data.totalPages ?? 0;
     const currentPage = firstPage?.data.page ?? 1;
 
+    const averageReviews = firstPage?.data.average_reviews ?? 0;
+    const reviewsCount = firstPage?.data.reviews_count ?? 0;
+
     return {
         ...query,
         data: allReviews,
@@ -63,6 +66,8 @@ export const useVendorReviewsPagination = (
         hasPreviousPage: query.hasPreviousPage,
         loadMore: query.fetchNextPage,
         isFetchingMore: query.isFetchingNextPage,
+        averageReviews,
+        reviewsCount,
     };
 };
 

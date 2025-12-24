@@ -85,6 +85,8 @@ const ShopReviewsScreen: React.FC = () => {
         total,
         refetch,
         isRefetching,
+        averageReviews,
+        reviewsCount,
     } = useVendorReviewsPagination(true, 10);
 
     // Handle error - show toast notification
@@ -208,7 +210,7 @@ const ShopReviewsScreen: React.FC = () => {
         }
 
         const renderStars = () => {
-            const rating = displayData?.rating || 0;
+            const rating = averageReviews || 0;
             const fullStars = Math.floor(rating);
             const hasHalfStar = rating % 1 !== 0;
             const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
@@ -241,11 +243,11 @@ const ShopReviewsScreen: React.FC = () => {
                 <View style={styles.ratingSummary}>
                     <View style={styles.ratingContainer}>
                         <Text style={styles.largeRatingText}>
-                            {displayData?.rating || '0'}
+                            {averageReviews || '0'}
                         </Text>
                         {renderStars()}
                         <Text style={styles.ratingCount}>
-                            By {displayData?.totalReviews || 0}{displayData?.totalReviews > 99 ? '+' : ''}
+                            By {reviewsCount || 0}{reviewsCount > 99 ? '+' : ''}
                         </Text>
                     </View>
                 </View>

@@ -92,7 +92,7 @@ const transformLogToEvent = (
         title: getOrderStatusMessage(log.status),
         showCallButton: log.status === OrderStatus.CALL_BUTTON_VISIBLE,
         showOtp: log.status === OrderStatus.OTP_VISIBLE,
-        otp: orderData?.user_otp ? orderData.user_otp.toString() : undefined,
+        otp: orderData?.vendor_otp ? orderData.vendor_otp.toString() : undefined,
         riderName: orderData?.rider?.name,
         riderPhone: orderData?.rider?.phone,
     };
@@ -110,6 +110,6 @@ export const useOrderTimeline = (orderData: VendorOrder | undefined): TimelineEv
         return orderData.updateLogs.map((log, index) =>
             transformLogToEvent(log, index, orderData)
         );
-    }, [orderData?.updateLogs, orderData?.user_otp, orderData?.rider]);
+    }, [orderData?.updateLogs, orderData?.vendor_otp, orderData?.rider]);
 };
 

@@ -428,7 +428,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
 
         {/* Note */}
-        {(customerNote && customerNote !== '' && customerNote !== 'No notes provided') ? <View>
+        {(customerNote && customerNote !== '') ? <View>
           <CustomText style={styles.noteTitle}>Note from customer</CustomText>
           <CustomText style={styles.noteText}>{customerNote}</CustomText>
           <View

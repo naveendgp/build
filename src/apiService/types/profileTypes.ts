@@ -343,6 +343,9 @@ export interface VendorReviewsData {
   page: number;
   limit: number;
   totalPages: number;
+
+  average_reviews: number;
+  reviews_count: number;
 }
 
 export interface VendorReviewsResponse {

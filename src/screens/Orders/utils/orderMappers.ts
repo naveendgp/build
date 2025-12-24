@@ -128,7 +128,7 @@ export const mapOrdersToReceivedCards = (
         expiredTime: formatTime(order.expiry_at),
         serviceQuantity: buildQuantityLabel(order.items),
         serviceType: firstItem?.service_name || 'Service',
-        customerNote: order.order_notes || 'No notes provided',
+        customerNote: order.order_notes,
         totalBill: order.payment_details?.amount_to_vendor_after_commission,
         timer: undefined,
         updateLogs: order.updateLogs,
