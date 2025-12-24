@@ -46,9 +46,11 @@ const TimeLineCard: React.FC<TimeLineCardProps> = ({
     return (
         <View style={styles.container}>
             {/* Timestamp */}
-            <CustomText style={styles.timestamp}>
-                {date} - {time}
-            </CustomText>
+            {(date || time) && (
+                <CustomText style={styles.timestamp}>
+                    {date}{date && time ? ' - ' : ''}{time}
+                </CustomText>
+            )}
 
             {/* Event Card */}
             <View style={styles.eventCard}>

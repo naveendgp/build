@@ -77,7 +77,8 @@ const transformLogToEvent = (
     index: number,
     orderData: VendorOrder
 ): TimelineEvent => {
-    const date = new Date(log.timestamp);
+    const hasTimestamp = !!log.timestamp && !isNaN(Date.parse(log.timestamp));
+    const date = hasTimestamp ? new Date(log.timestamp) : null;
     const iconConfig = getStatusIcon(log.status);
 
     console.log('log----------------------', log);
@@ -85,8 +86,8 @@ const transformLogToEvent = (
 
     return {
         id: `log-${index}`,
-        time: formatTimeLabel(date),
-        date: formatDateLabel(date),
+        time: date ? formatTimeLabel(date) : '',
+        date: date ? formatDateLabel(date) : '',
         icon: iconConfig.icon,
         iconType: iconConfig.iconType,
         title: getOrderStatusMessage(log.status),
