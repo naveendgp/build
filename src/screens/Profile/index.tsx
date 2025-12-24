@@ -197,7 +197,7 @@ const ProfileScreen: React.FC = () => {
 
             {/* Summary Card */}
             <View style={styles.summaryCard}>
-              <CustomText style={styles.summaryTitle}>To Be Received</CustomText>
+              <CustomText style={styles.summaryTitle}>Amount To Be Received</CustomText>
               <CustomText style={styles.summaryAmount}>{profile?.pending_settlement_amount}</CustomText>
               <View style={styles.summaryStats}>
                 <View style={styles.statItem}>

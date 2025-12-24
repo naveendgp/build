@@ -19,7 +19,7 @@ export interface CompletedOrderCardProps {
     time: string;
     isCompleted?: boolean;
   }>;
-  totalPrice: string;
+  totalPrice: number;
   onViewDetails?: () => void;
   orderNumber?: number;
 }
@@ -90,7 +90,7 @@ const CompletedOrderCard: React.FC<CompletedOrderCardProps> = ({
 
           <View style={styles.priceContainer}>
             <CustomText style={styles.priceText}>
-              ₹ {parseFloat(totalPrice || '0').toFixed(2)}
+              ₹ {totalPrice}
             </CustomText>
           </View>
         </View>

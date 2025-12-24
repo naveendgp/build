@@ -9,11 +9,10 @@
     "start": "react-native start",
     "test": "jest",
     "svg-icons": "svgr --native src/assets/icons/svg/*.svg --out-dir src/assets/auto-generated-svg-icons",
-    "bundle-android": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
-    "assemble-android-debug:unix": "cd android && ./gradlew assembleDebug",
-    "assemble-android-debug:win": "cd android && gradlew.bat assembleDebug",
-    "assemble-android-debug": "node -e \"const os=require('os'); const isWin=os.platform().startsWith('win'); const cmd=isWin? 'cd android && gradlew.bat assembleDebug' : 'cd android && ./gradlew assembleDebug'; require('child_process').execSync(cmd, {stdio:'inherit'});\"",
-    "build:debug": "npm run bundle-android && npm run assemble-android-debug"
+   "bundle:android": "npx react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res",
+    "build:debug": "npm run bundle:android && cd android && gradlew assembleDebug",
+    "build:release": "npm run bundle:android && cd android && gradlew assembleRelease",
+    "build:aab": "npm run bundle:android && cd android && gradlew bundleRelease"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",

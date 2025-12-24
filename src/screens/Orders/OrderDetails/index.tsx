@@ -42,6 +42,7 @@ interface OrderDetailsData {
     serviceWeight?: string;
     timeline: TimelineItem[];
     itemTotal: number;
+    platformFee: number;
     gst: number;
     gstPercentage: string;
     grandTotal: number;
@@ -117,6 +118,8 @@ const OrderDetailsScreen: React.FC = () => {
 
         // Get grand total
         const grandTotal = vendorOrder.payment_details?.amount_to_vendor_after_commission || 0;
+        const platformFee = vendorOrder.payment_details?.amount_to_platform || 0;
+
 
         // Get service type from first item
         const firstItem = vendorOrder.items?.[0];
@@ -193,6 +196,7 @@ const OrderDetailsScreen: React.FC = () => {
             offerAmount: vendorOrder.payment_details?.offerDiscountAmount,
             customerName: vendorOrder.user?.name || 'Customer',
             orderNumber: vendorOrder?.order_number,
+            platformFee: platformFee,
         };
     }, [vendorOrder, formatDate, formatTime]);
 
@@ -386,14 +390,15 @@ const OrderDetailsScreen: React.FC = () => {
                 <View style={styles.billCard}>
                     <CustomText style={styles.billCardTitle}>Bill Summary</CustomText>
                     <CustomText style={styles.billCardSubtitle}>Incl. All taxes & Charges</CustomText>
+
                     <View style={styles.billRow}>
                         <CustomText style={styles.billLabel}>Item Total</CustomText>
                         <CustomText style={styles.billValue}>₹{orderData.itemTotal}</CustomText>
                     </View>
+
                     <View style={styles.billRow}>
-                        <CustomText style={styles.billLabelUnderlined}>
-                            GST (Govt. Taxes) ₹{orderData.gst} ({profile?.payment_config?.gst_percentage}% of Item Total)
-                        </CustomText>
+                        <CustomText style={styles.billLabel}>Platform Fee</CustomText>
+                        <CustomText style={styles.billValue}>₹{orderData.platformFee}</CustomText>
                     </View>
 
                     {(orderData?.offerAmount || 0) > 0 && <View style={styles.billRow}>

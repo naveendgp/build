@@ -172,7 +172,7 @@ export const mapOrdersToCompletedSections = (
           serviceType: firstItem?.service_name || 'Service',
           serviceWeight: buildWeightLabel(order.items),
           timeline: buildTimeline(order),
-          totalPrice: order.total_amount ? order.total_amount.toFixed(2) : '0.00',
+          totalPrice: order.payment_details?.amount_to_vendor_after_commission,
           isWeightBased: order.service_type === 2 ? true : false,
           orderNumber: order.order_number,
         },

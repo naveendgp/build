@@ -11,6 +11,7 @@ export interface BillSummaryData {
     gstPercentage: number;
     grandTotal: number;
     offerAmount?: number;
+    platformFee?: number;
 }
 
 interface BillSummaryBottomsheetProps {
@@ -77,9 +78,8 @@ const BillSummaryBottomsheet: React.FC<BillSummaryBottomsheetProps> = ({
                             <CustomText style={styles.billValue}>₹{billData.itemTotal}</CustomText>
                         </View>
                         <View style={styles.billRow}>
-                            <CustomText style={styles.billLabelUnderlined}>
-                                GST (Govt. Taxes) ₹{billData.gst} ({profile?.payment_config?.gst_percentage}% of Item Total)
-                            </CustomText>
+                            <CustomText style={styles.billLabel}>Platform Fee</CustomText>
+                            <CustomText style={styles.billValue}>₹{billData.platformFee}</CustomText>
                         </View>
 
                         {(billData?.offerAmount || 0) > 0 && <View style={styles.billRow}>
