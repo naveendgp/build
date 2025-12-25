@@ -3,10 +3,11 @@ import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 import { showErrorToast } from '../../utils/Toast';
 import { useDialogStore } from '../store/useDialogStore';
+import { API_ENDPOINTS } from '../../constants';
 
 const api = axios.create({
   // baseURL: 'http://192.168.0.144:3000',
-  baseURL: 'http://13.203.97.158:3000',
+  baseURL: API_ENDPOINTS.BASE_URL,
   timeout: 10000,
 });
 

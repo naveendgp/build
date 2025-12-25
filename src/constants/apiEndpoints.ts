@@ -2,9 +2,9 @@
 
 export const API_ENDPOINTS = {
   // Base URLs
-  BASE_URL: 'cu/vendor', //local
-  //BASE_URL: 'http://13.204.157.24:3000/vendor', // development http://192.168.1.29:3000/
-  SOCKET_BASE_URL: 'http://13.203.97.158:3000/', //local
+  BASE_URL: 'https://api.otterlaundry.com',
+  SOCKET_BASE_URL: 'https://api.otterlaundry.com/',
+
   LOGIN: '/login',
   OTPVERIFY: '/verify-otp',
   REGISTER: '/register',

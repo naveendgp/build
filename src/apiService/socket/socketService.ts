@@ -1,7 +1,6 @@
 import { AppState, AppStateStatus } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { io, Socket } from 'socket.io-client';
-import { Options } from 'react-native-reanimated/lib/typescript/createAnimatedComponent/AnimatedComponent';
 
 // Options for socket
 export interface SimpleSocketOptions {
