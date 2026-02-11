@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1057594013554",
+    "project_id": "otter-dev-0002",
+    "storage_bucket": "otter-dev-0002.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057594013554:android:7e01223f99e6fba571cfeb",
+        "android_client_info": {
+          "package_name": "com.otter.laundryuserapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZWA6plg3dPkY5TDjINprniZfik2KOCkk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

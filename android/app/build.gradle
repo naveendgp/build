@@ -1,0 +1,54 @@
+apply plugin: "com.android.application"
+apply plugin: "org.jetbrains.kotlin.android"
+apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
+
+react {
+    autolinkLibrariesWithApp()
+}
+
+def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
+
+android {
+    ndkVersion rootProject.ext.ndkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdk rootProject.ext.compileSdkVersion
+
+    namespace "com.otter.laundryuserapp"
+
+    defaultConfig {
+        applicationId "com.otter.laundryuserapp"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 4
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        release {
+            storeFile file(OTTER_UPLOAD_STORE_FILE)
+            storePassword OTTER_UPLOAD_STORE_PASSWORD
+            keyAlias OTTER_UPLOAD_KEY_ALIAS
+            keyPassword OTTER_UPLOAD_KEY_PASSWORD
+        }
+    }
+
+    buildTypes {
+        debug {}
+        release {
+            signingConfig signingConfigs.release
+            minifyEnabled false
+            shrinkResources false
+        }
+    }
+}
+
+dependencies {
+    implementation("com.facebook.react:react-android")
+
+    if (hermesEnabled.toBoolean()) {
+        implementation("com.facebook.react:hermes-android")
+    } else {
+        implementation jscFlavor
+    }
+}

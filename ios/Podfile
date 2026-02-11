@@ -1,0 +1,74 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+# ✅ Minimum iOS version
+platform :ios, '16.0'
+
+# ✅ Disable modular headers globally to avoid build issues
+# use_modular_headers!
+
+# ✅ Prepare RN project
+prepare_react_native_project!
+
+# ✅ Handle linkage configuration
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+else
+  # Default to static linking for RN + Hermes + Firebase
+  use_frameworks! :linkage => :static
+end
+
+target 'LaundryUserApp' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    :hermes_enabled => true  # ✅ Hermes enabled cleanly
+  )
+
+  # Use react-native-maps with Google subspec so the correct GoogleMaps SDK versions are pulled
+  pod 'react-native-maps', :path => '../node_modules/react-native-maps', :subspecs => ['Google']
+
+  # ✅ Post install hook to fix module maps and Swift interop
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false
+    )
+
+    # Fix missing module maps for static frameworks (Firebase, etc.)
+    # AND configure react-native-maps for Google Maps
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['BUILD_LIBRARY_FOR_DISTRIBUTION'] = 'YES'
+        
+        # Configure react-native-maps to use Google Maps provider
+        if target.name == 'react-native-maps'
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)']
+          config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] << 'HAVE_GOOGLE_MAPS=1'
+        end
+
+        # Relax non-modular include errors for specific RN pods that can trigger libtool/Clang failures
+        if ['RNCAsyncStorage', 'RNGestureHandler', 'react-native-safe-area-context'].include?(target.name)
+          config.build_settings['DEFINES_MODULE'] = 'YES'
+          config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        end
+      end
+
+      # Fix Hermes script phase warning
+      target.build_phases.each do |phase|
+        if phase.display_name == '[CP-User] [Hermes] Replace Hermes for the right configuration, if needed'
+          phase.output_paths = ['$(DERIVED_FILE_DIR)/hermes_config_done']
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,50 @@
+// Gradle Init Script - Forces correct AGP version and repository
+// This runs before any build configuration
+
+allprojects {
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+        }
+        
+        configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                if (details.requested.group == 'com.android.tools.build' &&
+                    details.requested.name == 'gradle') {
+                    // Force version 8.3.2 which definitely exists in google() repo
+                    details.useVersion '8.3.2'
+                    details.because 'Override non-existent 8.11.0 with stable 8.3.2'
+                }
+            }
+        }
+    }
+    
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    
+    configurations.all {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'com.android.tools.build' &&
+                details.requested.name == 'gradle') {
+                details.useVersion '8.3.2'
+                details.because 'Override non-existent 8.11.0 with stable 8.3.2'
+            }
+        }
+    }
+}
+
+// Ensure google() repository is available globally
+settingsEvaluated { settings ->
+    settings.pluginManagement {
+        repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+        }
+    }
+}
