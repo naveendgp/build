@@ -55,3 +55,22 @@ export const fetchOrderById = async (
   return response.data;
 };
 
+export interface OrderItemUpdate {
+  item_id: string;
+  quantity: number;
+  weight?: number;
+  pricing_tier?: string;
+}
+
+export interface UpdateOrderItemsParams {
+  order_id: string;
+  items: OrderItemUpdate[];
+}
+
+export const updateOrderItems = async (
+  params: UpdateOrderItemsParams,
+): Promise<any> => {
+  const response = await api.post(API_ENDPOINTS.UPDATE_ORDER_ITEMS, params);
+  return response.data;
+};
+

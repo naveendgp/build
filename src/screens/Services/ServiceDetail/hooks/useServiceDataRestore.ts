@@ -23,6 +23,7 @@ interface UseServiceDataRestoreParams {
     setOfferData: (data: OfferData) => void;
     setStandardPricePerKg: (value: string) => void;
     setExpressPricePerKg: (value: string) => void;
+    setPricingTiers: (value: { regular: string; standard: string; max: string }) => void;
     setEditableItems: (items: { [key: string]: ServiceItem }) => void;
     justUpdatedFromCategoryListRef: React.MutableRefObject<boolean>;
     previousItemsStrRef: React.MutableRefObject<string>;
@@ -45,13 +46,14 @@ export const useServiceDataRestore = ({
     setOfferData,
     setStandardPricePerKg,
     setExpressPricePerKg,
+    setPricingTiers,
     setEditableItems,
     justUpdatedFromCategoryListRef,
     previousItemsStrRef,
 }: UseServiceDataRestoreParams) => {
     const { profile } = useProfileStore();
     const { updatedService, clearUpdatedService, serviceFormData, clearServiceFormData } = useServiceDataStore();
-    
+
     const isRestoringRef = useRef(false);
     const hasRestoredRef = useRef(false);
 
@@ -79,6 +81,7 @@ export const useServiceDataRestore = ({
                         updatedServiceFromProfile.express_time !== service.express_time ||
                         updatedServiceFromProfile.offer_percentage !== service.offer_percentage ||
                         updatedServiceFromProfile.offer_max_cap !== service.offer_max_cap ||
+                        JSON.stringify(updatedServiceFromProfile.pricing_tiers) !== JSON.stringify(service.pricing_tiers) ||
                         JSON.stringify(updatedServiceFromProfile.items) !== JSON.stringify(service.items) ||
                         JSON.stringify(updatedServiceFromProfile.items_by_category) !== JSON.stringify(service.items_by_category);
 
@@ -121,6 +124,9 @@ export const useServiceDataRestore = ({
                 }
                 if (savedData.expressPricePerKg !== undefined) {
                     setExpressPricePerKg(savedData.expressPricePerKg);
+                }
+                if (savedData.pricingTiers) {
+                    setPricingTiers(savedData.pricingTiers);
                 }
                 // Reset flag after state updates complete
                 setTimeout(() => {
@@ -259,6 +265,13 @@ export const useServiceDataRestore = ({
                 }
                 if (service.express_price_per_kg !== undefined) {
                     setExpressPricePerKg((service.express_price_per_kg ?? '').toString());
+                }
+                if (service.pricing_tiers) {
+                    setPricingTiers({
+                        regular: service.pricing_tiers.regular?.toString() || '',
+                        standard: service.pricing_tiers.standard?.toString() || '',
+                        max: service.pricing_tiers.max?.toString() || '',
+                    });
                 }
             }
         }

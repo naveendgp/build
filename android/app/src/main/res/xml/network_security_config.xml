@@ -12,6 +12,7 @@
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">13.203.97.158</domain>
         <domain includeSubdomains="true">adah-rotatory-evelina.ngrok-free.dev</domain>
+        <domain includeSubdomains="true">10.1.39.52</domain>
     </domain-config>
 </network-security-config>
 

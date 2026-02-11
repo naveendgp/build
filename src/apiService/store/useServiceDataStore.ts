@@ -15,6 +15,11 @@ interface ServiceFormData {
     };
     standardPricePerKg?: string;
     expressPricePerKg?: string;
+    pricingTiers?: {
+        regular: string;
+        standard: string;
+        max: string;
+    };
 }
 
 interface ServiceDataState {

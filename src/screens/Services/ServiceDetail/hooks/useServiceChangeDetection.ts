@@ -12,6 +12,7 @@ interface UseServiceChangeDetectionParams {
     offerData: OfferData;
     standardPricePerKg: string;
     expressPricePerKg: string;
+    pricingTiers: { regular: string; standard: string; max: string };
     editableItems: { [key: string]: ServiceItem };
 }
 
@@ -24,6 +25,7 @@ export const useServiceChangeDetection = ({
     offerData,
     standardPricePerKg,
     expressPricePerKg,
+    pricingTiers,
     editableItems,
 }: UseServiceChangeDetectionParams) => {
     const initialServiceRef = useRef<Service | undefined>(initialService);
@@ -83,6 +85,19 @@ export const useServiceChangeDetection = ({
             if (currentExpressPrice !== initialExpressPrice) {
                 return true;
             }
+
+            // Check if pricing tiers changed
+            const initialRegular = service.pricing_tiers?.regular?.toString() || '';
+            const initialStandard = service.pricing_tiers?.standard?.toString() || '';
+            const initialMax = service.pricing_tiers?.max?.toString() || '';
+
+            if (
+                pricingTiers.regular !== initialRegular ||
+                pricingTiers.standard !== initialStandard ||
+                pricingTiers.max !== initialMax
+            ) {
+                return true;
+            }
         }
 
         // Check if editable items changed (for PER_PC services)
@@ -111,6 +126,7 @@ export const useServiceChangeDetection = ({
         offerData,
         standardPricePerKg,
         expressPricePerKg,
+        pricingTiers,
         editableItems,
     ]);
 

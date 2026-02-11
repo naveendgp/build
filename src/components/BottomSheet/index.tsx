@@ -206,7 +206,7 @@ const CustomBottomSheet: React.FC<BottomSheetProps> = ({
             onPress={handleHeaderPress}
             activeOpacity={0.8}
           >
-            <SvgCrossCloseIcon/>
+            <SvgCrossCloseIcon />
           </TouchableOpacity>
 
           <SafeAreaView edges={['top', 'bottom']} style={sheetStyle}>

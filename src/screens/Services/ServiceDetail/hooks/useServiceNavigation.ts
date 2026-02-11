@@ -28,6 +28,7 @@ interface UseServiceNavigationParams {
     setOfferData: (data: { offerPercentage: number; maxCap: number }) => void;
     setStandardPricePerKg: (value: string) => void;
     setExpressPricePerKg: (value: string) => void;
+    setPricingTiers: (value: { regular: string; standard: string; max: string }) => void;
     setEditableItems: (items: { [key: string]: ServiceItem }) => void;
 }
 
@@ -48,6 +49,7 @@ export const useServiceNavigation = ({
     setOfferData,
     setStandardPricePerKg,
     setExpressPricePerKg,
+    setPricingTiers,
     setEditableItems,
 }: UseServiceNavigationParams) => {
     const navigation = useNavigation<ServiceDetailNavProp>();
@@ -108,6 +110,11 @@ export const useServiceNavigation = ({
         });
         setStandardPricePerKg(initialService.standard_price_per_kg?.toString() || '');
         setExpressPricePerKg(initialService.express_price_per_kg?.toString() || '');
+        setPricingTiers({
+            regular: initialService.pricing_tiers?.regular?.toString() || '',
+            standard: initialService.pricing_tiers?.standard?.toString() || '',
+            max: initialService.pricing_tiers?.max?.toString() || '',
+        });
 
         // Reset editable items for PER_PC services
         if (initialService.pricing_type === PRICING_TYPES.PER_PC && initialService.items) {
@@ -128,7 +135,7 @@ export const useServiceNavigation = ({
 
         // Navigate back immediately
         navigation.goBack();
-    }, [initialService, clearServiceFormData, navigation, setExpressServiceEnabled, setOfferEnabled, setMaxItemsPerDay, setServiceTimeData, setOfferData, setStandardPricePerKg, setExpressPricePerKg, setEditableItems, setShowDiscardDialog, shouldAllowNavigationRef, setShouldPreventNavigation]);
+    }, [initialService, clearServiceFormData, navigation, setExpressServiceEnabled, setOfferEnabled, setMaxItemsPerDay, setServiceTimeData, setOfferData, setStandardPricePerKg, setExpressPricePerKg, setPricingTiers, setEditableItems, setShowDiscardDialog, shouldAllowNavigationRef, setShouldPreventNavigation]);
 
     // Handle cancel discard (stay on screen)
     const handleCancelDiscard = useCallback(() => {

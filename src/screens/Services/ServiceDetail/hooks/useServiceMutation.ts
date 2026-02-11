@@ -23,6 +23,7 @@ interface UseServiceMutationParams {
     offerData: OfferData;
     standardPricePerKg: string;
     expressPricePerKg: string;
+    pricingTiers: { regular: string; standard: string; max: string };
     editableItems: { [key: string]: ServiceItem };
     setShowDialog: (show: boolean) => void;
     updateInitialServiceRef: (service: Service) => void;
@@ -40,6 +41,7 @@ export const useServiceMutation = ({
     offerData,
     standardPricePerKg,
     expressPricePerKg,
+    pricingTiers,
     editableItems,
     setShowDialog,
     updateInitialServiceRef,
@@ -91,6 +93,11 @@ export const useServiceMutation = ({
                 standard_time: serviceTimeData.standardTime || 0,
                 standard_price_per_kg: parsedStandardPerKg,
                 express_price_per_kg: parsedExpressPerKg,
+                pricing_tiers: {
+                    regular: pricingTiers?.regular ? Number(pricingTiers.regular) : 0,
+                    standard: pricingTiers?.standard ? Number(pricingTiers.standard) : 0,
+                    max: pricingTiers?.max ? Number(pricingTiers.max) : 0,
+                },
                 items: allItems.map(item => ({
                     item_name: item.item_name,
                     item_price: item.item_price,
@@ -143,6 +150,11 @@ export const useServiceMutation = ({
                     offer_max_cap: offerData.maxCap,
                     standard_price_per_kg: standardPricePerKg ? Number(standardPricePerKg) : service.standard_price_per_kg,
                     express_price_per_kg: expressPricePerKg ? Number(expressPricePerKg) : service.express_price_per_kg,
+                    pricing_tiers: {
+                        regular: pricingTiers?.regular ? Number(pricingTiers.regular) : service.pricing_tiers?.regular || 0,
+                        standard: pricingTiers?.standard ? Number(pricingTiers.standard) : service.pricing_tiers?.standard || 0,
+                        max: pricingTiers?.max ? Number(pricingTiers.max) : service.pricing_tiers?.max || 0,
+                    },
                     items: service.pricing_type === PRICING_TYPES.PER_PC ? Object.values(editableItems) : service.items,
                 };
                 updateInitialServiceRef(updatedService);

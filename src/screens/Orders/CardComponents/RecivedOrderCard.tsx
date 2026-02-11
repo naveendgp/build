@@ -253,7 +253,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
 
   // Prepare items data for bottom sheet - memoized to prevent recalculation
   const itemsData = useMemo((): OrderItem[] => {
-    const orderData = vendorOrderData;
+    const orderData = vendorOrder || vendorOrderData;
     if (!orderData?.items) return [];
 
 
@@ -267,7 +267,7 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
       amount: item.price_per_item,
       weight: item.weight,
     }));
-  }, [vendorOrder?.items, vendorOrderData?.items]);
+  }, [vendorOrder, vendorOrderData]);
 
   // Prepare bill summary data for bottom sheet - memoized to prevent recalculation
   const billSummaryData = useMemo((): BillSummaryData | null => {
@@ -537,6 +537,8 @@ const ReceivedOrderCard: React.FC<ReceivedOrderCardProps> = ({
         items={itemsData}
         isWeightBased={isWeightBased}
         isVerified={isVerified}
+        orderId={orderId}
+        onUpdateSuccess={refetchOrder}
       />
 
       {/* Bill Summary Bottom Sheet */}

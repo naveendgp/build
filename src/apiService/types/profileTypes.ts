@@ -82,6 +82,12 @@ export interface Service {
 
   express_price_per_kg: number;
   standard_price_per_kg: number;
+
+  pricing_tiers?: {
+    regular: number;
+    standard: number;
+    max: number;
+  };
 }
 
 export interface ServiceItem {
@@ -154,6 +160,11 @@ export interface UpdateServiceInput {
     standard_time: number;
     standard_price_per_kg: number;
     express_price_per_kg: number;
+    pricing_tiers?: {
+      regular: number;
+      standard: number;
+      max: number;
+    };
     items: UpdateServiceItem[];
   };
 }

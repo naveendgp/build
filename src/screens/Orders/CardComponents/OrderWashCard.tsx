@@ -1,5 +1,4 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TextInput } from "react-native";
 import { COLORS, FONTFAMILY } from "../../../constants";
 import { orderedItemStyles } from "./OrderedIronCard";
 
@@ -8,6 +7,8 @@ interface OrderWashCardProps {
     amount: number;
     itemName?: string;
     isVerified?: boolean;
+    isEditable?: boolean;
+    onQuantityChange?: (val: string) => void;
 }
 
 const OrderWashCard: React.FC<OrderWashCardProps> = ({
@@ -15,15 +16,11 @@ const OrderWashCard: React.FC<OrderWashCardProps> = ({
     amount,
     itemName,
     isVerified,
+    isEditable,
+    onQuantityChange,
 }) => {
     // Format quantity - if number, add 'kg', otherwise use as is
-
     console.log("🚀 ~ OrderWashCard ~ quantity:", quantity)
-
-
-    const formattedQuantity = typeof quantity === 'number'
-        ? `${quantity}kg`
-        : quantity;
 
     return (
         <View style={orderedItemStyles.card}>
@@ -31,7 +28,28 @@ const OrderWashCard: React.FC<OrderWashCardProps> = ({
                 {/* Quantity Section */}
                 <View style={orderedItemStyles.section}>
                     <Text style={orderedItemStyles.label}>Quantity</Text>
-                    <Text style={orderedItemStyles.value}>{isVerified ? `${quantity}kg` : `${itemName}`}</Text>
+                    {isEditable ? (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <TextInput
+                                style={{
+                                    borderBottomWidth: 1,
+                                    borderBottomColor: COLORS.BORDER_INPUT,
+                                    fontFamily: FONTFAMILY.INTER_BOLD,
+                                    fontSize: 14,
+                                    color: COLORS.TEXT_PRIMARY,
+                                    width: 60,
+                                    paddingVertical: 2,
+                                    textAlign: 'center'
+                                }}
+                                value={String(quantity)}
+                                onChangeText={onQuantityChange}
+                                keyboardType="numeric"
+                            />
+                            <Text style={orderedItemStyles.value}> kg</Text>
+                        </View>
+                    ) : (
+                        <Text style={orderedItemStyles.value}>{isVerified ? `${quantity}kg` : `${itemName}`}</Text>
+                    )}
                 </View>
 
                 {/* Amount Section */}

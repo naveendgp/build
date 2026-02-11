@@ -4,6 +4,8 @@ export const API_ENDPOINTS = {
   // Base URLs
   BASE_URL: 'https://api.otterlaundry.com',
   SOCKET_BASE_URL: 'https://api.otterlaundry.com/',
+  // BASE_URL: 'http://52.66.215.132:3000',
+  // SOCKET_BASE_URL: 'http://52.66.215.132:3000/api',
 
   LOGIN: '/login',
   OTPVERIFY: '/verify-otp',
@@ -11,6 +13,7 @@ export const API_ENDPOINTS = {
   ORDERS: '/vendor/orders',
   COMPLETE_ORDER: '/vendor/order/complete',
   ACCEPT_ORDER: '/vendor/order/accept',
+  UPDATE_ORDER_ITEMS: '/vendor/order/update-items',
 } as const;
 
 export const SOCKET_ENDPOINTS = {

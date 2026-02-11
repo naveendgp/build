@@ -27,6 +27,19 @@ export const useServiceForm = (initialService: Service | undefined) => {
         maxCap: initialService?.offer_max_cap ?? 100,
     });
 
+    const [pricingTiers, setPricingTiers] = useState({
+        regular: initialService?.pricing_tiers?.regular?.toString() || '',
+        standard: initialService?.pricing_tiers?.standard?.toString() || '',
+        max: initialService?.pricing_tiers?.max?.toString() || '',
+    });
+
+    const updatePricingTier = (tier: 'regular' | 'standard' | 'max', value: string) => {
+        setPricingTiers(prev => ({
+            ...prev,
+            [tier]: value
+        }));
+    };
+
     return {
         expressServiceEnabled,
         setExpressServiceEnabled,
@@ -42,6 +55,9 @@ export const useServiceForm = (initialService: Service | undefined) => {
         setServiceTimeData,
         offerData,
         setOfferData,
+        pricingTiers,
+        updatePricingTier,
+        setPricingTiers,
     };
 };
 

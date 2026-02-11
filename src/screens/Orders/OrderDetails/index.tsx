@@ -87,6 +87,7 @@ const OrderDetailsScreen: React.FC = () => {
         isLoading,
         isError,
         error,
+        refetch,
     } = useQuery({
         queryKey: ['orderDetails', orderId],
         queryFn: () => fetchOrderById(orderId!),
@@ -432,6 +433,8 @@ const OrderDetailsScreen: React.FC = () => {
                 items={getItemsData()}
                 isWeightBased={vendorOrder?.service_type === 2 ? true : false}
                 isVerified={true}
+                orderId={orderId!}
+                onUpdateSuccess={refetch}
             />
         </SafeAreaView>
     );
