@@ -1,0 +1,120 @@
+[
+    {
+        "_id": {
+            "$oid": "652f1a2e4a9f123456789001"
+        },
+        "name": "Rahul Sharma",
+        "email": "rahul.sharma@example.com",
+        "phone": "+919876543210",
+        "password_hash": "$2b$10$8fKJd89f9slqTqWl7q7N1uQ5S4kH6H1v8Gjkjf0w2JHfjY8YhL5aK",
+        "gender": "male",
+        "dob": {
+            "$date": "1992-03-15T00:00:00Z"
+        },
+        "addresses": [
+            {
+                "_id": {
+                    "$oid": "652f1a2e4a9f123456789101"
+                },
+                "label": "Home",
+                "address_line1": "Flat 304, Green Meadows Apartments",
+                "address_line2": "HSR Layout, Sector 7",
+                "city": "Bengaluru",
+                "state": "Karnataka",
+                "pincode": "560102",
+                "latitude": 12.9123,
+                "longitude": 77.6445,
+                "is_default": true
+            },
+            {
+                "_id": {
+                    "$oid": "652f1a2e4a9f123456789102"
+                },
+                "label": "Office",
+                "address_line1": "2nd Floor, Innov8 Co-working Space",
+                "address_line2": "MG Road",
+                "city": "Bengaluru",
+                "state": "Karnataka",
+                "pincode": "560001",
+                "latitude": 12.9741,
+                "longitude": 77.6052,
+                "is_default": false
+            }
+        ],
+        "wallet": {
+            "balance": 250.75,
+            "currency": "INR",
+            "last_updated": {
+                "$date": "2025-10-06T10:30:00Z"
+            }
+        },
+        "loyalty_points": 120,
+        "preferences": {
+            "wash_type": "normal",
+            "fold_preference": "standard",
+            "detergent_type": "eco_friendly",
+            "notifications_enabled": true
+        },
+        "referral_code": "RAHUL123",
+        "referred_by": null,
+        "status": "active",
+        "created_at": {
+            "$date": "2024-05-10T08:15:00Z"
+        },
+        "updated_at": {
+            "$date": "2025-10-06T11:20:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "652f1a2e4a9f123456789002"
+        },
+        "name": "Priya Nair",
+        "email": "priya.nair@example.com",
+        "phone": "+919812345678",
+        "password_hash": "$2b$10$AbC78gDsFgHiJkLmNpQrStUvWxYz0123456789abcdef012345678",
+        "gender": "female",
+        "dob": {
+            "$date": "1996-11-02T00:00:00Z"
+        },
+        "addresses": [
+            {
+                "_id": {
+                    "$oid": "652f1a2e4a9f123456789103"
+                },
+                "label": "Home",
+                "address_line1": "Villa 45, Sunrise Enclave",
+                "address_line2": "Vyttila",
+                "city": "Kochi",
+                "state": "Kerala",
+                "pincode": "682019",
+                "latitude": 9.9700,
+                "longitude": 76.3180,
+                "is_default": true
+            }
+        ],
+        "wallet": {
+            "balance": 0.0,
+            "currency": "INR",
+            "last_updated": {
+                "$date": "2025-09-20T14:00:00Z"
+            }
+        },
+        "loyalty_points": 40,
+        "preferences": {
+            "wash_type": "premium",
+            "fold_preference": "ironed",
+            "detergent_type": "hypoallergenic",
+            "notifications_enabled": false
+        },
+        "referral_code": "PRIYA456",
+        "referred_by": "RAHUL123",
+        "status": "active",
+        "created_at": {
+            "$date": "2024-06-05T09:45:00Z"
+        },
+        "updated_at": {
+            "$date": "2025-09-28T12:00:00Z"
+        }
+    }
+]

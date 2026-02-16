@@ -1,0 +1,1097 @@
+// ============================================================================
+// Otter Laundry - PostgreSQL Prisma Schema
+// Migrated from MongoDB/Mongoose to normalized relational schema
+// ============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+}
+
+enum AppType {
+  user_android
+  user_ios
+  vendor_android
+  delivery_android
+}
+
+enum PricingType {
+  per_kg
+  per_pc
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum OrderStatus {
+  pending
+  processing
+  processed
+  cancelled
+  reached_to_user
+  reached_to_vendor
+  delivered
+  picked_up
+  accepted
+  rejected
+  unaccepted
+  driver_assigned
+  out_for_delivery
+  delivery_OTP_verified
+  verified
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  initiated
+}
+
+enum PaymentGatewayStatus {
+  created
+  captured
+  failed
+  refunded
+}
+
+enum TransactionEntityType {
+  user
+  vendor
+  driver
+}
+
+enum TransactionType {
+  debit
+  credit
+}
+
+enum TransactionLogStatus {
+  initiated
+  completed
+  failed
+  cancelled
+}
+
+enum NotificationType {
+  order
+  payment
+  system
+  promotion
+  service
+  vendor_update
+  delivery
+}
+
+enum NotificationRole {
+  user
+  vendor
+  delivery
+}
+
+enum DeliveryPersonStatus {
+  active
+  inactive
+}
+
+enum AvailabilityStatus {
+  AVAILABLE       @map("1")
+  UNAVAILABLE     @map("2")
+  BUSY            @map("3")
+  OFFLINE         @map("4")
+}
+
+enum AssignedOrderStatus {
+  accepted
+  in_transit
+  delivered
+}
+
+enum VendorStatus {
+  active
+  inactive
+  pending
+  upload
+  retry
+}
+
+enum ShopOpenStatus {
+  open
+  close
+}
+
+enum UserStatus {
+  active
+  inactive
+}
+
+enum PricingTier {
+  regular
+  standard
+  max
+}
+
+// ============================================================================
+// ADMIN
+// ============================================================================
+
+model Admin {
+  id          String    @id @default(uuid()) @db.Uuid
+  email       String    @unique
+  password    String
+  name        String
+  role        AdminRole @default(ADMIN)
+  permissions String[]  @default([])
+  isActive    Boolean   @default(true) @map("is_active")
+  lastLogin   DateTime? @map("last_login")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Legacy MongoDB _id for migration reference
+  mongoId String? @unique @map("mongo_id")
+
+  @@map("admins")
+}
+
+// ============================================================================
+// APP CONFIG
+// ============================================================================
+
+model AppConfig {
+  id          String  @id @default(uuid()) @db.Uuid
+  configKey   String  @unique @map("config_key")
+  configName  String  @map("config_name")
+  description String?
+
+  // Payment config (flattened from embedded object)
+  gst                 Float   @default(0)
+  platformFee         Float   @default(0) @map("platform_fee")
+  deliveryFee         Float   @default(0) @map("delivery_fee")
+  vendorCommission    Float   @default(0) @map("vendor_commission")
+  currency            String  @default("INR")
+  minOrderAmount      Float?  @map("min_order_amount")
+  maxOrderAmount      Float?  @map("max_order_amount")
+  walletEnabled       Boolean @default(false) @map("wallet_enabled")
+  offerEnabled        Boolean @default(false) @map("offer_enabled")
+  expressDeliveryFee  Float?  @map("express_delivery_fee")
+  standardDeliveryFee Float?  @map("standard_delivery_fee")
+
+  // General config (flattened)
+  appVersion     String?  @map("app_version")
+  maintenanceMode Boolean @default(false) @map("maintenance_mode")
+  supportContact String?  @map("support_contact")
+  termsUrl       String?  @map("terms_url")
+  privacyUrl     String?  @map("privacy_url")
+
+  // Delivery config (flattened)
+  initialDistanceKm        Float? @map("initial_distance_km")
+  totalDistanceKm          Float? @map("total_distance_km")
+  deliveryOrderAcceptTime  Int?   @map("delivery_order_accept_time")
+  orderDistance             Float? @map("order_distance")
+
+  supportPhoneNumber  String?  @map("support_phone_number")
+  privacyPolicyUrl    String?  @map("privacy_policy_url")
+  topLevelTermsUrl    String?  @map("top_level_terms_url")  // separate from general_config.terms_url
+
+  isActive       Boolean   @default(true) @map("is_active")
+  effectiveFrom  DateTime? @map("effective_from")
+  effectiveUntil DateTime? @map("effective_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@map("app_configs")
+}
+
+// ============================================================================
+// APP VERSION
+// ============================================================================
+
+model AppVersion {
+  id            String  @id @default(uuid()) @db.Uuid
+  appType       AppType @map("app_type")
+  version       String
+  isForceUpdate Boolean @default(false) @map("is_forceupdate")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@unique([appType, version])
+  @@map("app_versions")
+}
+
+// ============================================================================
+// BANNERS
+// ============================================================================
+
+model Banner {
+  id           String  @id @default(uuid()) @db.Uuid
+  assetUrl     String  @map("asset_url")
+  isActive     Boolean @default(true) @map("is_active")
+  enableStatus Boolean @default(true) @map("enable_status")
+  position     Int?
+  type         String?
+  cta          String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@map("banners")
+}
+
+// ============================================================================
+// USERS
+// ============================================================================
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  name         String     @default("")
+  email        String     @default("")
+  phone        String     @unique
+  gender       String?
+  dob          DateTime?
+
+  // Wallet (flattened from embedded)
+  walletBalance    Float    @default(0) @map("wallet_balance")
+  walletCurrency   String   @default("INR") @map("wallet_currency")
+  walletLastUpdate DateTime? @map("wallet_last_updated")
+
+  loyaltyPoints Int @default(0) @map("loyalty_points")
+
+  // Preferences (flattened from embedded)
+  prefWashType             String?  @map("pref_wash_type")
+  prefFoldPreference       String?  @map("pref_fold_preference")
+  prefDetergentType        String?  @map("pref_detergent_type")
+  prefNotificationsEnabled Boolean  @default(true) @map("pref_notifications_enabled")
+
+  referralCode String?    @map("referral_code")
+  referredBy   String?    @map("referred_by")
+  status       UserStatus @default(active)
+  fcmToken     String?    @map("fcm_token")
+  sessionToken String     @default("") @map("session_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  addresses     UserAddress[]
+  orders        Order[]
+  reviews       Review[]
+  payments      Payment[]
+  transactions  Transaction[]   @relation("UserTransactions")
+  notifications Notification[]  @relation("UserNotifications")
+  offerUsages   OfferUsage[]
+  transactionLogs TransactionLog[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@map("users")
+}
+
+model UserAddress {
+  id           String  @id @default(uuid()) @db.Uuid
+  userId       String  @map("user_id") @db.Uuid
+  label        String?
+  addressLine1 String  @map("address_line1")
+  addressLine2 String? @map("address_line2")
+  city         String
+  state        String
+  pincode      String
+  latitude     Float?
+  longitude    Float?
+  isDefault    Boolean @default(false) @map("is_default")
+  landmark     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([userId])
+  @@map("user_addresses")
+}
+
+// ============================================================================
+// SERVICES (Master catalog)
+// ============================================================================
+
+model Service {
+  id                 String      @id @default(uuid()) @db.Uuid
+  serviceName        String      @map("service_name")
+  imageUrl           String      @map("image_url")
+  pricingType        PricingType @map("pricing_type")
+  serviceDescription String      @map("service_description")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  items              ServiceItem[]
+  vendorServices     VendorService[]
+  orderItems         OrderItem[]
+  applicableOffers   OfferApplicableService[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@map("services")
+}
+
+model ServiceItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  serviceId       String  @map("service_id") @db.Uuid
+  itemName        String  @map("item_name")
+  imageUrl        String  @map("image_url")
+  itemDescription String  @map("item_description")
+  itemSlug        String  @map("item_slug")
+  category        String?
+
+  service         Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  vendorServiceItems VendorServiceItem[]
+  orderItems      OrderItem[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([serviceId])
+  @@map("service_items")
+}
+
+// ============================================================================
+// VENDORS
+// ============================================================================
+
+model Vendor {
+  id              String       @id @default(uuid()) @db.Uuid
+  shopName        String       @map("shop_name")
+  shopImageUrl    String?      @map("shop_image_url")
+  profilePic      String?      @map("profile_pic")
+  ownerName       String?      @map("owner_name")
+  email           String       @default("")
+  phone           String       @unique
+  contactNum      String?      @map("contact_num")
+  passwordHash    String?      @map("password_hash")
+  status          VendorStatus @default(active)
+  gstNumber       String?      @map("gst_number")
+  panNumber       String?      @map("pan_number")
+  aadhaarNumber   String?      @map("aadhaar_number")
+  shopLicenseNumber String?    @map("shop_license_number")
+  totalOrders     Int          @default(0) @map("total_orders")
+
+  // Shop status (flattened)
+  shopOpenStatus  ShopOpenStatus @default(open) @map("shop_open_status")
+  shopCloseTime   DateTime?      @map("shop_close_time")
+
+  expressStatus   Boolean @default(false) @map("express_status")
+
+  // Address (flattened from embedded)
+  addressLine1  String?  @map("address_line1")
+  addressLine2  String?  @map("address_line2")
+  city          String?
+  state         String?
+  pincode       String?
+  latitude      Float?
+  longitude     Float?
+  landmark      String?
+
+  // Rating summary (flattened)
+  ratingAverage    Float @default(0) @map("rating_average")
+  ratingTotalReviews Int @default(0) @map("rating_total_reviews")
+
+  // Wallet (flattened)
+  walletBalance    Float    @default(0) @map("wallet_balance")
+  walletCurrency   String   @default("INR") @map("wallet_currency")
+  walletLastUpdate DateTime? @map("wallet_last_updated")
+
+  // Bank details (flattened)
+  bankAccountHolderName String? @map("bank_account_holder_name")
+  bankAccountNumber     String? @map("bank_account_number")
+  bankIfscCode          String? @map("bank_ifsc_code")
+  bankName              String? @map("bank_name")
+  bankBranch            String? @map("bank_branch")
+  bankCancelledCheque   String? @map("bank_cancelled_cheque")
+  bankUpiId             String? @map("bank_upi_id")
+
+  // Subscription plan (flattened)
+  subscriptionPlanName        String?  @map("subscription_plan_name")
+  subscriptionMonthlyFee      Float?   @map("subscription_monthly_fee")
+  subscriptionMaxOrdersPerDay Int?     @map("subscription_max_orders_per_day")
+  subscriptionCommissionPct   Float?   @map("subscription_commission_pct")
+
+  // Documents (flattened)
+  docAadhaarCard    String? @map("doc_aadhaar_card")
+  docGstCertificate String? @map("doc_gst_certificate")
+  docPanCard        String? @map("doc_pan_card")
+
+  fcmToken     String?  @map("fcm_token")
+  sessionToken String   @default("") @map("session_token")
+  amountDue    Float    @default(0) @map("amount_due")
+
+  lastServiceUpdatedAt DateTime? @map("last_service_updated_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  operatingHours    VendorOperatingHours[]
+  servicesOffered   VendorService[]
+  pickupZones       VendorPickupZone[]
+  ratingReviews     VendorRatingReview[]
+  orders            Order[]
+  reviews           Review[]
+  transactions      Transaction[] @relation("VendorTransactions")
+  notifications     Notification[] @relation("VendorNotifications")
+  ordersToBeSettled VendorSettlementOrder[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([latitude, longitude])
+  @@index([status, shopOpenStatus])
+  @@map("vendors")
+}
+
+model VendorOperatingHours {
+  id       String @id @default(uuid()) @db.Uuid
+  vendorId String @map("vendor_id") @db.Uuid
+  dayOfWeek String @map("day_of_week") // monday, tuesday, etc.
+  open     String // HH:mm
+  close    String // HH:mm
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, dayOfWeek])
+  @@map("vendor_operating_hours")
+}
+
+model VendorPickupZone {
+  id       String   @id @default(uuid()) @db.Uuid
+  vendorId String   @map("vendor_id") @db.Uuid
+  zoneName String   @map("zone_name")
+  pincodes String[] @default([])
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("vendor_pickup_zones")
+}
+
+model VendorRatingReview {
+  id       String   @id @default(uuid()) @db.Uuid
+  vendorId String   @map("vendor_id") @db.Uuid
+  userId   String?  @map("user_id") @db.Uuid
+  name     String?
+  rating   Int
+  comment  String?
+  date     DateTime?
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@index([vendorId])
+  @@map("vendor_rating_reviews")
+}
+
+model VendorSettlementOrder {
+  id       String @id @default(uuid()) @db.Uuid
+  vendorId String @map("vendor_id") @db.Uuid
+  orderId  String @map("order_id") // stored as string in MongoDB
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([vendorId, orderId])
+  @@map("vendor_settlement_orders")
+}
+
+// ============================================================================
+// VENDOR SERVICES (N-N with custom pricing per vendor)
+// ============================================================================
+
+model VendorService {
+  id                        String      @id @default(uuid()) @db.Uuid
+  vendorId                  String      @map("vendor_id") @db.Uuid
+  serviceId                 String      @map("service_id") @db.Uuid
+  serviceName               String      @map("service_name")
+  imageUrl                  String      @map("image_url")
+  pricingType               PricingType @map("pricing_type")
+  maxCountPerDay            Int?        @map("max_count_per_day")
+  standardPricePerKg        Float       @default(0) @map("standard_price_per_kg")
+  expressPricePerKg         Float       @default(0) @map("express_price_per_kg")
+  serviceDescription        String      @map("service_description")
+  isOffer                   Boolean     @default(false) @map("is_offer")
+  offerPercentage           Float?      @map("offer_percentage")
+  offerMaxCap               Float       @default(0) @map("offer_max_cap")
+  isActive                  Boolean     @default(true) @map("is_active")
+  isApproved                Boolean     @default(false) @map("is_approved")
+  isExpressAvailable        Boolean     @default(false) @map("is_express_available")
+  expressDeliveryTimeMinutes Int        @default(0) @map("express_delivery_time_minutes")
+  normalDeliveryTimeMinutes  Int        @default(0) @map("normal_delivery_time_minutes")
+  expressTime               Int         @default(8) @map("express_time")
+  standardTime              Int         @default(48) @map("standard_time")
+
+  // Pricing tiers (flattened)
+  pricingTierRegular  Float @default(0) @map("pricing_tier_regular")
+  pricingTierStandard Float @default(0) @map("pricing_tier_standard")
+  pricingTierMax      Float @default(0) @map("pricing_tier_max")
+
+  vendor  Vendor  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+  items   VendorServiceItem[]
+
+  @@unique([vendorId, serviceId])
+  @@index([vendorId])
+  @@index([serviceId])
+  @@map("vendor_services")
+}
+
+model VendorServiceItem {
+  id              String  @id @default(uuid()) @db.Uuid
+  vendorServiceId String  @map("vendor_service_id") @db.Uuid
+  itemId          String  @map("item_id") @db.Uuid
+  itemName        String  @map("item_name")
+  imageUrl        String? @map("image_url")
+  itemPrice       Float   @map("item_price")
+  expressPrice    Float   @default(0) @map("express_price")
+  minWeight       Float   @default(0) @map("min_weight")
+  maxWeight       Float   @default(0) @map("max_weight")
+  itemDescription String  @map("item_description")
+  category        String?
+  isActive        Boolean @default(true) @map("is_active")
+
+  vendorService VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
+  item          ServiceItem   @relation(fields: [itemId], references: [id])
+
+  @@unique([vendorServiceId, itemId])
+  @@index([vendorServiceId])
+  @@map("vendor_service_items")
+}
+
+// ============================================================================
+// DELIVERY PERSONS
+// ============================================================================
+
+model DeliveryPerson {
+  id       String               @id @default(uuid()) @db.Uuid
+  name     String
+  email    String               @default("")
+  phone    String               @unique
+  status   DeliveryPersonStatus @default(active)
+  role     String?
+
+  assignedZones String[] @default([]) @map("assigned_zones")
+
+  // Vehicle (flattened)
+  vehicleType   String? @map("vehicle_type")
+  vehicleNumber String? @map("vehicle_number")
+  vehicleModel  String? @map("vehicle_model")
+  vehicleColor  String? @map("vehicle_color")
+
+  // License (flattened)
+  licenseNumber    String?   @map("license_number")
+  licenseValidTill DateTime? @map("license_valid_till")
+  licenseVerified  Boolean?  @map("license_verified")
+  licenseDocUrl    String?   @map("license_doc_url")
+
+  // Aadhaar (flattened)
+  aadhaarNumber  String?  @map("aadhaar_number")
+  aadhaarVerified Boolean? @map("aadhaar_verified")
+  aadhaarDocUrl  String?  @map("aadhaar_doc_url")
+
+  // Address (flattened)
+  addressArea     String? @map("address_area")
+  addressLocality String? @map("address_locality")
+  addressCity     String? @map("address_city")
+  addressState    String? @map("address_state")
+  addressPincode  String? @map("address_pincode")
+  addressCountry  String? @map("address_country")
+  addressLatitude Float?  @map("address_latitude")
+  addressLongitude Float? @map("address_longitude")
+
+  // Current location (flattened)
+  currentLatitude      Float?    @map("current_latitude")
+  currentLongitude     Float?    @map("current_longitude")
+  locationLastUpdated  DateTime? @map("location_last_updated")
+
+  availabilityStatus Int @default(1) @map("availability_status")
+
+  // Wallet (flattened)
+  walletBalance    Float    @default(0) @map("wallet_balance")
+  walletCurrency   String   @default("INR") @map("wallet_currency")
+  walletLastUpdate DateTime? @map("wallet_last_updated")
+
+  // Earnings summary (flattened)
+  totalEarnings    Float @default(0) @map("total_earnings")
+  completedOrders  Int   @default(0) @map("completed_orders")
+  averageRating    Float @default(0) @map("average_rating")
+
+  // Documents
+  profilePhoto String? @map("profile_photo")
+
+  fcmToken     String? @map("fcm_token")
+  sessionToken String  @default("") @map("session_token")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  assignedOrders   DeliveryAssignedOrder[]
+  ratings          DeliveryPersonRating[]
+  deliveryLogs     DeliveryLog[]
+  ordersAsDriver1  Order[]        @relation("Driver1Orders")
+  ordersAsDriver2  Order[]        @relation("Driver2Orders")
+  transactions     Transaction[]  @relation("DriverTransactions")
+  notifications    Notification[] @relation("DeliveryNotifications")
+  cacheEntries     DeliveryPersonCache[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([currentLatitude, currentLongitude])
+  @@index([availabilityStatus])
+  @@map("delivery_persons")
+}
+
+model DeliveryAssignedOrder {
+  id                   String              @id @default(uuid()) @db.Uuid
+  deliveryPersonId     String              @map("delivery_person_id") @db.Uuid
+  orderId              String?             @map("order_id") @db.Uuid
+  pickupFromUserId     String?             @map("pickup_from_user_id") @db.Uuid
+  deliverToVendorId    String?             @map("deliver_to_vendor_id") @db.Uuid
+  pickupFromVendorId   String?             @map("pickup_from_vendor_id") @db.Uuid
+  deliverToUserId      String?             @map("deliver_to_user_id") @db.Uuid
+  status               AssignedOrderStatus?
+  pickupTime           DateTime?           @map("pickup_time")
+  expectedDeliveryTime DateTime?           @map("expected_delivery_time")
+
+  deliveryPerson DeliveryPerson @relation(fields: [deliveryPersonId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryPersonId])
+  @@map("delivery_assigned_orders")
+}
+
+model DeliveryPersonRating {
+  id               String   @id @default(uuid()) @db.Uuid
+  deliveryPersonId String   @map("delivery_person_id") @db.Uuid
+  orderId          String?  @map("order_id") @db.Uuid
+  userId           String?  @map("user_id") @db.Uuid
+  rating           Int
+  comment          String?
+  date             DateTime?
+
+  deliveryPerson DeliveryPerson @relation(fields: [deliveryPersonId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryPersonId])
+  @@map("delivery_person_ratings")
+}
+
+// ============================================================================
+// DELIVERY LOGS
+// ============================================================================
+
+model DeliveryLog {
+  id               String  @id @default(uuid()) @db.Uuid
+  deliveryPersonId String? @map("delivery_person_id") @db.Uuid
+  type             String
+  details          Json?   @db.JsonB
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  deliveryPerson DeliveryPerson? @relation(fields: [deliveryPersonId], references: [id])
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([deliveryPersonId])
+  @@map("delivery_logs")
+}
+
+// ============================================================================
+// DELIVERY PERSON CACHE (TTL-based, transient data)
+// ============================================================================
+
+model DeliveryPersonCache {
+  id               String   @id @default(uuid()) @db.Uuid
+  deliveryPersonId String   @unique @map("delivery_person_id") @db.Uuid
+  cachedOrders     Json     @default("[]") @map("cached_orders") @db.JsonB
+  expiresAt        DateTime @map("expires_at")
+  checkTime        DateTime? @map("check_time")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  deliveryPerson DeliveryPerson @relation(fields: [deliveryPersonId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([checkTime])
+  @@map("delivery_person_cache")
+}
+
+// ============================================================================
+// ORDERS
+// ============================================================================
+
+model Order {
+  id           String      @id @default(uuid()) @db.Uuid
+  orderNumber  Int         @unique @map("order_number")
+  statusType   Int         @default(1) @map("status_type")
+  isVerified   Boolean     @default(false) @map("is_verified")
+  userId       String      @map("user_id") @db.Uuid
+  vendorId     String      @map("vendor_id") @db.Uuid
+  driverId1    String?     @map("driver_id_1") @db.Uuid
+  driverId2    String?     @map("driver_id_2") @db.Uuid
+
+  // Vendor address snapshot (denormalized for historical accuracy)
+  vendorAddressLine1 String? @map("vendor_address_line1")
+  vendorAddressLine2 String? @map("vendor_address_line2")
+  vendorCity         String? @map("vendor_city")
+  vendorState        String? @map("vendor_state")
+  vendorPincode      String? @map("vendor_pincode")
+  vendorLatitude     Float?  @map("vendor_latitude")
+  vendorLongitude    Float?  @map("vendor_longitude")
+  vendorLandmark     String? @map("vendor_landmark")
+
+  // User address snapshot (denormalized for historical accuracy)
+  userAddressLabel    String? @map("user_address_label")
+  userAddressLine1    String? @map("user_address_line1")
+  userAddressLine2    String? @map("user_address_line2")
+  userCity            String? @map("user_city")
+  userState           String? @map("user_state")
+  userPincode         String? @map("user_pincode")
+  userLatitude        Float?  @map("user_latitude")
+  userLongitude       Float?  @map("user_longitude")
+  userIsDefault       Boolean @default(false) @map("user_is_default")
+
+  // Rider info
+  riderName  String? @map("rider_name")
+  riderPhone String? @map("rider_phone")
+
+  status           OrderStatus   @default(pending)
+  statusTimestamps Json?         @map("status_timestamps") @db.JsonB
+
+  isExpress              Boolean   @default(false) @map("is_express")
+  pickupScheduledAt      DateTime? @map("pickup_scheduled_at")
+  pickedUpAt             DateTime? @map("picked_up_at")
+  deliveredToVendorAt    DateTime? @map("delivered_to_vendor_at")
+  expectedDeliveryDate   DateTime? @map("expected_delivery_date")
+  deliveredToUserAt      DateTime? @map("delivered_to_user_at")
+
+  paymentStatus PaymentStatus @default(pending) @map("payment_status")
+  paymentId     String?       @map("payment_id") @db.Uuid
+
+  // Payment details (flattened from embedded)
+  isPaymentEligible              Boolean @default(false) @map("is_payment_eligible")
+  amountToVendor                 Float   @default(0) @map("amount_to_vendor")
+  amountToVendorAfterCommission  Float   @default(0) @map("amount_to_vendor_after_commission")
+  amountToPlatform               Float   @default(0) @map("amount_to_platform")
+  pdDeliveryFee                  Float   @default(0) @map("pd_delivery_fee")
+  pdGst                          Float   @default(0) @map("pd_gst")
+  pdIsOfferApplied               Boolean @default(false) @map("pd_is_offer_applied")
+  pdOfferDiscountAmount          Float   @default(0) @map("pd_offer_discount_amount")
+  pdTotalPayableAmount           Float   @default(0) @map("pd_total_payable_amount")
+  pdItemTotal                    Float   @default(0) @map("pd_item_total")
+  pdGrandTotal                   Float   @default(0) @map("pd_grand_total")
+  pdVendorCommission             Float   @default(0) @map("pd_vendor_commission")
+
+  totalAmount Float  @map("total_amount")
+  currency    String @default("INR")
+  orderNotes  String? @map("order_notes")
+  ratingGiven Boolean @default(false) @map("rating_given")
+
+  userOtp       Int    @default(0) @map("user_otp")
+  vendorOtp     String @default("0") @map("vendor_otp")
+  cashPaidAmount Float @default(0) @map("cash_paid_amount")
+  invoiceUrl    String? @map("invoice_url")
+  tripType      Int?    @map("trip_type")
+
+  isSettledToVendor Boolean  @default(false) @map("is_settled_to_vendor")
+  settledAmount     Float    @default(0) @map("settled_amount")
+  etaStartTime      DateTime? @map("eta_start_time")
+  etaEndTime        DateTime? @map("eta_end_time")
+  payment           Float    @default(0)
+  serviceType       Int?     @map("service_type")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user    User   @relation(fields: [userId], references: [id])
+  vendor  Vendor @relation(fields: [vendorId], references: [id])
+  driver1 DeliveryPerson? @relation("Driver1Orders", fields: [driverId1], references: [id])
+  driver2 DeliveryPerson? @relation("Driver2Orders", fields: [driverId2], references: [id])
+  items   OrderItem[]
+  paymentRecord Payment?  @relation("OrderPayment")
+  reviews Review[]
+  transactionLogs TransactionLog[]
+  transactions    Transaction[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([userId])
+  @@index([vendorId])
+  @@index([driverId1])
+  @@index([driverId2])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id            String      @id @default(uuid()) @db.Uuid
+  orderId       String      @map("order_id") @db.Uuid
+  serviceId     String?     @map("service_id") @db.Uuid
+  serviceName   String      @map("service_name")
+  itemId        String?     @map("item_id") @db.Uuid
+  itemName      String      @map("item_name")
+  quantity      Int
+  pricePerItem  Float?      @map("price_per_item")
+  totalPrice    Float?      @map("total_price")
+  itemCategory  String?     @map("item_category")
+  weight        Float       @default(0)
+  pricingTier   PricingTier @default(regular) @map("pricing_tier")
+
+  order   Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  service Service?     @relation(fields: [serviceId], references: [id])
+  item    ServiceItem? @relation(fields: [itemId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ============================================================================
+// PAYMENTS
+// ============================================================================
+
+model Payment {
+  id               String               @id @default(uuid()) @db.Uuid
+  orderId          String               @unique @map("order_id") @db.Uuid
+  userId           String               @map("user_id") @db.Uuid
+  paymentGateway   String               @map("payment_gateway")
+  paymentMode      String               @map("payment_mode")
+  transactionId    String               @map("transaction_id")
+  amount           Float
+  currency         String               @default("INR")
+  status           PaymentGatewayStatus @default(created)
+  walletUsed       Float                @default(0) @map("wallet_used")
+  vendorShare      Float                @default(0) @map("vendor_share")
+  platformCommission Float              @default(0) @map("platform_commission")
+  paymentTimestamp DateTime?            @map("payment_timestamp")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  order Order @relation("OrderPayment", fields: [orderId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([userId])
+  @@map("payments")
+}
+
+// ============================================================================
+// REVIEWS
+// ============================================================================
+
+model Review {
+  id          String  @id @default(uuid()) @db.Uuid
+  userId      String? @map("user_id") @db.Uuid
+  vendorId    String? @map("vendor_id") @db.Uuid
+  orderId     String? @map("order_id") @db.Uuid
+  rating      Int
+  serviceName String? @map("service_name")
+  comment     String?
+  isVerified  Boolean @default(false) @map("is_verified")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User?   @relation(fields: [userId], references: [id])
+  vendor Vendor? @relation(fields: [vendorId], references: [id])
+  order  Order?  @relation(fields: [orderId], references: [id])
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([vendorId])
+  @@index([userId])
+  @@index([orderId])
+  @@map("reviews")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id            String           @id @default(uuid()) @db.Uuid
+  recipientRole NotificationRole @map("recipient_role")
+  title         String
+  message       String
+  type          NotificationType @default(system)
+  orderId       String?          @map("order_id") @db.Uuid
+  isRead        Boolean          @default(false) @map("is_read")
+  readAt        DateTime?        @map("read_at")
+  metadata      Json?            @db.JsonB
+
+  // Polymorphic recipient — three nullable FK columns (only one is set per row)
+  userId           String? @map("user_id") @db.Uuid
+  vendorId         String? @map("vendor_id") @db.Uuid
+  deliveryPersonId String? @map("delivery_person_id") @db.Uuid
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user           User?           @relation("UserNotifications", fields: [userId], references: [id], map: "fk_notification_user")
+  vendor         Vendor?         @relation("VendorNotifications", fields: [vendorId], references: [id], map: "fk_notification_vendor")
+  deliveryPerson DeliveryPerson? @relation("DeliveryNotifications", fields: [deliveryPersonId], references: [id], map: "fk_notification_delivery")
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([userId, recipientRole, createdAt(sort: Desc)])
+  @@index([vendorId, recipientRole, createdAt(sort: Desc)])
+  @@index([deliveryPersonId, recipientRole, createdAt(sort: Desc)])
+  @@index([userId, recipientRole, isRead])
+  @@index([vendorId, recipientRole, isRead])
+  @@index([deliveryPersonId, recipientRole, isRead])
+  @@map("notifications")
+}
+
+// ============================================================================
+// OFFERS
+// ============================================================================
+
+model Offer {
+  id              String       @id @default(uuid()) @db.Uuid
+  code            String       @unique
+  title           String
+  description     String?
+  discountType    DiscountType @map("discount_type")
+  discountValue   Float        @map("discount_value")
+  maxDiscountCap  Float        @default(0) @map("max_discount_cap")
+  minOrderValue   Float        @default(0) @map("min_order_value")
+  validFrom       DateTime     @map("valid_from")
+  validUntil      DateTime     @map("valid_until")
+  isActive        Boolean      @default(true) @map("is_active")
+  maxUsagePerUser Int          @default(0) @map("max_usage_per_user")
+  totalUsageLimit Int          @default(0) @map("total_usage_limit")
+  totalUsageCount Int          @default(0) @map("total_usage_count")
+  createdBy       String?      @map("created_by")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  assignedUsers      OfferAssignedUser[]
+  userUsages         OfferUsage[]
+  applicableServices OfferApplicableService[]
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([isActive, validFrom, validUntil])
+  @@map("offers")
+}
+
+model OfferAssignedUser {
+  id      String @id @default(uuid()) @db.Uuid
+  offerId String @map("offer_id") @db.Uuid
+  userId  String @map("user_id") @db.Uuid
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@unique([offerId, userId])
+  @@map("offer_assigned_users")
+}
+
+model OfferUsage {
+  id         String    @id @default(uuid()) @db.Uuid
+  offerId    String    @map("offer_id") @db.Uuid
+  userId     String    @map("user_id") @db.Uuid
+  usageCount Int       @default(0) @map("usage_count")
+  lastUsedAt DateTime? @map("last_used_at")
+
+  offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([offerId, userId])
+  @@map("offer_usages")
+}
+
+model OfferApplicableService {
+  id        String @id @default(uuid()) @db.Uuid
+  offerId   String @map("offer_id") @db.Uuid
+  serviceId String @map("service_id") @db.Uuid
+
+  offer   Offer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@unique([offerId, serviceId])
+  @@map("offer_applicable_services")
+}
+
+// ============================================================================
+// TRANSACTIONS (Wallet movements)
+// ============================================================================
+
+model Transaction {
+  id              String                @id @default(uuid()) @db.Uuid
+  userId          String?               @map("user_id") @db.Uuid
+  vendorId        String?               @map("vendor_id") @db.Uuid
+  driverId        String?               @map("driver_id") @db.Uuid
+  entityType      TransactionEntityType @map("entity_type")
+  orderId         String?               @map("order_id") @db.Uuid
+  transactionType TransactionType       @map("transaction_type")
+  method          String
+  amount          Float
+  balanceAfter    Float?                @map("balance_after")
+  description     String?
+  timestamp       DateTime
+
+  user   User?           @relation("UserTransactions", fields: [userId], references: [id])
+  vendor Vendor?         @relation("VendorTransactions", fields: [vendorId], references: [id])
+  driver DeliveryPerson? @relation("DriverTransactions", fields: [driverId], references: [id])
+  order  Order?          @relation(fields: [orderId], references: [id])
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([userId])
+  @@index([vendorId])
+  @@index([driverId])
+  @@index([orderId])
+  @@map("transactions")
+}
+
+// ============================================================================
+// TRANSACTION LOGS (Payment link tracking)
+// ============================================================================
+
+model TransactionLog {
+  id             String               @id @default(uuid()) @db.Uuid
+  orderId        String?              @map("order_id") @db.Uuid
+  userId         String?              @map("user_id") @db.Uuid
+  linkId         String?              @map("link_id")
+  status         TransactionLogStatus @default(initiated)
+  amount         Float
+  currency       String               @default("INR")
+  paymentLinkUrl String?              @map("payment_link_url")
+  paymentGateway String?              @map("payment_gateway")
+  description    String?
+  metadata       Json?                @db.JsonB
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  order Order? @relation(fields: [orderId], references: [id])
+  user  User?  @relation(fields: [userId], references: [id])
+
+  mongoId String? @unique @map("mongo_id")
+
+  @@index([linkId])
+  @@index([orderId])
+  @@index([status, createdAt])
+  @@map("transaction_logs")
+}

@@ -1,0 +1,145 @@
+[
+    {
+        "_id": {
+            "$oid": "65301d6e9a1c123456789001"
+        },
+        "name": "Suresh Kumar",
+        "email": "suresh.kumar@example.com",
+        "phone": "+919844332211",
+        "password_hash": "$2b$10$Sdf4jK9pQ2s0Vx4hM3yNLeH3mPbS8U6Ns9XqM7Yk3T9gQe5nF1P2W",
+        "status": "active",
+        "role": "pickup_delivery_driver",
+        "assigned_zones": [
+            "Koramangala",
+            "HSR Layout"
+        ],
+        "vehicle": {
+            "vehicle_type": "bike",
+            "vehicle_number": "KA05MR1234",
+            "model": "Honda Activa 6G",
+            "color": "blue"
+        },
+        "license": {
+            "license_number": "DL-0420190012345",
+            "valid_till": {
+                "$date": "2030-04-20T00:00:00Z"
+            },
+            "verified": true,
+            "document_url": "https://s3.amazonaws.com/app/driver_docs/suresh_license.jpg"
+        },
+        "aadhaar": {
+            "aadhaar_number": "XXXX-XXXX-7890",
+            "verified": true,
+            "document_url": "https://s3.amazonaws.com/app/driver_docs/suresh_aadhaar.jpg"
+        },
+        "address": {
+            "area": "Nanganallur",
+            "locality": "Ram Nagar",
+            "city": "Chennai",
+            "state": "Tamil Nadu",
+            "pincode": "600061",
+            "country": "India",
+            "latitude": 12.9028,
+            "longitude": 77.5950
+        },
+        "current_location": {
+            "latitude": 12.9304,
+            "longitude": 77.6218,
+            "last_updated": {
+                "$date": "2025-10-07T08:30:00Z"
+            }
+        },
+        "availability_status": "available",
+        "assigned_orders": [
+            {
+                "order_id": {
+                    "$oid": "65301d6e9a1c123456789501"
+                },
+                "pickup_from_user_id": {
+                    "$oid": "652f1a2e4a9f123456789001"
+                },
+                "deliver_to_vendor_id": {
+                    "$oid": "652f3a9b8a1c123456789001"
+                },
+                "status": "in_transit",
+                "pickup_time": {
+                    "$date": "2025-10-07T08:00:00Z"
+                },
+                "expected_delivery_time": {
+                    "$date": "2025-10-07T09:00:00Z"
+                }
+            }
+        ],
+        "wallet": {
+            "balance": 1250.50,
+            "currency": "INR",
+            "last_updated": {
+                "$date": "2025-10-06T12:00:00Z"
+            }
+        },
+        "earnings_summary": {
+            "total_earnings": 48500.0,
+            "completed_orders": 340,
+            "average_rating": 4.7
+        },
+        "ratings": [
+            {
+                "order_id": {
+                    "$oid": "65301d6e9a1c123456789501"
+                },
+                "user_id": {
+                    "$oid": "652f1a2e4a9f123456789001"
+                },
+                "rating": 5,
+                "comment": "Very polite and punctual!",
+                "date": {
+                    "$date": "2025-10-07T09:30:00Z"
+                }
+            }
+        ],
+        "documents": {
+            "police_verification": "https://s3.amazonaws.com/app/driver_docs/suresh_police_verification.pdf",
+            "profile_photo": "https://s3.amazonaws.com/app/driver_docs/suresh_photo.jpg"
+        },
+        "created_at": {
+            "$date": "2024-09-01T10:00:00Z"
+        },
+        "updated_at": {
+            "$date": "2025-10-07T08:30:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "65301d6e9a1c123456789002"
+        },
+        "name": "Anjali Mehta",
+        "email": "anjali.mehta@example.com",
+        "phone": "+919898765432",
+        "status": "inactive",
+        "vehicle": {
+            "vehicle_type": "scooter",
+            "vehicle_number": "MH02AB5678",
+            "model": "TVS Jupiter",
+            "color": "red"
+        },
+        "availability_status": "offline",
+        "wallet": {
+            "balance": 800.00,
+            "currency": "INR",
+            "last_updated": {
+                "$date": "2025-09-25T09:00:00Z"
+            }
+        },
+        "earnings_summary": {
+            "total_earnings": 27200.0,
+            "completed_orders": 210,
+            "average_rating": 4.5
+        },
+        "created_at": {
+            "$date": "2024-09-15T09:45:00Z"
+        },
+        "updated_at": {
+            "$date": "2025-09-25T09:00:00Z"
+        }
+    }
+]

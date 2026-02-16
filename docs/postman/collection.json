@@ -1,0 +1,270 @@
+{
+  "info": {
+    "name": "Laundry Backend - Current Routes",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "OTP auth flows for user, vendor, delivery with /me endpoints."
+  },
+  "item": [
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "User Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/auth", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "auth"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000001\"\n}"
+            },
+            "description": "Combined login/register: creates user if not exists, sends OTP (temp 1234)."
+          }
+        },
+        {
+          "name": "User Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/verify-otp", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "verify-otp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000001\",\n  \"otp\": \"1234\",\n  \"fcm_token\": \"your_fcm_token_here\"\n}"
+            },
+            "description": "Returns { valid: true, token } with 6h JWT on success."
+          }
+        },
+        {
+          "name": "User Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/me", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "me"] },
+            "description": "Returns user profile. Set {{user_token}} from Verify OTP response."
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/update-profile", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "update-profile"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"gender\": \"male\",\n  \"dob\": \"1990-01-01T00:00:00Z\"\n}"
+            },
+            "description": "Updates user profile details like name, email, gender, and date of birth."
+          }
+        },
+        {
+          "name": "Add Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/add-address", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "add-address"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Home\",\n  \"address_line1\": \"Flat 304, Green Meadows Apartments\",\n  \"address_line2\": \"HSR Layout, Sector 7\",\n  \"latitude\": 12.9123,\n  \"longitude\": 77.6445\n}"
+            },
+            "description": "Adds a new address with tag, address lines, lat/lng. City, state, pincode from Google decoder. Max 5 addresses, only one Home."
+          }
+        },
+        {
+          "name": "Remove Address",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/remove-address", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "remove-address"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"652f1a2e4a9f123456789102\"\n}"
+            },
+            "description": "Removes an address by ID. Cannot remove home address."
+          }
+        },
+        {
+          "name": "Edit Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/edit-address", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "edit-address"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"652f1a2e4a9f123456789102\",\n  \"address_line1\": \"Updated Address Line 1\",\n  \"address_line2\": \"Updated Address Line 2\",\n  \"latitude\": 12.9304,\n  \"longitude\": 77.6218\n}"
+            },
+            "description": "Edits an address by ID. Can update label, address lines. Only one home allowed."
+          }
+        },
+        {
+          "name": "Get Addresses",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{user_token}}" }
+            ],
+            "url": { "raw": "http://localhost:3000/user/addresses", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["user", "addresses"] },
+            "description": "Retrieves all addresses for the authenticated user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vendor",
+      "item": [
+        {
+          "name": "Vendor Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/vendor/register", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["vendor", "register"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"businessName\": \"Fresh Laundry\",\n  \"phoneNumber\": \"+15550000002\",\n  \"email\": \"vendor@example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Vendor Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/vendor/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["vendor", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000002\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Vendor Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/vendor/verify-otp", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["vendor", "verify-otp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000002\",\n  \"otp\": \"1234\"\n}"
+            },
+            "description": "Returns { valid: true, token } with 6h JWT."
+          }
+        },
+        {
+          "name": "Vendor Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{vendor_token}}" }
+            ],
+            "url": { "raw": "http://localhost:3000/vendor/me", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["vendor", "me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delivery",
+      "item": [
+        
+        {
+          "name": "Delivery Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/delivery/login", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["delivery", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000003\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delivery Verify OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/delivery/verify-otp", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["delivery", "verify-otp"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phoneNumber\": \"+15550000003\",\n  \"otp\": \"1234\",\n  \"fcm_token\": \"your_fcm_token_here\"\n}"
+            },
+            "description": "Returns { valid: true, token } with 6h JWT."
+          }
+        },
+        {
+          "name": "Delivery Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{delivery_token}}" }
+            ],
+            "url": { "raw": "http://localhost:3000/delivery/me", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["delivery", "me"] }
+          }
+        },
+        {
+          "name": "Update Location",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{delivery_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/delivery/update-location", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["delivery", "update-location"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"latitude\": 12.9304,\n  \"longitude\": 77.6218\n}"
+            },
+            "description": "Updates the delivery person's current location."
+          }
+        },
+        {
+          "name": "Update Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{delivery_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": { "raw": "http://localhost:3000/delivery/update-availability", "protocol": "http", "host": ["localhost"], "port": "3000", "path": ["delivery", "update-availability"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"available\"\n}"
+            },
+            "description": "Updates the delivery person's availability status to 'available' or 'unavailable'."
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "user_token", "value": "" },
+    { "key": "vendor_token", "value": "" },
+    { "key": "delivery_token", "value": "" }
+  ]
+}

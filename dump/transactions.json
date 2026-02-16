@@ -1,0 +1,62 @@
+[
+    {
+        "_id": {
+            "$oid": "65302f7b8a1c123456789801"
+        },
+        "user_id": {
+            "$oid": "652f1a2e4a9f123456789001"
+        },
+        "entity_type": "user",
+        "order_id": {
+            "$oid": "65302f7b8a1c123456789001"
+        },
+        "transaction_type": "debit",
+        "method": "Razorpay",
+        "amount": 320.0,
+        "balance_after": 250.75,
+        "description": "Laundry order payment - ORD20251007001",
+        "timestamp": {
+            "$date": "2025-10-07T07:50:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "65302f7b8a1c123456789802"
+        },
+        "vendor_id": {
+            "$oid": "652f3a9b8a1c123456789001"
+        },
+        "entity_type": "vendor",
+        "order_id": {
+            "$oid": "65302f7b8a1c123456789001"
+        },
+        "transaction_type": "credit",
+        "method": "system",
+        "amount": 288.0,
+        "balance_after": 10788.0,
+        "description": "Vendor share credited after commission",
+        "timestamp": {
+            "$date": "2025-10-07T08:00:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "65302f7b8a1c123456789803"
+        },
+        "driver_id": {
+            "$oid": "65301d6e9a1c123456789001"
+        },
+        "entity_type": "driver",
+        "order_id": {
+            "$oid": "65302f7b8a1c123456789001"
+        },
+        "transaction_type": "credit",
+        "method": "system",
+        "amount": 30.0,
+        "balance_after": 1280.50,
+        "description": "Pickup/delivery earnings for order ORD20251007001",
+        "timestamp": {
+            "$date": "2025-10-07T08:30:00Z"
+        }
+    }
+]

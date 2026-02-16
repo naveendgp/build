@@ -1,0 +1,17 @@
+shop_name:Clean Laundry Services
+owner_name:John Doe
+gst_number:27ABCDE1234F1Z5
+address_line1:123 Main Street
+pincode:400001
+landmark:Near Metro Station
+latitude:19.076
+longitude:72.8777
+contactNum:+919876543210
+account_holder_name:John Doe
+account_number:1234567890
+ifsc_code:HDFC0001234
+bank_name:HDFC Bank
+branch:Andheri West
+upi_id:vendor@upi
+operating_hours:{"monday":{"open":"09:00","close":"20:00"},"tuesday":{"open":"09:00","close":"20:00"},"wednesday":{"open":"09:00","close":"20:00"},"thursday":{"open":"09:00","close":"20:00"},"friday":{"open":"09:00","close":"20:00"},"saturday":{"open":"10:00","close":"18:00"},"sunday":{"open":"10:00","close":"18:00"}}
+

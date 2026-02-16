@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "test",
+    "dist",
+    "**/*spec.ts",
+    "**/*.mongo.ts",
+    "**/*.refactored.ts",
+    "src/modules.refactored.ts",
+    "src/store/mongo-cache.service.ts",
+    "src/store/in-memory-store.service.ts",
+    "src/database/**"
+  ]
+}

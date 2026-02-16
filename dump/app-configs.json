@@ -1,0 +1,112 @@
+[
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789301"
+        },
+        "config_key": "payment_config_v1",
+        "config_name": "Payment Configuration v1.0",
+        "description": "Initial payment configuration for OTTER Laundry App",
+        "payment_config": {
+            "gst": 18,
+            "platform_fee": 5,
+            "delivery_fee": 30,
+            "currency": "INR",
+            "min_order_amount": 100,
+            "max_order_amount": 5000,
+            "wallet_enabled": true,
+            "offer_enabled": true,
+            "express_delivery_fee": 50,
+            "standard_delivery_fee": 30
+        },
+        "general_config": {
+            "app_version": "1.0.0",
+            "maintenance_mode": false,
+            "support_contact": "+91-9876543210",
+            "terms_url": "https://otterlaundry.com/terms",
+            "privacy_url": "https://otterlaundry.com/privacy"
+        },
+        "is_active": true,
+        "effective_from": {
+            "$date": "2024-01-01T00:00:00Z"
+        },
+        "created_at": {
+            "$date": "2024-01-01T00:00:00Z"
+        },
+        "updated_at": {
+            "$date": "2024-01-01T00:00:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789302"
+        },
+        "config_key": "delivery_config_v1",
+        "config_name": "Delivery Configuration v1.0",
+        "description": "Delivery settings and fee structure",
+        "payment_config": {
+            "gst": 18,
+            "platform_fee": 5,
+            "delivery_fee": 25,
+            "currency": "INR",
+            "min_order_amount": 150,
+            "max_order_amount": 10000,
+            "wallet_enabled": true,
+            "offer_enabled": true,
+            "express_delivery_fee": 75,
+            "standard_delivery_fee": 25
+        },
+        "general_config": {
+            "app_version": "1.0.0",
+            "maintenance_mode": false,
+            "support_contact": "+91-9876543210"
+        },
+        "is_active": false,
+        "effective_from": {
+            "$date": "2024-02-01T00:00:00Z"
+        },
+        "effective_until": {
+            "$date": "2024-02-28T23:59:59Z"
+        },
+        "created_at": {
+            "$date": "2024-01-15T00:00:00Z"
+        },
+        "updated_at": {
+            "$date": "2024-01-15T00:00:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789303"
+        },
+        "config_key": "premium_config_v1",
+        "config_name": "Premium Service Configuration",
+        "description": "Configuration for premium laundry services",
+        "payment_config": {
+            "gst": 18,
+            "platform_fee": 8,
+            "delivery_fee": 40,
+            "currency": "INR",
+            "min_order_amount": 200,
+            "max_order_amount": 15000,
+            "wallet_enabled": true,
+            "offer_enabled": true,
+            "express_delivery_fee": 100,
+            "standard_delivery_fee": 40
+        },
+        "general_config": {
+            "app_version": "1.0.0",
+            "maintenance_mode": false,
+            "support_contact": "+91-9876543210"
+        },
+        "is_active": true,
+        "effective_from": {
+            "$date": "2024-01-01T00:00:00Z"
+        },
+        "created_at": {
+            "$date": "2024-01-01T00:00:00Z"
+        },
+        "updated_at": {
+            "$date": "2024-01-01T00:00:00Z"
+        }
+    }
+]

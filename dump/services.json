@@ -1,0 +1,44 @@
+[
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789201"
+        },
+        "service_name": "Wash & Fold",
+        "description": "Standard wash and folding service",
+        "unit_type": "kg",
+        "base_price": 60,
+        "estimated_time_hours": 24,
+        "is_active": true,
+        "created_at": {
+            "$date": "2024-01-05T10:00:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789202"
+        },
+        "service_name": "Wash & Iron",
+        "description": "Includes washing and ironing of clothes",
+        "unit_type": "kg",
+        "base_price": 80,
+        "estimated_time_hours": 30,
+        "is_active": true,
+        "created_at": {
+            "$date": "2024-01-05T10:00:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "6530307b8a1c123456789203"
+        },
+        "service_name": "Dry Cleaning",
+        "description": "Premium dry clean service for delicate clothes",
+        "unit_type": "item",
+        "base_price": 120,
+        "estimated_time_hours": 48,
+        "is_active": true,
+        "created_at": {
+            "$date": "2024-01-05T10:00:00Z"
+        }
+    }
+]

@@ -1,0 +1,85 @@
+# MongoDB Backup Cron Configuration Examples
+# 
+# To use these, add them to your crontab:
+#   crontab -e
+#   Then paste one of the configurations below
+#
+# Make sure to:
+# 1. Update the path to your project directory
+# 2. Set up log rotation for backup logs
+# 3. Configure email alerts for failures
+
+# ============================================
+# Daily Backup at 2 AM
+# ============================================
+# Using npm (recommended):
+# 0 2 * * * cd /path/to/backend-laundry && npm run backup:quiet >> /var/log/mongodb-backup.log 2>&1
+# Or using node directly:
+# 0 2 * * * cd /path/to/backend-laundry && node scripts/backup-database.js --quiet >> /var/log/mongodb-backup.log 2>&1
+
+# ============================================
+# Daily Backup with Email Notification on Failure
+# ============================================
+# Using npm:
+# 0 2 * * * cd /path/to/backend-laundry && npm run backup:quiet >> /var/log/mongodb-backup.log 2>&1 || echo "MongoDB backup failed at $(date)" | mail -s "Backup Failed" admin@example.com
+# Or using node directly:
+# 0 2 * * * cd /path/to/backend-laundry && node scripts/backup-database.js --quiet >> /var/log/mongodb-backup.log 2>&1 || echo "MongoDB backup failed at $(date)" | mail -s "Backup Failed" admin@example.com
+
+# ============================================
+# Multiple Daily Backups (Every 6 Hours)
+# ============================================
+# Using npm:
+# 0 */6 * * * cd /path/to/backend-laundry && npm run backup:quiet -- --retention-days 7 >> /var/log/mongodb-backup.log 2>&1
+# Or using node directly:
+# 0 */6 * * * cd /path/to/backend-laundry && node scripts/backup-database.js --quiet --retention-days 7 >> /var/log/mongodb-backup.log 2>&1
+
+# ============================================
+# Weekly Backup (Sundays at 3 AM) with Extended Retention
+# ============================================
+# Using npm:
+# 0 3 * * 0 cd /path/to/backend-laundry && npm run backup:quiet -- --retention-days 90 >> /var/log/mongodb-backup-weekly.log 2>&1
+# Or using node directly:
+# 0 3 * * 0 cd /path/to/backend-laundry && node scripts/backup-database.js --quiet --retention-days 90 >> /var/log/mongodb-backup-weekly.log 2>&1
+
+# ============================================
+# Daily Backup with Custom Backup Directory
+# ============================================
+# Using npm:
+# 0 2 * * * cd /path/to/backend-laundry && npm run backup:quiet -- --backup-dir /var/backups/mongodb >> /var/log/mongodb-backup.log 2>&1
+# Or using node directly:
+# 0 2 * * * cd /path/to/backend-laundry && node scripts/backup-database.js --quiet --backup-dir /var/backups/mongodb >> /var/log/mongodb-backup.log 2>&1
+
+# ============================================
+# Daily Backup with Custom MongoDB URI
+# ============================================
+# Using npm:
+# 0 2 * * * cd /path/to/backend-laundry && MONGODB_URI="mongodb://user:pass@host:27017/dbname" npm run backup:quiet >> /var/log/mongodb-backup.log 2>&1
+# Or using node directly:
+# 0 2 * * * cd /path/to/backend-laundry && MONGODB_URI="mongodb://user:pass@host:27017/dbname" node scripts/backup-database.js --quiet >> /var/log/mongodb-backup.log 2>&1
+
+# ============================================
+# Cron Schedule Format:
+# ============================================
+# * * * * *
+# │ │ │ │ │
+# │ │ │ │ └─── Day of week (0-7, 0 or 7 = Sunday)
+# │ │ │ └───── Month (1-12)
+# │ │ └─────── Day of month (1-31)
+# │ └───────── Hour (0-23)
+# └─────────── Minute (0-59)
+
+# ============================================
+# Log Rotation Setup (Optional)
+# ============================================
+# Create /etc/logrotate.d/mongodb-backup:
+#
+# /var/log/mongodb-backup.log {
+#     daily
+#     rotate 30
+#     compress
+#     delaycompress
+#     missingok
+#     notifempty
+#     create 0644 root root
+# }
+

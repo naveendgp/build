@@ -1,0 +1,58 @@
+[
+    {
+        "_id": {
+            "$oid": "673f1a2e4a9f123456789001"
+        },
+        "app_type": "user_android",
+        "version": "1.0.0",
+        "is_forceupdate": false,
+        "createdAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        },
+        "updatedAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "673f1a2e4a9f123456789002"
+        },
+        "app_type": "user_ios",
+        "version": "1.0.0",
+        "is_forceupdate": false,
+        "createdAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        },
+        "updatedAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "673f1a2e4a9f123456789003"
+        },
+        "app_type": "vendor_android",
+        "version": "1.0.0",
+        "is_forceupdate": false,
+        "createdAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        },
+        "updatedAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        }
+    },
+    {
+        "_id": {
+            "$oid": "673f1a2e4a9f123456789004"
+        },
+        "app_type": "delivery_android",
+        "version": "1.0.0",
+        "is_forceupdate": false,
+        "createdAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        },
+        "updatedAt": {
+            "$date": "2025-10-08T07:50:00Z"
+        }
+    }
+]

@@ -1,0 +1,31 @@
+[
+    {
+        "_id": {
+            "$oid": "65302f7b8a1c123456789501"
+        },
+        "order_id": {
+            "$oid": "65302f7b8a1c123456789001"
+        },
+        "user_id": {
+            "$oid": "652f1a2e4a9f123456789001"
+        },
+        "payment_gateway": "Razorpay",
+        "payment_mode": "UPI",
+        "transaction_id": "pay_LMNO1234567890",
+        "amount": 320.0,
+        "currency": "INR",
+        "status": "captured",
+        "wallet_used": 0.0,
+        "vendor_share": 288.0,
+        "platform_commission": 32.0,
+        "payment_timestamp": {
+            "$date": "2025-10-07T07:50:00Z"
+        },
+        "created_at": {
+            "$date": "2025-10-07T07:50:00Z"
+        },
+        "updated_at": {
+            "$date": "2025-10-07T07:50:00Z"
+        }
+    }
+]
