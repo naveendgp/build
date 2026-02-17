@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminAuthGuard } from './guards/admin-auth.guard';
 import { AdminService } from './admin.service';
@@ -49,5 +49,11 @@ export class AdminVendorController {
     @ApiOperation({ summary: 'Enable or Disable a vendor' })
     async toggleVendorStatus(@Param('id') id: string, @Body('enabled') enabled: boolean) {
         return this.adminService.toggleVendorStatus(id, enabled);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete a vendor' })
+    async deleteVendor(@Param('id') id: string) {
+        return this.adminService.deleteVendor(id);
     }
 }

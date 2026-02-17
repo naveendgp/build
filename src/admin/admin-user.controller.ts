@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminAuthGuard } from './guards/admin-auth.guard';
 import { AdminService } from './admin.service';
@@ -23,6 +23,7 @@ export class AdminUserController {
         return this.adminService.getUsers(Number(page), Number(limit), search);
     }
 
+    @Get(':id/orders')
     async getUserOrders(
         @Param('id') id: string,
         @Query('page') page: number = 1,
@@ -40,5 +41,11 @@ export class AdminUserController {
     @ApiOperation({ summary: 'Toggle user status (active/inactive)' })
     async toggleUserStatus(@Param('id') id: string, @Body('status') status: string) {
         return this.adminService.toggleUserStatus(id, status);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete a user' })
+    async deleteUser(@Param('id') id: string) {
+        return this.adminService.deleteUser(id);
     }
 }

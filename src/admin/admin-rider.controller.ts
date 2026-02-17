@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminAuthGuard } from './guards/admin-auth.guard';
 import { AdminService } from './admin.service';
@@ -29,5 +29,17 @@ export class AdminRiderController {
     @ApiOperation({ summary: 'Get rider details' })
     async getRider(@Param('id') id: string) {
         return this.adminService.getRiderById(id);
+    }
+
+    @Delete(':id')
+    @ApiOperation({ summary: 'Delete a rider' })
+    async deleteRider(@Param('id') id: string) {
+        return this.adminService.deleteRider(id);
+    }
+
+    @Post()
+    @ApiOperation({ summary: 'Create a new rider' })
+    async createRider(@Body() body: any) {
+        return this.adminService.createRider(body);
     }
 }

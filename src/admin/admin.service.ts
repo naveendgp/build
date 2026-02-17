@@ -301,7 +301,12 @@ export class AdminService {
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit,
-                include: { addresses: true },
+                include: {
+                    addresses: true,
+                    _count: {
+                        select: { orders: true }
+                    }
+                },
             }),
             this.prisma.user.count({ where }),
         ]);
@@ -344,7 +349,12 @@ export class AdminService {
     async getUserById(id: string) {
         const user = await this.prisma.user.findUnique({
             where: { id },
-            include: { addresses: true },
+            include: {
+                addresses: true,
+                _count: {
+                    select: { orders: true }
+                }
+            },
         });
         if (!user) return null;
         return this.mapUser(user);
@@ -358,8 +368,7 @@ export class AdminService {
             contact: user.phone || 'N/A', // Map phone to contact
             status: user.status ? user.status.toUpperCase() : 'ACTIVE',
             isActive: user.status === 'active',
-            // ordersCount and totalSpent might need aggregation, setting defaults for now
-            ordersCount: 0, // Placeholder — needs order aggregation
+            ordersCount: user._count?.orders || 0, // Placeholder — needs order aggregation
             totalSpent: 0, // Needs order aggregation
             joinedAt: user.createdAt,
             addresses: user.addresses || [],
@@ -745,5 +754,65 @@ export class AdminService {
 
     async deleteItem(id: string) {
         return this.prisma.serviceItem.delete({ where: { id } });
+    }
+
+    // --- Delete Operations ---
+    async deleteUser(id: string) {
+        // Soft Delete: Set status to INACTIVE
+        return this.prisma.user.update({
+            where: { id },
+            data: { status: 'inactive' }
+        });
+    }
+
+    async deleteVendor(id: string) {
+        // Soft Delete: Set status to INACTIVE
+        return this.prisma.vendor.update({
+            where: { id },
+            data: { status: 'inactive' }
+        });
+    }
+
+    async deleteRider(id: string) {
+        // Soft Delete: Set status to INACTIVE
+        return this.prisma.deliveryPerson.update({
+            where: { id },
+            data: { status: 'inactive' }
+        });
+    }
+
+    async createRider(data: any) {
+        console.log('Creating Rider with data:', JSON.stringify(data, null, 2));
+        try {
+            // Check if rider with phone already exists
+            const existing = await this.prisma.deliveryPerson.findUnique({
+                where: { phone: data.phone }
+            });
+
+            if (existing) {
+                console.warn(`Rider with phone ${data.phone} already exists`);
+                throw new Error(`Rider with phone ${data.phone} already exists`);
+            }
+
+            const result = await this.prisma.deliveryPerson.create({
+                data: {
+                    name: data.name,
+                    phone: data.phone,
+                    email: data.email || '',
+                    status: 'active',
+                    vehicleType: data.vehicleType,
+                    vehicleNumber: data.vehicleNumber,
+                    vehicleModel: data.vehicleModel,
+                    vehicleColor: data.vehicleColor,
+                    addressCity: data.city,
+                    addressArea: data.area,
+                }
+            });
+            console.log('Rider created successfully:', result.id);
+            return result;
+        } catch (error) {
+            console.error('Error creating rider:', error);
+            throw error;
+        }
     }
 }
