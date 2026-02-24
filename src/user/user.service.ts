@@ -64,7 +64,7 @@ export class UserService {
     private readonly trackingGateway: TrackingGateway,
     private readonly offerService: OfferService,
     private readonly notificationService: NotificationService,
-  ) {}
+  ) { }
 
   async auth(phoneNumber: string) {
     const user = await this.prisma.user.findFirst({ where: { phone: phoneNumber } });
@@ -228,6 +228,29 @@ export class UserService {
 
     const isDefault = user.addresses.length === 0;
 
+    // Check Service Area
+    const serviceAreas = await this.prisma.serviceArea.findMany({
+      where: { isActive: true },
+    });
+
+    if (serviceAreas.length > 0) {
+      // Assuming we check against any active area (union) or just the first one if logic implies one zone.
+      // Based on user request "only the area which is under the polygon plotting".
+      const { isPointInPolygon } = require('../utils/location.utils');
+
+      let isInside = false;
+      for (const area of serviceAreas) {
+        if (isPointInPolygon(addressData.latitude, addressData.longitude, area.polygon)) {
+          isInside = true;
+          break;
+        }
+      }
+
+      if (!isInside) {
+        return ResponseHelper.error('Address is outside the service area.');
+      }
+    }
+
     const addedAddress = await this.prisma.userAddress.create({
       data: {
         userId: user.id,
@@ -362,6 +385,25 @@ export class UserService {
         dataToUpdate.city = components.city;
         dataToUpdate.state = components.state;
         dataToUpdate.pincode = components.pincode;
+
+        // Check Service Area
+        const serviceAreas = await this.prisma.serviceArea.findMany({
+          where: { isActive: true },
+        });
+
+        if (serviceAreas.length > 0) {
+          const { isPointInPolygon } = require('../utils/location.utils');
+          let isInside = false;
+          for (const area of serviceAreas) {
+            if (isPointInPolygon(updateData.latitude, updateData.longitude, area.polygon)) {
+              isInside = true;
+              break;
+            }
+          }
+          if (!isInside) {
+            return ResponseHelper.error('Address is outside the service area.');
+          }
+        }
       } else {
         return ResponseHelper.error(
           'Unable to decode address from coordinates.',
@@ -1471,6 +1513,8 @@ export class UserService {
       const platformFeeAmount = appConfigData?.platformFee || 5;
       const gstPercentage = appConfigData?.gst || 18;
       const deliveryFee = appConfigData?.deliveryFee || 0;
+      const additionalFee = appConfigData?.additionalFeeFlat || 0;
+      const additionalFeeName = appConfigData?.additionalFeeName || 'Additional Fee';
 
       const vendorService = vendorForValidation.services_offered.find(
         (service: any) => service.service_id === firstServiceId,
@@ -1506,7 +1550,7 @@ export class UserService {
       const gstAmount = (afterOfferAmount * gstPercentage) / 100;
 
       const totalPayableAmount =
-        afterOfferAmount + deliveryFee + gstAmount + platformFeeAmount;
+        afterOfferAmount + deliveryFee + gstAmount + platformFeeAmount + additionalFee;
 
       // Return preview without creating order
       return ResponseHelper.success('Order preview generated successfully', {
@@ -1540,6 +1584,8 @@ export class UserService {
               delivery_fee: deliveryFee,
               platform_fee: Math.round(platformFeeAmount * 100) / 100,
               gst: Math.round(gstAmount * 100) / 100,
+              additional_fee: additionalFee,
+              additional_fee_name: additionalFeeName,
               total_payable_amount: Math.round(totalPayableAmount * 100) / 100,
             },
             payment_breakdown: {
@@ -1554,6 +1600,8 @@ export class UserService {
               gst: Math.round(gstAmount * 100) / 100,
               isOfferApplied: isOfferApplied,
               offerDiscountAmount: Math.round(offerDiscountAmount * 100) / 100,
+              additional_fee: additionalFee,
+              additional_fee_name: additionalFeeName,
               totalPayableAmount: Math.round(totalPayableAmount * 100) / 100,
             },
             currency: 'INR',
@@ -1790,9 +1838,9 @@ export class UserService {
           const totalPrice =
             pricingType === 'per_kg'
               ? maxWeight *
-                (is_express
-                  ? vendorService?.express_price_per_kg || 0
-                  : vendorService?.standard_price_per_kg || 0)
+              (is_express
+                ? vendorService?.express_price_per_kg || 0
+                : vendorService?.standard_price_per_kg || 0)
               : item.quantity * pricePerItem;
 
           return {
@@ -1858,6 +1906,8 @@ export class UserService {
       const platformFeeAmount = appConfigData?.platformFee || 5;
       const gstPercentage = appConfigData?.gst || 18;
       const deliveryFee = appConfigData?.deliveryFee || 0;
+      const additionalFee = appConfigData?.additionalFeeFlat || 0;
+      const additionalFeeName = appConfigData?.additionalFeeName || 'Additional Fee';
 
       const afterOfferAmount = subtotal - offerDiscountAmount;
 
@@ -1867,7 +1917,7 @@ export class UserService {
       const gstAmount = (afterOfferAmount * gstPercentage) / 100;
 
       const totalPayableAmount =
-        afterOfferAmount + deliveryFee + gstAmount + platformFeeAmount;
+        afterOfferAmount + deliveryFee + gstAmount + platformFeeAmount + additionalFee;
 
       // Get next order number
       const lastOrder = await this.prisma.order.findFirst({
@@ -1928,7 +1978,13 @@ export class UserService {
           pdDeliveryFee: deliveryFee,
           pdGst: Math.round(gstAmount * 100) / 100,
           pdIsOfferApplied: isOfferApplied,
+          pdOfferCode: offer_code,
           pdOfferDiscountAmount: Math.round(offerDiscountAmount * 100) / 100,
+          pdAdditionalFee: additionalFee,
+          pdAdditionalFeeName: additionalFeeName,
+          pdPlatformRevenue: Math.round(
+            (platformFeeAmount + deliveryFee - offerDiscountAmount + (amountToVendor * (appConfigData?.vendorCommission ?? 0)) / 100 + additionalFee) * 100
+          ) / 100,
           pdTotalPayableAmount: Math.round(totalPayableAmount * 100) / 100,
           totalAmount: Math.round(totalPayableAmount * 100) / 100,
           currency: 'INR',

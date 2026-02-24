@@ -11,12 +11,13 @@ import {
 
 @Injectable()
 export class OfferService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     /**
      * Create a new offer
      */
     async createOffer(dto: CreateOfferDto, createdBy: string) {
+        console.log('Creating offer with DTO:', JSON.stringify(dto, null, 2));
         const existing = await this.prisma.offer.findUnique({
             where: { code: dto.code.toUpperCase() },
         });
@@ -66,7 +67,21 @@ export class OfferService {
         return this.prisma.offer.findMany({
             where,
             orderBy: { createdAt: 'desc' },
-            include: { assignedUsers: true, applicableServices: true, userUsages: true },
+            include: {
+                assignedUsers: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true
+                            }
+                        }
+                    }
+                },
+                applicableServices: true,
+                userUsages: true
+            },
         });
     }
 
@@ -76,7 +91,21 @@ export class OfferService {
     async getOfferById(id: string) {
         const offer = await this.prisma.offer.findUnique({
             where: { id },
-            include: { assignedUsers: true, applicableServices: true, userUsages: true },
+            include: {
+                assignedUsers: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true
+                            }
+                        }
+                    }
+                },
+                applicableServices: true,
+                userUsages: true
+            },
         });
         if (!offer) throw new NotFoundException('Offer not found');
         return offer;

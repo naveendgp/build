@@ -23,6 +23,12 @@ export class AdminServiceController {
         return this.adminService.updateServiceTiers(id, body.tiers);
     }
 
+    @Post('services/:id/status')
+    @ApiOperation({ summary: 'Enable/Disable a vendor service' })
+    async toggleServiceStatus(@Param('id') id: string, @Body() body: { enabled: boolean }) {
+        return this.adminService.toggleVendorServiceStatus(id, body.enabled);
+    }
+
     @Get('items')
     @ApiOperation({ summary: 'List all items' })
     async getItems() {

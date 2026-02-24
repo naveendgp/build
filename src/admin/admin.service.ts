@@ -10,6 +10,17 @@ export class AdminService {
         return this.prisma.admin.findFirst({ where: { email } });
     }
 
+    async findById(id: string) {
+        return this.prisma.admin.findUnique({ where: { id } });
+    }
+
+    async updateLastLogin(id: string) {
+        return this.prisma.admin.update({
+            where: { id },
+            data: { lastLogin: new Date() },
+        });
+    }
+
     async create(adminData: any) {
         return this.prisma.admin.create({ data: adminData });
     }
@@ -48,14 +59,40 @@ export class AdminService {
         };
     }
 
-    async getDashboardStats(fromDate?: string, toDate?: string) {
-        const dateFilter: Prisma.OrderWhereInput = {};
-        if (fromDate && toDate) {
-            dateFilter.createdAt = {
-                gte: new Date(fromDate),
-                lte: new Date(toDate),
+    // --- Unified Aggregation Pipeline Helpers ---
+    private buildOrderWhereRules(filters: { fromDate?: string; toDate?: string; status?: string }): Prisma.OrderWhereInput {
+        const where: Prisma.OrderWhereInput = {};
+        if (filters.fromDate && filters.toDate) {
+            where.createdAt = {
+                gte: new Date(filters.fromDate),
+                lte: new Date(filters.toDate),
             };
         }
+        if (filters.status) {
+            where.status = filters.status as OrderStatus;
+        }
+        return where;
+    }
+
+    private buildRevenueWhereRules(filters: { fromDate?: string; toDate?: string }): Prisma.OrderWhereInput {
+        const where: Prisma.OrderWhereInput = {
+            status: { notIn: ['cancelled', 'rejected'] }
+        };
+        if (filters.fromDate && filters.toDate) {
+            where.createdAt = {
+                gte: new Date(filters.fromDate),
+                lte: new Date(filters.toDate),
+            };
+        }
+        return where;
+    }
+
+    async getDashboardStats(fromDate?: string, toDate?: string) {
+        console.log('[Dashboard] Fetching stats for:', { fromDate, toDate });
+
+        // Single Source of Truth for Dashboard Queries
+        const baseOrderWhere = this.buildOrderWhereRules({ fromDate, toDate });
+        const baseRevenueWhere = this.buildRevenueWhereRules({ fromDate, toDate });
 
         const [
             totalOrders,
@@ -71,14 +108,16 @@ export class AdminService {
             refundsResult
         ] = await Promise.all([
             // Orders
-            this.prisma.order.count({ where: dateFilter }),
-            // Revenue
+            this.prisma.order.count({ where: baseOrderWhere }),
+            // Revenue (GMV) and Platform Profit
             this.prisma.order.aggregate({
-                where: {
-                    ...dateFilter,
-                    OR: [{ paymentStatus: 'paid' }, { status: 'delivered' }],
+                where: baseRevenueWhere,
+                _sum: {
+                    totalAmount: true,
+                    pdPlatformRevenue: true,
+                    amountToVendorAfterCommission: true,
+                    pdOfferDiscountAmount: true
                 },
-                _sum: { totalAmount: true },
             }),
             // Users
             this.prisma.user.count({ where: { status: 'active' } }),
@@ -91,7 +130,7 @@ export class AdminService {
             this.prisma.deliveryPerson.count({ where: { status: 'inactive' } }),
             // Recent Orders
             this.prisma.order.findMany({
-                where: dateFilter,
+                where: baseOrderWhere,
                 orderBy: { createdAt: 'desc' },
                 take: 5,
                 include: {
@@ -102,13 +141,13 @@ export class AdminService {
             // Order Status
             this.prisma.order.groupBy({
                 by: ['status'],
-                where: dateFilter,
+                where: baseOrderWhere,
                 _count: { status: true },
             }),
             // Refunds (Cancelled + Paid)
             this.prisma.order.aggregate({
                 where: {
-                    ...dateFilter,
+                    ...baseOrderWhere,
                     status: 'cancelled',
                     paymentStatus: 'paid',
                 },
@@ -116,7 +155,13 @@ export class AdminService {
             }),
         ]);
 
+        console.log('[Dashboard] Total Revenue Aggregate Result:', JSON.stringify(totalRevenueResult, null, 2));
+        console.log('[Dashboard] Refunds Result:', JSON.stringify(refundsResult, null, 2));
+
         const totalRevenue = totalRevenueResult._sum.totalAmount || 0;
+        const netPlatformRevenue = totalRevenueResult._sum.pdPlatformRevenue || 0;
+        const totalVendorPayouts = totalRevenueResult._sum.amountToVendorAfterCommission || 0;
+        const totalOfferCost = totalRevenueResult._sum.pdOfferDiscountAmount || 0;
         const totalRefunds = refundsResult._sum.totalAmount || 0;
 
         // Map status counts
@@ -127,6 +172,10 @@ export class AdminService {
 
         const completedOrders = statusMap['delivered'] || 0;
         const cancelledOrders = statusMap['cancelled'] || 0;
+        const acceptedOrders = statusMap['accepted'] || 0;
+        const unacceptedOrders = statusMap['unaccepted'] || 0;
+        const pickedUpOrders = statusMap['picked_up'] || 0;
+        const outForDeliveryOrders = statusMap['out_for_delivery'] || 0;
         // In Progress = Total - (Completed + Cancelled) roughly, or sum of other states
         const inProgressOrders = totalOrders - completedOrders - cancelledOrders;
 
@@ -136,11 +185,18 @@ export class AdminService {
                 completed: completedOrders,
                 cancelled: cancelledOrders,
                 inProgress: inProgressOrders,
+                accepted: acceptedOrders,
+                unaccepted: unacceptedOrders,
+                pickedUp: pickedUpOrders,
+                outForDelivery: outForDeliveryOrders,
             },
             payments: {
                 totalAmount: totalRevenue,
-                refunds: totalRefunds,
                 revenue: totalRevenue - totalRefunds,
+                netPlatformRevenue: netPlatformRevenue,
+                totalVendorPayouts: totalVendorPayouts,
+                totalOfferCost: totalOfferCost,
+                refunds: totalRefunds,
             },
             partners: {
                 active: activePartners,
@@ -153,6 +209,84 @@ export class AdminService {
             },
             series: await this.getGraphData(fromDate, toDate),
         };
+    }
+
+    async getPaymentConfig() {
+        const config = await this.prisma.appConfig.findFirst();
+        return {
+            gstPercent: config?.gst ?? 18,
+            platformFeePercent: config?.platformFee ?? 2,
+            deliveryFee: config?.deliveryFee ?? 40,
+            vendorCommission: config?.vendorCommission ?? 0,
+            additionalFeeFlat: config?.additionalFeeFlat ?? 0,
+            additionalFeeName: config?.additionalFeeName ?? "Additional Fee",
+        };
+    }
+
+    async updatePaymentConfig(data: {
+        gstPercent: number;
+        platformFeePercent: number;
+        deliveryFee: number;
+        vendorCommission: number;
+        additionalFeeFlat: number;
+        additionalFeeName: string;
+    }) {
+        const existing = await this.prisma.appConfig.findFirst();
+
+        if (existing) {
+            return this.prisma.appConfig.update({
+                where: { id: existing.id },
+                data: {
+                    gst: data.gstPercent,
+                    platformFee: data.platformFeePercent,
+                    deliveryFee: data.deliveryFee,
+                    vendorCommission: data.vendorCommission,
+                    additionalFeeFlat: data.additionalFeeFlat,
+                    additionalFeeName: data.additionalFeeName,
+                },
+            });
+        } else {
+            return this.prisma.appConfig.create({
+                data: {
+                    configKey: 'GLOBAL_CONFIG',
+                    configName: 'Global App Configuration',
+                    gst: data.gstPercent,
+                    platformFee: data.platformFeePercent,
+                    deliveryFee: data.deliveryFee,
+                    vendorCommission: data.vendorCommission,
+                    additionalFeeFlat: data.additionalFeeFlat,
+                    additionalFeeName: data.additionalFeeName,
+                },
+            });
+        }
+    }
+
+    async getServiceAreas() {
+        return this.prisma.serviceArea.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async createServiceArea(data: { name: string; polygon: any; reason?: string; createdBy?: string }) {
+        // For now, we only support one active area or check logic.
+        // We will just create a new one. The frontend sends a single area usually.
+        // If we want to replace the old one:
+        // await this.prisma.serviceArea.deleteMany({});
+
+        return this.prisma.serviceArea.create({
+            data: {
+                name: data.name || 'Service Zone',
+                polygon: data.polygon,
+                isActive: true,
+                createdBy: data.createdBy,
+            }
+        });
+    }
+
+    async deleteServiceArea(id: string) {
+        return this.prisma.serviceArea.delete({
+            where: { id }
+        });
     }
 
     private async getGraphData(fromDate?: string, toDate?: string) {
@@ -189,11 +323,9 @@ export class AdminService {
         }));
     }
     // --- Order Management ---
-    async getOrders(page: number, limit: number, status?: string, search?: string) {
+    async getOrders(page: number, limit: number, status?: string, search?: string, fromDate?: string, toDate?: string) {
         const skip = (page - 1) * limit;
-        const where: Prisma.OrderWhereInput = {};
-
-        if (status) where.status = status as OrderStatus;
+        const where = this.buildOrderWhereRules({ fromDate, toDate, status });
         if (search) {
             const orConditions: Prisma.OrderWhereInput[] = [
                 { userAddressLine1: { contains: search, mode: 'insensitive' } },
@@ -279,6 +411,22 @@ export class AdminService {
                 statusTimestamps,
                 orderNotes,
             },
+        });
+    }
+
+    async updateOrderStatus(id: string, status: string) {
+        const order = await this.prisma.order.findUnique({ where: { id } });
+        if (!order) throw new Error('Order not found');
+
+        const statusTimestamps = (order.statusTimestamps as Record<string, any>) || {};
+        statusTimestamps[`${status.toLowerCase()}_at`] = new Date().toISOString();
+
+        return this.prisma.order.update({
+            where: { id },
+            data: {
+                status: status as OrderStatus,
+                statusTimestamps,
+            }
         });
     }
 
@@ -387,7 +535,12 @@ export class AdminService {
         const skip = (page - 1) * limit;
         const where: Prisma.VendorWhereInput = {};
 
-        if (status) where.status = status as VendorStatus;
+        if (status) {
+            if (status === 'APPROVED') where.status = 'active';
+            else if (status === 'PENDING') where.status = 'pending';
+            else if (status === 'SUSPENDED') where.status = 'inactive';
+            else where.status = status as VendorStatus;
+        }
         if (search) {
             where.OR = [
                 { shopName: { contains: search, mode: 'insensitive' } },
@@ -402,7 +555,12 @@ export class AdminService {
                 orderBy: { createdAt: 'desc' },
                 skip,
                 take: limit,
-                include: { servicesOffered: true },
+                include: {
+                    servicesOffered: true,
+                    _count: {
+                        select: { orders: true }
+                    }
+                },
             }),
             this.prisma.vendor.count({ where }),
         ]);
@@ -429,6 +587,7 @@ export class AdminService {
                     vendor.status === 'inactive' ? 'SUSPENDED' : 'PENDING',
             enabled: vendor.status === 'active',
             servicesCount: vendor.servicesOffered?.length || 0,
+            totalOrders: vendor._count?.orders || 0,
             joinedAt: vendor.createdAt,
             revenue: vendor.walletBalance || 0,
             address: {
@@ -465,6 +624,7 @@ export class AdminService {
                 commissionPct: vendor.subscriptionCommissionPct,
             },
             shopStatus: vendor.shopOpenStatus,
+            orders: vendor.orders || [],
         };
     }
 
@@ -472,7 +632,16 @@ export class AdminService {
         try {
             const vendor = await this.prisma.vendor.findUnique({
                 where: { id },
-                include: { servicesOffered: true },
+                include: {
+                    servicesOffered: true,
+                    orders: {
+                        orderBy: { createdAt: 'desc' },
+                        take: 10,
+                    },
+                    _count: {
+                        select: { orders: true }
+                    }
+                },
             });
             if (!vendor) return null;
             return this.mapVendorToPartner(vendor);
@@ -505,7 +674,8 @@ export class AdminService {
         });
 
         const mapped = services.map((s: any) => ({
-            id: s.serviceId,
+            id: s.id, // Use VendorService ID, not Global Service ID
+            serviceId: s.serviceId, // Keep reference if needed
             name: s.serviceName,
             type: s.pricingType === 'per_kg' ? 'WEIGHT' : 'ITEM',
             enabled: s.isActive,
@@ -606,60 +776,31 @@ export class AdminService {
         };
     }
 
-    // --- Settlement Management ---
-    async getSettlements(page: number, limit: number, fromDate?: string, toDate?: string, partnerId?: string, status?: string) {
-        // Placeholder implementation - fetching Vendors with pending settlements
-        const skip = (page - 1) * limit;
-        const where: Prisma.VendorWhereInput = {
-            amountDue: { gt: 0 },
-        };
-
-        if (partnerId) where.id = partnerId;
-        // Date filter might apply to 'last_settled_at' or similar, but for now we list vendors with due amounts
-
-        const [vendors, total] = await Promise.all([
-            this.prisma.vendor.findMany({
-                where,
-                orderBy: { amountDue: 'desc' },
-                skip,
-                take: limit,
-                select: {
-                    id: true,
-                    shopName: true,
-                    ownerName: true,
-                    phone: true,
-                    amountDue: true,
-                    bankAccountHolderName: true,
-                    bankAccountNumber: true,
-                    bankIfscCode: true,
-                    bankName: true,
-                    bankBranch: true,
-                    bankUpiId: true,
-                },
-            }),
-            this.prisma.vendor.count({ where }),
-        ]);
-
-        return {
-            data: vendors.map(v => ({
-                id: v.id,
-                partnerName: v.shopName || v.ownerName,
-                partnerId: v.id,
-                amount: v.amountDue,
-                status: 'PENDING', // Default logic
-                bankDetails: {
-                    accountHolderName: v.bankAccountHolderName,
-                    accountNumber: v.bankAccountNumber,
-                    ifscCode: v.bankIfscCode,
-                    bankName: v.bankName,
-                    branch: v.bankBranch,
-                    upiId: v.bankUpiId,
-                },
-                createdAt: new Date(), // Placeholder
-            })),
-            meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
-        };
+    // --- Vendor Service Management ---
+    async toggleVendorServiceStatus(id: string, enabled: boolean) {
+        console.log(`[AdminService] Toggling VendorService ${id} to ${enabled}`);
+        return this.prisma.vendorService.update({
+            where: { id },
+            data: { isActive: enabled },
+        });
     }
+
+    // --- Rider Management ---
+    async updateRiderStatus(id: string, enabled: boolean, reason?: string) {
+        const status = enabled ? 'active' : 'inactive';
+        // You might want to store the reason in a separate table or log it
+        if (reason) {
+            console.log(`Rider ${id} status changed to ${status}. Reason: ${reason}`);
+        }
+        return this.prisma.deliveryPerson.update({
+            where: { id },
+            data: { status },
+        });
+    }
+
+    // --- Settlement Management ---
+    // MOVED to AdminSettlementService (admin-settlement.service.ts)
+    // Settlements now use a proper Settlement table with DRAFT → READY → APPROVED → PAID lifecycle
 
     // --- Services Management ---
     async getServices() {
@@ -670,6 +811,7 @@ export class AdminService {
             id: s.id,
             name: s.serviceName,
             tiers: (s.items || []).map((item: any) => ({
+                id: item.id,
                 name: item.itemName,
                 minWeight: item.minWeight ?? 0,
                 maxWeight: item.maxWeight ?? 0,
@@ -680,19 +822,57 @@ export class AdminService {
     }
 
     async updateServiceTiers(id: string, tiers: any[]) {
-        // Delete existing items and recreate them
-        await this.prisma.serviceItem.deleteMany({ where: { serviceId: id } });
+        // 1. Get existing items to find what to delete
+        const existingItems = await this.prisma.serviceItem.findMany({
+            where: { serviceId: id },
+            select: { id: true }
+        });
+        const existingIds = existingItems.map(i => i.id);
 
-        const createData = tiers.map((tier: any) => ({
-            serviceId: id,
-            itemName: tier.item_name || tier.itemName || tier.name,
-            imageUrl: tier.image_url || tier.imageUrl || 'placeholder',
-            itemDescription: tier.item_description || tier.itemDescription || '',
-            itemSlug: tier.item_slug || tier.itemSlug || (tier.name || '').toLowerCase().replace(/ /g, '-'),
-            category: tier.category,
-        }));
+        // 2. Separate updates and creates
+        const payloadIds = tiers.map(t => t.id).filter(Boolean);
+        const toDelete = existingIds.filter(eid => !payloadIds.includes(eid));
 
-        await this.prisma.serviceItem.createMany({ data: createData });
+        // 3. Perform Updates and Creates
+        for (const tier of tiers) {
+            const baseData = {
+                itemName: tier.item_name || tier.itemName || tier.name,
+                imageUrl: tier.image_url || tier.imageUrl || 'placeholder',
+                itemDescription: tier.item_description || tier.itemDescription || '',
+                itemSlug: tier.item_slug || tier.itemSlug || (tier.name || '').toLowerCase().replace(/ /g, '-'),
+                category: tier.category,
+                minWeight: tier.minWeight ? parseFloat(tier.minWeight) : 0,
+                maxWeight: tier.maxWeight ? parseFloat(tier.maxWeight) : 0,
+                itemPrice: tier.price ? parseFloat(tier.price) : (tier.itemPrice ? parseFloat(tier.itemPrice) : 0),
+                expressPrice: tier.expressPrice ? parseFloat(tier.expressPrice) : 0,
+            };
+
+            if (tier.id && existingIds.includes(tier.id)) {
+                // Update: Do not include serviceId, as it's a relation foreign key and might be restricted
+                await this.prisma.serviceItem.update({
+                    where: { id: tier.id },
+                    data: baseData
+                });
+            } else {
+                // Create: Must include serviceId
+                await this.prisma.serviceItem.create({
+                    data: { ...baseData, serviceId: id }
+                });
+            }
+        }
+
+        // 4. Delete removed items (safely)
+        if (toDelete.length > 0) {
+            try {
+                await this.prisma.serviceItem.deleteMany({
+                    where: { id: { in: toDelete } }
+                });
+            } catch (error) {
+                console.warn('Failed to delete some service items due to foreign key constraints:', error);
+                // We suppress this error so that updates/creates still succeed.
+                // The orphaned items will remain. Future improvement: Soft delete.
+            }
+        }
 
         return this.prisma.service.findUnique({
             where: { id },
@@ -720,6 +900,8 @@ export class AdminService {
                                 category: service.serviceName, // Map Service Name as Category
                                 active: true,
                                 description: item.itemDescription,
+                                price: item.itemPrice || 0,
+                                expressPrice: item.expressPrice || 0,
                             });
                         }
                     });
@@ -733,27 +915,203 @@ export class AdminService {
     }
 
     async createItem(data: any) {
-        const service = await this.prisma.service.findFirst({
-            where: { serviceName: data.category },
-        });
-        if (!service) {
-            throw new Error(`Service category '${data.category}' not found`);
+        // Normalize category to array
+        const categories = Array.isArray(data.category) ? data.category : [data.category];
+        const createdItems = [];
+
+        for (const catName of categories) {
+            const service = await this.prisma.service.findFirst({
+                where: { serviceName: catName },
+            });
+
+            if (!service) {
+                console.warn(`Service category '${catName}' not found`);
+                continue;
+            }
+
+            const item = await this.prisma.serviceItem.create({
+                data: {
+                    serviceId: service.id,
+                    itemName: data.name,
+                    imageUrl: 'placeholder',
+                    itemDescription: 'No description',
+                    category: catName,
+                    itemSlug: data.name.toLowerCase().replace(/ /g, '-'),
+                    itemPrice: data.price ? parseFloat(data.price) : 0,
+                    expressPrice: data.expressPrice ? parseFloat(data.expressPrice) : 0,
+                    minWeight: data.minWeight ? parseFloat(data.minWeight) : 0,
+                    maxWeight: data.maxWeight ? parseFloat(data.maxWeight) : 0,
+                },
+            });
+            createdItems.push(item);
         }
 
-        return this.prisma.serviceItem.create({
-            data: {
-                serviceId: service.id,
-                itemName: data.name,
-                imageUrl: 'placeholder',
-                itemDescription: 'No description',
-                category: data.category,
-                itemSlug: data.name.toLowerCase().replace(/ /g, '-'),
-            },
-        });
+        if (createdItems.length === 0) {
+            throw new Error(`No valid services found for categories: ${categories.join(', ')}`);
+        }
+
+        return createdItems[0];
     }
 
     async deleteItem(id: string) {
+        // Manually cascade delete vendor items first to avoid FK constraint error
+        await this.prisma.vendorServiceItem.deleteMany({
+            where: { itemId: id }
+        });
         return this.prisma.serviceItem.delete({ where: { id } });
+    }
+
+    // --- Payment Management ---
+    async getPayments(
+        page: number,
+        limit: number,
+        status?: string,
+        method?: string,
+        fromDate?: string,
+        toDate?: string
+    ) {
+        const skip = (page - 1) * limit;
+        const where: Prisma.OrderWhereInput = {};
+
+        // Only show orders that have some payment activity (not just pending if no records exist)
+        // Adjusting to show all orders since the admin wants to see financial data
+        if (status && status !== 'ALL') {
+            const mappedStatus = status.toLowerCase() === 'success' ? 'paid' : status.toLowerCase();
+            where.paymentStatus = mappedStatus as any;
+        }
+
+        if (fromDate && toDate) {
+            where.createdAt = {
+                gte: new Date(fromDate),
+                lte: new Date(toDate),
+            };
+        }
+
+        const [orders, total] = await Promise.all([
+            this.prisma.order.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+                include: {
+                    items: true,
+                    user: true,
+                    paymentRecord: true,
+                },
+            }),
+            this.prisma.order.count({ where }),
+        ]);
+
+        const mappedPayments = orders.map((order) => {
+            const itemBreakup: Record<string, number> = {};
+
+            if (order.items) {
+                order.items.forEach((item) => {
+                    if (item.itemName && item.totalPrice) {
+                        itemBreakup[item.itemName] = (itemBreakup[item.itemName] || 0) + item.totalPrice;
+                    }
+                });
+            }
+
+            // Map Order status to Frontend SUCCESS/FAILED/PENDING
+            let displayStatus = 'PENDING';
+            if (order.paymentStatus === 'paid') displayStatus = 'SUCCESS';
+            if (order.status === 'cancelled') displayStatus = 'FAILED';
+
+            return {
+                paymentId: order.paymentRecord?.id || order.id,
+                orderId: String(order.id),
+                orderNumber: String(order.orderNumber),
+                itemsTotal: order.pdItemTotal || 0,
+                itemBreakup,
+                deliveryCharge: order.pdDeliveryFee || 0,
+                platformFee: order.amountToPlatform || 0,
+                gst: order.pdGst || 0,
+                vendorCommission: order.pdVendorCommission || 0,
+                additionalFee: order.pdAdditionalFee || 0,
+                vendorPayable: (order.pdItemTotal || 0) - (order.pdVendorCommission || 0) - (order.pdAdditionalFee || 0),
+                offer: order.pdIsOfferApplied ? {
+                    code: order.pdOfferCode || 'OFFER',
+                    discountAmount: order.pdOfferDiscountAmount || 0,
+                } : undefined,
+                totalPaid: order.paymentRecord?.amount || order.pdTotalPayableAmount || 0,
+                status: displayStatus,
+                createdAt: order.createdAt,
+            };
+        });
+
+        return {
+            data: mappedPayments,
+            total,
+            page,
+            limit,
+            totalPages: Math.ceil(total / limit),
+        };
+    }
+
+    // --- Revenue Management ---
+    async getRevenueList(
+        page: number,
+        limit: number,
+        fromDate: string,
+        toDate: string
+    ) {
+        if (!fromDate || !toDate) {
+            throw new Error('fromDate and toDate are mandatory for revenue calculation.');
+        }
+
+        const skip = (page - 1) * limit;
+        const where = this.buildRevenueWhereRules({ fromDate, toDate });
+
+        const [orders, total, aggregates] = await Promise.all([
+            this.prisma.order.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+            }),
+            this.prisma.order.count({ where }),
+            this.prisma.order.aggregate({
+                where,
+                _sum: {
+                    pdPlatformRevenue: true,
+                    amountToVendorAfterCommission: true,
+                    pdOfferDiscountAmount: true,
+                },
+            }),
+        ]);
+
+        const mappedRevenue = orders.map((order) => {
+            return {
+                orderId: String(order.id),
+                orderNumber: String(order.orderNumber),
+                itemsTotal: order.pdItemTotal || 0,
+                platformFee: order.amountToPlatform || 0,
+                deliveryCharge: order.pdDeliveryFee || 0,
+                offerDiscount: order.pdOfferDiscountAmount ?? null,
+                vendorCommission: order.pdVendorCommission || 0,
+                additionalFee: order.pdAdditionalFee || 0,
+                vendorPayable: order.amountToVendorAfterCommission || 0,
+                platformRevenue: order.pdPlatformRevenue ?? null,
+                createdAt: order.createdAt,
+            };
+        });
+
+        return {
+            data: mappedRevenue,
+            aggregates: {
+                totalPlatformRevenue: Math.round((aggregates._sum.pdPlatformRevenue || 0) * 100) / 100,
+                totalVendorPayout: Math.round((aggregates._sum.amountToVendorAfterCommission || 0) * 100) / 100,
+                totalOfferDiscount: Math.round((aggregates._sum.pdOfferDiscountAmount || 0) * 100) / 100,
+                totalOrders: total,
+            },
+            meta: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            }
+        };
     }
 
     // --- Delete Operations ---

@@ -19,7 +19,7 @@ export class DeliveryService {
     private readonly trackingGateway: TrackingGateway,
     private readonly prismaCache: PrismaCacheService,
     private readonly invoiceHelper: InvoiceHelper,
-  ) {}
+  ) { }
 
   async login(phoneNumber: string) {
     const person = await this.prisma.deliveryPerson.findUnique({
@@ -115,6 +115,27 @@ export class DeliveryService {
       updateData.addressCountry = components.country;
       updateData.addressLatitude = latitude;
       updateData.addressLongitude = longitude;
+    }
+
+    // Check Service Area
+    const serviceAreas = await this.prisma.serviceArea.findMany({
+      where: { isActive: true },
+    });
+
+    if (serviceAreas.length > 0) {
+      const { isPointInPolygon } = require('../utils/location.utils');
+      let isInside = false;
+      for (const area of serviceAreas) {
+        if (isPointInPolygon(latitude, longitude, area.polygon)) {
+          isInside = true;
+          break;
+        }
+      }
+      if (!isInside) {
+        // Option: Throw error or just log. User requested "restricted by the area".
+        // Throwing error might block background updates, but if they are outside, they shouldn't be working.
+        throw new NotFoundException('Location is outside the service area.');
+      }
     }
 
     const person = await this.prisma.deliveryPerson.update({
@@ -504,6 +525,16 @@ export class DeliveryService {
             orderUpdateData.pdIsOfferApplied = isOfferApplied;
             orderUpdateData.pdOfferDiscountAmount =
               Math.round(offerDiscountAmount * 100) / 100;
+
+            const vendorCommissionAmount = amountToVendor -
+              (amountToVendor * (appConfigData?.vendorCommission || 0)) / 100;
+
+            const additionalFeeAmount = order.pdAdditionalFee || 0;
+
+            orderUpdateData.pdPlatformRevenue = Math.round(
+              (platformFeeAmount + deliveryFee - offerDiscountAmount + (amountToVendor - vendorCommissionAmount) + additionalFeeAmount) * 100
+            ) / 100;
+
             orderUpdateData.pdTotalPayableAmount =
               Math.round(totalPayableAmount * 100) / 100;
 
@@ -625,8 +656,8 @@ export class DeliveryService {
         const etaEndTime =
           totalProcessingMinutes > 0
             ? new Date(
-                etaStartTime.getTime() + totalProcessingMinutes * 60 * 1000,
-              )
+              etaStartTime.getTime() + totalProcessingMinutes * 60 * 1000,
+            )
             : etaStartTime;
 
         await this.prisma.order.update({
@@ -967,9 +998,9 @@ export class DeliveryService {
       });
       const service = order.items[0]?.serviceId
         ? await this.prisma.service.findUnique({
-            where: { id: order.items[0].serviceId },
-            select: { pricingType: true },
-          })
+          where: { id: order.items[0].serviceId },
+          select: { pricingType: true },
+        })
         : null;
 
       const orderWithUserDetails = {

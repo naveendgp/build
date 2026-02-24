@@ -37,6 +37,15 @@ export class AdminRiderController {
         return this.adminService.deleteRider(id);
     }
 
+    @Post(':id/status')
+    @ApiOperation({ summary: 'Update rider status (enable/disable)' })
+    async updateRiderStatus(
+        @Param('id') id: string,
+        @Body() body: { enabled: boolean; reason?: string },
+    ) {
+        return this.adminService.updateRiderStatus(id, body.enabled, body.reason);
+    }
+
     @Post()
     @ApiOperation({ summary: 'Create a new rider' })
     async createRider(@Body() body: any) {

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Body, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { AdminAuthGuard } from './guards/admin-auth.guard';
 import { AdminService } from './admin.service';
@@ -16,13 +16,17 @@ export class AdminOrderController {
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'status', required: false })
     @ApiQuery({ name: 'search', required: false })
+    @ApiQuery({ name: 'fromDate', required: false })
+    @ApiQuery({ name: 'toDate', required: false })
     async getOrders(
         @Query('page') page: number = 1,
         @Query('limit') limit: number = 10,
         @Query('status') status?: string,
         @Query('search') search?: string,
+        @Query('fromDate') fromDate?: string,
+        @Query('toDate') toDate?: string,
     ) {
-        return this.adminService.getOrders(Number(page), Number(limit), status, search);
+        return this.adminService.getOrders(Number(page), Number(limit), status, search, fromDate, toDate);
     }
 
     @Get(':id')
@@ -39,5 +43,14 @@ export class AdminOrderController {
         @Body('refund') refund: boolean
     ) {
         return this.adminService.cancelOrder(id, reason, refund);
+    }
+
+    @Patch(':id/status')
+    @ApiOperation({ summary: 'Update an order status' })
+    async updateOrderStatus(
+        @Param('id') id: string,
+        @Body('status') status: string
+    ) {
+        return this.adminService.updateOrderStatus(id, status);
     }
 }

@@ -58,7 +58,7 @@ export class VendorService {
     private readonly trackingGateway: TrackingGateway,
     private readonly deliveryService: DeliveryService,
     private readonly prismaCache: PrismaCacheService,
-  ) {}
+  ) { }
 
   /** Reconstruct a vendor address object from flattened Prisma fields */
   private buildVendorAddress(vendor: any) {
@@ -337,6 +337,27 @@ export class VendorService {
       if (latitude) updateData.latitude = parseFloat(latitude);
       if (longitude) updateData.longitude = parseFloat(longitude);
       if (landmark) updateData.landmark = landmark;
+
+      // Check Service Area
+      if (latitude && longitude) {
+        const serviceAreas = await this.prisma.serviceArea.findMany({
+          where: { isActive: true },
+        });
+
+        if (serviceAreas.length > 0) {
+          const { isPointInPolygon } = require('../utils/location.utils');
+          let isInside = false;
+          for (const area of serviceAreas) {
+            if (isPointInPolygon(parseFloat(latitude), parseFloat(longitude), area.polygon)) {
+              isInside = true;
+              break;
+            }
+          }
+          if (!isInside) {
+            return ResponseHelper.error('Shop location is outside the service area.');
+          }
+        }
+      }
     }
 
     // Flatten bank details
@@ -1171,6 +1192,14 @@ export class VendorService {
     const amountToVendor = newItemTotal;
     const amountToVendorAfterCommission = amountToVendor - commission;
 
+    const platformFeeAmount = order.amountToPlatform || 0;
+    const deliveryFee = order.pdDeliveryFee || 0;
+    const offerDiscountAmount = order.pdOfferDiscountAmount || 0;
+    const additionalFeeAmount = order.pdAdditionalFee || 0;
+    const pdPlatformRevenue = Math.round(
+      ((platformFeeAmount + deliveryFee) - offerDiscountAmount + commission + additionalFeeAmount) * 100
+    ) / 100;
+
     const updatedOrder = await this.prisma.order.update({
       where: { id: order.id },
       data: {
@@ -1179,6 +1208,7 @@ export class VendorService {
         amountToVendor: amountToVendor,
         amountToVendorAfterCommission: amountToVendorAfterCommission,
         pdVendorCommission: commission,
+        pdPlatformRevenue: pdPlatformRevenue,
       },
       include: { items: true },
     });

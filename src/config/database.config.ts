@@ -18,5 +18,5 @@ export const AppConfig = {
 } as const;
 
 export const GoogleConfig = {
-  CLIENT_ID: "AIzaSyDVlpYuw_2TA2c8gETZnSXyEiEvYXvYTzU",
+  CLIENT_ID: process.env.GOOGLE_MAPS_API_KEY,
 } as const;

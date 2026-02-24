@@ -147,6 +147,13 @@ enum PricingTier {
   max
 }
 
+enum SettlementStatus {
+  DRAFT
+  READY
+  APPROVED
+  PAID
+}
+
 // ============================================================================
 // ADMIN
 // ============================================================================
@@ -156,17 +163,59 @@ model Admin {
   email       String    @unique
   password    String
   name        String
+  phone       String?
   role        AdminRole @default(ADMIN)
   permissions String[]  @default([])
   isActive    Boolean   @default(true) @map("is_active")
   lastLogin   DateTime? @map("last_login")
+  createdBy   String?   @map("created_by") @db.Uuid
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Legacy MongoDB _id for migration reference
   mongoId String? @unique @map("mongo_id")
 
+  // OTP records
+  otps AdminOtp[]
+
+  // Audit logs where this admin was the target
+  auditLogsAsTarget AdminAuditLog[] @relation("AuditTarget")
+  // Audit logs where this admin performed the action
+  auditLogsAsActor  AdminAuditLog[] @relation("AuditActor")
+
   @@map("admins")
+}
+
+model AdminOtp {
+  id        String   @id @default(uuid()) @db.Uuid
+  adminId   String   @map("admin_id") @db.Uuid
+  otpHash   String   @map("otp_hash")
+  expiresAt DateTime @map("expires_at")
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+  @@map("admin_otps")
+}
+
+model AdminAuditLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  action        String
+  targetAdminId String   @map("target_admin_id") @db.Uuid
+  performedBy   String   @map("performed_by") @db.Uuid
+  details       Json?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  targetAdmin Admin @relation("AuditTarget", fields: [targetAdminId], references: [id], onDelete: Cascade)
+  performer   Admin @relation("AuditActor", fields: [performedBy], references: [id], onDelete: Cascade)
+
+  @@index([targetAdminId])
+  @@index([performedBy])
+  @@index([createdAt])
+  @@map("admin_audit_logs")
 }
 
 // ============================================================================
@@ -191,6 +240,8 @@ model AppConfig {
   offerEnabled        Boolean @default(false) @map("offer_enabled")
   expressDeliveryFee  Float?  @map("express_delivery_fee")
   standardDeliveryFee Float?  @map("standard_delivery_fee")
+  additionalFeeFlat   Float   @default(0) @map("additional_fee_flat")
+  additionalFeeName   String  @default("Additional Fee") @map("additional_fee_name")
 
   // General config (flattened)
   appVersion     String?  @map("app_version")
@@ -300,6 +351,7 @@ model User {
   transactions  Transaction[]   @relation("UserTransactions")
   notifications Notification[]  @relation("UserNotifications")
   offerUsages   OfferUsage[]
+  assignedOffers OfferAssignedUser[]
   transactionLogs TransactionLog[]
 
   mongoId String? @unique @map("mongo_id")
@@ -360,6 +412,11 @@ model ServiceItem {
   itemDescription String  @map("item_description")
   itemSlug        String  @map("item_slug")
   category        String?
+
+  minWeight       Float   @default(0) @map("min_weight")
+  maxWeight       Float   @default(0) @map("max_weight")
+  itemPrice       Float   @default(0) @map("item_price")
+  expressPrice    Float   @default(0) @map("express_price")
 
   service         Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   vendorServiceItems VendorServiceItem[]
@@ -455,6 +512,7 @@ model Vendor {
   transactions      Transaction[] @relation("VendorTransactions")
   notifications     Notification[] @relation("VendorNotifications")
   ordersToBeSettled VendorSettlementOrder[]
+  settlements       Settlement[]
 
   mongoId String? @unique @map("mongo_id")
 
@@ -799,6 +857,10 @@ model Order {
   pdItemTotal                    Float   @default(0) @map("pd_item_total")
   pdGrandTotal                   Float   @default(0) @map("pd_grand_total")
   pdVendorCommission             Float   @default(0) @map("pd_vendor_commission")
+  pdAdditionalFee                Float   @default(0) @map("pd_additional_fee")
+  pdAdditionalFeeName            String? @map("pd_additional_fee_name")
+  pdOfferCode                    String? @map("pd_offer_code")
+  pdPlatformRevenue              Float   @default(0) @map("pd_platform_revenue")
 
   totalAmount Float  @map("total_amount")
   currency    String @default("INR")
@@ -1002,6 +1064,7 @@ model OfferAssignedUser {
   userId  String @map("user_id") @db.Uuid
 
   offer Offer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
 
   @@unique([offerId, userId])
   @@map("offer_assigned_users")
@@ -1090,8 +1153,56 @@ model TransactionLog {
 
   mongoId String? @unique @map("mongo_id")
 
-  @@index([linkId])
-  @@index([orderId])
   @@index([status, createdAt])
   @@map("transaction_logs")
+}
+
+// ============================================================================
+// SERVICE AREA
+// ============================================================================
+
+model ServiceArea {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String   @default("Default Zone")
+  polygon   Json     @db.JsonB
+  isActive  Boolean  @default(true) @map("is_active")
+  createdBy String?  @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("service_areas")
+}
+
+// ============================================================================
+// SETTLEMENTS
+// ============================================================================
+
+model Settlement {
+  id               String           @id @default(uuid()) @db.Uuid
+  settlementCode   String?          @unique @map("settlement_code")
+  partnerId        String           @map("partner_id") @db.Uuid
+  periodFrom       DateTime         @map("period_from")
+  periodTo         DateTime         @map("period_to")
+  grossAmount      Float            @default(0) @map("gross_amount")
+  platformFee      Float            @default(0) @map("platform_fee")
+  additionalFee    Float            @default(0) @map("additional_fee")
+  gst              Float            @default(0)
+  netPayout        Float            @default(0) @map("net_payout")
+  status           SettlementStatus @default(DRAFT)
+  orderIds         String[]         @default([]) @map("order_ids")
+  ordersCount      Int              @default(0) @map("orders_count")
+  approvedAt       DateTime?        @map("approved_at")
+  paidAt           DateTime?        @map("paid_at")
+  paymentReference String?          @map("payment_reference")
+  notes            String?
+  createdBy        String?          @map("created_by")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  partner Vendor @relation(fields: [partnerId], references: [id])
+
+  @@index([partnerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("settlements")
 }

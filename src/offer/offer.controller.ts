@@ -26,6 +26,7 @@ import {
     ValidateCouponDto,
     ApplyCouponDto,
 } from './dto';
+import { AdminAuthGuard } from '../admin/guards/admin-auth.guard';
 import { UserAuthGuard } from '../auth/guards/user.guard';
 
 @ApiTags('Offers')
@@ -36,13 +37,13 @@ export class OfferController {
     // ==================== ADMIN ENDPOINTS ====================
 
     @Post('create')
-    @UseGuards(UserAuthGuard)
+    @UseGuards(AdminAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Create a new offer (Admin)' })
     @ApiResponse({ status: 201, description: 'Offer created successfully' })
     @ApiResponse({ status: 400, description: 'Bad request' })
     async createOffer(@Request() req, @Body() dto: CreateOfferDto) {
-        const createdBy = req.user?.email || req.user?.phone || 'admin';
+        const createdBy = req.user?.email || 'admin';
         const offer = await this.offerService.createOffer(dto, createdBy);
         return {
             success: true,
@@ -52,7 +53,7 @@ export class OfferController {
     }
 
     @Get('list')
-    @UseGuards(UserAuthGuard)
+    @UseGuards(AdminAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get all offers (Admin)' })
     @ApiQuery({ name: 'search', required: false, description: 'Search term' })
@@ -66,7 +67,7 @@ export class OfferController {
     }
 
     @Get('detail/:id')
-    @UseGuards(UserAuthGuard)
+    @UseGuards(AdminAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Get offer by ID (Admin)' })
     @ApiResponse({ status: 200, description: 'Offer details' })
@@ -80,7 +81,7 @@ export class OfferController {
     }
 
     @Put(':id')
-    @UseGuards(UserAuthGuard)
+    @UseGuards(AdminAuthGuard)
     @ApiBearerAuth()
     @ApiOperation({ summary: 'Update an offer (Admin)' })
     @ApiResponse({ status: 200, description: 'Offer updated successfully' })
@@ -95,7 +96,7 @@ export class OfferController {
     }
 
     @Delete(':id')
-    @UseGuards(UserAuthGuard)
+    @UseGuards(AdminAuthGuard)
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: 'Delete an offer (Admin)' })
