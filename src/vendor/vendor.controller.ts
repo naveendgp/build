@@ -44,9 +44,11 @@ import { VendorAuthGuard } from '../auth/guards/vendor.guard';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FormDataJsonParserInterceptor } from '../common/interceptors/form-data-json-parser.interceptor';
+import { ChaosInterceptor } from '../common/interceptors/chaos.interceptor';
 
 @Controller('vendor')
 @ApiTags('Vendor')
+@UseInterceptors(ChaosInterceptor)
 export class VendorController {
   constructor(private readonly vendorService: VendorService) { }
 

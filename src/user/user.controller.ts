@@ -8,6 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -32,9 +33,11 @@ import {
   MakeOrderDto,
 } from './dto';
 import { UserAuthGuard } from '../auth/guards/user.guard';
+import { ChaosInterceptor } from '../common/interceptors/chaos.interceptor';
 
 @Controller('user')
 @ApiTags('User')
+@UseInterceptors(ChaosInterceptor)
 export class UserController {
   constructor(private readonly userService: UserService) { }
 

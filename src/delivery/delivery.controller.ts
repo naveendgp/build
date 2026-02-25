@@ -8,6 +8,7 @@ import {
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -26,9 +27,11 @@ import {
   UpdateAvailabilityDto,
 } from './dto';
 import { DeliveryAuthGuard } from '../auth/guards/delivery.guard';
+import { ChaosInterceptor } from '../common/interceptors/chaos.interceptor';
 
 @Controller('delivery')
 @ApiTags('Delivery')
+@UseInterceptors(ChaosInterceptor)
 export class DeliveryController {
   constructor(private readonly deliveryService: DeliveryService) {}
 
