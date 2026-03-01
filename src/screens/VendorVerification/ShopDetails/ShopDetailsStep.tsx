@@ -418,32 +418,45 @@ const ShopDetailsStep: React.FC<Props> = ({ shop, setShop, errors = {}, clearErr
 
         <View style={styles.uploadSection}>
           <CustomText style={styles.uploadLabel}>
-            Shop Front Photo<CustomText style={styles.asterisk}>*</CustomText>
+            Shop Image<CustomText style={styles.asterisk}>*</CustomText>
           </CustomText>
           {!shop.shop_front_photo ? (
             <TouchableOpacity
               onPress={pickShopPhoto}
-              style={styles.uploadButton}
+              style={styles.shopImageUploadBox}
               disabled={!isEditable}
             >
-              <UploadIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
-              <CustomText style={styles.uploadText}>Upload files</CustomText>
+              <UploadIcon width={32} height={32} color={COLORS.LOGIN_SUBTITLE} />
+              <CustomText style={styles.shopImageUploadTitle}>Upload Shop Image</CustomText>
+              <CustomText style={styles.shopImageUploadHint}>Tap to select a photo of your shop</CustomText>
             </TouchableOpacity>
           ) : (
-            <View style={styles.uploadedFileContainer}>
-              <View style={styles.uploadedFileInfo}>
-                <CheckIcon width={24} height={24} color={COLORS.SUCCESS} />
-                <CustomText style={styles.uploadedFileName} numberOfLines={1}>
-                  {shop.shop_front_photo.name || 'Filename.JPEG'}
-                </CustomText>
+            <View style={styles.shopImagePreviewContainer}>
+              <Image
+                source={{ uri: shop.shop_front_photo.uri }}
+                style={styles.shopImagePreview}
+                resizeMode="cover"
+              />
+              <View style={styles.shopImageOverlay}>
+                {isEditable && (
+                  <View style={styles.shopImageActions}>
+                    <TouchableOpacity
+                      onPress={pickShopPhoto}
+                      style={styles.shopImageActionBtn}
+                    >
+                      <UploadIcon width={16} height={16} color={COLORS.WHITE} />
+                      <CustomText style={styles.shopImageActionText}>Change</CustomText>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={removeShopPhoto}
+                      style={[styles.shopImageActionBtn, styles.shopImageRemoveBtn]}
+                    >
+                      <CloseIcon width={16} height={16} color={COLORS.WHITE} />
+                      <CustomText style={styles.shopImageActionText}>Remove</CustomText>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
-              <TouchableOpacity
-                onPress={removeShopPhoto}
-                style={styles.removeButton}
-                disabled={!isEditable}
-              >
-                <CloseIcon width={24} height={24} color={COLORS.LOGIN_SUBTITLE} />
-              </TouchableOpacity>
             </View>
           )}
           {errors.shop_front_photo && (

@@ -292,12 +292,58 @@ const ServiceDetailScreen: React.FC = () => {
                         :
                         <View>
                             <CustomText style={styles.categoryTitle}>Price per Tier</CustomText>
-                            {/* Display tiered pricing items (Regular/Standard/Max) */}
+                            {/* Pricing tiers: Regular / Medium / Max */}
+                            <View style={categoryItemStyles.itemCard}>
+                                <View style={[categoryItemStyles.priceRow, { marginTop: 16 }]}>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Regular</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={formState.pricingTiers.regular}
+                                                onChangeText={(text) => formState.updatePricingTier('regular', text)}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                                placeholderTextColor={COLORS.LOGIN_SUBTITLE}
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Medium</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={formState.pricingTiers.standard}
+                                                onChangeText={(text) => formState.updatePricingTier('standard', text)}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                                placeholderTextColor={COLORS.LOGIN_SUBTITLE}
+                                            />
+                                        </View>
+                                    </View>
+                                    <View style={categoryItemStyles.priceColumn}>
+                                        <CustomText style={categoryItemStyles.priceLabel}>Max</CustomText>
+                                        <View style={categoryItemStyles.priceInputWrapper}>
+                                            <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
+                                            <TextInput
+                                                style={categoryItemStyles.priceInput}
+                                                value={formState.pricingTiers.max}
+                                                onChangeText={(text) => formState.updatePricingTier('max', text)}
+                                                placeholder="0"
+                                                keyboardType="decimal-pad"
+                                                placeholderTextColor={COLORS.LOGIN_SUBTITLE}
+                                            />
+                                        </View>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Per-item Standard/Express pricing for Weight items (if any exist) */}
                             {Object.entries(editableItems)
                                 .filter(([_, item]) => item.category === 'Weight')
                                 .sort((a, b) => {
-                                    // Sort by tier order: Regular < Standard < Max
-                                    const order: { [key: string]: number } = { 'regular': 0, 'standard': 1, 'max': 2 };
                                     const aName = a[1].item_name.toLowerCase();
                                     const bName = b[1].item_name.toLowerCase();
                                     const aOrder = aName.includes('regular') ? 0 : aName.includes('standard') ? 1 : 2;
@@ -318,6 +364,7 @@ const ServiceDetailScreen: React.FC = () => {
                                                         onChangeText={(price) => updateItemField(itemKey, 'item_price', Number(price) || 0)}
                                                         placeholder="0"
                                                         keyboardType="decimal-pad"
+                                                        placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                                     />
                                                 </View>
                                             </View>
@@ -331,58 +378,13 @@ const ServiceDetailScreen: React.FC = () => {
                                                         onChangeText={(price) => updateItemField(itemKey, 'express_price', Number(price) || 0)}
                                                         placeholder="0"
                                                         keyboardType="decimal-pad"
+                                                        placeholderTextColor={COLORS.LOGIN_SUBTITLE}
                                                     />
                                                 </View>
                                             </View>
                                         </View>
                                     </View>
                                 ))}
-                            {/* Fallback if no Weight category items exist */}
-                            {Object.entries(editableItems).filter(([_, item]) => item.category === 'Weight').length === 0 && (
-                                <View style={categoryItemStyles.itemCard}>
-                                    <View style={[categoryItemStyles.priceRow, { marginTop: 16 }]}>
-                                        <View style={categoryItemStyles.priceColumn}>
-                                            <CustomText style={categoryItemStyles.priceLabel}>Regular</CustomText>
-                                            <View style={categoryItemStyles.priceInputWrapper}>
-                                                <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
-                                                <TextInput
-                                                    style={categoryItemStyles.priceInput}
-                                                    value={formState.pricingTiers.regular}
-                                                    onChangeText={(text) => formState.updatePricingTier('regular', text)}
-                                                    placeholder="0"
-                                                    keyboardType="decimal-pad"
-                                                />
-                                            </View>
-                                        </View>
-                                        <View style={categoryItemStyles.priceColumn}>
-                                            <CustomText style={categoryItemStyles.priceLabel}>Medium</CustomText>
-                                            <View style={categoryItemStyles.priceInputWrapper}>
-                                                <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
-                                                <TextInput
-                                                    style={categoryItemStyles.priceInput}
-                                                    value={formState.pricingTiers.standard}
-                                                    onChangeText={(text) => formState.updatePricingTier('standard', text)}
-                                                    placeholder="0"
-                                                    keyboardType="decimal-pad"
-                                                />
-                                            </View>
-                                        </View>
-                                        <View style={categoryItemStyles.priceColumn}>
-                                            <CustomText style={categoryItemStyles.priceLabel}>Max</CustomText>
-                                            <View style={categoryItemStyles.priceInputWrapper}>
-                                                <CustomText style={categoryItemStyles.currencySymbol}>₹</CustomText>
-                                                <TextInput
-                                                    style={categoryItemStyles.priceInput}
-                                                    value={formState.pricingTiers.max}
-                                                    onChangeText={(text) => formState.updatePricingTier('max', text)}
-                                                    placeholder="0"
-                                                    keyboardType="decimal-pad"
-                                                />
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            )}
                             <CustomText style={[styles.inputNote, { marginBottom: 24 }]}>Note: Clothes will be weighed during pickup and the bill will be generated accordingly.</CustomText>
                         </View>
                     }

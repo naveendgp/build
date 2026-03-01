@@ -12,7 +12,9 @@ class MainActivity : ReactActivity() {
   override fun getMainComponentName(): String = "LaundryVendorApp"
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+    // Pass null to prevent fragment restoration crash from react-native-screens
+    // See: https://github.com/software-mansion/react-native-screens/issues/17
+    super.onCreate(null)
 
     // Enable edge-to-edge (required for image / gradient behind status bar)
     WindowCompat.setDecorFitsSystemWindows(window, false)
