@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "799567267925",
+    "project_id": "lyket-32830",
+    "storage_bucket": "lyket-32830.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:799567267925:android:43169cfb54c1e37fca6cdc",
+        "android_client_info": {
+          "package_name": "com.lyket.lyket"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "799567267925-d97g8pedt57a8stmlvdtunkm02kt4dcv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lyket.lyket",
+            "certificate_hash": "8091de02c36d08009b54d84ecd2658fd9660624a"
+          }
+        },
+        {
+          "client_id": "799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKQk7QQnsWnbgbCIaRdgGeQD39njC2ZEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
