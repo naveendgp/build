@@ -7,6 +7,7 @@ import '../providers/review_providers.dart';
 import '../widgets/rating_distribution_card.dart';
 import '../widgets/review_card.dart';
 import '../widgets/review_creation_modal.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class BrandReviewsTab extends ConsumerWidget {
   final String brandId;
@@ -45,8 +46,8 @@ class BrandReviewsTab extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
 
-        // Write Review CTA (Not for owners)
-        if (!isOwner) ...[
+        // Write Review CTA (Not for owners and only for users)
+        if (!isOwner && ref.watch(authProvider).loggedInRole != UserRole.brand) ...[
           Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
