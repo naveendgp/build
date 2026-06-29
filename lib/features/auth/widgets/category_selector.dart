@@ -25,6 +25,7 @@ class CategorySelector extends StatelessWidget {
     {'label': 'Automotive', 'icon': Icons.directions_car_rounded},
     {'label': 'Finance', 'icon': Icons.account_balance_rounded},
     {'label': 'Retail', 'icon': Icons.storefront_rounded},
+    {'label': 'Other', 'icon': Icons.more_horiz_rounded},
   ];
 
   void _showSheet(BuildContext context) {

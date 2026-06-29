@@ -18,6 +18,7 @@ class MediaPreviewStep extends StatefulWidget {
   final ValueChanged<MediaDimension> onChangeDimension;
   final ValueChanged<int> onChangeMedia;
   final ValueChanged<int> onRemoveMedia;
+  final VoidCallback? onAddMore;
 
   const MediaPreviewStep({
     super.key,
@@ -26,6 +27,7 @@ class MediaPreviewStep extends StatefulWidget {
     required this.onChangeDimension,
     required this.onChangeMedia,
     required this.onRemoveMedia,
+    this.onAddMore,
   });
 
   @override
@@ -105,17 +107,32 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
               else
                 _buildPageView(),
 
-              // â”€â”€ Change button (top-right) â”€â”€
+              // â”€â”€ Change / Add more buttons (top-right) â”€â”€
               Positioned(
                 top: AppSpacing.md,
                 right: AppSpacing.md,
-                child: _GlassPillButton(
-                  label: 'Change',
-                  icon: Icons.swap_horiz_rounded,
-                  onTap: () {
-                    Haptics.light();
-                    widget.onChangeMedia(_currentPage);
-                  },
+                child: Row(
+                  children: [
+                    if (widget.onAddMore != null) ...[
+                      _GlassPillButton(
+                        label: 'Add More',
+                        icon: Icons.add_photo_alternate_rounded,
+                        onTap: () {
+                          Haptics.light();
+                          widget.onAddMore!();
+                        },
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                    ],
+                    _GlassPillButton(
+                      label: 'Change',
+                      icon: Icons.swap_horiz_rounded,
+                      onTap: () {
+                        Haptics.light();
+                        widget.onChangeMedia(_currentPage);
+                      },
+                    ),
+                  ],
                 ),
               ),
 
@@ -155,6 +172,32 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
 
   // ——— Single image preview ———————————————————————————————————————————————
   Widget _buildSinglePreview(MediaItem item) {
+    return _ZoomableMedia(
+      key: ValueKey(item.id),
+      child: _buildMediaContent(item),
+    );
+  }
+
+  // ——— PageView for multiple media ————————————————————————————————————————
+  Widget _buildPageView() {
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: widget.media.length,
+      onPageChanged: (index) {
+        setState(() => _currentPage = index);
+        Haptics.selection();
+      },
+      itemBuilder: (context, index) {
+        final item = widget.media[index];
+        return _ZoomableMedia(
+          key: ValueKey(item.id),
+          child: _buildMediaContent(item),
+        );
+      },
+    );
+  }
+
+  Widget _buildMediaContent(MediaItem item) {
     if (item.type == MediaType.video) {
       return _VideoPreviewWidget(file: item.file);
     }
@@ -171,38 +214,6 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
         );
       },
       errorBuilder: (context, error, stack) => _buildErrorPlaceholder(),
-    );
-  }
-
-  // ——— PageView for multiple media ————————————————————————————————————————
-  Widget _buildPageView() {
-    return PageView.builder(
-      controller: _pageController,
-      itemCount: widget.media.length,
-      onPageChanged: (index) {
-        setState(() => _currentPage = index);
-        Haptics.selection();
-      },
-      itemBuilder: (context, index) {
-        final item = widget.media[index];
-        if (item.type == MediaType.video) {
-          return _VideoPreviewWidget(file: item.file);
-        }
-        return Image.file(
-          item.file,
-          fit: BoxFit.cover,
-          frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-            if (wasSynchronouslyLoaded) return child;
-            return AnimatedOpacity(
-              opacity: frame != null ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-              child: child,
-            );
-          },
-          errorBuilder: (context, error, stack) => _buildErrorPlaceholder(),
-        );
-      },
     );
   }
 
@@ -324,6 +335,128 @@ class _GlassPillButtonState extends State<_GlassPillButton> {
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// â”€â”€ Zoomable media wrapper â”€â”€ supports pinch-to-zoom plus explicit
+// zoom in/out buttons (bottom-left), independent per carousel page.
+class _ZoomableMedia extends StatefulWidget {
+  final Widget child;
+  const _ZoomableMedia({super.key, required this.child});
+
+  @override
+  State<_ZoomableMedia> createState() => _ZoomableMediaState();
+}
+
+class _ZoomableMediaState extends State<_ZoomableMedia> {
+  final TransformationController _transformController = TransformationController();
+  static const double _minScale = 1.0;
+  static const double _maxScale = 4.0;
+  static const double _step = 0.5;
+
+  double get _currentScale => _transformController.value.getMaxScaleOnAxis();
+
+  void _zoomBy(double delta) {
+    Haptics.light();
+    final newScale = (_currentScale + delta).clamp(_minScale, _maxScale);
+    setState(() {
+      _transformController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+    });
+  }
+
+  @override
+  void dispose() {
+    _transformController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        InteractiveViewer(
+          transformationController: _transformController,
+          minScale: _minScale,
+          maxScale: _maxScale,
+          onInteractionEnd: (_) => setState(() {}),
+          child: widget.child,
+        ),
+        Positioned(
+          bottom: AppSpacing.md,
+          left: AppSpacing.md,
+          child: _ZoomControls(
+            canZoomOut: _currentScale > _minScale,
+            canZoomIn: _currentScale < _maxScale,
+            onZoomIn: () => _zoomBy(_step),
+            onZoomOut: () => _zoomBy(-_step),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ZoomControls extends StatelessWidget {
+  final bool canZoomIn;
+  final bool canZoomOut;
+  final VoidCallback onZoomIn;
+  final VoidCallback onZoomOut;
+
+  const _ZoomControls({
+    required this.canZoomIn,
+    required this.canZoomOut,
+    required this.onZoomIn,
+    required this.onZoomOut,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppSpacing.borderRadiusFull,
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.4),
+            borderRadius: AppSpacing.borderRadiusFull,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _ZoomButton(icon: Icons.remove_rounded, enabled: canZoomOut, onTap: onZoomOut),
+              Container(width: 1, height: 18, color: Colors.white.withValues(alpha: 0.15)),
+              _ZoomButton(icon: Icons.add_rounded, enabled: canZoomIn, onTap: onZoomIn),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ZoomButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _ZoomButton({required this.icon, required this.enabled, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: enabled ? onTap : null,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.sm),
+        child: Icon(
+          icon,
+          size: AppSpacing.iconSm,
+          color: enabled ? Colors.white : Colors.white.withValues(alpha: 0.35),
         ),
       ),
     );

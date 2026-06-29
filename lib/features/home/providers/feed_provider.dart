@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
 import '../../user_profile/providers/reminders_provider.dart';
+import '../../brand_profile/providers/brand_profile_provider.dart';
 import '../models/feed_models.dart';
 
 enum FeedViewMode { single, grid }
@@ -240,6 +241,29 @@ class FeedNotifier extends StateNotifier<FeedState> {
     }
   }
 
+  Future<void> markNotInterested(String postId) async {
+    state = state.copyWith(
+      posts: state.posts.where((p) => p.id != postId).toList(),
+    );
+    try {
+      await _apiClient.dio.post('/posts/$postId/not-interested');
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  Future<void> archivePost(String postId) async {
+    // Optimistic UI update: Remove the post from the feed
+    state = state.copyWith(
+      posts: state.posts.where((p) => p.id != postId).toList(),
+    );
+    try {
+      await _apiClient.dio.post('/posts/$postId/archive');
+    } catch (e) {
+      // Ignore
+    }
+  }
+
   Future<void> deletePost(String postId) async {
     try {
       await _apiClient.dio.delete('/posts/$postId');
@@ -249,6 +273,11 @@ class FeedNotifier extends StateNotifier<FeedState> {
       currentPosts.removeWhere((p) => p.id == postId);
       
       state = state.copyWith(posts: currentPosts);
+      
+      // Also remove from brand profile state instantly
+      try {
+        ref.read(brandProfileProvider('me').notifier).removePost(postId);
+      } catch (_) {}
     } catch (e) {
       // Handle error, e.g., show snackbar
       debugPrint('Error deleting post: $e');

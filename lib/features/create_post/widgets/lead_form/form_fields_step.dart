@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models/create_post_models.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';
@@ -21,8 +21,11 @@ class FormFieldsStep extends StatelessWidget {
       isScrollControlled: true,
       builder: (ctx) => _AddQuestionSheet(
         onAdd: (field) {
+          final newFields = [...leadForm.fields, field];
+          final customFields = newFields.where((f) => !f.isPrebuilt).toList();
+          final prebuiltFields = newFields.where((f) => f.isPrebuilt).toList();
           onUpdate((current) => current.copyWith(
-            fields: [...current.fields, field],
+            fields: [...customFields, ...prebuiltFields],
           ));
           Navigator.pop(ctx);
         },
@@ -69,7 +72,12 @@ class FormFieldsStep extends StatelessWidget {
                 final newFields = List<FormFieldData>.from(fields);
                 newFields.removeAt(oldIndex);
                 newFields.insert(newIndex, item);
-                onUpdate((current) => current.copyWith(fields: newFields));
+                
+                // Enforce custom questions on top, prebuilt questions on bottom
+                final customFields = newFields.where((f) => !f.isPrebuilt).toList();
+                final prebuiltFields = newFields.where((f) => f.isPrebuilt).toList();
+                
+                onUpdate((current) => current.copyWith(fields: [...customFields, ...prebuiltFields]));
               },
               itemBuilder: (context, index) {
                 return Padding(
@@ -192,6 +200,7 @@ class _AddQuestionSheet extends StatelessWidget {
           type: type,
           question: question,
           options: options,
+          isPrebuilt: true,
         ));
       },
     );

@@ -139,37 +139,33 @@ class _TrendingCard extends StatelessWidget {
                   ),
               ],
             ),
-            // Title + likes
+            // Brand Info
             Padding(
               padding: EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    post.title,
-                    style: AppTypography.labelSmall.copyWith(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: context.colors.textPrimary,
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: context.colors.surface,
+                      image: DecorationImage(image: CachedNetworkImageProvider(post.brandAvatar), fit: BoxFit.cover),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                  SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.favorite_rounded,
-                        size: 12,
-                        color: context.colors.textTertiary,
-                      ),
-                      SizedBox(width: 3),
-                      Text(
-                        _formatCount(post.likeCount),
-                        style: AppTypography.labelSmall.copyWith(fontSize: 10),
-                      ),
-                    ],
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      post.brandName,
+                      style: AppTypography.labelSmall.copyWith(fontSize: 10),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
+                  if (post.isVerified) ...[
+                    SizedBox(width: 4),
+                    Icon(Icons.verified, size: 12, color: Colors.red),
+                  ],
                 ],
               ),
             ),
@@ -177,11 +173,5 @@ class _TrendingCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatCount(int count) {
-    if (count >= 1000000) return '${(count / 1000000).toStringAsFixed(1)}M';
-    if (count >= 1000) return '${(count / 1000).toStringAsFixed(1)}K';
-    return count.toString();
   }
 }

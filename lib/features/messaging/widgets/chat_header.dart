@@ -82,8 +82,8 @@ class ChatHeader extends StatelessWidget {
                       SizedBox(width: 4),
                       Icon(
                         Icons.verified_rounded,
-                        size: 14,
-                        color: context.colors.primaryAccent,
+                        size: 16,
+                        color: Colors.red,
                       ),
                     ],
                   ],

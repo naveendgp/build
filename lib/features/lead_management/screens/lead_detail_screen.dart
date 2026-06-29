@@ -70,18 +70,20 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.colors.background,
-      appBar: AppBar(
-        backgroundColor: context.colors.surface,
-        title: Text('Lead Details', style: AppTypography.titleMedium),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          onPressed: () => Navigator.pop(context),
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: Scaffold(
+        backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.background,
+        appBar: AppBar(
+          backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.surface,
+          title: Text('Lead Details', style: AppTypography.titleMedium),
+          centerTitle: true,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
+        body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,6 +135,7 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
                 _mappedAnswers.entries.map((e) => _InfoRow(e.key, e.value)).toList(),
               ),
           ],
+        ),
         ),
       ),
     );

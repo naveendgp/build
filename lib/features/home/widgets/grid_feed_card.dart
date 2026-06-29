@@ -81,66 +81,39 @@ class _GridFeedCardState extends State<GridFeedCard>
               // Info
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.post.title,
-                      style: AppTypography.labelLarge.copyWith(fontSize: 12, fontWeight: FontWeight.w600),
-                      maxLines: 2, overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => context.push('/brand/${widget.post.brandId}'),
-                      child: Row(
-                        children: [
-                          // Avatar
-                          Container(
-                            width: 18, height: 18,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(color: context.colors.border, width: 0.5),
-                            ),
-                            clipBehavior: Clip.antiAlias,
-                            child: CachedNetworkImage(
-                              imageUrl: widget.post.brandAvatar, fit: BoxFit.cover,
-                              memCacheWidth: 100,
-                              errorWidget: (context, url, error) => Container(color: context.colors.surface),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              widget.post.brandName,
-                              style: AppTypography.labelSmall.copyWith(fontSize: 10),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (widget.post.isVerified) ...[
-                            const SizedBox(width: 3),
-                            Icon(Icons.verified_rounded, size: 11, color: context.colors.primaryAccent),
-                          ],
-                        ],
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => context.push('/brand/${widget.post.brandId}'),
+                  child: Row(
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 18, height: 18,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: context.colors.border, width: 0.5),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: CachedNetworkImage(
+                          imageUrl: widget.post.brandAvatar, fit: BoxFit.cover,
+                          memCacheWidth: 100,
+                          errorWidget: (context, url, error) => Container(color: context.colors.surface),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    // Likes
-                    Row(
-                      children: [
-                        Icon(
-                          widget.post.isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                          size: 12,
-                          color: widget.post.isLiked ? context.colors.primaryAccent : context.colors.textTertiary,
-                        ),
-                        const SizedBox(width: 3),
-                        Text(
-                          _fmt(widget.post.likeCount),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(
+                          widget.post.brandName,
                           style: AppTypography.labelSmall.copyWith(fontSize: 10),
+                          overflow: TextOverflow.ellipsis,
                         ),
+                      ),
+                      if (widget.post.isVerified) ...[
+                        const SizedBox(width: 4),
+                        Icon(Icons.verified_rounded, size: 11, color: Colors.red),
                       ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ],

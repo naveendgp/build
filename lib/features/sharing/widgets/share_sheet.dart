@@ -268,7 +268,7 @@ class _ShareSheetState extends State<ShareSheet>
                     ),
                     if (post.isVerified) ...[
                       const SizedBox(width: 4),
-                      Icon(Icons.verified_rounded, size: 13, color: context.colors.primaryAccent),
+                      Icon(Icons.verified_rounded, size: 13, color: Colors.red),
                     ],
                   ],
                 ),

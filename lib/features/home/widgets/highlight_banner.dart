@@ -104,12 +104,9 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
         }
       },
       child: Container(
-        height: 32,
+        height: 26,
         width: double.infinity,
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
+        color: bgColor,
         child: isScrolling || isRepeating
             ? ListView.builder(
                 controller: _scrollController,
@@ -117,8 +114,22 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
                 physics: const NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: _buildContentRow(textColor, iconData),
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildContentRow(textColor, iconData),
+                        const SizedBox(width: 12),
+                        Text(
+                          '—',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: textColor.withValues(alpha: 0.6),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 },
               )
@@ -135,15 +146,16 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (iconData != null) ...[
-          Icon(iconData, color: textColor, size: 16),
-          const SizedBox(width: 8),
+          Icon(iconData, color: textColor, size: 13),
+          const SizedBox(width: 6),
         ],
         Text(
           widget.text.toUpperCase(),
-          style: AppTypography.labelLarge.copyWith(
+          style: AppTypography.labelSmall.copyWith(
             color: textColor,
             fontWeight: FontWeight.w800,
-            letterSpacing: 1.2,
+            letterSpacing: 1.0,
+            fontSize: 11,
           ),
         ),
       ],

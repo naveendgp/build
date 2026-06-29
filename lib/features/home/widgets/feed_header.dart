@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../providers/feed_provider.dart';
+import '../../notifications/providers/notifications_provider.dart';
 import 'hamburger_menu_sheet.dart';
 
 /// Floating translucent header with blur, logo, dynamic title, and actions
@@ -16,6 +17,7 @@ class FeedHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final feedTitle = ref.watch(feedProvider.select((s) => s.feedTitle));
+    final unreadNotifications = ref.watch(notificationsProvider).unreadCount;
     final opacity = (1.0 - (scrollOffset / 100)).clamp(0.0, 1.0);
     final blurSigma = (scrollOffset / 10).clamp(0.0, 20.0);
     final topPad = MediaQuery.of(context).padding.top;
@@ -78,7 +80,7 @@ class FeedHeader extends ConsumerWidget {
               _HeaderAction(
                 icon: Icons.notifications_none_rounded,
                 onTap: () => context.push('/notifications'),
-                badge: 3,
+                badge: unreadNotifications,
               ),
               const SizedBox(width: 4),
               _HeaderAction(
@@ -141,22 +143,13 @@ class _HeaderActionState extends State<_HeaderAction>
             color: context.colors.surface.withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(widget.icon, size: 21, color: context.colors.textSecondary),
-              if (widget.badge != null && widget.badge! > 0)
-                Positioned(
-                  top: 7, right: 7,
-                  child: Container(
-                    width: 8, height: 8,
-                    decoration: BoxDecoration(
-                      color: context.colors.primaryAccent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-            ],
+          child: Center(
+            child: Badge(
+              isLabelVisible: widget.badge != null && widget.badge! > 0,
+              label: Text(widget.badge != null ? (widget.badge! > 9 ? '9+' : widget.badge.toString()) : ''),
+              backgroundColor: Colors.redAccent,
+              child: Icon(widget.icon, size: 21, color: context.colors.textSecondary),
+            ),
           ),
         ),
       ),

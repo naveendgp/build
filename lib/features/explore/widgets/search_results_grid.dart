@@ -255,13 +255,6 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.post.title,
-                      style: AppTypography.labelLarge.copyWith(fontSize: 12),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
@@ -285,7 +278,7 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
                         ),
                         if (widget.post.isVerified) ...[
                           SizedBox(width: 4),
-                          Icon(Icons.verified, size: 12, color: context.colors.secondaryAccent),
+                          Icon(Icons.verified, size: 12, color: Colors.red),
                         ],
                       ],
                     ),

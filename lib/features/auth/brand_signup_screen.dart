@@ -59,10 +59,17 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
   void _nextStep() {
     final state = ref.read(brandSignupProvider);
     final step = state.currentStep;
-    if (step == 0 && state.businessCategory == null) return;
-    if (_formKeys[step].currentState?.validate() ?? false) {
-      if (step < 3) _goToStep(step + 1);
+    if (!(_formKeys[step].currentState?.validate() ?? false)) return;
+    if (step == 0 && state.businessCategory == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please select a business category'),
+          backgroundColor: context.colors.error,
+        ),
+      );
+      return;
     }
+    if (step < 3) _goToStep(step + 1);
   }
 
   Future<void> _submit() async {
@@ -168,15 +175,17 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
-              label: 'Contact Number (Optional)',
+              label: 'Contact Number',
               controller: _contactCtrl,
               keyboardType: TextInputType.phone,
+              validator: (v) => Validators.required(v, 'Contact number'),
               onChanged: (v) => notifier.updateField('brandContactNumber', v),
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
-              label: 'Location (Optional)',
+              label: 'Location',
               controller: _locationCtrl,
+              validator: (v) => Validators.required(v, 'Location'),
               onChanged: (v) => notifier.updateField('brandLocation', v),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -256,7 +265,35 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Brand Tags', style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary)),
+            Row(
+              children: [
+                Text('Brand Tags', style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary)),
+                const SizedBox(width: AppSpacing.sm),
+                GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        backgroundColor: context.colors.card,
+                        title: Text('What are tags for?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+                        content: Text(
+                          'Tags help describe your brand with keywords (e.g. "vegan", "handmade", "sustainable"). '
+                          'They make your brand easier to discover when users search or browse by interest.',
+                          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: Text('Got it', style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  child: Icon(Icons.info_outline_rounded, size: 20, color: context.colors.textTertiary),
+                ),
+              ],
+            ),
             const SizedBox(height: AppSpacing.sm),
             Text('Add tags that describe your brand', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
             const SizedBox(height: AppSpacing.xl),

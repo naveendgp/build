@@ -1,21 +1,22 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/haptics.dart';
 
-/// Floating glassmorphism interaction bar with like, comment, bookmark, share, reminder
+/// Flat Instagram-style interaction row — like, comment, share, reminder on
+/// the left; bookmark pinned to the far right. No background pill/blur.
 class InteractionBar extends StatelessWidget {
   final bool isLiked;
   final bool isBookmarked;
   final int likeCount;
   final int commentCount;
+  final int shareCount;
   final VoidCallback onLike;
   final VoidCallback onComment;
   final VoidCallback onBookmark;
   final VoidCallback onShare;
   final VoidCallback onReminder;
+  final bool showBookmark;
 
   const InteractionBar({
     super.key,
@@ -23,75 +24,55 @@ class InteractionBar extends StatelessWidget {
     required this.isBookmarked,
     required this.likeCount,
     required this.commentCount,
+    this.shareCount = 0,
     required this.onLike,
     required this.onComment,
     required this.onBookmark,
     required this.onShare,
     required this.onReminder,
+    this.showBookmark = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: AppSpacing.borderRadiusFull,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-          decoration: BoxDecoration(
-            color: context.colors.card.withValues(alpha: 0.75),
-            borderRadius: AppSpacing.borderRadiusFull,
-            border: Border.all(color: context.colors.borderLight, width: 0.5),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ActionButton(
-                icon: isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                color: isLiked ? context.colors.primaryAccent : context.colors.textSecondary,
-                label: _formatCount(likeCount),
-                onTap: onLike,
-                animate: isLiked,
-              ),
-              _divider(context),
-              _ActionButton(
-                icon: Icons.chat_bubble_outline_rounded,
-                color: context.colors.textSecondary,
-                label: _formatCount(commentCount),
-                onTap: onComment,
-              ),
-              _divider(context),
-              _ActionButton(
-                icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                color: isBookmarked ? context.colors.secondaryAccent : context.colors.textSecondary,
-                onTap: onBookmark,
-                animate: isBookmarked,
-              ),
-              _divider(context),
-              _ActionButton(
-                icon: Icons.share_outlined,
-                color: context.colors.textSecondary,
-                onTap: onShare,
-              ),
-              _divider(context),
-              _ActionButton(
-                icon: Icons.notifications_active_outlined,
-                color: context.colors.textSecondary,
-                onTap: onReminder,
-                size: 18,
-              ),
-            ],
-          ),
+    return Row(
+      children: [
+        _ActionButton(
+          icon: isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          color: isLiked ? context.colors.primaryAccent : context.colors.textPrimary,
+          label: _formatCount(likeCount),
+          onTap: onLike,
+          animate: isLiked,
         ),
-      ),
-    );
-  }
-
-  Widget _divider(BuildContext context) {
-    return Container(
-      width: 1, height: 18,
-      margin: const EdgeInsets.symmetric(horizontal: 2),
-      color: context.colors.border,
+        const SizedBox(width: 16),
+        _ActionButton(
+          icon: Icons.chat_bubble_outline_rounded,
+          color: context.colors.textPrimary,
+          label: _formatCount(commentCount),
+          onTap: onComment,
+        ),
+        const SizedBox(width: 16),
+        _ActionButton(
+          icon: Icons.send_outlined,
+          color: context.colors.textPrimary,
+          label: _formatCount(shareCount),
+          onTap: onShare,
+        ),
+        const SizedBox(width: 16),
+        _ActionButton(
+          icon: Icons.notifications_active_outlined,
+          color: context.colors.textPrimary,
+          onTap: onReminder,
+        ),
+        const Spacer(),
+        if (showBookmark)
+          _ActionButton(
+            icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            color: isBookmarked ? context.colors.secondaryAccent : context.colors.textPrimary,
+            onTap: onBookmark,
+            animate: isBookmarked,
+          ),
+      ],
     );
   }
 
@@ -117,7 +98,7 @@ class _ActionButton extends StatefulWidget {
     this.label,
     required this.onTap,
     this.animate = false,
-    this.size = 20,
+    this.size = 24,
   });
 
   @override
@@ -153,29 +134,26 @@ class _ActionButtonState extends State<_ActionButton>
     return GestureDetector(
       onTap: () { Haptics.light(); widget.onTap(); },
       behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedBuilder(
-              animation: _scale,
-              builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
-              child: Icon(widget.icon, size: widget.size, color: widget.color),
-            ),
-            if (widget.label != null && widget.label!.isNotEmpty) ...[
-              const SizedBox(width: 4),
-              Text(
-                widget.label!,
-                style: AppTypography.labelSmall.copyWith(
-                  color: widget.color,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 11,
-                ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedBuilder(
+            animation: _scale,
+            builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
+            child: Icon(widget.icon, size: widget.size, color: widget.color),
+          ),
+          if (widget.label != null && widget.label!.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Text(
+              widget.label!,
+              style: AppTypography.labelMedium.copyWith(
+                color: widget.color,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
               ),
-            ],
+            ),
           ],
-        ),
+        ],
       ),
     );
   }

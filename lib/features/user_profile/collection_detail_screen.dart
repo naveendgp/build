@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import 'models/user_profile_models.dart';
 import 'widgets/vault/save_item_card.dart';
 import 'package:go_router/go_router.dart';
+import '../explore/screens/explore_post_detail_screen.dart';
 
 class CollectionDetailScreen extends StatefulWidget {
   final CollectionItem collection;
@@ -184,7 +185,17 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                 childCount: widget.collection.posts.length,
                 itemBuilder: (context, index) {
                   final item = widget.collection.posts[index];
-                  return SaveItemCard(item: item);
+                  return SaveItemCard(
+                    item: item,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExplorePostDetailScreen(postId: item.id),
+                        ),
+                      );
+                    },
+                  );
                 },
               ),
             ),

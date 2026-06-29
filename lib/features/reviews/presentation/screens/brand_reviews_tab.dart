@@ -7,6 +7,7 @@ import '../providers/review_providers.dart';
 import '../widgets/rating_distribution_card.dart';
 import '../widgets/review_card.dart';
 import '../widgets/review_creation_modal.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class BrandReviewsTab extends ConsumerWidget {
   final String brandId;
@@ -45,23 +46,26 @@ class BrandReviewsTab extends ConsumerWidget {
           error: (_, __) => const SizedBox.shrink(),
         ),
 
-        // Write Review CTA (Not for owners)
-        if (!isOwner) ...[
+        // Write Review CTA (Not for owners and only for users)
+        if (!isOwner && ref.watch(authProvider).loggedInRole != UserRole.brand) ...[
           Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () => _showWriteReviewModal(context, ref),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Write a Review',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              SizedBox(
+                width: 200,
+                child: ElevatedButton(
+                  onPressed: () => _showWriteReviewModal(context, ref),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.colors.textPrimary,
+                    foregroundColor: context.colors.background,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Write a Review',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
@@ -99,7 +103,6 @@ class BrandReviewsTab extends ConsumerWidget {
               children: reviews.map((review) {
                 return ReviewCard(
                   review: review,
-                  onReport: () => _handleReportReview(context, ref, review.id),
                 );
               }).toList(),
             );
@@ -129,24 +132,6 @@ class BrandReviewsTab extends ConsumerWidget {
     if (result == true) {
       ref.invalidate(reviewListProvider(brandId));
       ref.invalidate(reviewStatsProvider(brandId));
-    }
-  }
-
-  void _handleReportReview(BuildContext context, WidgetRef ref, String reviewId) async {
-    try {
-      final repo = ref.read(reviewRepositoryProvider);
-      await repo.reportReview(reviewId, "Inappropriate Content"); // In a full app, this would open a selection modal
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Review reported successfully'), backgroundColor: Color(0xFF22C55E)),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to report: $e'), backgroundColor: Colors.redAccent),
-        );
-      }
     }
   }
 }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -128,7 +129,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (token != null) {
         final roleString = await SecureStorage.getRole() ?? 'user';
         final brandId = await SecureStorage.getBrandId();
-        final userId = await SecureStorage.getUserId();
+        String? userId = await SecureStorage.getUserId();
+        
+        // Fallback: extract userId from JWT if it's missing (e.g. from an older session)
+        if (userId == null) {
+          try {
+            final parts = token.split('.');
+            if (parts.length == 3) {
+              final payload = utf8.decode(base64Url.decode(base64.normalize(parts[1])));
+              final Map<String, dynamic> data = jsonDecode(payload);
+              userId = data['id'];
+              if (userId != null) {
+                await SecureStorage.saveUserId(userId);
+              }
+            }
+          } catch (_) {}
+        }
+
         final role = roleString.toLowerCase() == 'brand' ? UserRole.brand : UserRole.user;
         
         state = state.copyWith(
@@ -282,6 +299,62 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred: $e');
       return false;
     }
+  }
+
+  Future<bool> changePassword(String currentPassword, String newPassword) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final response = await _apiClient.dio.post('/auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        state = state.copyWith(status: AuthStatus.success);
+        return true;
+      } else {
+        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to change password');
+        return false;
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Network error';
+      state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      return false;
+    }
+  }
+
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final response = await _apiClient.dio.delete('/auth/delete-account');
+
+      if (response.statusCode == 200) {
+        state = state.copyWith(status: AuthStatus.success);
+        return true;
+      } else {
+        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to delete account');
+        return false;
+      }
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Network error';
+      state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      return false;
+    }
+  }
+
+  Future<void> logout() async {
+    try {
+      await _apiClient.dio.post('/auth/logout');
+    } catch (_) {}
+    
+    await SecureStorage.clearSession();
+    state = const AuthState();
   }
 }
 

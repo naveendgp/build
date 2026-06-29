@@ -17,6 +17,21 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   
   CreatePostNotifier(this._apiClient) : super(const CreatePostState()) {
     fetchTemplates();
+    _fetchBrandCategory();
+  }
+
+  /// Posts no longer let the user pick a category — it's taken from the
+  /// brand's own profile (set during brand signup) instead.
+  Future<void> _fetchBrandCategory() async {
+    try {
+      final res = await _apiClient.dio.get('/brand/profile');
+      final category = res.data['category'] as String?;
+      if (category != null && category.isNotEmpty) {
+        state = state.copyWith(categoryId: category);
+      }
+    } catch (e) {
+      debugPrint('Failed to fetch brand category: $e');
+    }
   }
 
   final ImagePicker _picker = ImagePicker();
@@ -60,6 +75,26 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       } else {
         state = state.copyWith(media: [...state.media, item]);
       }
+      return true;
+    }
+    return false;
+  }
+
+  /// Instagram-style carousel selection — lets the user pick several photos
+  /// from the gallery in a single picker session instead of repeatedly
+  /// re-opening the picker to add one image at a time.
+  Future<bool> pickImages({ImageSource source = ImageSource.gallery}) async {
+    if (source != ImageSource.gallery) {
+      return pickImage(source: source);
+    }
+    final picked = await _picker.pickMultiImage(imageQuality: 90, maxWidth: 2048);
+    if (picked.isNotEmpty) {
+      final items = picked.map((file) => MediaItem(
+        id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
+        file: File(file.path),
+        type: MediaType.image,
+      ));
+      state = state.copyWith(media: [...state.media, ...items]);
       return true;
     }
     return false;
@@ -142,10 +177,6 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     state = state.copyWith(tags: state.tags.where((t) => t != tag).toList());
   }
 
-  void setCategory(String? categoryId) {
-    state = state.copyWith(categoryId: categoryId);
-  }
-
   // â”€â”€â”€ Objective â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   void setObjective(PostObjective? objective) {
@@ -200,13 +231,13 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
           final fields = fieldsJson.map((f) {
             FormFieldType mappedType = FormFieldType.shortText;
             switch (f['type']) {
-              case 'TEXT': mappedType = FormFieldType.shortText; break;
-              case 'TEXTAREA': mappedType = FormFieldType.longText; break;
+              case 'SHORT_TEXT': mappedType = FormFieldType.shortText; break;
+              case 'LONG_TEXT': mappedType = FormFieldType.longText; break;
               case 'EMAIL': mappedType = FormFieldType.email; break;
               case 'PHONE': mappedType = FormFieldType.phone; break;
               case 'RADIO': mappedType = FormFieldType.singleChoice; break;
               case 'CHECKBOX': mappedType = FormFieldType.multipleChoice; break;
-              case 'SELECT': mappedType = FormFieldType.dropDown; break;
+              case 'DROPDOWN': mappedType = FormFieldType.dropDown; break;
             }
             return FormFieldData(
               id: f['id'],
@@ -253,15 +284,15 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         for (int i = 0; i < state.leadForm!.fields.length; i++) {
            final field = state.leadForm!.fields[i];
            
-           String backendType = 'TEXT';
+           String backendType = 'SHORT_TEXT';
            switch(field.type) {
-              case FormFieldType.shortText: backendType = 'TEXT'; break;
-              case FormFieldType.longText: backendType = 'TEXTAREA'; break;
+              case FormFieldType.shortText: backendType = 'SHORT_TEXT'; break;
+              case FormFieldType.longText: backendType = 'LONG_TEXT'; break;
               case FormFieldType.email: backendType = 'EMAIL'; break;
               case FormFieldType.phone: backendType = 'PHONE'; break;
               case FormFieldType.singleChoice: backendType = 'RADIO'; break;
               case FormFieldType.multipleChoice: backendType = 'CHECKBOX'; break;
-              case FormFieldType.dropDown: backendType = 'SELECT'; break;
+              case FormFieldType.dropDown: backendType = 'DROPDOWN'; break;
            }
            
            await _apiClient.dio.post('/lead-form/field', data: {
@@ -292,7 +323,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     }
   }
 
-  // â”€â”€â”€ Schedule â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ———————————————————————————————————————————— Schedule ————————————————————————————————————————————
 
   void setPublishMode(PublishMode mode) {
     state = state.copyWith(publishMode: mode);
@@ -309,7 +340,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     state = state.copyWith(timezone: tz);
   }
 
-  // â”€â”€â”€ Publish â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ———————————————————————————————————————————— Publish ————————————————————————————————————————————
 
   Future<void> publish() async {
     state = state.copyWith(uploadStage: UploadStage.uploading, uploadProgress: 0.0, errorMessage: null);
@@ -416,15 +447,15 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
             for (int i = 0; i < state.leadForm!.fields.length; i++) {
                final field = state.leadForm!.fields[i];
                
-               String backendType = 'TEXT';
+               String backendType = 'SHORT_TEXT';
                switch(field.type) {
-                  case FormFieldType.shortText: backendType = 'TEXT'; break;
-                  case FormFieldType.longText: backendType = 'TEXTAREA'; break;
+                  case FormFieldType.shortText: backendType = 'SHORT_TEXT'; break;
+                  case FormFieldType.longText: backendType = 'LONG_TEXT'; break;
                   case FormFieldType.email: backendType = 'EMAIL'; break;
                   case FormFieldType.phone: backendType = 'PHONE'; break;
                   case FormFieldType.singleChoice: backendType = 'RADIO'; break;
                   case FormFieldType.multipleChoice: backendType = 'CHECKBOX'; break;
-                  case FormFieldType.dropDown: backendType = 'SELECT'; break;
+                  case FormFieldType.dropDown: backendType = 'DROPDOWN'; break;
                }
                
                await _apiClient.dio.post('/lead-form/field', data: {
@@ -458,7 +489,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         if (state.isHighlightTitle) 'highlightAnimation': state.highlightAnimation,
         if (state.isHighlightTitle && state.highlightIcon != null) 'highlightIcon': state.highlightIcon,
         'publishNow': state.publishMode == PublishMode.now,
-        'publishAt': state.scheduledAt?.toIso8601String(),
+        'publishAt': state.scheduledAt?.toUtc().toIso8601String(),
         'timezone': state.publishMode == PublishMode.now ? null : state.timezone,
         'media': uploadedMedia,
         'leadFormId': leadFormId,

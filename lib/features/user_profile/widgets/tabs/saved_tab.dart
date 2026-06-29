@@ -1,59 +1,135 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/theme/app_spacing.dart';
 import '../../providers/user_profile_provider.dart';
-import '../vault/save_item_card.dart';
+import '../../../explore/screens/explore_post_detail_screen.dart';
+import '../../../home/widgets/video_player_widget.dart';
 
 class SavedTab extends ConsumerWidget {
   const SavedTab({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(userProfileProvider);
-    final savedPosts = state.savedPosts;
+    final savedPosts = ref.watch(userProfileProvider).savedPosts;
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (savedPosts.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 80),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.bookmark_border_rounded, size: 64, color: context.colors.textTertiary),
-                    const SizedBox(height: AppSpacing.md),
-                    Text('No saved posts yet', style: AppTypography.titleMedium),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text('Save posts to build your inspiration board', 
-                      style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+    if (savedPosts.isEmpty) {
+      return SizedBox(
+        height: 300,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.bookmark_border_rounded,
+                size: 48,
+                color: context.colors.textTertiary,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'No saved posts yet',
+                style: AppTypography.bodyMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-            )
-          else ...[
-            MasonryGridView.count(
-              crossAxisCount: 2,
-              mainAxisSpacing: AppSpacing.sm,
-              crossAxisSpacing: AppSpacing.sm,
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm).copyWith(bottom: 120),
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: savedPosts.length,
-              itemBuilder: (context, index) {
-                final item = savedPosts[index];
-                return SaveItemCard(item: item);
-              },
-            ),
-          ],
-        ],
+              const SizedBox(height: 4),
+              Text(
+                'Posts you save will appear here',
+                style: AppTypography.bodySmall.copyWith(
+                  color: context.colors.textTertiary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      shrinkWrap: true,
+      padding: const EdgeInsets.only(bottom: 120),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+        childAspectRatio: 1.0,
       ),
+      itemCount: savedPosts.length,
+      itemBuilder: (context, index) {
+        final item = savedPosts[index];
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ExplorePostDetailScreen(postId: item.id),
+              ),
+            );
+          },
+          child: Container(
+            color: context.colors.borderLight,
+            child: ClipRRect(
+              borderRadius: BorderRadius.zero,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (item.isVideo && item.videoUrl != null && item.videoUrl!.isNotEmpty)
+                    VideoPlayerWidget(
+                      videoUrl: item.videoUrl!,
+                      aspectRatio: 1,
+                      placeholderUrl: item.imageUrl,
+                      allowInteraction: false,
+                    )
+                  else
+                    Image.network(
+                      item.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        color: context.colors.borderLight,
+                        child: Icon(
+                          Icons.broken_image_rounded,
+                          color: context.colors.textTertiary,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    height: 24,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.15),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (item.isVideo)
+                    const Positioned(
+                      top: 6,
+                      right: 6,
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

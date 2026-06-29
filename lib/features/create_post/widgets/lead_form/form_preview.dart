@@ -20,7 +20,7 @@ class _FormPreviewState extends State<FormPreview> {
 
   @override
   Widget build(BuildContext context) {
-    final fields = widget.leadForm.fields;
+    final fields = widget.leadForm.sortedFields;
 
     return Dialog(
       backgroundColor: Colors.transparent,

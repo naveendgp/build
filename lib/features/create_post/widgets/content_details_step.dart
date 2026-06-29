@@ -4,7 +4,6 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import 'tag_input.dart';
-import 'category_selector.dart';
 
 class ContentDetailsStep extends StatelessWidget {
   final String title;
@@ -15,6 +14,7 @@ class ContentDetailsStep extends StatelessWidget {
   final String? highlightIcon;
   final String description;
   final List<String> tags;
+  // The brand's own category, pulled from their profile — not user-editable here.
   final String? categoryId;
   final ValueChanged<String> onTitleChanged;
   final VoidCallback onToggleHighlight;
@@ -25,7 +25,6 @@ class ContentDetailsStep extends StatelessWidget {
   final ValueChanged<String> onDescriptionChanged;
   final ValueChanged<String> onAddTag;
   final ValueChanged<String> onRemoveTag;
-  final ValueChanged<String?> onCategoryChanged;
 
   const ContentDetailsStep({
     super.key,
@@ -47,7 +46,6 @@ class ContentDetailsStep extends StatelessWidget {
     required this.onDescriptionChanged,
     required this.onAddTag,
     required this.onRemoveTag,
-    required this.onCategoryChanged,
   });
 
   @override
@@ -58,7 +56,11 @@ class ContentDetailsStep extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Title Section
-          _SectionLabel(label: 'Title'),
+          _SectionLabel(
+            label: 'Title',
+            infoMessage: 'Add a short, clear headline to let people know what your '
+                'post is about. Keep it concise — it may not appear in every placement.',
+          ),
           const SizedBox(height: AppSpacing.sm),
           _TitleInput(
             title: title,
@@ -96,7 +98,11 @@ class ContentDetailsStep extends StatelessWidget {
           ],
           
           // Description Section
-          _SectionLabel(label: 'Description'),
+          _SectionLabel(
+            label: 'Description',
+            infoMessage: 'Tell people more about your post — the story, offer, or details '
+                'behind it. This appears alongside your title to give context.',
+          ),
           const SizedBox(height: AppSpacing.sm),
           _DescriptionInput(
             description: description,
@@ -111,15 +117,7 @@ class ContentDetailsStep extends StatelessWidget {
             tags: tags,
             onAdd: onAddTag,
             onRemove: onRemoveTag,
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          
-          // Category Section
-          _SectionLabel(label: 'Category'),
-          const SizedBox(height: AppSpacing.sm),
-          CategorySelector(
-            selectedId: categoryId,
-            onChanged: onCategoryChanged,
+            categoryId: categoryId,
           ),
         ],
       ),
@@ -129,12 +127,42 @@ class ContentDetailsStep extends StatelessWidget {
 
 class _SectionLabel extends StatelessWidget {
   final String label;
-  const _SectionLabel({required this.label});
+  final String? infoMessage;
+  const _SectionLabel({required this.label, this.infoMessage});
+
   @override
   Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          label,
+          style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+        ),
+        if (infoMessage != null) ...[
+          const SizedBox(width: AppSpacing.xs),
+          GestureDetector(
+            onTap: () {
+              Haptics.light();
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: context.colors.card,
+                  title: Text(label, style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+                  content: Text(infoMessage!, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: Text('Got it', style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
+                    ),
+                  ],
+                ),
+              );
+            },
+            child: Icon(Icons.info_outline_rounded, size: 16, color: context.colors.textTertiary),
+          ),
+        ],
+      ],
     );
   }
 }

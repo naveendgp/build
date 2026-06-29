@@ -90,10 +90,10 @@ class FeedPost {
       brandId: brand['id'] ?? '',
       brandName: brand['name'] ?? 'Unknown Brand',
       brandAvatar: ApiClient.resolveMediaUrl(brand['logoUrl']),
-      isVerified: brand['isVerified'] ?? false,
+      isVerified: brand['verificationStatus'] == 'VERIFIED' || brand['verificationStatus'] == 'Verified',
       mediaUrl: ApiClient.resolveMediaUrl(mUrl),
       videoUrl: vUrl != null ? ApiClient.resolveMediaUrl(vUrl) : null,
-      aspectRatio: (json['aspectRatio'] ?? 1.2).toDouble(),
+      aspectRatio: _parseAspectRatio(json['aspectRatio']),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       tags: List<String>.from(json['tags'] ?? []),
@@ -117,6 +117,18 @@ class FeedPost {
       highlightAnimation: json['highlightAnimation'],
       highlightIcon: json['highlightIcon'],
     );
+  }
+
+  static double _parseAspectRatio(dynamic val) {
+    if (val == null) return 1.2;
+    if (val is num) return val.toDouble();
+    if (val is String) {
+      if (val == 'SQUARE') return 1.0;
+      if (val == 'PORTRAIT') return 0.8;
+      if (val == 'LANDSCAPE') return 1.77;
+      return double.tryParse(val) ?? 1.2;
+    }
+    return 1.2;
   }
 
   static String _formatTimestamp(String isoDate) {

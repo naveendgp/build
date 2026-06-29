@@ -1,10 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_spacing.dart';
-import '../../core/theme/app_typography.dart';
 import '../../core/utils/haptics.dart';
 import 'providers/brand_profile_provider.dart';
 import 'widgets/brand_hero_header.dart';
@@ -15,9 +15,10 @@ import '../brand_profile/widgets/brand_gallery_tab.dart';
 import '../brand_profile/widgets/brand_quicksite_tab.dart';
 import '../reviews/presentation/screens/brand_reviews_tab.dart';
 import '../lead_management/screens/lead_dashboard_screen.dart' as lyket_lead;
-import '../command_center/screens/command_center_screen.dart';
 import '../../core/network/api_client.dart';
 import '../messaging/screens/chat_screen.dart';
+import '../auth/providers/auth_provider.dart';
+import '../home/widgets/bottom_nav_dock.dart';
 
 class BrandProfileScreen extends ConsumerStatefulWidget {
   final String brandId;
@@ -50,6 +51,14 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     } else if (_scrollCtrl.offset <= 200 && _isScrolled) {
       setState(() => _isScrolled = false);
     }
+  }
+
+  void _navTo(int index) {
+    if (index == 0) context.go('/home');
+    if (index == 1) context.go('/explore');
+    if (index == 2) context.push('/create');
+    if (index == 3) context.push('/messages');
+    if (index == 4) return;
   }
 
   @override
@@ -88,6 +97,9 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
 
     final profile = state.profile!;
     final showQuicksite = state.quicksite != null;
+    
+    final authState = ref.watch(authProvider);
+    final isBrand = authState.loggedInRole == UserRole.brand;
 
     final tabs = ['Posts', 'Gallery'];
     if (showQuicksite) tabs.add('Quicksite');
@@ -101,9 +113,13 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
       )),
     ];
     if (showQuicksite) {
-      tabViews.add(_buildTabWrapper(BrandQuicksiteTab(quicksiteData: state.quicksite!)));
+      tabViews.add(_buildTabWrapper(BrandQuicksiteTab(
+        quicksiteData: state.quicksite!,
+        isOwner: profile.isOwner,
+        onEdit: () => context.push('/settings/brand-profile'),
+      )));
     }
-    tabViews.add(_buildTabWrapper(BrandReviewsTab(brandId: widget.brandId, isOwner: profile.isOwner)));
+    tabViews.add(_buildTabWrapper(BrandReviewsTab(brandId: profile.id, isOwner: profile.isOwner)));
 
     return DefaultTabController(
       length: tabs.length,
@@ -119,8 +135,22 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                   SliverToBoxAdapter(
                     child: Column(
                       children: [
-                        if (!profile.isOwner) BrandActionButtons(
+                        BrandActionButtons(
                           profile: profile,
+                          isBrand: isBrand,
+                          isOwner: profile.isOwner,
+                          onEditProfileTap: () {
+                            Haptics.selection();
+                            context.push('/settings/brand-profile');
+                          },
+                          onLeadCenterTap: () {
+                            Haptics.selection();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (context) => const lyket_lead.LeadDashboardScreen(),
+                              ),
+                            );
+                          },
                           onFollowToggled: () {
                             // TODO: implement follow API call
                           },
@@ -139,6 +169,24 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('Failed to start conversation. Please try again.')),
+                              );
+                            }
+                          },
+                          onWebsiteTap: () async {
+                            final url = profile.websiteUrl;
+                            if (url != null && url.isNotEmpty) {
+                              final uri = Uri.parse(url.startsWith('http') ? url : 'https://$url');
+                              if (await canLaunchUrl(uri)) {
+                                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                              } else {
+                                if (!context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not launch website.')),
+                                );
+                              }
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('No website listed for this brand.')),
                               );
                             }
                           },
@@ -196,71 +244,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
             ),
           ),
 
-          // Owner Tools Floating Dock (if owner)
+          // Bottom Nav Dock
           if (profile.isOwner)
             Positioned(
-              bottom: MediaQuery.of(context).padding.bottom + 20,
-              left: 0, right: 0,
-              child: Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(100),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.75),
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.15), width: 0.5),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              Haptics.selection();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const CommandCenterScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'Edit Profile', 
-                              style: AppTypography.buttonSmall.copyWith(
-                                color: Colors.white, 
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                              )
-                            ),
-                          ),
-                          const SizedBox(width: 24),
-                          Container(width: 1, height: 14, color: Colors.white.withValues(alpha: 0.2)),
-                          const SizedBox(width: 24),
-                          GestureDetector(
-                            onTap: () {
-                              Haptics.selection();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const lyket_lead.LeadDashboardScreen(),
-                                ),
-                              );
-                            },
-                            child: Text(
-                              'Lead Center', 
-                              style: AppTypography.buttonSmall.copyWith(
-                                color: Colors.white, 
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.3,
-                              )
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              bottom: 0, left: 0, right: 0,
+              child: BottomNavDock(currentIndex: 4, onTap: _navTo),
             ),
         ],
       ),
@@ -296,9 +284,9 @@ class _BrandTabBarDelegate extends SliverPersistentHeaderDelegate {
   _BrandTabBarDelegate({required this.child});
 
   @override
-  double get minExtent => 60.0;
+  double get minExtent => 48.0;
   @override
-  double get maxExtent => 60.0;
+  double get maxExtent => 48.0;
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {

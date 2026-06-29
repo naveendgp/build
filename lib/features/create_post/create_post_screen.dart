@@ -69,45 +69,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         switch (step) {
           case CreateStep.media:
             return MediaSelectionStep(
-              onPickImage: () async {
-                final success = await notifier.pickImage();
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Media added! Tap Next to continue or add more.', style: TextStyle(color: context.colors.textPrimary)),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: context.colors.card,
-                      shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
-                      action: SnackBarAction(
-                        label: 'Next',
-                        textColor: context.colors.primaryAccent,
-                        onPressed: () {
-                          if (mounted) _onNextStep(state, notifier);
-                        },
-                      ),
-                    ),
-                  );
-                }
+              // Instagram-style: pick one or many photos in a single gallery
+              // session, then move on automatically — no manual "Next" tap.
+              onPickImages: () async {
+                final success = await notifier.pickImages();
+                if (success && mounted) _onNextStep(state, notifier);
               },
               onPickVideo: () async {
                 final success = await notifier.pickVideo();
-                if (success && mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Video added! Tap Next to continue or add more.', style: TextStyle(color: context.colors.textPrimary)),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: context.colors.card,
-                      shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
-                      action: SnackBarAction(
-                        label: 'Next',
-                        textColor: context.colors.primaryAccent,
-                        onPressed: () {
-                          if (mounted) _onNextStep(state, notifier);
-                        },
-                      ),
-                    ),
-                  );
-                }
+                if (success && mounted) _onNextStep(state, notifier);
               },
             );
           case CreateStep.preview:
@@ -156,6 +126,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   notifier.removeMedia(state.media[index].id);
                 }
               },
+              onAddMore: () => notifier.pickImages(),
             );
           case CreateStep.details:
               return ContentDetailsStep(
@@ -177,7 +148,6 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 onDescriptionChanged: notifier.setDescription,
                 onAddTag: notifier.addTag,
                 onRemoveTag: notifier.removeTag,
-                onCategoryChanged: notifier.setCategory,
               );
           case CreateStep.objective:
             return ObjectiveStep(
@@ -231,6 +201,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (state.currentStep == CreateStep.media && !state.hasMedia) canProceed = false;
     if (state.currentStep == CreateStep.details && !state.hasContent) canProceed = false;
     if (state.currentStep == CreateStep.objective && state.objective == null) canProceed = false;
+    if (state.currentStep == CreateStep.schedule && state.publishMode == PublishMode.scheduled && state.scheduledAt == null) canProceed = false;
     if (state.currentStep.index >= CreateStep.cta.index) {
       if (state.objective == PostObjective.traffic ||
           state.objective == PostObjective.conversions ||

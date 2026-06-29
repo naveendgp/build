@@ -24,10 +24,12 @@ class LeadDashboardScreen extends ConsumerWidget {
     final notifier = ref.read(leadDashboardProvider.notifier);
     final statsAsync = ref.watch(brandLeadStatsProvider);
 
-    return Scaffold(
-      backgroundColor: context.colors.background,
-      appBar: AppBar(
-        backgroundColor: context.colors.surface.withValues(alpha: 0.9),
+    return Theme(
+      data: AppTheme.darkTheme,
+      child: Scaffold(
+        backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.background,
+        appBar: AppBar(
+          backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.surface.withValues(alpha: 0.9),
         flexibleSpace: ClipRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -93,9 +95,9 @@ class LeadDashboardScreen extends ConsumerWidget {
           );
         },
       ),
+      ),
     );
   }
-
   Widget _buildActiveTabContent(LeadDashboardTab tab) {
     switch (tab) {
       case LeadDashboardTab.forms:

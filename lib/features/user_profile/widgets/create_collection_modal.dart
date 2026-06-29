@@ -5,9 +5,14 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../providers/collections_provider.dart';
+import '../../home/models/feed_models.dart';
 
 class CreateCollectionModal extends ConsumerStatefulWidget {
-  const CreateCollectionModal({super.key});
+  // When opened from "Save to Collection" with a "New" shortcut, the post the
+  // user was trying to save gets added to the collection right after it's created.
+  final FeedPost? initialPost;
+
+  const CreateCollectionModal({super.key, this.initialPost});
 
   @override
   ConsumerState<CreateCollectionModal> createState() => _CreateCollectionModalState();
@@ -77,9 +82,17 @@ class _CreateCollectionModalState extends ConsumerState<CreateCollectionModal> {
                 final name = _nameController.text.trim();
                 if (name.isNotEmpty) {
                   Haptics.selection();
-                  
+
                   try {
-                    await ref.read(collectionsProvider.notifier).createCollection(name);
+                    final notifier = ref.read(collectionsProvider.notifier);
+                    final newCollection = await notifier.createCollection(name);
+                    if (widget.initialPost != null) {
+                      await notifier.togglePostInCollection(
+                        newCollection.id,
+                        widget.initialPost,
+                        isCurrentlyInCollection: false,
+                      );
+                    }
                     if (context.mounted) {
                       Navigator.pop(context);
                     }

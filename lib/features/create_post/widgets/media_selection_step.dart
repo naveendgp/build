@@ -8,12 +8,12 @@ import '../../../core/utils/haptics.dart';
 /// Premium media selection dropzone with animated dashed border,
 /// radial glow background, and floating glass action buttons.
 class MediaSelectionStep extends StatefulWidget {
-  final VoidCallback onPickImage;
+  final VoidCallback onPickImages;
   final VoidCallback onPickVideo;
 
   const MediaSelectionStep({
     super.key,
-    required this.onPickImage,
+    required this.onPickImages,
     required this.onPickVideo,
   });
 
@@ -88,7 +88,7 @@ class _MediaSelectionStepState extends State<MediaSelectionStep>
     return GestureDetector(
       onTap: () {
         Haptics.light();
-        widget.onPickImage();
+        widget.onPickImages();
       },
       child: Stack(
         alignment: Alignment.center,
@@ -206,7 +206,7 @@ class _MediaSelectionStepState extends State<MediaSelectionStep>
           label: 'Photo',
           onTap: () {
             Haptics.light();
-            widget.onPickImage();
+            widget.onPickImages();
           },
         ),
         const SizedBox(width: AppSpacing.md),

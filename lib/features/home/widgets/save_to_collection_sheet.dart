@@ -63,7 +63,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (context) => const CreateCollectionModal(),
+                      builder: (context) => CreateCollectionModal(initialPost: post),
                     );
                   },
                   icon: const Icon(Icons.add_rounded, size: 20),

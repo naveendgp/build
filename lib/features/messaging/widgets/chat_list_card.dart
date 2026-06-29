@@ -110,7 +110,7 @@ class ChatListCard extends StatelessWidget {
                               Icon(
                                 Icons.verified_rounded,
                                 size: 14,
-                                color: context.colors.primaryAccent,
+                                color: Colors.red,
                               ),
                             ],
                           ],

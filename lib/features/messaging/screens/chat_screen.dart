@@ -12,8 +12,9 @@ import '../widgets/message_bubble.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String conversationId;
+  final String? prefilledMessage;
 
-  const ChatScreen({super.key, required this.conversationId});
+  const ChatScreen({super.key, required this.conversationId, this.prefilledMessage});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -85,6 +86,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ChatComposer(
                 onSend: (text) => notifier.sendMessage(text),
                 isTyping: chatState.isTyping,
+                initialText: widget.prefilledMessage,
               ),
             ],
           ),

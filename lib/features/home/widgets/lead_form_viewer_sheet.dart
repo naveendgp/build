@@ -119,6 +119,16 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     }
   }
 
+  bool _isPrebuiltField(dynamic field) {
+    final type = field['type']?.toString().toUpperCase();
+    final label = field['label']?.toString();
+    
+    if (type == 'EMAIL' || type == 'PHONE') return true;
+    if (label == 'What is your gender?' || label == 'What is your job title?' || label == 'Company Name') return true;
+    
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
@@ -183,7 +193,11 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   Widget _buildForm(double bottomInset) {
     final title = _formData?['title'] ?? 'Contact Us';
     final intro = _formData?['intro'] ?? '';
-    final fields = _formData?['fields'] as List<dynamic>? ?? [];
+    
+    final rawFields = _formData?['fields'] as List<dynamic>? ?? [];
+    final customFields = rawFields.where((f) => !_isPrebuiltField(f)).toList();
+    final prebuiltFields = rawFields.where((f) => _isPrebuiltField(f)).toList();
+    final fields = [...customFields, ...prebuiltFields];
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),

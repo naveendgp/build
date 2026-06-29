@@ -16,8 +16,19 @@ import '../../features/create_post/create_post_screen.dart';
 import '../../features/user_profile/user_profile_screen.dart';
 import '../../features/messaging/screens/messaging_home_screen.dart';
 import '../../features/messaging/screens/chat_screen.dart';
+import '../../features/settings/screens/settings_home_screen.dart';
+import '../../features/settings/screens/privacy_safety_screen.dart';
+import '../../features/settings/screens/preferences_screen.dart';
+import '../../features/settings/screens/brand_profile_settings_screen.dart';
+import '../../features/settings/screens/account_information_screen.dart';
+import '../../features/settings/screens/blocked_brands_screen.dart';
+import '../../features/settings/screens/archived_posts_screen.dart';
+import '../../features/help_support/screens/help_support_home_screen.dart';
+import '../../features/help_support/screens/faq_screen.dart';
+import '../../features/help_support/screens/raise_ticket_screen.dart';
+import '../../features/help_support/screens/ticket_detail_screen.dart';
 import '../storage/secure_storage.dart';
-
+import '../../features/brand_dashboard/screens/brand_dashboard_screen.dart';
 class AppRouter {
   AppRouter._();
 
@@ -273,9 +284,13 @@ class AppRouter {
         path: '/messages/:id',
         pageBuilder: (context, state) {
           final id = state.pathParameters['id']!;
+          final prefilled = state.uri.queryParameters['prefilled'];
           return CustomTransitionPage(
             key: state.pageKey,
-            child: ChatScreen(conversationId: id),
+            child: ChatScreen(
+              conversationId: id,
+              prefilledMessage: prefilled,
+            ),
             transitionsBuilder: (_, animation, secondaryAnimation, child) {
               return FadeTransition(
                 opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
@@ -311,6 +326,203 @@ class AppRouter {
           },
           transitionDuration: const Duration(milliseconds: 400),
         ),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const SettingsHomeScreen(),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+        routes: [
+          GoRoute(
+            path: 'account',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const AccountInformationScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'privacy',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const PrivacySafetyScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'blocked-brands',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const BlockedBrandsScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'preferences',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const PreferencesScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'archived-posts',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const ArchivedPostsScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'brand-profile',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const BrandProfileSettingsScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/brand-dashboard',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const BrandDashboardScreen(),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+      GoRoute(
+        path: '/help',
+        pageBuilder: (context, state) {
+          final tabStr = state.uri.queryParameters['tab'];
+          final initialTab = tabStr == 'tickets' ? 1 : 0;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: HelpSupportHomeScreen(initialTabIndex: initialTab),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+            transitionDuration: const Duration(milliseconds: 300),
+          );
+        },
+        routes: [
+          GoRoute(
+            path: 'faq',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const FaqScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'ticket',
+            pageBuilder: (context, state) {
+              final type = state.uri.queryParameters['type'] ?? 'LIVE_CHAT';
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: RaiseTicketScreen(initialType: type),
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+              );
+            },
+          ),
+          GoRoute(
+            path: 'ticket/:id',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: TicketDetailScreen(ticketId: state.pathParameters['id']!),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+        ],
       ),
     ],
   );

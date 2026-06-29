@@ -155,6 +155,8 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
               cursorColor: context.colors.primaryAccent,
               cursorWidth: 1.5,
               decoration: InputDecoration(
+                filled: false,
+                fillColor: Colors.transparent,
                 border: InputBorder.none,
                 focusedBorder: InputBorder.none,
                 enabledBorder: InputBorder.none,

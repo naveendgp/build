@@ -14,9 +14,9 @@ class RatingDistributionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1D22).withValues(alpha: 0.6),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         children: [
@@ -58,10 +58,10 @@ class RatingDistributionCard extends StatelessWidget {
           
           // Divider
           Container(
-            height: 100,
-            width: 1,
-            color: Colors.white.withValues(alpha: 0.08),
-            margin: const EdgeInsets.symmetric(horizontal: 20),
+              height: 100,
+              width: 1,
+              color: context.colors.border,
+              margin: const EdgeInsets.symmetric(horizontal: 20),
           ),
           
           // Distribution Bars
@@ -91,10 +91,10 @@ class RatingDistributionCard extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                            value: ratio,
-                            minHeight: 8,
-                            backgroundColor: Colors.white.withValues(alpha: 0.05),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFB800)),
+                              value: ratio,
+                              minHeight: 8,
+                              backgroundColor: context.colors.border,
+                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFB800)),
                           ),
                         ),
                       ),

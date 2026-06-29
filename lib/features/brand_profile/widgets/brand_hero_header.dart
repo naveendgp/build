@@ -3,231 +3,16 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../models/brand_profile_models.dart';
+import 'followers_bottom_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../settings/providers/settings_provider.dart';
 
-class BrandHeroHeader extends StatelessWidget {
+class BrandHeroHeader extends ConsumerWidget {
   final BrandProfile profile;
 
-  const BrandHeroHeader({
-    super.key,
-    required this.profile,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Cover Image
-              Container(
-                height: 240,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  image: profile.coverUrl.isNotEmpty 
-                      ? DecorationImage(
-                          image: NetworkImage(profile.coverUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  color: profile.coverUrl.isEmpty ? context.colors.surface : null,
-                ),
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withValues(alpha: 0.3),
-                        Colors.transparent,
-                        Colors.black.withValues(alpha: 0.4),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              
-              // Profile Details
-              Padding(
-                padding: const EdgeInsets.only(
-                  left: AppSpacing.md,
-                  right: AppSpacing.md,
-                  top: 60, // Space for the overlapping avatar
-                  bottom: AppSpacing.lg,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                profile.name,
-                                style: AppTypography.headlineLarge.copyWith(
-                                  color: context.colors.textPrimary,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (profile.username.isNotEmpty)
-                                Text(
-                                  profile.username.startsWith('@') ? profile.username : '@${profile.username}',
-                                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
-                                ),
-                            ],
-                          ),
-                        ),
-                        if (profile.isVerified) ...[
-                          const SizedBox(width: AppSpacing.xs),
-                          Icon(
-                            Icons.verified,
-                            color: context.colors.secondaryAccent,
-                            size: 24,
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (profile.tagline != null) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        profile.tagline!,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: context.colors.textSecondary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppSpacing.lg),
-                    _buildStatsRow(context),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (profile.bio != null)
-                      Text(
-                        profile.bio!,
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: context.colors.textPrimary,
-                          height: 1.5,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          
-          // Overlapping Avatar
-          Positioned(
-            top: 240 - 56, // 240 is cover height, 56 is half of avatar radius
-            left: AppSpacing.md,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: context.colors.background,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Container(
-                width: 104,
-                height: 104,
-                decoration: BoxDecoration(
-                  color: context.colors.card,
-                  shape: BoxShape.circle,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: profile.logoUrl.isNotEmpty 
-                    ? Image.network(
-                        profile.logoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: context.colors.primaryAccent.withValues(alpha: 0.1),
-                            child: Center(
-                              child: Text(
-                                profile.name.isNotEmpty ? profile.name[0].toUpperCase() : 'B',
-                                style: AppTypography.headlineMedium.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: context.colors.primaryAccent.withValues(alpha: 0.1),
-                        child: Center(
-                          child: Text(
-                            profile.name.isNotEmpty ? profile.name[0].toUpperCase() : 'B',
-                            style: AppTypography.headlineMedium.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsRow(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.colors.borderLight),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildStatItem(context, 'Followers', _formatCount(profile.followerCount)),
-          _buildVerticalDivider(context),
-          _buildStatItem(context, 'Posts', _formatCount(profile.postCount)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(BuildContext context, String label, String value) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: AppTypography.titleLarge.copyWith(
-            color: context.colors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppTypography.labelMedium.copyWith(
-            color: context.colors.textSecondary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildVerticalDivider(BuildContext context) {
-    return Container(
-      height: 32,
-      width: 1,
-      color: context.colors.border,
-    );
-  }
+  const BrandHeroHeader({super.key, required this.profile});
 
   String _formatCount(int count) {
     if (count >= 1000000) {
@@ -236,5 +21,251 @@ class BrandHeroHeader extends StatelessWidget {
       return '${(count / 1000).toStringAsFixed(1)}K';
     }
     return count.toString();
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isUser = ref.watch(authProvider).loggedInRole == UserRole.user;
+    
+    return SliverToBoxAdapter(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 240 + 52,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Cover Image
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 240,
+                  child: Image.network(
+                    profile.coverUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      color: context.colors.surface,
+                    ),
+                  ),
+                ),
+                // Subtle gradient for text legibility if needed later, omitted to keep clean unless specified
+                // Avatar
+                Positioned(
+                  bottom: 0,
+                  left: 16,
+                  child: Container(
+                    width: 104,
+                    height: 104,
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: context.colors.background,
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: Image.network(
+                        profile.logoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: context.colors.surface,
+                          alignment: Alignment.center,
+                          child: Text(
+                            profile.name.isNotEmpty ? profile.name[0].toUpperCase() : '?',
+                            style: AppTypography.titleLarge.copyWith(
+                              color: context.colors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                // More Options Button
+                if (isUser)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          backgroundColor: context.colors.card,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                          ),
+                          builder: (context) {
+                            return SafeArea(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: 40,
+                                    height: 4,
+                                    decoration: BoxDecoration(
+                                      color: context.colors.border,
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  ListTile(
+                                    leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
+                                    title: Text(
+                                      'Not Interested',
+                                      style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('We will show fewer posts from this brand.')),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.flag_outlined, color: context.colors.error),
+                                    title: Text(
+                                      'Report',
+                                      style: AppTypography.bodyLarge.copyWith(
+                                        color: context.colors.error,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      context.push('/help/ticket?type=LIVE_CHAT');
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.block_outlined, color: context.colors.error),
+                                    title: Text(
+                                      'Block Brand',
+                                      style: AppTypography.bodyLarge.copyWith(
+                                        color: context.colors.error,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    onTap: () {
+                                      final messenger = ScaffoldMessenger.of(context);
+                                      Navigator.pop(context);
+                                      ref.read(blockedBrandsProvider.notifier).blockBrand(profile.id);
+                                      messenger.showSnackBar(
+                                        const SnackBar(content: Text('Brand blocked successfully.')),
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.more_vert_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      profile.name,
+                      style: AppTypography.titleLarge.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                    if (profile.isVerified) ...[
+                      const SizedBox(width: AppSpacing.xs),
+                      Icon(
+                        Icons.verified,
+                        size: 20,
+                        color: Colors.red,
+                      ),
+                    ],
+                  ],
+                ),
+                Text(
+                  '@${profile.username}',
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: context.colors.textSecondary,
+                  ),
+                ),
+                if (profile.bio != null && profile.bio!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    profile.bio!,
+                    style: AppTypography.bodySmall.copyWith(
+                      color: context.colors.textPrimary,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    _buildStatItem(
+                      context,
+                      count: _formatCount(profile.postCount),
+                      label: 'Posts',
+                    ),
+                    const SizedBox(width: 24),
+                    GestureDetector(
+                      onTap: () => showFollowersBottomSheet(context, profile.id),
+                      behavior: HitTestBehavior.opaque,
+                      child: _buildStatItem(
+                        context,
+                        count: _formatCount(profile.followerCount),
+                        label: 'Followers',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatItem(BuildContext context, {required String count, required String label}) {
+    return Row(
+      children: [
+        Text(
+          count,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: context.colors.textPrimary,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: AppTypography.bodyMedium.copyWith(
+            color: context.colors.textSecondary,
+          ),
+        ),
+      ],
+    );
   }
 }

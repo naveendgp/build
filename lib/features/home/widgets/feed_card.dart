@@ -6,16 +6,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/theme/theme_provider.dart';
 import '../models/feed_models.dart';
 import '../../comments/widgets/comment_sheet.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/feed_provider.dart';
 import 'interaction_bar.dart';
-import 'post_cta_button.dart';
+import 'premium_post_cta_button.dart';
 import 'lead_form_viewer_sheet.dart';
 import 'highlight_banner.dart';
 import 'video_player_widget.dart';
+import 'media_carousel.dart';
+import '../../../core/network/api_client.dart';
 
 /// Premium immersive single-feed card — cinematic edge-to-edge design
 class FeedCard extends ConsumerWidget {
@@ -26,6 +27,7 @@ class FeedCard extends ConsumerWidget {
   final VoidCallback onTap;
   final VoidCallback onShare;
   final VoidCallback onReminder;
+  final bool isDetailMode;
 
   const FeedCard({
     super.key,
@@ -36,6 +38,7 @@ class FeedCard extends ConsumerWidget {
     required this.onTap,
     required this.onShare,
     required this.onReminder,
+    this.isDetailMode = false,
   });
 
   @override
@@ -65,21 +68,28 @@ class FeedCard extends ConsumerWidget {
             _buildHeader(context, ref),
             // AI reason
             if (post.aiReason != null) _buildAiReason(context),
-            // Highlight Banner
+            // Highlight Banner — edge-to-edge, flush against header above and media below
             if (post.isHighlighted && post.highlightMessage != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 10, 12, 0),
-                child: HighlightBanner(
-                  text: post.highlightMessage!,
-                  theme: post.highlightTheme,
-                  animation: post.highlightAnimation,
-                  icon: post.highlightIcon,
-                ),
+              HighlightBanner(
+                text: post.highlightMessage!,
+                theme: post.highlightTheme,
+                animation: post.highlightAnimation,
+                icon: post.highlightIcon,
               ),
             // Media
             _buildMedia(),
+            if (post.ctaLabel != null &&
+                post.ctaLabel!.trim().toLowerCase() != 'no button' &&
+                post.ctaLabel!.trim().toLowerCase() != 'none' &&
+                post.ctaType != 'NONE') ...[
+              const SizedBox(height: 8),
+              PremiumPostCTAButton(
+                label: post.ctaLabel!,
+                onTap: () => _handleCtaTap(context, ref),
+              ),
+            ],
             // Bottom info
-            _buildFooter(context),
+            _buildFooter(context, ref),
           ],
         ),
       ),
@@ -91,6 +101,7 @@ class FeedCard extends ConsumerWidget {
     final isOwner =
         authState.loggedInRole == UserRole.brand &&
         authState.brandId == post.brandId;
+    final isBrand = authState.loggedInRole == UserRole.brand;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
@@ -155,7 +166,7 @@ class FeedCard extends ConsumerWidget {
                               Icon(
                                 Icons.verified_rounded,
                                 size: 14,
-                                color: context.colors.primaryAccent,
+                                color: Colors.red,
                               ),
                             ],
                           ],
@@ -175,7 +186,7 @@ class FeedCard extends ConsumerWidget {
             ),
           ),
           // Follow
-          if (!isOwner)
+          if (!isBrand)
             GestureDetector(
               onTap: onFollow,
               child: AnimatedContainer(
@@ -207,9 +218,9 @@ class FeedCard extends ConsumerWidget {
             ),
           const SizedBox(width: 4),
           // Menu
-          if (isOwner)
+          if (isOwner || authState.loggedInRole == UserRole.user)
             GestureDetector(
-              onTap: () => _showPostMenu(context, ref),
+              onTap: () => _showPostMenu(context, ref, isOwner: isOwner),
               child: Padding(
                 padding: EdgeInsets.all(6),
                 child: Icon(
@@ -224,7 +235,7 @@ class FeedCard extends ConsumerWidget {
     );
   }
 
-  void _showPostMenu(BuildContext context, WidgetRef ref) {
+  void _showPostMenu(BuildContext context, WidgetRef ref, {required bool isOwner}) {
     showModalBottomSheet(
       context: context,
       backgroundColor: context.colors.card,
@@ -245,81 +256,107 @@ class FeedCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              SizedBox(height: 12),
-              ListTile(
-                leading: Icon(
-                  Icons.delete_outline,
-                  color: context.colors.error,
+              const SizedBox(height: 12),
+              
+              if (isOwner) ...[
+                ListTile(
+                  leading: Icon(Icons.bar_chart_rounded, color: context.colors.textPrimary),
+                  title: Text('View Analytics', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/brand-dashboard');
+                  },
                 ),
-                title: Text(
-                  'Delete Post',
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: context.colors.error,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () async {
-                  Navigator.pop(context); // Close menu
-                  final confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: context.colors.card,
-                      title: Text(
-                        'Delete Post',
-                        style: AppTypography.titleMedium.copyWith(
-                          color: context.colors.textPrimary,
-                        ),
+                ListTile(
+                  leading: Icon(Icons.archive_outlined, color: context.colors.textPrimary),
+                  title: Text('Archive Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  onTap: () async {
+                    Navigator.pop(context); // Close menu
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: context.colors.card,
+                        title: Text('Archive Post?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+                        content: Text('This post will be removed from public feeds and brand profiles.\n\nAnalytics, leads, comments, and engagement data will be preserved.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('Cancel', style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary)),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('Archive Post', style: TextStyle(color: context.colors.primaryAccent, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
                       ),
-                      content: Text(
-                        'Are you sure you want to delete this post? This action cannot be undone.',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: Text(
-                            'Cancel',
-                            style: AppTypography.labelLarge.copyWith(
-                              color: context.colors.textSecondary,
-                            ),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: Text(
-                            'Delete',
-                            style: AppTypography.labelLarge.copyWith(
-                              color: context.colors.error,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                  if (confirm == true) {
-                    try {
-                      await ref.read(feedProvider.notifier).deletePost(post.id);
+                    );
+                    
+                    if (confirm == true) {
+                      await ref.read(feedProvider.notifier).archivePost(post.id);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Post deleted successfully'),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Failed to delete post'),
-                          ),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post archived successfully')));
                       }
                     }
-                  }
-                },
-              ),
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete_outline, color: context.colors.error),
+                  title: Text('Delete Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error, fontWeight: FontWeight.w600)),
+                  onTap: () async {
+                    Navigator.pop(context); // Close menu
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: context.colors.card,
+                        title: Text('Delete Post', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+                        content: Text('Are you sure you want to delete this post? This action cannot be undone.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: Text('Cancel', style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary)),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text('Delete', style: TextStyle(color: context.colors.error, fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirm == true) {
+                      await ref.read(feedProvider.notifier).deletePost(post.id);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+                      }
+                    }
+                  },
+                ),
+              ],
+              
+              if (!isOwner) ...[
+                ListTile(
+                  leading: Icon(Icons.share_outlined, color: context.colors.textPrimary),
+                  title: Text('Share Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                  onTap: () { Navigator.pop(context); onShare(); },
+                ),
+                if (!isDetailMode)
+                  ListTile(
+                    leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
+                    title: Text('Hide Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                    onTap: () {
+                      Navigator.pop(context);
+                      ref.read(feedProvider.notifier).markNotInterested(post.id);
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post hidden from your feed.')));
+                    },
+                  ),
+                ListTile(
+                  leading: Icon(Icons.report_outlined, color: context.colors.error),
+                  title: Text('Report Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/help/ticket?type=LIVE_CHAT');
+                  },
+                ),
+              ],
               const SizedBox(height: 24),
             ],
           ),
@@ -352,19 +389,21 @@ class FeedCard extends ConsumerWidget {
     );
   }
 
+  // Media is edge-to-edge (no side margins, no rounded corners) — it only
+  // sits at the card's own rounded edge when there's no header/banner above
+  // it, which the outer Card's Clip.antiAlias already handles.
   Widget _buildMedia() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(12, post.isHighlighted ? 0 : 10, 12, 0),
-      child: ClipRRect(
-        borderRadius: post.isHighlighted
-            ? const BorderRadius.vertical(bottom: Radius.circular(20))
-            : BorderRadius.circular(20),
-        child: (post.videoUrl != null && post.videoUrl!.isNotEmpty)
-            ? VideoPlayerWidget(
-                videoUrl: post.videoUrl!,
+    return (post.videoUrl != null && post.videoUrl!.isNotEmpty)
+        ? VideoPlayerWidget(
+            videoUrl: post.videoUrl!,
+            aspectRatio: post.aspectRatio,
+            placeholderUrl: post.mediaUrl,
+            initialPosition: post.bestFrameTimestamp,
+          )
+        : (post.carouselUrls != null && post.carouselUrls!.length > 1)
+            ? MediaCarousel(
+                imageUrls: post.carouselUrls!,
                 aspectRatio: post.aspectRatio,
-                placeholderUrl: post.mediaUrl,
-                initialPosition: post.bestFrameTimestamp,
               )
             : AspectRatio(
                 aspectRatio: 1 / post.aspectRatio,
@@ -401,12 +440,10 @@ class FeedCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-              ),
-      ),
-    );
+              );
   }
 
-  void _handleCtaTap(BuildContext context) async {
+  void _handleCtaTap(BuildContext context, WidgetRef ref) async {
     if (post.ctaType == 'OPEN_LEAD_FORM') {
       final formId = post.ctaPayload?['leadFormId'];
       if (formId != null) {
@@ -416,6 +453,34 @@ class FeedCard extends ConsumerWidget {
           formId,
           post.brandAvatar,
           post.brandName,
+        );
+      }
+    } else if (post.ctaType == 'OPEN_CHAT') {
+      final authState = ref.read(authProvider);
+      if (authState.brandId == post.brandId) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Users will be taken to a chat with you when they tap this!')),
+        );
+        return;
+      }
+      
+      try {
+        final api = ref.read(apiClientProvider);
+        final res = await api.dio.post('/conversations/start', data: {'brandId': post.brandId});
+        final conversationId = res.data['id'];
+        
+        final prefilledMessage = post.ctaPayload?['prefilledMessage'];
+        String route = '/messages/$conversationId';
+        if (prefilledMessage != null && prefilledMessage.toString().isNotEmpty) {
+          route += '?prefilled=${Uri.encodeComponent(prefilledMessage.toString())}';
+        }
+        
+        if (!context.mounted) return;
+        context.push(route);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to start conversation. Please try again.')),
         );
       }
     } else if (post.ctaType == 'OPEN_URL') {
@@ -463,111 +528,144 @@ class FeedCard extends ConsumerWidget {
     }
   }
 
-  Widget _buildFooter(BuildContext context) {
+  Widget _buildFooter(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final isBrand = authState.loggedInRole == UserRole.brand;
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title
+          ExpandablePostDescription(post: post),
+          const SizedBox(height: 12),
+          // Interaction bar
+          InteractionBar(
+            isLiked: post.isLiked,
+            isBookmarked: post.isBookmarked,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            shareCount: post.shareCount,
+            onLike: onLike,
+            onComment: () =>
+                CommentSheet.show(context, post.id, post.commentCount),
+            onBookmark: onBookmark,
+            onShare: onShare,
+            onReminder: onReminder,
+            // Saving posts is a user-only action — brands shouldn't see it.
+            showBookmark: !isBrand,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ExpandablePostDescription extends StatefulWidget {
+  final FeedPost post;
+
+  const ExpandablePostDescription({super.key, required this.post});
+
+  @override
+  State<ExpandablePostDescription> createState() => _ExpandablePostDescriptionState();
+}
+
+class _ExpandablePostDescriptionState extends State<ExpandablePostDescription> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Title
+        if (widget.post.title.isNotEmpty) ...[
           Text(
-            post.title,
+            widget.post.title,
             style: AppTypography.titleSmall.copyWith(
               color: context.colors.textPrimary,
               fontWeight: FontWeight.w600,
               fontSize: 15,
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+            maxLines: _isExpanded ? null : 1,
+            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
-          // Description
-          RichText(
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
+        ],
+        // Description
+        GestureDetector(
+          onTap: () {
+            if (!_isExpanded) {
+              setState(() => _isExpanded = true);
+            }
+          },
+          child: RichText(
+            maxLines: _isExpanded ? null : 1,
+            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
             text: TextSpan(
               children: [
                 TextSpan(
-                  text: post.description,
+                  text: widget.post.description,
                   style: AppTypography.bodyMedium.copyWith(
                     color: context.colors.textSecondary,
                     height: 1.4,
                   ),
                 ),
-                TextSpan(
-                  text: ' • ${post.timestamp}',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: context.colors.textTertiary,
+                if (!_isExpanded)
+                  TextSpan(
+                    text: ' ... more',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: context.colors.textTertiary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
               ],
             ),
           ),
-          const SizedBox(height: 10),
-          // Tags + CTA row
-          Row(
-            children: [
-              Expanded(
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: post.tags
-                      .take(3)
-                      .map(
-                        (tag) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.colors.surface,
-                            borderRadius: AppSpacing.borderRadiusFull,
-                            border: Border.all(
-                              color: context.colors.border,
-                              width: 0.5,
-                            ),
-                          ),
-                          child: Text(
-                            '#$tag',
-                            style: AppTypography.labelSmall.copyWith(
-                              color: context.colors.textSecondary,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-              ),
-              if (post.ctaLabel != null &&
-                  post.ctaLabel!.trim().toLowerCase() != 'no button' &&
-                  post.ctaLabel!.trim().toLowerCase() != 'none' &&
-                  post.ctaType != 'NONE')
-                PostCtaButton(
-                  label: post.ctaLabel!,
-                  type: post.ctaType,
-                  onTap: () => _handleCtaTap(context),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Interaction bar
-          Center(
-            child: InteractionBar(
-              isLiked: post.isLiked,
-              isBookmarked: post.isBookmarked,
-              likeCount: post.likeCount,
-              commentCount: post.commentCount,
-              onLike: onLike,
-              onComment: () =>
-                  CommentSheet.show(context, post.id, post.commentCount),
-              onBookmark: onBookmark,
-              onShare: onShare,
-              onReminder: onReminder,
-            ),
+        ),
+        // Tags
+        if (_isExpanded && widget.post.tags.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: widget.post.tags
+                .map(
+                  (tag) => Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
+                      borderRadius: AppSpacing.borderRadiusFull,
+                      border: Border.all(
+                        color: context.colors.border,
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Text(
+                      '#$tag',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: context.colors.primaryAccent,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                )
+                .toList(),
           ),
         ],
-      ),
+        const SizedBox(height: 6),
+        // Timestamp
+        Text(
+          widget.post.timestamp,
+          style: AppTypography.labelSmall.copyWith(
+            color: context.colors.textTertiary,
+            fontSize: 11,
+          ),
+        ),
+      ],
     );
   }
 }

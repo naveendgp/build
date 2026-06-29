@@ -7,12 +7,10 @@ import '../../../brand_profile/models/brand_profile_models.dart';
 
 class ReviewCard extends StatelessWidget {
   final BrandReview review;
-  final VoidCallback? onReport;
 
   const ReviewCard({
     super.key,
     required this.review,
-    this.onReport,
   });
 
   @override
@@ -21,9 +19,9 @@ class ReviewCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1B1D22).withValues(alpha: 0.6),
+        color: context.colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,9 +31,9 @@ class ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Colors.white.withValues(alpha: 0.1),
+                backgroundColor: context.colors.surfaceSecondary,
                 backgroundImage: (review.authorAvatarUrl != null && review.authorAvatarUrl!.isNotEmpty) ? NetworkImage(review.authorAvatarUrl!) : null,
-                child: (review.authorAvatarUrl == null || review.authorAvatarUrl!.isEmpty) ? const Icon(Icons.person, size: 20, color: Colors.white) : null,
+                child: (review.authorAvatarUrl == null || review.authorAvatarUrl!.isEmpty) ? Icon(Icons.person, size: 20, color: context.colors.textSecondary) : null,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -86,14 +84,6 @@ class ReviewCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onReport != null)
-                IconButton(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  color: context.colors.textSecondary,
-                  onPressed: () {
-                    _showReviewOptions(context);
-                  },
-                ),
             ],
           ),
           
@@ -177,42 +167,6 @@ class ReviewCard extends StatelessWidget {
             ),
           ]
         ],
-      ),
-    );
-  }
-
-  void _showReviewOptions(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.only(top: 12, bottom: 32, left: 24, right: 24),
-        decoration: const BoxDecoration(
-          color: Color(0xFF1B1D22),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ListTile(
-              leading: const Icon(Icons.flag_outlined, color: Colors.redAccent),
-              title: const Text('Report Review', style: TextStyle(color: Colors.redAccent)),
-              onTap: () {
-                Navigator.pop(ctx);
-                onReport?.call();
-              },
-            ),
-          ],
-        ),
       ),
     );
   }

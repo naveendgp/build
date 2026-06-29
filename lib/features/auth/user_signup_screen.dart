@@ -197,15 +197,17 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
-              label: 'Phone Number (Optional)',
+              label: 'Phone Number',
               controller: _contactCtrl,
               keyboardType: TextInputType.phone,
+              validator: (v) => Validators.required(v, 'Phone number'),
               onChanged: (v) => ref.read(userSignupProvider.notifier).updateField('contactNumber', v),
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
-              label: 'Location (Optional)',
+              label: 'Location',
               controller: _locationCtrl,
+              validator: (v) => Validators.required(v, 'Location'),
               onChanged: (v) => ref.read(userSignupProvider.notifier).updateField('location', v),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -213,9 +215,10 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
               children: [
                 Expanded(
                   child: LyketTextField(
-                    label: 'Gender (Optional)',
+                    label: 'Gender',
                     controller: _genderCtrl,
                     readOnly: true,
+                    validator: (v) => Validators.required(v, 'Gender'),
                     onTap: () {
                       showModalBottomSheet(
                         context: context,
@@ -241,9 +244,10 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: LyketTextField(
-                    label: 'Date of Birth (Optional)',
+                    label: 'Date of Birth',
                     controller: _dobCtrl,
                     readOnly: true,
+                    validator: (v) => Validators.required(v, 'Date of birth'),
                     onTap: () async {
                       final date = await showDatePicker(
                         context: context,

@@ -71,7 +71,8 @@ class InboxNotifier extends StateNotifier<InboxState> {
   void _handleNewMessage(dynamic data) {
     if (data == null) return;
     try {
-      final msg = Message.fromJson(data);
+      final Map<String, dynamic> jsonMap = data is Map ? Map<String, dynamic>.from(data) : data as Map<String, dynamic>;
+      final msg = Message.fromJson(jsonMap);
       final conversationId = msg.conversationId;
       
       // Update the last message in the conversation list and bump it to top
@@ -238,7 +239,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
   void _handleNewMessage(dynamic data) {
     if (data == null) return;
     try {
-      final msg = Message.fromJson(data);
+      final Map<String, dynamic> jsonMap = data is Map ? Map<String, dynamic>.from(data) : data as Map<String, dynamic>;
+      final msg = Message.fromJson(jsonMap);
       if (msg.conversationId == _conversationId) {
         // Prevent duplicating if it's our own optimistic message
         if (msg.senderId != _currentUserId) {
@@ -255,7 +257,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
   void _handleMessagesRead(dynamic data) {
     if (data == null) return;
     try {
-      final String convId = data['conversationId']?.toString() ?? '';
+      final Map<String, dynamic> jsonMap = data is Map ? Map<String, dynamic>.from(data) : data as Map<String, dynamic>;
+      final String convId = jsonMap['conversationId']?.toString() ?? '';
       if (convId == _conversationId) {
         // Mark all messages as read where I am the sender
         final updatedMessages = state.messages.map((msg) {

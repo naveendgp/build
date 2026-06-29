@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../models/user_profile_models.dart';
 
@@ -16,55 +15,87 @@ class ProfileTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = [
-      {'tab': ProfileTab.saved, 'label': 'Saved'},
-      {'tab': ProfileTab.collections, 'label': 'Collections'},
-    ];
+    return Container(
+      color: context.colors.background,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final tabWidth = constraints.maxWidth / 2;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: context.colors.surface,
-          borderRadius: AppSpacing.borderRadiusLg,
-          border: Border.all(color: context.colors.borderLight, width: 0.5),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: tabs.map((t) {
-            final tab = t['tab'] as ProfileTab;
-            final label = t['label'] as String;
-            final isSelected = currentTab == tab;
-
-            return GestureDetector(
-              onTap: () => onTabChanged(tab),
-              behavior: HitTestBehavior.opaque,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isSelected ? context.colors.primaryAccent : Colors.transparent,
-                  borderRadius: AppSpacing.borderRadiusMd,
-                  border: Border.all(
-                    color: isSelected ? context.colors.primaryAccent : Colors.transparent,
-                    width: 0.5,
+          return SizedBox(
+            height: 48,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onTabChanged(ProfileTab.saved),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            currentTab == ProfileTab.saved
+                                ? Icons.bookmark_rounded
+                                : Icons.bookmark_border_rounded,
+                            size: 24,
+                            color: currentTab == ProfileTab.saved
+                                ? context.colors.textPrimary
+                                : context.colors.textTertiary,
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                child: Text(
-                  label,
-                  style: AppTypography.labelLarge.copyWith(
-                    color: isSelected ? Colors.white : context.colors.textSecondary,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => onTabChanged(ProfileTab.collections),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.grid_view_rounded,
+                            size: 24,
+                            color: currentTab == ProfileTab.collections
+                                ? context.colors.textPrimary
+                                : context.colors.textTertiary,
+                          ),
+                          const SizedBox(height: 4),
+                        ],
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              SizedBox(
+                height: 1.5,
+                child: Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 0.5,
+                      color: context.colors.borderLight,
+                    ),
+                    AnimatedPositioned(
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                      left: currentTab == ProfileTab.saved ? 0 : tabWidth,
+                      top: 0,
+                      child: Container(
+                        width: tabWidth,
+                        height: 1.5,
+                        color: context.colors.primaryAccent,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            );
-          }).toList(),
-        ),
+            ],
+          ));
+        },
       ),
     );
   }

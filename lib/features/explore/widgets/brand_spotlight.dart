@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -149,7 +149,7 @@ class _BrandCard extends StatelessWidget {
                         ),
                         if (brand.isVerified) ...[
                           const SizedBox(width: 3),
-                          Icon(Icons.verified_rounded, size: 12, color: context.colors.primaryAccent),
+                          Icon(Icons.verified_rounded, size: 12, color: Colors.red),
                         ],
                       ],
                     ),

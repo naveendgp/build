@@ -6,20 +6,58 @@ class UserProfileData {
   final String id;
   final String username;
   final String name;
+  final String email;
   final String bio;
   final String avatarUrl;
   final String coverUrl;
   final List<String> aiIdentityTags;
+  final int followingCount;
+  final String contactNumber;
+  final String gender;
+  final String location;
+  final String dateOfBirth;
 
   const UserProfileData({
     required this.id,
     required this.username,
     required this.name,
+    required this.email,
     required this.bio,
     required this.avatarUrl,
     required this.coverUrl,
     required this.aiIdentityTags,
+    this.followingCount = 0,
+    this.contactNumber = '',
+    this.gender = '',
+    this.location = '',
+    this.dateOfBirth = '',
   });
+
+  /// Calculates profile completion based on 7 core fields
+  double get completionPercentage {
+    int filled = 0;
+    if (name.isNotEmpty) filled++;
+    if (username.isNotEmpty) filled++;
+    if (email.isNotEmpty) filled++;
+    if (contactNumber.isNotEmpty) filled++;
+    if (location.isNotEmpty) filled++;
+    if (gender.isNotEmpty) filled++;
+    if (dateOfBirth.isNotEmpty) filled++;
+    return filled / 7.0;
+  }
+
+  /// Returns a list of the display names of missing fields
+  List<String> get missingFields {
+    final missing = <String>[];
+    if (name.isEmpty) missing.add('Full Name');
+    if (username.isEmpty) missing.add('Username');
+    if (email.isEmpty) missing.add('Email Address');
+    if (contactNumber.isEmpty) missing.add('Phone Number');
+    if (location.isEmpty) missing.add('Location');
+    if (gender.isEmpty) missing.add('Gender');
+    if (dateOfBirth.isEmpty) missing.add('Date of Birth');
+    return missing;
+  }
 
   factory UserProfileData.fromJson(Map<String, dynamic> json) {
     List<String> parseInterests(dynamic interests) {
@@ -40,10 +78,18 @@ class UserProfileData {
       id: json['id'] ?? '',
       username: json['username'] ?? '',
       name: name.isEmpty ? 'User' : name,
+      email: json['email'] ?? '',
       bio: json['bio'] ?? '',
       avatarUrl: (pic != null && pic.isNotEmpty && pic != 'null') ? ApiClient.resolveMediaUrl(pic) : '',
       coverUrl: json['coverUrl'] != null ? ApiClient.resolveMediaUrl(json['coverUrl']) : '',
       aiIdentityTags: parseInterests(json['interests']),
+      followingCount: json['_count']?['follows'] ?? 0,
+      contactNumber: json['contactNumber'] ?? '',
+      gender: json['gender'] ?? '',
+      location: json['location'] ?? '',
+      dateOfBirth: json['dateOfBirth'] != null 
+          ? '${DateTime.parse(json['dateOfBirth']).toLocal().day.toString().padLeft(2, '0')}/${DateTime.parse(json['dateOfBirth']).toLocal().month.toString().padLeft(2, '0')}/${DateTime.parse(json['dateOfBirth']).toLocal().year}' 
+          : '',
     );
   }
 
@@ -51,6 +97,7 @@ class UserProfileData {
     id: 'usr_mock_1',
     username: '@alexa_designs',
     name: 'Alexa V.',
+    email: 'alexa@example.com',
     bio: 'Curating the intersection of modern luxury, brutalist architecture, and culinary arts.',
     avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
     coverUrl: 'https://images.unsplash.com/photo-1600607686527-6fb886090705?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',

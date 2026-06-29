@@ -6,6 +6,7 @@ import '../../../core/utils/haptics.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../messaging/providers/messaging_provider.dart';
 
 class BottomNavDock extends ConsumerWidget {
   final int currentIndex;
@@ -21,6 +22,12 @@ class BottomNavDock extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).loggedInRole;
     final isBrand = role == UserRole.brand;
+    
+    final inboxState = ref.watch(inboxProvider);
+    final unreadCount = inboxState.conversations.fold<int>(
+      0,
+      (sum, convo) => sum + convo.unreadCount,
+    );
 
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -63,6 +70,7 @@ class BottomNavDock extends ConsumerWidget {
                   angle: -0.6,
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
+                  badgeCount: unreadCount,
                 ),
                 _NavItem(
                   icon: Icons.person_outline_rounded,
@@ -87,6 +95,7 @@ class _NavItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
   final double angle;
+  final int badgeCount;
 
   const _NavItem({
     required this.icon,
@@ -94,6 +103,7 @@ class _NavItem extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
     this.angle = 0.0,
+    this.badgeCount = 0,
   });
 
   @override
@@ -111,14 +121,19 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Transform.rotate(
-              angle: angle,
-              child: Icon(
-                icon,
-                size: 24,
-                color: isSelected
-                    ? context.colors.textPrimary
-                    : context.colors.textTertiary,
+            Badge(
+              isLabelVisible: badgeCount > 0,
+              label: Text(badgeCount > 9 ? '9+' : badgeCount.toString()),
+              backgroundColor: Colors.redAccent,
+              child: Transform.rotate(
+                angle: angle,
+                child: Icon(
+                  icon,
+                  size: 24,
+                  color: isSelected
+                      ? context.colors.textPrimary
+                      : context.colors.textTertiary,
+                ),
               ),
             ),
             AnimatedOpacity(

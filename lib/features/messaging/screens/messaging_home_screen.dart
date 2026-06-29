@@ -1,14 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../home/widgets/bottom_nav_dock.dart';
 import '../providers/messaging_provider.dart';
 import '../widgets/chat_list_card.dart';
 
 class MessagingHomeScreen extends ConsumerWidget {
   const MessagingHomeScreen({super.key});
+
+  void _navTo(BuildContext context, WidgetRef ref, int index) {
+    if (index == 0) context.go('/home');
+    if (index == 1) context.go('/explore');
+    if (index == 2) context.push('/create');
+    if (index == 3) return;
+    if (index == 4) {
+      final role = ref.read(authProvider).loggedInRole;
+      if (role == UserRole.brand) {
+        context.push('/brand/me');
+      } else {
+        context.push('/profile');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,27 +35,40 @@ class MessagingHomeScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context),
-            _buildTabs(context, inboxState.activeTab, notifier),
-            Expanded(
-              child: inboxState.isLoading
-                  ? Center(
-                      child: CircularProgressIndicator(color: context.colors.primaryAccent),
-                    )
-                  : inboxState.error != null
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(context),
+                _buildTabs(context, inboxState.activeTab, notifier),
+                Expanded(
+                  child: inboxState.isLoading
                       ? Center(
-                          child: Text(
-                            inboxState.error!,
-                            style: GoogleFonts.inter(color: context.colors.error),
-                          ),
+                          child: CircularProgressIndicator(color: context.colors.primaryAccent),
                         )
-                      : _buildList(context, inboxState, notifier),
+                      : inboxState.error != null
+                          ? Center(
+                              child: Text(
+                                inboxState.error!,
+                                style: GoogleFonts.inter(color: context.colors.error),
+                              ),
+                            )
+                          : _buildList(context, inboxState, notifier),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: BottomNavDock(
+              currentIndex: 3,
+              onTap: (i) => _navTo(context, ref, i),
+            ),
+          ),
+        ],
       ),
     );
   }

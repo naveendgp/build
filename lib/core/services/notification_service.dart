@@ -117,6 +117,29 @@ class NotificationService {
     }
   }
 
+  Future<void> showLocalNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    await _localNotifications.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'high_importance_channel',
+          'High Importance Notifications',
+          channelDescription: 'This channel is used for important notifications.',
+          icon: '@mipmap/ic_launcher',
+          color: Color(0xFF7C5CFF),
+          importance: Importance.max,
+          priority: Priority.high,
+        ),
+      ),
+    );
+  }
+
   Future<void> _registerTokenWithBackend(String token) async {
     try {
       debugPrint('[NotificationService] Registering FCM token with backend...');

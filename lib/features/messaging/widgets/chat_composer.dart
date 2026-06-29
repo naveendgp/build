@@ -9,10 +9,13 @@ class ChatComposer extends StatefulWidget {
   final ValueChanged<String> onSend;
   final bool isTyping;
 
+  final String? initialText;
+
   const ChatComposer({
     super.key,
     required this.onSend,
     this.isTyping = false,
+    this.initialText,
   });
 
   @override
@@ -26,6 +29,10 @@ class _ChatComposerState extends State<ChatComposer> {
   @override
   void initState() {
     super.initState();
+    if (widget.initialText != null) {
+      _controller.text = widget.initialText!;
+      _isComposing = widget.initialText!.isNotEmpty;
+    }
     _controller.addListener(() {
       setState(() {
         _isComposing = _controller.text.trim().isNotEmpty;

@@ -59,6 +59,7 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
       ]);
 
       if (mounted) {
+        print("PROFILE JSON: ${responses[0].data}");
         state = state.copyWith(
           isLoading: false,
           profile: UserProfileData.fromJson(responses[0].data),
@@ -67,8 +68,8 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
           error: null,
         );
       }
-    } catch (e) {
-      debugPrint('UserProfile API Error: $e');
+    } catch (e, st) {
+      debugPrint('UserProfile API Error: $e\n$st');
       if (mounted) {
         state = state.copyWith(
           isLoading: false,

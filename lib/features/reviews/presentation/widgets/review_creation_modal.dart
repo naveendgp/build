@@ -64,9 +64,9 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF1B1D22),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         left: 24,
@@ -84,20 +84,20 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: context.colors.border,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          const Text(
+          Text(
             'Write a Review',
-            style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(color: context.colors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Share your experience with this brand',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(color: context.colors.textSecondary, fontSize: 16),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -119,7 +119,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                         },
                         icon: Icon(
                           index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                          color: index < _rating ? const Color(0xFFFFB800) : Colors.white30,
+                          color: index < _rating ? const Color(0xFFFFB800) : context.colors.borderLight,
                           size: 40,
                         ),
                       );
@@ -130,12 +130,12 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                   // Title Input
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: context.colors.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Sum up your experience (optional)',
-                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                      hintStyle: TextStyle(color: context.colors.textSecondary),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      fillColor: context.colors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -148,14 +148,14 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                   // Description Input
                   TextField(
                     controller: _descController,
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: context.colors.textPrimary),
                     maxLines: 4,
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       hintText: 'Tell us more about your interaction...',
-                      hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                      hintStyle: TextStyle(color: context.colors.textSecondary),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.05),
+                      fillColor: context.colors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
@@ -189,8 +189,8 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFF0000),
               foregroundColor: Colors.white,
-              disabledBackgroundColor: Colors.white.withValues(alpha: 0.1),
-              disabledForegroundColor: Colors.white.withValues(alpha: 0.3),
+              disabledBackgroundColor: context.colors.surfaceSecondary,
+              disabledForegroundColor: context.colors.textDisabled,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               elevation: 0,

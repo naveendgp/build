@@ -72,7 +72,7 @@ class CtaStep extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          if (ctaData.type != CtaType.noButton && objective != PostObjective.leadGeneration) ...[
+          if (ctaData.type != CtaType.noButton && objective != PostObjective.leadGeneration && objective != PostObjective.messaging) ...[
             Text(
               'Destination URL',
               style: AppTypography.labelLarge,

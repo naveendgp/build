@@ -133,16 +133,42 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
     state = state.copyWith(activeTab: index);
   }
 
-  void toggleFollow() {
+  void removePost(String postId) {
+    state = state.copyWith(
+      posts: state.posts.where((p) => p.id != postId).toList(),
+    );
+  }
+
+  Future<void> toggleFollow() async {
     if (state.profile == null) return;
     final p = state.profile!;
     final newFollowing = !p.isFollowing;
+    
+    // Optimistic update
     state = state.copyWith(
       profile: p.copyWith(
         isFollowing: newFollowing,
         followerCount: p.followerCount + (newFollowing ? 1 : -1),
       ),
     );
+
+    try {
+      if (newFollowing) {
+        await apiClient.dio.post('/follow/${p.id}');
+      } else {
+        await apiClient.dio.delete('/follow/${p.id}');
+      }
+    } catch (e) {
+      // Revert on error
+      if (mounted) {
+        state = state.copyWith(
+          profile: p.copyWith(
+            isFollowing: !newFollowing,
+            followerCount: p.followerCount,
+          ),
+        );
+      }
+    }
   }
 
   Future<bool> uploadGalleryImage(File file) async {
@@ -176,6 +202,67 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       return false;
     } catch (e) {
       debugPrint('Gallery upload error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateProfileImage(File file, {required bool isCover}) async {
+    try {
+      final filename = file.path.split('/').last;
+      
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: filename,
+        ),
+      });
+
+      final uploadRes = await apiClient.dio.post('/upload', data: formData);
+      if (uploadRes.statusCode != 200) return false;
+
+      final uploadedUrl = uploadRes.data['url'];
+      if (uploadedUrl == null) return false;
+
+      final updateData = isCover ? {'coverUrl': uploadedUrl} : {'logoUrl': uploadedUrl};
+      final updateRes = await apiClient.dio.put('/brand/profile', data: updateData);
+
+      if (updateRes.statusCode == 200) {
+        if (state.profile != null) {
+          state = state.copyWith(
+            profile: state.profile!.copyWith(
+              logoUrl: isCover ? null : uploadedUrl,
+              coverUrl: isCover ? uploadedUrl : null,
+            )
+          );
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Profile image upload error: $e');
+      return false;
+    }
+  }
+
+  Future<bool> updateBrandDetails({String? bio}) async {
+    try {
+      final updateData = <String, dynamic>{};
+      if (bio != null) updateData['bio'] = bio;
+
+      if (updateData.isEmpty) return true;
+
+      final res = await apiClient.dio.put('/brand/profile', data: updateData);
+      if (res.statusCode == 200) {
+        if (state.profile != null) {
+          state = state.copyWith(
+            profile: state.profile!.copyWith(bio: bio)
+          );
+        }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Update brand details error: $e');
       return false;
     }
   }

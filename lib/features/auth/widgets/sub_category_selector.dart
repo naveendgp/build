@@ -17,16 +17,17 @@ class SubCategorySelector extends StatelessWidget {
   });
 
   static const Map<String, List<String>> subCategories = {
-    'Fashion & Apparel': ['Men\'s Clothing', 'Women\'s Clothing', 'Kids\' & Baby Clothing', 'Shoes & Footwear', 'Accessories', 'Jewelry & Watches', 'Sportswear'],
-    'Technology': ['Software / SaaS', 'Consumer Electronics', 'IT Services', 'Mobile Apps', 'AI & Machine Learning', 'Hardware', 'Web3 & Blockchain'],
-    'Food & Beverage': ['Restaurant', 'Cafe / Coffee Shop', 'Bakery', 'Grocery', 'Beverage / Alcohol', 'Fast Food', 'Catering'],
-    'Health & Wellness': ['Gym & Fitness', 'Yoga & Pilates', 'Spa / Salon', 'Healthcare / Clinic', 'Supplements', 'Mental Health', 'Personal Care'],
-    'Education': ['K-12 School', 'University / College', 'Online Courses', 'Tutoring', 'Professional Training', 'Educational Materials'],
-    'Entertainment': ['Gaming & Esports', 'Movies & TV', 'Music & Podcasts', 'Events & Ticketing', 'Nightlife', 'Performing Arts', 'Streaming'],
-    'Real Estate': ['Residential Sales', 'Commercial Property', 'Property Management', 'Real Estate Agency', 'Co-working Spaces', 'Architecture & Design'],
-    'Automotive': ['Car Dealership', 'Auto Repair', 'Car Rental', 'Auto Parts', 'Electric Vehicles', 'Motorcycle'],
-    'Finance': ['Banking', 'Wealth Management', 'Insurance', 'Accounting & Tax', 'FinTech & Crypto', 'Lending & Mortgages'],
-    'Retail': ['Home & Garden', 'Beauty & Cosmetics', 'Sports & Outdoors', 'Toys & Hobbies', 'Pet Supplies', 'Books & Stationery', 'Superstore'],
+    'Fashion & Apparel': ['Men\'s Clothing', 'Women\'s Clothing', 'Kids\' & Baby Clothing', 'Shoes & Footwear', 'Accessories', 'Jewelry & Watches', 'Sportswear', 'Other'],
+    'Technology': ['Software / SaaS', 'Consumer Electronics', 'IT Services', 'Mobile Apps', 'AI & Machine Learning', 'Hardware', 'Web3 & Blockchain', 'Other'],
+    'Food & Beverage': ['Restaurant', 'Cafe / Coffee Shop', 'Bakery', 'Grocery', 'Beverage / Alcohol', 'Fast Food', 'Catering', 'Other'],
+    'Health & Wellness': ['Gym & Fitness', 'Yoga & Pilates', 'Spa / Salon', 'Healthcare / Clinic', 'Supplements', 'Mental Health', 'Personal Care', 'Other'],
+    'Education': ['K-12 School', 'University / College', 'Online Courses', 'Tutoring', 'Professional Training', 'Educational Materials', 'Other'],
+    'Entertainment': ['Gaming & Esports', 'Movies & TV', 'Music & Podcasts', 'Events & Ticketing', 'Nightlife', 'Performing Arts', 'Streaming', 'Other'],
+    'Real Estate': ['Residential Sales', 'Commercial Property', 'Property Management', 'Real Estate Agency', 'Co-working Spaces', 'Architecture & Design', 'Other'],
+    'Automotive': ['Car Dealership', 'Auto Repair', 'Car Rental', 'Auto Parts', 'Electric Vehicles', 'Motorcycle', 'Other'],
+    'Finance': ['Banking', 'Wealth Management', 'Insurance', 'Accounting & Tax', 'FinTech & Crypto', 'Lending & Mortgages', 'Other'],
+    'Retail': ['Home & Garden', 'Beauty & Cosmetics', 'Sports & Outdoors', 'Toys & Hobbies', 'Pet Supplies', 'Books & Stationery', 'Superstore', 'Other'],
+    'Other': ['Other'],
   };
 
   void _showSheet(BuildContext context, List<String> subs) {

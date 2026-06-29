@@ -27,7 +27,6 @@ class NotificationsScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context, state, notifier),
-            _buildFiltersBox(context, state, notifier),
             Expanded(
               child: _buildListContent(context, ref, state, notifier),
             ),
@@ -92,52 +91,7 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildFiltersBox(BuildContext context, NotificationsState state, NotificationsNotifier notifier) {
-    return Container(
-      color: context.colors.background,
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-        child: Row(
-          children: NotificationFilter.values.map((filter) {
-            final isSelected = state.activeFilter == filter;
-            return Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: GestureDetector(
-                onTap: () {
-                  Haptics.light();
-                  notifier.setFilter(filter);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.md,
-                    vertical: AppSpacing.sm,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isSelected ? context.colors.textPrimary : context.colors.surface,
-                    borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                    border: Border.all(
-                      color: isSelected ? context.colors.textPrimary : context.colors.border,
-                    ),
-                  ),
-                  child: Text(
-                    filter.name[0].toUpperCase() + filter.name.substring(1),
-                    style: AppTypography.labelMedium.copyWith(
-                      color: isSelected ? context.colors.background : context.colors.textSecondary,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildListContent(BuildContext context, WidgetRef ref, NotificationsState state, NotificationsNotifier notifier) {
     final bool showUpcoming = state.activeFilter == NotificationFilter.reminders;

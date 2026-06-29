@@ -1,60 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/user_profile_models.dart';
-import '../../command_center/screens/command_center_screen.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   final UserProfileData profile;
 
-  const ProfileActionButtons({super.key, required this.profile});
+  const ProfileActionButtons({
+    super.key,
+    required this.profile,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: 48),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _GlassButton(
-            label: 'Edit Profile',
-            onTap: () {
-              Haptics.light();
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CommandCenterScreen()));
-            },
+          Expanded(
+            child: _buildButton(
+              context,
+              label: 'Edit Profile',
+              onTap: () {
+                Haptics.light();
+                context.push('/settings/account');
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildButton(
+              context,
+              label: 'Share Profile',
+              onTap: () {
+                Haptics.light();
+                Clipboard.setData(
+                  ClipboardData(text: '@${profile.username}'),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile link copied!')),
+                );
+              },
+            ),
           ),
         ],
       ),
     );
   }
-}
 
-class _GlassButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _GlassButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildButton(
+    BuildContext context, {
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 32),
+        height: 36,
         decoration: BoxDecoration(
           color: context.colors.surface,
-          borderRadius: AppSpacing.borderRadiusMd,
-          border: Border.all(color: context.colors.borderLight, width: 0.5),
+          borderRadius: AppSpacing.borderRadiusSm,
+          border: Border.all(
+            color: context.colors.borderLight,
+            width: 0.5,
+          ),
         ),
         alignment: Alignment.center,
         child: Text(
           label,
-          style: AppTypography.button.copyWith(color: context.colors.textPrimary),
+          style: AppTypography.bodySmall.copyWith(
+            fontWeight: FontWeight.w600,
+            color: context.colors.textPrimary,
+          ),
         ),
       ),
     );
   }
 }
-

@@ -99,7 +99,7 @@ class Message {
     return Message(
       id: json['id'] ?? '',
       conversationId: json['conversationId'] ?? '',
-      senderId: json['senderUserId'] ?? json['senderBrandId'] ?? '',
+      senderId: json['senderId'] ?? json['senderUserId'] ?? json['senderBrandId'] ?? '',
       content: content,
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       isRead: json['isRead'] ?? false,
@@ -136,7 +136,13 @@ class Conversation {
     } else if (json['participants'] != null && json['participants'] is List && (json['participants'] as List).isNotEmpty) {
       final list = json['participants'] as List;
       // try to find the one that is not current user
-      participantJson = list.firstWhere((p) => p['userId'] != currentUserId && p['brandId'] != currentUserId, orElse: () => list.first) as Map<String, dynamic>;
+      try {
+        participantJson = list.firstWhere((p) => p['userId'] != currentUserId && p['brandId'] != currentUserId) as Map<String, dynamic>;
+      } catch (e) {
+        // If we only found ourselves (like in a new support ticket), don't set participantJson to ourselves.
+        // Leave it null so we can fall back to a "Lyket Support" default for support chats.
+        participantJson = null;
+      }
     }
     
     final lastMessageJson = json['lastMessage'] as Map<String, dynamic>?;
@@ -151,13 +157,28 @@ class Conversation {
         isBrand = true;
       }
       participantJson['isBrand'] = isBrand;
+      
+      // Fix name extraction if it's nested inside user or brand
+      if (participantJson['name'] == null) {
+        if (participantJson['user'] != null && participantJson['user'] is Map) {
+          participantJson['name'] = participantJson['user']['name'] ?? participantJson['user']['username'];
+          participantJson['avatarUrl'] = participantJson['avatarUrl'] ?? participantJson['user']['profilePic'];
+        } else if (participantJson['brand'] != null && participantJson['brand'] is Map) {
+          participantJson['name'] = participantJson['brand']['name'] ?? participantJson['brand']['username'];
+          participantJson['avatarUrl'] = participantJson['avatarUrl'] ?? participantJson['brand']['logoUrl'];
+        }
+      }
     }
+
+    final isSupportChat = json['isSupportChat'] == true;
 
     return Conversation(
       id: json['conversationId'] ?? json['id'] ?? '',
       otherParticipant: participantJson != null 
-          ? ChatParticipant.fromJson(participantJson)
-          : const ChatParticipant(id: 'unknown', name: 'Unknown User'),
+        ? ChatParticipant.fromJson(participantJson)
+        : (isSupportChat 
+            ? const ChatParticipant(id: 'support', name: 'Lyket Support', isBrand: true)
+            : const ChatParticipant(id: 'unknown', name: 'Unknown User')),
       lastMessage: lastMsg,
       unreadCount: json['unreadCount'] ?? 0,
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),

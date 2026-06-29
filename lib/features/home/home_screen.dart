@@ -17,6 +17,7 @@ import 'widgets/grid_feed_card.dart';
 import 'widgets/bottom_nav_dock.dart';
 import '../notifications/providers/notifications_provider.dart';
 import '../sharing/widgets/share_sheet.dart';
+import '../../core/services/notification_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -26,26 +27,31 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final _scrollCtrl = ScrollController();
-  double _scrollOffset = 0;
+  // Separate controllers for the single (ListView) and grid (MasonryGridView)
+  // layouts. Sharing one controller between two different scrollable widgets
+  // caused "ScrollController attached to multiple scroll views" when toggling
+  // between them, since both could briefly try to attach to it.
+  final _listScrollCtrl = ScrollController();
+  final _gridScrollCtrl = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _scrollCtrl.addListener(() {
-      if (mounted) {
-        setState(() => _scrollOffset = _scrollCtrl.offset);
-        
-        // Infinite scrolling trigger
-        if (_scrollCtrl.position.pixels >= _scrollCtrl.position.maxScrollExtent - 500) {
-          ref.read(feedProvider.notifier).loadMore();
-        }
-      }
-    });
+    _listScrollCtrl.addListener(() => _onScroll(_listScrollCtrl));
+    _gridScrollCtrl.addListener(() => _onScroll(_gridScrollCtrl));
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initSocket();
     });
+  }
+
+  void _onScroll(ScrollController ctrl) {
+    // Infinite scrolling trigger — no setState here, the header/toggle/nav
+    // listen to the active controller directly via AnimatedBuilder so
+    // scrolling stays smooth.
+    if (ctrl.position.pixels >= ctrl.position.maxScrollExtent - 500) {
+      ref.read(feedProvider.notifier).loadMore();
+    }
   }
 
   void _initSocket() {
@@ -53,37 +59,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     socketClient.connect().then((_) {
       socketClient.socket?.on('reminder_triggered', (data) {
         if (!mounted) return;
-        final title = data['title'] ?? 'Reminder';
-        final catchword = data['catchword'] ?? 'It is time!';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(catchword, style: const TextStyle(fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text(title),
-              ],
-            ),
-            backgroundColor: context.colors.primaryAccent,
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 5),
-            margin: const EdgeInsets.only(bottom: 80, left: 16, right: 16),
-            action: SnackBarAction(
-              label: 'View',
-              textColor: Colors.white,
-              onPressed: () {
-                // Future enhancement: navigate to post
-              },
-            ),
-          ),
+        debugPrint('=== RECEIVED REMINDER TRIGGERED: $data ===');
+        
+        String title = 'Reminder';
+        String catchword = 'It is time!';
+
+        if (data is Map<String, dynamic>) {
+          title = data['title'] ?? title;
+          catchword = data['catchword'] ?? catchword;
+        } else if (data is List && data.isNotEmpty && data.first is Map) {
+          title = data.first['title'] ?? title;
+          catchword = data.first['catchword'] ?? catchword;
+        }
+
+        NotificationService().showLocalNotification(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          title: catchword,
+          body: title,
         );
       });
 
       // Also listen for general notifications to refresh the Notifications Tab inbox
       socketClient.socket?.on('notification', (data) {
         if (!mounted) return;
+        debugPrint('=== RECEIVED NOTIFICATION EVENT: $data ===');
         ref.read(notificationsProvider.notifier).loadNotifications();
       });
     });
@@ -91,7 +90,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   void dispose() {
-    _scrollCtrl.dispose();
+    _listScrollCtrl.dispose();
+    _gridScrollCtrl.dispose();
     ref.read(socketClientProvider).disconnect();
     super.dispose();
   }
@@ -106,11 +106,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       context: parentContext,
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => Container(
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetContext).size.height * 0.85),
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        child: Column(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).padding.bottom),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
@@ -121,10 +124,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               padding: const EdgeInsets.all(24),
               child: Text('Set Reminder', style: AppTypography.titleLarge),
             ),
-            _buildReminderOption(sheetContext, '3 days', postId, notifier, 3),
-            _buildReminderOption(sheetContext, '7 days', postId, notifier, 7),
-            _buildReminderOption(sheetContext, '14 days', postId, notifier, 14),
-            _buildReminderOption(sheetContext, '30 days', postId, notifier, 30),
             ListTile(
               title: Text('Custom date & time', style: AppTypography.bodyLarge),
               trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
@@ -151,20 +150,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 }
               },
             ),
+            _buildReminderOption(sheetContext, 'Next day', postId, notifier, const Duration(days: 1)),
+            _buildReminderOption(sheetContext, '3 days after', postId, notifier, const Duration(days: 3)),
+            _buildReminderOption(sheetContext, '7 days after', postId, notifier, const Duration(days: 7)),
+            _buildReminderOption(sheetContext, '14 days after', postId, notifier, const Duration(days: 14)),
+            _buildReminderOption(sheetContext, '30 days after', postId, notifier, const Duration(days: 30)),
             const SizedBox(height: 32),
           ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildReminderOption(BuildContext context, String label, String postId, FeedNotifier notifier, int days) {
+  Widget _buildReminderOption(BuildContext context, String label, String postId, FeedNotifier notifier, Duration duration) {
     return ListTile(
       title: Text(label, style: AppTypography.bodyLarge),
       trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
       onTap: () {
         Navigator.pop(context);
-        final dateTime = DateTime.now().add(Duration(days: days));
+        final dateTime = DateTime.now().add(duration);
         notifier.setReminder(postId, dateTime);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Reminder set for $label')),
@@ -178,6 +183,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final state = ref.watch(feedProvider);
     final notifier = ref.read(feedProvider.notifier);
 
+    final topPad = MediaQuery.of(context).padding.top;
+    final activeCtrl = state.viewMode == FeedViewMode.grid ? _gridScrollCtrl : _listScrollCtrl;
+
     return Scaffold(
       backgroundColor: context.colors.background,
       body: Stack(
@@ -190,24 +198,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: _buildFeedContent(state, notifier),
           ),
 
-          // Top Header
+          // Top Header — listens to the scroll controller directly so the
+          // rest of the screen (heavy feed list) doesn't rebuild every frame.
           Positioned(
             top: 0, left: 0, right: 0,
-            child: FeedHeader(scrollOffset: _scrollOffset),
+            child: AnimatedBuilder(
+              animation: activeCtrl,
+              builder: (ctx, child) => FeedHeader(scrollOffset: activeCtrl.hasClients ? activeCtrl.offset : 0),
+            ),
           ),
 
-          // View Toggle
+          // View Toggle — hides while scrolling down, reappears as soon as you
+          // scroll back up (same pattern as the bottom nav), instead of only
+          // being reachable by scrolling all the way back to the top.
           Positioned(
-            top: MediaQuery.of(context).padding.top + 70,
+            top: topPad + 70,
             left: 0, right: 0,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: _scrollOffset > 50 ? 1.0 : 0.0),
-              duration: const Duration(milliseconds: 300),
-              builder: (_, value, child) {
-                return Opacity(
-                  opacity: 1.0 - value,
-                  child: Transform.translate(
-                    offset: Offset(0, -20 * value),
+            child: AnimatedBuilder(
+              animation: activeCtrl,
+              builder: (_, child) {
+                final offset = activeCtrl.hasClients ? activeCtrl.offset : 0.0;
+                final scrollingDown = activeCtrl.hasClients &&
+                    activeCtrl.position.userScrollDirection.name == 'reverse';
+                final hide = offset > 100 && scrollingDown;
+                return AnimatedSlide(
+                  duration: const Duration(milliseconds: 250),
+                  offset: hide ? const Offset(0, -1) : Offset.zero,
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 250),
+                    opacity: hide ? 0.0 : 1.0,
                     child: child,
                   ),
                 );
@@ -222,12 +241,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Bottom Nav Dock
           Positioned(
             bottom: 0, left: 0, right: 0,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: 0.0, end: _scrollOffset > 100 && _scrollCtrl.position.userScrollDirection.name == 'reverse' ? 1.0 : 0.0),
-              duration: const Duration(milliseconds: 300),
-              builder: (_, value, child) {
-                return Transform.translate(
-                  offset: Offset(0, 100 * value),
+            child: AnimatedBuilder(
+              animation: activeCtrl,
+              builder: (_, child) {
+                final offset = activeCtrl.hasClients ? activeCtrl.offset : 0.0;
+                final scrollingDown = activeCtrl.hasClients &&
+                    activeCtrl.position.userScrollDirection.name == 'reverse';
+                final hide = offset > 100 && scrollingDown;
+                return AnimatedSlide(
+                  duration: const Duration(milliseconds: 300),
+                  offset: hide ? const Offset(0, 1) : Offset.zero,
                   child: child,
                 );
               },
@@ -265,7 +288,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (state.viewMode == FeedViewMode.single) {
       return ListView.builder(
-        controller: _scrollCtrl,
+        key: const PageStorageKey('feed_list_view'),
+        controller: _listScrollCtrl,
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 130,
           bottom: 120,
@@ -320,7 +344,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     return MasonryGridView.count(
-      controller: _scrollCtrl,
+      key: const PageStorageKey('feed_grid_view'),
+      controller: _gridScrollCtrl,
       crossAxisCount: 2,
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,

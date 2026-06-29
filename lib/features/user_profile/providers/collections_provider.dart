@@ -25,10 +25,11 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<CollectionItem>>
     }
   }
 
-  Future<void> createCollection(String name) async {
+  Future<CollectionItem> createCollection(String name) async {
     try {
       final newCollection = await _repository.createCollection(name);
       state = state.whenData((collections) => [newCollection, ...collections]);
+      return newCollection;
     } catch (e) {
       // Re-throw so UI can show error
       rethrow;

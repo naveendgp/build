@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/network/api_client.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class _VideoPlaybackManager {
   static final _VideoPlaybackManager instance = _VideoPlaybackManager._();
@@ -148,15 +149,40 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   void _handleVisibilityChanged(VisibilityInfo info) {
     _visibleFraction = info.visibleFraction;
-    
-    if (!_shouldInitialize && _visibleFraction > 0.0) {
+
+    // Fully scrolled off-screen — release the native surface instead of just
+    // pausing, otherwise every video card ever scrolled past keeps holding a
+    // SurfaceView and Android eventually runs out of BLASTBufferQueue buffers.
+    if (_visibleFraction == 0.0) {
+      if (_isInitialized || _controller != null) {
+        _VideoPlaybackManager.instance.unregister(this);
+        _controller?.removeListener(_onControllerUpdate);
+        _controller?.dispose();
+        _controller = null;
+        _shouldInitialize = false;
+        if (mounted) {
+          setState(() {
+            _isInitialized = false;
+            _isPlaying = false;
+            _isBuffering = false;
+          });
+        } else {
+          _isInitialized = false;
+          _isPlaying = false;
+          _isBuffering = false;
+        }
+      }
+      return;
+    }
+
+    if (!_shouldInitialize) {
       _shouldInitialize = true;
       _initPlayer();
       return;
     }
-    
+
     if (!_isInitialized || _controller == null) return;
-    
+
     // Play if > 50% visible, otherwise pause
     if (_visibleFraction > 0.5) {
       if (!_isPlaying) {
@@ -186,28 +212,46 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   Widget build(BuildContext context) {
     Widget content;
 
+    Widget _buildPlaceholder() {
+      if (widget.placeholderUrl != null && widget.placeholderUrl!.isNotEmpty) {
+        return CachedNetworkImage(
+          imageUrl: widget.placeholderUrl!,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => Container(color: context.colors.surface),
+          errorWidget: (_, __, ___) => Container(color: context.colors.surface),
+        );
+      }
+      return Container(color: context.colors.surface);
+    }
+
     if (_hasError) {
-      content = Container(
-        color: context.colors.surface,
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, color: context.colors.error, size: 32),
-              const SizedBox(height: 8),
-              Text('Unplayable', style: TextStyle(color: context.colors.textTertiary, fontSize: 10)),
-            ],
+      content = Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildPlaceholder(),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: context.colors.error, size: 32),
+                const SizedBox(height: 8),
+                Text('Unplayable', style: TextStyle(color: context.colors.textTertiary, fontSize: 10)),
+              ],
+            ),
           ),
-        ),
+        ],
       );
     } else if (!_isInitialized || _controller == null) {
-      content = Container(
-        color: context.colors.surface,
-        child: Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+      content = Stack(
+        fit: StackFit.expand,
+        children: [
+          _buildPlaceholder(),
+          Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+            ),
           ),
-        ),
+        ],
       );
     } else {
       content = widget.allowInteraction 
@@ -268,7 +312,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           ),
         if (widget.allowInteraction)
           Positioned(
-            bottom: 12,
+            top: 12,
             right: 12,
             child: GestureDetector(
               onTap: _toggleMute,
@@ -287,7 +331,33 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               ),
             ),
           ),
+        if (_controller != null && _controller!.value.duration > Duration.zero)
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.6),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                _formatDuration(_controller!.value.duration),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  String _formatDuration(Duration d) {
+    final minutes = d.inMinutes;
+    final seconds = d.inSeconds % 60;
+    return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }

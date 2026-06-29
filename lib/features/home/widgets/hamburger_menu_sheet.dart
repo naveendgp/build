@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../../core/theme/app_theme.dart';
@@ -6,10 +7,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/router/app_router.dart';
-import '../../command_center/screens/command_center_screen.dart';
-import '../../command_center/screens/feedback_screen.dart';
-import '../../command_center/screens/help_support_screen.dart';
-import '../../command_center/screens/faq_screen.dart';
+import '../../auth/providers/auth_provider.dart';
 final userProfileProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final apiClient = ref.watch(apiClientProvider);
   final meRes = await apiClient.dio.get('/auth/me');
@@ -116,17 +114,21 @@ class HamburgerMenuSheet extends ConsumerWidget {
               },
             ),
           ),
+          if (ref.watch(authProvider).loggedInRole == UserRole.brand)
+            _buildMenuItem(context, Icons.dashboard_rounded, 'Brand Dashboard', () {
+              context.push('/brand-dashboard');
+            }),
           _buildMenuItem(context, Icons.settings_rounded, 'Settings', () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const CommandCenterScreen()));
+            context.push('/settings');
           }),
           _buildMenuItem(context, Icons.help_outline_rounded, 'Help & Support', () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const HelpSupportScreen()));
+            context.push('/help');
           }),
-          _buildMenuItem(context, Icons.question_answer_outlined, 'FAQ', () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FaqScreen()));
+          _buildMenuItem(context, Icons.question_answer_rounded, 'FAQ', () {
+            context.push('/help/faq');
           }),
-          _buildMenuItem(context, Icons.feedback_outlined, 'Feedback and Suggestions', () {
-            Navigator.of(context).push(MaterialPageRoute(builder: (_) => const FeedbackScreen()));
+          _buildMenuItem(context, Icons.confirmation_number_outlined, 'My Tickets', () {
+            context.push('/help?tab=tickets');
           }),
           
           SizedBox(height: 8),
@@ -140,12 +142,7 @@ class HamburgerMenuSheet extends ConsumerWidget {
             'Log out', 
             () async {
               // Call logout
-              final apiClient = ref.read(apiClientProvider);
-              try {
-                await apiClient.dio.post('/auth/logout');
-              } catch (_) {}
-              
-              await SecureStorage.clearSession();
+              await ref.read(authProvider.notifier).logout();
               
               AppRouter.router.go('/login');
             },

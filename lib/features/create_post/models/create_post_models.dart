@@ -85,35 +85,6 @@ enum UploadStage {
   failed,
 }
 
-// â”€â”€â”€ Post Categories â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-class PostCategory {
-  final String id;
-  final String label;
-  final IconData icon;
-  final Color accentColor;
-
-  const PostCategory({
-    required this.id,
-    required this.label,
-    required this.icon,
-    required this.accentColor,
-  });
-
-  static const List<PostCategory> all = [
-    PostCategory(id: 'fashion', label: 'Fashion', icon: Icons.checkroom_rounded, accentColor: Color(0xFFE879F9)),
-    PostCategory(id: 'beauty', label: 'Beauty', icon: Icons.spa_rounded, accentColor: Color(0xFFF472B6)),
-    PostCategory(id: 'food', label: 'Food', icon: Icons.restaurant_rounded, accentColor: Color(0xFFFB923C)),
-    PostCategory(id: 'travel', label: 'Travel', icon: Icons.flight_rounded, accentColor: Color(0xFF38BDF8)),
-    PostCategory(id: 'tech', label: 'Tech', icon: Icons.devices_rounded, accentColor: Color(0xFF818CF8)),
-    PostCategory(id: 'fitness', label: 'Fitness', icon: Icons.fitness_center_rounded, accentColor: Color(0xFF4ADE80)),
-    PostCategory(id: 'art', label: 'Art', icon: Icons.palette_rounded, accentColor: Color(0xFFFBBF24)),
-    PostCategory(id: 'music', label: 'Music', icon: Icons.music_note_rounded, accentColor: Color(0xFFF87171)),
-    PostCategory(id: 'education', label: 'Education', icon: Icons.school_rounded, accentColor: Color(0xFF2DD4BF)),
-    PostCategory(id: 'lifestyle', label: 'Lifestyle', icon: Icons.favorite_rounded, accentColor: Color(0xFFC084FC)),
-  ];
-}
-
 // â”€â”€â”€ Objective Metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class ObjectiveMeta {
@@ -310,6 +281,7 @@ class FormFieldData {
   final String question;
   final List<String> options;
   final bool isRequired;
+  final bool isPrebuilt;
 
   const FormFieldData({
     required this.id,
@@ -317,6 +289,7 @@ class FormFieldData {
     required this.question,
     this.options = const [],
     this.isRequired = true,
+    this.isPrebuilt = false,
   });
 
   FormFieldData copyWith({
@@ -324,6 +297,7 @@ class FormFieldData {
     String? question,
     List<String>? options,
     bool? isRequired,
+    bool? isPrebuilt,
   }) {
     return FormFieldData(
       id: id,
@@ -331,6 +305,7 @@ class FormFieldData {
       question: question ?? this.question,
       options: options ?? this.options,
       isRequired: isRequired ?? this.isRequired,
+      isPrebuilt: isPrebuilt ?? this.isPrebuilt,
     );
   }
 }
@@ -351,6 +326,12 @@ class LeadFormData {
     this.privacyPolicyUrl = '',
     this.consentText = 'By submitting this form, you agree to our privacy policy.',
   });
+
+  List<FormFieldData> get sortedFields {
+    final customFields = fields.where((f) => !f.isPrebuilt).toList();
+    final prebuiltFields = fields.where((f) => f.isPrebuilt).toList();
+    return [...customFields, ...prebuiltFields];
+  }
 
   LeadFormData copyWith({
     String? headline,
@@ -402,6 +383,8 @@ class CreatePostState {
   final String? highlightIcon;
   final String description;
   final List<String> tags;
+  // The brand's own business category, fetched from their profile —
+  // no longer chosen by the user in this flow.
   final String? categoryId;
 
   // Objective + CTA + Lead Form

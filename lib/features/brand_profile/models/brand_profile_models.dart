@@ -69,10 +69,10 @@ class BrandProfile {
     this.allowEmailNotifications = true,
   });
 
-  BrandProfile copyWith({bool? isFollowing, int? followerCount}) {
+  BrandProfile copyWith({bool? isFollowing, int? followerCount, String? logoUrl, String? coverUrl, String? bio}) {
     return BrandProfile(
-      id: id, username: username, name: name, tagline: tagline, bio: bio,
-      logoUrl: logoUrl, coverUrl: coverUrl, category: category,
+      id: id, username: username, name: name, tagline: tagline, bio: bio ?? this.bio,
+      logoUrl: logoUrl ?? this.logoUrl, coverUrl: coverUrl ?? this.coverUrl, category: category,
       isVerified: isVerified,
       isFollowing: isFollowing ?? this.isFollowing,
       isOwner: isOwner,
@@ -98,7 +98,7 @@ class BrandProfile {
       logoUrl: json['logoUrl'] ?? '',
       coverUrl: json['coverImageUrl'] ?? 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
       category: json['category'] ?? '',
-      isVerified: json['verificationStatus'] == 'VERIFIED',
+      isVerified: json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
       isFollowing: json['isFollowing'] ?? false,
       isOwner: json['isOwner'] ?? false,
       followerCount: json['followerCount'] ?? 0,
@@ -121,6 +121,8 @@ class BrandProfile {
       allowEmailNotifications: json['allowEmailNotifications'] ?? true,
     );
   }
+
+
 }
 
 // ─── Brand Post (for Posts tab) ─────────────────────────────
@@ -133,6 +135,7 @@ class BrandPost {
   final int commentCount;
   final String? objectiveLabel;
   final double aspectRatio;
+  final String publishStatus;
 
   const BrandPost({
     required this.id,
@@ -143,6 +146,7 @@ class BrandPost {
     this.commentCount = 0,
     this.objectiveLabel,
     this.aspectRatio = 1.0,
+    this.publishStatus = 'PUBLISHED',
   });
 
   factory BrandPost.fromJson(Map<String, dynamic> json) {
@@ -163,6 +167,7 @@ class BrandPost {
       commentCount: json['commentCount'] ?? 0,
       objectiveLabel: json['objective']?.toString(),
       aspectRatio: media != null && media is Map ? (media['aspectRatio'] as num?)?.toDouble() ?? 1.0 : 1.0,
+      publishStatus: (json['publishStatus'] ?? 'PUBLISHED').toString(),
     );
   }
 }

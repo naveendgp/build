@@ -185,8 +185,8 @@ class _CommentCardState extends State<CommentCard> {
           const SizedBox(width: AppSpacing.xxs + 2),
           Icon(
             Icons.verified_rounded,
-            size: 13,
-            color: context.colors.primaryAccent,
+            size: 14,
+            color: Colors.red,
           ),
           const SizedBox(width: AppSpacing.xs),
           Container(

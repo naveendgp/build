@@ -143,11 +143,7 @@ class MockExploreData {
     ExploreBrand(id: 'b6', name: 'Apex Fitness', avatarUrl: _unsplash[5], coverUrl: _unsplash[7], isVerified: true, followerCount: 321000, category: 'Fitness'),
   ];
 
-  static List<ExploreOffer> offers() => [
-    ExploreOffer(id: 'o1', brandName: 'Velvet Studio', title: 'Summer Flash Sale', description: 'Up to 40% off on the new summer collection', mediaUrl: _unsplash[4], discount: '40%', expiresAt: DateTime.now().add(const Duration(days: 3)), ctaLabel: 'Shop Now'),
-    ExploreOffer(id: 'o2', brandName: 'Nexus Tech', title: 'Launch Week Special', description: 'Exclusive early access pricing on new products', mediaUrl: _unsplash[9], discount: '25%', expiresAt: DateTime.now().add(const Duration(days: 7)), ctaLabel: 'Get Access'),
-    ExploreOffer(id: 'o3', brandName: 'Bloom Cafe', title: 'Weekend Brunch Deal', description: 'Buy one get one free on all brunch items', mediaUrl: _unsplash[1], discount: 'BOGO', expiresAt: DateTime.now().add(const Duration(days: 2)), ctaLabel: 'Book Table'),
-  ];
+
 
   static List<SearchSuggestion> searchSuggestions() => const [
     SearchSuggestion(id: 'sg1', text: 'Maison Noir', type: SuggestionType.brand, subtitle: 'Lifestyle'),
