@@ -56,6 +56,11 @@ class SettingsHomeScreen extends ConsumerWidget {
                   icon: Icons.tune_rounded,
                   onTap: () => context.push('/settings/preferences'),
                 ),
+                SettingsItem(
+                  title: 'Interests',
+                  icon: Icons.favorite_border_rounded,
+                  onTap: () => context.push('/settings/interests'),
+                ),
               ],
             ),
           ] else ...[

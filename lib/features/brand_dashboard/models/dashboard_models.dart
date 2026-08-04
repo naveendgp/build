@@ -5,6 +5,8 @@ class DashboardSummary {
   final MetricValue posts;
   final MetricValue impressions;
   final MetricValue profileVisits;
+  final MetricValue interactions;
+  final MetricValue remindersSet;
   final MetricValue leads;
   final MetricValue messages;
 
@@ -13,6 +15,8 @@ class DashboardSummary {
     required this.posts,
     required this.impressions,
     required this.profileVisits,
+    required this.interactions,
+    required this.remindersSet,
     required this.leads,
     required this.messages,
   });
@@ -23,6 +27,8 @@ class DashboardSummary {
       posts: MetricValue.fromJson(json['posts'] ?? {}),
       impressions: MetricValue.fromJson(json['impressions'] ?? {}),
       profileVisits: MetricValue.fromJson(json['profileVisits'] ?? {}),
+      interactions: MetricValue.fromJson(json['interactions'] ?? {}),
+      remindersSet: MetricValue.fromJson(json['remindersSet'] ?? {}),
       leads: MetricValue.fromJson(json['leads'] ?? {}),
       messages: MetricValue.fromJson(json['messages'] ?? {}),
     );
@@ -186,6 +192,73 @@ class PostMetrics {
       ctr: (json['ctr'] ?? 0.0).toDouble(),
       leads: json['leads'] ?? 0,
       messages: json['messages'] ?? 0,
+    );
+  }
+}
+
+// --- New models for demographics and top content ---
+
+class FollowerDemographics {
+  final List<DemographicItem> age;
+  final List<DemographicItem> location;
+  final List<DemographicItem> gender;
+
+  FollowerDemographics({required this.age, required this.location, required this.gender});
+
+  factory FollowerDemographics.fromJson(Map<String, dynamic> json) {
+    return FollowerDemographics(
+      age: (json['age'] as List?)?.map((e) => DemographicItem.fromJson(e)).toList() ?? [],
+      location: (json['location'] as List?)?.map((e) => DemographicItem.fromJson(e)).toList() ?? [],
+      gender: (json['gender'] as List?)?.map((e) => DemographicItem.fromJson(e)).toList() ?? [],
+    );
+  }
+}
+
+class DemographicItem {
+  final String label;
+  final int count;
+
+  DemographicItem({required this.label, required this.count});
+
+  factory DemographicItem.fromJson(Map<String, dynamic> json) {
+    return DemographicItem(
+      label: json['label'] ?? '',
+      count: json['count'] ?? 0,
+    );
+  }
+}
+
+class TopContentPost {
+  final String id;
+  final String title;
+  final String? thumbnail;
+  final int reach;
+  final int likes;
+  final int comments;
+  final int leads;
+  final String createdAt;
+
+  TopContentPost({
+    required this.id,
+    required this.title,
+    this.thumbnail,
+    required this.reach,
+    required this.likes,
+    required this.comments,
+    required this.leads,
+    required this.createdAt,
+  });
+
+  factory TopContentPost.fromJson(Map<String, dynamic> json) {
+    return TopContentPost(
+      id: json['id'] ?? '',
+      title: json['title'] ?? '',
+      thumbnail: json['thumbnail'],
+      reach: json['reach'] ?? 0,
+      likes: json['likes'] ?? 0,
+      comments: json['comments'] ?? 0,
+      leads: json['leads'] ?? 0,
+      createdAt: json['createdAt'] ?? '',
     );
   }
 }

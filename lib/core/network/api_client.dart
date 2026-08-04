@@ -5,8 +5,8 @@ import '../storage/secure_storage.dart';
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 class ApiClient {
-  // Configured to use Node.js Backend port 3001
-  static const String baseUrl = 'http://65.2.11.145:3001/api';
+  // Configured to use internal.lyket.in backend
+  static const String baseUrl = 'https://internal.lyket.in/api';
   late final Dio _dio;
 
   ApiClient() {
@@ -52,16 +52,17 @@ class ApiClient {
     // If backend returns a relative path
     if (trimmed.startsWith('/') || trimmed.startsWith('uploads/')) {
       final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';
-      return 'http://65.2.11.145:3001$path';
+      return 'https://internal.lyket.in$path';
     }
     
-    // Replace various possible localhost/production references with local emulator IP
+    // Replace various possible localhost/old IP references with internal.lyket.in
     String resolved = trimmed
-        .replaceFirst('http://localhost:5000', 'http://65.2.11.145:3001')
-        .replaceFirst('http://localhost:3001', 'http://65.2.11.145:3001')
-        .replaceFirst('13.233.207.224', '65.2.11.145')
-        .replaceFirst('3.109.152.20', '65.2.11.145')
-        .replaceFirst('localhost', '65.2.11.145'); // fallback
+        .replaceFirst('http://localhost:5000', 'https://internal.lyket.in')
+        .replaceFirst('http://localhost:3001', 'https://internal.lyket.in')
+        .replaceFirst('http://65.2.11.145:3001', 'https://internal.lyket.in')
+        .replaceFirst('13.233.207.224', 'internal.lyket.in')
+        .replaceFirst('3.109.152.20', 'internal.lyket.in')
+        .replaceFirst('localhost', 'internal.lyket.in'); // fallback
 
     if (!resolved.startsWith('http://') && !resolved.startsWith('https://')) {
       return 'http://$resolved';

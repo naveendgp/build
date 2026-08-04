@@ -157,11 +157,26 @@ class BrandQuicksiteTab extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          service.name,
-                          style: AppTypography.bodyLarge.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                service.name,
+                                style: AppTypography.bodyLarge.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            if (service.price != null && service.price!.isNotEmpty)
+                              Text(
+                                service.price!,
+                                style: AppTypography.bodyMedium.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: context.colors.primaryAccent,
+                                ),
+                              ),
+                          ],
                         ),
                         if (service.description.isNotEmpty) ...[
                           const SizedBox(height: 4),

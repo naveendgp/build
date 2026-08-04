@@ -35,7 +35,7 @@ class FormFieldsStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fields = leadForm.fields;
+    final fields = leadForm.sortedFields;
 
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.md),

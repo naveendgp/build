@@ -23,6 +23,8 @@ class TagSuggestions {
   /// recognized yet.
   static const List<String> general = [
     'new', 'launch', 'sale', 'offer', 'trending', 'mustsee', 'exclusive', 'limitededition',
+    'discount', 'giveaway', 'promo', 'special', 'best', 'top', 'favorite', 'deal', 'comingsoon',
+    'shopping', 'onlineshopping', 'lifestyle', 'brand', 'marketing', 'business', 'growth',
   ];
 
   /// Suggestions relevant to the brand's [categoryId] (its business category,

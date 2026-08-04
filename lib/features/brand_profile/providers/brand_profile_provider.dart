@@ -244,10 +244,12 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
     }
   }
 
-  Future<bool> updateBrandDetails({String? bio}) async {
+  Future<bool> updateBrandDetails({String? bio, Map<String, dynamic>? quicksite, List<String>? tags}) async {
     try {
       final updateData = <String, dynamic>{};
       if (bio != null) updateData['bio'] = bio;
+      if (quicksite != null) updateData['quicksite'] = quicksite;
+      if (tags != null) updateData['tags'] = tags;
 
       if (updateData.isEmpty) return true;
 
@@ -255,7 +257,8 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       if (res.statusCode == 200) {
         if (state.profile != null) {
           state = state.copyWith(
-            profile: state.profile!.copyWith(bio: bio)
+            profile: state.profile!.copyWith(bio: bio),
+            quicksite: quicksite != null ? BrandQuicksiteData.fromJson({'quicksite': quicksite}) : state.quicksite,
           );
         }
         return true;

@@ -322,7 +322,7 @@ class _HighlightBannerConfig extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
-            maxLength: 100,
+            maxLength: 50,
             onChanged: onMessageChanged,
             controller: TextEditingController.fromValue(
               TextEditingValue(

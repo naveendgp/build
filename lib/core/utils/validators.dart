@@ -20,6 +20,19 @@ class Validators {
     return null;
   }
 
+  static String? indianPhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Phone number is required';
+    }
+    // Remove all non-digits except +
+    final clean = value.replaceAll(RegExp(r'[^\d+]'), '');
+    final regex = RegExp(r'^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$');
+    if (!regex.hasMatch(clean)) {
+      return 'Enter a valid Indian phone number';
+    }
+    return null;
+  }
+
   static String? username(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Username is required';

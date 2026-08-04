@@ -4,6 +4,7 @@ import '../../../core/network/api_client.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
 import '../../user_profile/providers/reminders_provider.dart';
 import '../../brand_profile/providers/brand_profile_provider.dart';
+import '../../brand_profile/screens/brand_saved_posts_screen.dart';
 import '../models/feed_models.dart';
 
 enum FeedViewMode { single, grid }
@@ -175,7 +176,10 @@ class FeedNotifier extends StateNotifier<FeedState> {
     state = state.copyWith(posts: updated);
     
     if (targetPost != null) {
+      // Sync user profile saved posts (for regular users)
       ref.read(userProfileProvider.notifier).syncSavedPost(postId, isSaving, targetPost);
+      // Invalidate brand saved posts provider so the brand saved page refreshes
+      ref.invalidate(brandSavedPostsProvider);
     }
     
     // API request

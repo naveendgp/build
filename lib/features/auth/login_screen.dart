@@ -183,8 +183,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   }
                 },
               ),
-              const SizedBox(height: AppSpacing.sm),
-              SocialAuthButton.facebook(onPressed: () {}),
 
               const SizedBox(height: AppSpacing.xl),
               // Sign up link

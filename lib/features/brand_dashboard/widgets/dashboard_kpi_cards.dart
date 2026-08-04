@@ -18,20 +18,20 @@ class DashboardKpiCards extends StatelessWidget {
           children: [
             Expanded(
               child: _KpiCard(
-                title: 'Followers',
-                value: _formatNumber(summary.followers.value),
-                growth: summary.followers.growth,
-                icon: Icons.people_alt_rounded,
+                title: 'Profile Visits',
+                value: _formatNumber(summary.profileVisits.value),
+                growth: summary.profileVisits.growth,
+                icon: Icons.person_search_rounded,
                 delay: 0,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
             Expanded(
               child: _KpiCard(
-                title: 'Leads',
-                value: _formatNumber(summary.leads.value),
-                growth: summary.leads.growth,
-                icon: Icons.person_add_alt_1_rounded,
+                title: 'Followers',
+                value: _formatNumber(summary.followers.value),
+                growth: summary.followers.growth,
+                icon: Icons.people_alt_rounded,
                 delay: 100,
               ),
             ),
@@ -42,11 +42,35 @@ class DashboardKpiCards extends StatelessWidget {
           children: [
             Expanded(
               child: _KpiCard(
-                title: 'Impressions',
-                value: _formatNumber(summary.impressions.value),
-                growth: summary.impressions.growth,
-                icon: Icons.visibility_rounded,
+                title: 'Interactions',
+                value: _formatNumber(summary.interactions.value),
+                growth: summary.interactions.growth,
+                icon: Icons.touch_app_rounded,
                 delay: 200,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _KpiCard(
+                title: 'Reminders Set',
+                value: _formatNumber(summary.remindersSet.value),
+                growth: summary.remindersSet.growth,
+                icon: Icons.alarm_on_rounded,
+                delay: 300,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: _KpiCard(
+                title: 'Leads',
+                value: _formatNumber(summary.leads.value),
+                growth: summary.leads.growth,
+                icon: Icons.person_add_alt_1_rounded,
+                delay: 400,
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -56,7 +80,7 @@ class DashboardKpiCards extends StatelessWidget {
                 value: _formatNumber(summary.messages.value),
                 growth: summary.messages.growth,
                 icon: Icons.forum_rounded,
-                delay: 300,
+                delay: 500,
               ),
             ),
           ],
@@ -157,7 +181,7 @@ class _KpiCard extends StatelessWidget {
               const SizedBox(width: 4),
               Expanded(
                 child: Text(
-                  'vs last 30d',
+                  'vs last period',
                   style: AppTypography.labelSmall.copyWith(
                     color: context.colors.textTertiary,
                   ),

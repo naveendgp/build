@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -104,7 +104,7 @@ class _TagInputState extends State<TagInput> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('#$tag', style: AppTypography.labelMedium),
+                    Text(tag, style: AppTypography.labelMedium),
                     const SizedBox(width: AppSpacing.xs),
                     GestureDetector(
                       onTap: () => widget.onRemove(tag),
@@ -151,7 +151,7 @@ class _TagInputState extends State<TagInput> {
                 Icon(Icons.add_rounded, size: 14, color: context.colors.primaryAccent),
                 const SizedBox(width: 2),
                 Text(
-                  '#$tag',
+                  tag,
                   style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent),
                 ),
               ],

@@ -45,55 +45,96 @@ class BrandGalleryTab extends ConsumerWidget {
 
     final itemCount = isOwner ? gallery.length + 1 : gallery.length;
 
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      padding: EdgeInsets.zero.copyWith(bottom: 120),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
-        childAspectRatio: 1.0,
-      ),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (isOwner && index == 0) {
-          return InkWell(
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Image picker coming soon')),
-              );
-            },
-            child: Container(
-              color: context.colors.surfaceSecondary,
-              child: Center(
-                child: Icon(
-                  Icons.add_photo_alternate_rounded,
-                  color: context.colors.textTertiary,
-                  size: 32,
-                ),
-              ),
-            ),
-          );
-        }
-
-        final itemIndex = isOwner ? index - 1 : index;
-        final item = gallery[itemIndex];
-
-        return Container(
-          color: context.colors.surfaceSecondary,
-          child: Image.network(
-            item.imageUrl,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Center(
-              child: Icon(
-                Icons.broken_image_rounded,
-                color: context.colors.textTertiary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (isOwner)
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 4.0),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: IconButton(
+                icon: Icon(Icons.info_outline_rounded, color: context.colors.textSecondary),
+                tooltip: 'Gallery Info',
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      backgroundColor: context.colors.card,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: Text('Gallery', style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+                      content: Text(
+                        'Add photos or videos showcasing your shop, products, or services. These will appear on your public brand profile.',
+                        style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: Text('Got it', style: AppTypography.button.copyWith(color: context.colors.primaryAccent)),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ),
-        );
-      },
+        GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          padding: EdgeInsets.zero.copyWith(bottom: 120),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 2,
+            mainAxisSpacing: 2,
+            childAspectRatio: 1.0,
+          ),
+          itemCount: itemCount,
+          itemBuilder: (context, index) {
+            if (isOwner && index == 0) {
+              return InkWell(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Image picker coming soon')),
+                  );
+                },
+                child: Container(
+                  color: context.colors.surfaceSecondary,
+                  child: Center(
+                    child: Icon(
+                      Icons.add_photo_alternate_rounded,
+                      color: context.colors.textTertiary,
+                      size: 32,
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            final itemIndex = isOwner ? index - 1 : index;
+            final item = gallery[itemIndex];
+
+            return Container(
+              color: context.colors.surfaceSecondary,
+              child: Image.network(
+                item.imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) => Center(
+                  child: Icon(
+                    Icons.broken_image_rounded,
+                    color: context.colors.textTertiary,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../models/create_post_models.dart';
 
@@ -19,7 +19,23 @@ class FormIntroStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Headline', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          Text('Form Name (Internal)', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          const SizedBox(height: 8),
+          TextFormField(
+            initialValue: leadForm.name,
+            style: TextStyle(color: context.colors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'E.g., Summer Campaign Lead Form',
+              hintStyle: TextStyle(color: context.colors.textSecondary),
+              border: OutlineInputBorder(),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+            ),
+            onChanged: (val) {
+              onUpdate((prev) => prev.copyWith(name: val));
+            },
+          ),
+          const SizedBox(height: 16),
+          Text('Headline (Public)', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.headline,
@@ -49,6 +65,23 @@ class FormIntroStep extends StatelessWidget {
             ),
             onChanged: (val) {
               onUpdate((prev) => prev.copyWith(description: val));
+            },
+          ),
+          const SizedBox(height: 16),
+          Text('Thank You Message', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          const SizedBox(height: 8),
+          TextFormField(
+            initialValue: leadForm.thankYouMessage,
+            maxLines: 2,
+            style: TextStyle(color: context.colors.textPrimary),
+            decoration: InputDecoration(
+              hintText: 'Message shown after form submission',
+              hintStyle: TextStyle(color: context.colors.textSecondary),
+              border: OutlineInputBorder(),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+            ),
+            onChanged: (val) {
+              onUpdate((prev) => prev.copyWith(thankYouMessage: val));
             },
           ),
         ],

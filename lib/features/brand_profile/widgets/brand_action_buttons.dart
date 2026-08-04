@@ -76,7 +76,7 @@ class BrandActionButtons extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: Text(
-                    'Lead Center',
+                    'Dashboard',
                     style: AppTypography.bodyMedium.copyWith(
                       fontWeight: FontWeight.w600,
                       color: context.colors.textPrimary,

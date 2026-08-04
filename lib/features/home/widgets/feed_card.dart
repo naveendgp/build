@@ -17,6 +17,7 @@ import 'highlight_banner.dart';
 import 'video_player_widget.dart';
 import 'media_carousel.dart';
 import '../../../core/network/api_client.dart';
+import '../../settings/providers/interests_provider.dart';
 
 /// Premium immersive single-feed card — cinematic edge-to-edge design
 class FeedCard extends ConsumerWidget {
@@ -104,8 +105,9 @@ class FeedCard extends ConsumerWidget {
     final isBrand = authState.loggedInRole == UserRole.brand;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
+      padding: const EdgeInsets.fromLTRB(16, 12, 12, 10),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Avatar + Name area
           Expanded(
@@ -113,13 +115,15 @@ class FeedCard extends ConsumerWidget {
               behavior: HitTestBehavior.opaque,
               onTap: () => context.push('/brand/${post.brandId}'),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Avatar
+                  // Brand Logo Avatar
                   Container(
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.circle,
+                      color: context.colors.surface,
                       border: Border.all(
                         color: context.colors.border,
                         width: 0.5,
@@ -130,13 +134,19 @@ class FeedCard extends ConsumerWidget {
                       imageUrl: post.brandAvatar,
                       fit: BoxFit.cover,
                       memCacheWidth: 150,
-                      placeholder: (context, url) =>
-                          Container(color: context.colors.surface),
+                      placeholder: (context, url) => Container(
+                        color: context.colors.surface,
+                        child: Icon(
+                          Icons.business_rounded,
+                          size: 20,
+                          color: context.colors.textTertiary,
+                        ),
+                      ),
                       errorWidget: (context, url, error) => Container(
                         color: context.colors.surface,
                         child: Icon(
-                          Icons.business,
-                          size: 18,
+                          Icons.business_rounded,
+                          size: 20,
                           color: context.colors.textTertiary,
                         ),
                       ),
@@ -147,8 +157,10 @@ class FeedCard extends ConsumerWidget {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Flexible(
                               child: Text(
@@ -171,6 +183,7 @@ class FeedCard extends ConsumerWidget {
                             ],
                           ],
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           post.timestamp,
                           style: AppTypography.labelSmall.copyWith(
@@ -338,6 +351,50 @@ class FeedCard extends ConsumerWidget {
                   title: Text('Share Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
                   onTap: () { Navigator.pop(context); onShare(); },
                 ),
+                if (ref.read(authProvider).loggedInRole == UserRole.user)
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final isInterested = ref.watch(interestsProvider
+                          .select((s) => s.interestedIds.contains(post.id)));
+                      return ListTile(
+                        leading: Icon(
+                          isInterested
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          color: isInterested
+                              ? context.colors.primaryAccent
+                              : context.colors.textPrimary,
+                        ),
+                        title: Text(
+                          isInterested ? 'Remove from Interests' : 'Interested',
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: isInterested
+                                ? context.colors.primaryAccent
+                                : context.colors.textPrimary,
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          final notifier =
+                              ref.read(interestsProvider.notifier);
+                          if (isInterested) {
+                            notifier.removeInterest(post.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Removed from interests')),
+                            );
+                          } else {
+                            notifier.addInterest(post.id);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('Added to interests')),
+                            );
+                          }
+                        },
+                      );
+                    },
+                  ),
                 if (!isDetailMode)
                   ListTile(
                     leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
@@ -396,17 +453,17 @@ class FeedCard extends ConsumerWidget {
     return (post.videoUrl != null && post.videoUrl!.isNotEmpty)
         ? VideoPlayerWidget(
             videoUrl: post.videoUrl!,
-            aspectRatio: post.aspectRatio,
+            aspectRatio: 1.0,
             placeholderUrl: post.mediaUrl,
             initialPosition: post.bestFrameTimestamp,
           )
         : (post.carouselUrls != null && post.carouselUrls!.length > 1)
             ? MediaCarousel(
                 imageUrls: post.carouselUrls!,
-                aspectRatio: post.aspectRatio,
+                aspectRatio: 1.0,
               )
             : AspectRatio(
-                aspectRatio: 1 / post.aspectRatio,
+                aspectRatio: 1.0,
                 child: CachedNetworkImage(
                   imageUrl: post.mediaUrl,
                   fit: BoxFit.cover,
@@ -552,8 +609,8 @@ class FeedCard extends ConsumerWidget {
             onBookmark: onBookmark,
             onShare: onShare,
             onReminder: onReminder,
-            // Saving posts is a user-only action — brands shouldn't see it.
-            showBookmark: !isBrand,
+            // Saving posts is now available for brands as well.
+            showBookmark: true,
           ),
         ],
       ),

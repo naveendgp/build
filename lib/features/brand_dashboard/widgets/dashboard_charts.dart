@@ -54,6 +54,9 @@ class DashboardCharts extends StatelessWidget {
           Expanded(
             child: LineChart(
               LineChartData(
+                minY: 0,
+                maxY: _calculateMaxY(data.reachTrend),
+                clipData: const FlClipData.all(),
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
@@ -70,18 +73,22 @@ class DashboardCharts extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 30,
-                      interval: data.reachTrend.length > 7 ? (data.reachTrend.length / 5).ceilToDouble() : 1,
+                      reservedSize: 28,
+                      interval: _calculateXInterval(data.reachTrend.length),
                       getTitlesWidget: (value, meta) {
-                        if (value < 0 || value >= data.reachTrend.length) return const SizedBox.shrink();
-                        final dateStr = data.reachTrend[value.toInt()].date;
+                        final idx = value.toInt();
+                        if (idx < 0 || idx >= data.reachTrend.length) return const SizedBox.shrink();
+                        final dateStr = data.reachTrend[idx].date;
                         final dateParts = dateStr.split('-');
                         final formatted = dateParts.length == 3 ? '${dateParts[2]}/${dateParts[1]}' : dateStr;
                         return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
+                          padding: const EdgeInsets.only(top: 6.0),
                           child: Text(
                             formatted,
-                            style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+                            style: AppTypography.labelSmall.copyWith(
+                              color: context.colors.textSecondary,
+                              fontSize: 9,
+                            ),
                           ),
                         );
                       },
@@ -90,11 +97,21 @@ class DashboardCharts extends StatelessWidget {
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 40,
+                      reservedSize: 48,
+                      interval: _calculateYInterval(data.reachTrend),
                       getTitlesWidget: (value, meta) {
-                        return Text(
-                          _formatNumber(value.toInt()),
-                          style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+                        // Skip the very top and bottom labels to avoid overlap
+                        if (value == meta.min || value == meta.max) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 6),
+                          child: Text(
+                            _formatNumber(value.toInt()),
+                            style: AppTypography.labelSmall.copyWith(
+                              color: context.colors.textSecondary,
+                              fontSize: 9,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
                         );
                       },
                     ),
@@ -103,9 +120,11 @@ class DashboardCharts extends StatelessWidget {
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: data.reachTrend.asMap().entries.map((e) {
-                      return FlSpot(e.key.toDouble(), e.value.value.toDouble());
-                    }).toList(),
+                    spots: data.reachTrend.isEmpty 
+                      ? [const FlSpot(0, 0)] 
+                      : data.reachTrend.asMap().entries.map((e) {
+                          return FlSpot(e.key.toDouble(), e.value.value.toDouble());
+                        }).toList(),
                     isCurved: true,
                     color: context.colors.primaryAccent,
                     barWidth: 3,
@@ -234,7 +253,48 @@ class DashboardCharts extends StatelessWidget {
   }
 
   String _formatNumber(int number) {
+    if (number >= 1000000) return '${(number / 1000000).toStringAsFixed(1)}M';
     if (number >= 1000) return '${(number / 1000).toStringAsFixed(1)}k';
     return number.toString();
   }
+
+  double _calculateYInterval(List<TimeSeriesData> data) {
+    if (data.isEmpty) return 1;
+    final maxVal = data.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    if (maxVal <= 0) return 1;
+    if (maxVal <= 5) return 1;
+    if (maxVal <= 25) return 5;
+    if (maxVal <= 50) return 10;
+    if (maxVal <= 100) return 20;
+    if (maxVal <= 250) return 50;
+    if (maxVal <= 500) return 100;
+    if (maxVal <= 1000) return 200;
+    if (maxVal <= 2500) return 500;
+    if (maxVal <= 5000) return 1000;
+    if (maxVal <= 10000) return 2000;
+    if (maxVal <= 25000) return 5000;
+    return (maxVal / 5).roundToDouble();
+  }
+
+  double _calculateMaxY(List<TimeSeriesData> data) {
+    if (data.isEmpty) return 10;
+    final maxVal = data.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    if (maxVal <= 0) return 10; // all zeros — show a clean empty chart up to 10
+    final interval = _calculateYInterval(data);
+    return (maxVal / interval).ceilToDouble() * interval;
+  }
+
+  /// Returns an X-axis interval that targets ~5 visible date labels.
+  double _calculateXInterval(int length) {
+    if (length <= 1) return 1;
+    if (length <= 5) return 1;
+    if (length <= 10) return 2;
+    if (length <= 15) return 3;
+    if (length <= 20) return 4;
+    if (length <= 30) return 6;
+    if (length <= 60) return 12;
+    if (length <= 90) return 18;
+    return (length / 5).ceilToDouble();
+  }
 }
+

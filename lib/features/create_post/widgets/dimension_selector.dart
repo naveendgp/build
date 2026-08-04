@@ -110,8 +110,6 @@ class _DimensionOption extends StatelessWidget {
     switch (dimension) {
       case MediaDimension.square:
         return 'Square 1:1';
-      case MediaDimension.vertical:
-        return 'Vertical 9:16';
     }
   }
 
@@ -172,10 +170,6 @@ class _AspectRatioIcon extends StatelessWidget {
       case MediaDimension.square:
         width = 12;
         height = 12;
-        break;
-      case MediaDimension.vertical:
-        width = 9;
-        height = 14;
         break;
     }
 

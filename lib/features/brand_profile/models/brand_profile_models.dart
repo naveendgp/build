@@ -34,6 +34,7 @@ class BrandProfile {
   final bool allowDMs;
   final bool allowNotifications;
   final bool allowEmailNotifications;
+  final List<String> tags;
 
   String? get website => websiteUrl;
 
@@ -67,9 +68,10 @@ class BrandProfile {
     this.allowDMs = true,
     this.allowNotifications = true,
     this.allowEmailNotifications = true,
+    this.tags = const [],
   });
 
-  BrandProfile copyWith({bool? isFollowing, int? followerCount, String? logoUrl, String? coverUrl, String? bio}) {
+  BrandProfile copyWith({bool? isFollowing, int? followerCount, String? logoUrl, String? coverUrl, String? bio, List<String>? tags}) {
     return BrandProfile(
       id: id, username: username, name: name, tagline: tagline, bio: bio ?? this.bio,
       logoUrl: logoUrl ?? this.logoUrl, coverUrl: coverUrl ?? this.coverUrl, category: category,
@@ -85,6 +87,7 @@ class BrandProfile {
       isGalleryEnabled: isGalleryEnabled, isBrandPublic: isBrandPublic,
       showContactInfo: showContactInfo, allowDMs: allowDMs,
       allowNotifications: allowNotifications, allowEmailNotifications: allowEmailNotifications,
+      tags: tags ?? this.tags,
     );
   }
 
@@ -119,6 +122,7 @@ class BrandProfile {
       allowDMs: json['allowDMs'] ?? true,
       allowNotifications: json['allowNotifications'] ?? true,
       allowEmailNotifications: json['allowEmailNotifications'] ?? true,
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : const [],
     );
   }
 
@@ -247,16 +251,26 @@ class BrandQuicksiteData {
 class BrandService {
   final String name;
   final String description;
+  final String? price;
   final IconData icon;
 
-  const BrandService({required this.name, required this.description, required this.icon});
+  const BrandService({required this.name, required this.description, this.price, required this.icon});
 
   factory BrandService.fromJson(Map<String, dynamic> json) {
     return BrandService(
       name: json['name'] ?? '',
       description: json['description'] ?? '',
+      price: json['price'],
       icon: Icons.style_rounded, // Default icon or parse from string
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      if (price != null) 'price': price,
+    };
   }
 }
 
@@ -273,6 +287,14 @@ class BrandProduct {
       imageUrl: json['imageUrl'] ?? '',
       price: json['price'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'imageUrl': imageUrl,
+      'price': price,
+    };
   }
 }
 

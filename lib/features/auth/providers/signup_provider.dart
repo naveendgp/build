@@ -141,6 +141,7 @@ class SignupNotifier extends StateNotifier<SignupState> {
         if (state.location.isNotEmpty) 'location': state.location,
         if (state.gender.isNotEmpty) 'gender': state.gender,
         if (state.dateOfBirth.isNotEmpty) 'dateOfBirth': state.dateOfBirth,
+        if (state.interests.isNotEmpty) 'interests': state.interests.join(','),
       });
 
       if (res.statusCode == 201) {

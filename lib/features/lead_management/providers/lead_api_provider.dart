@@ -45,6 +45,16 @@ class LeadApiService {
     return FormTemplate.fromJson(response.data);
   }
 
+  Future<List<FormTemplate>> getBrandForms() async {
+    final response = await _apiClient.dio.get('/lead-form?type=all');
+    final data = response.data as List<dynamic>;
+    return data.map((e) => FormTemplate.fromJson(e)).toList();
+  }
+
+  Future<void> toggleFormStatus(String formId, bool isArchived) async {
+    await _apiClient.dio.put('/lead-form/$formId', data: {'isArchived': isArchived});
+  }
+
   Future<FormFieldDefinition> addField(String formId, FormFieldDefinition field) async {
     final data = field.toJson();
     data['formId'] = formId;
@@ -78,4 +88,10 @@ final postLeadsProvider = FutureProvider.family<List<LeadSubmission>, String>((r
   if (postId.isEmpty) return [];
   final api = ref.watch(leadApiServiceProvider);
   return api.getLeadsForPost(postId);
+});
+
+// Provides state for brand forms
+final brandFormsProvider = FutureProvider<List<FormTemplate>>((ref) async {
+  final api = ref.watch(leadApiServiceProvider);
+  return api.getBrandForms();
 });

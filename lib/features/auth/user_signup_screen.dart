@@ -13,6 +13,7 @@ import 'widgets/password_strength_bar.dart';
 import 'widgets/interest_selector.dart';
 import 'widgets/social_auth_button.dart';
 import 'providers/auth_provider.dart';
+import '../../core/widgets/location_picker.dart';
 
 class UserSignupScreen extends ConsumerStatefulWidget {
   const UserSignupScreen({super.key});
@@ -28,7 +29,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  final _contactCtrl = TextEditingController();
+  final _contactCtrl = TextEditingController(text: '+91 ');
   final _locationCtrl = TextEditingController();
   final _genderCtrl = TextEditingController();
   final _dobCtrl = TextEditingController();
@@ -200,15 +201,24 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
               label: 'Phone Number',
               controller: _contactCtrl,
               keyboardType: TextInputType.phone,
-              validator: (v) => Validators.required(v, 'Phone number'),
+              hint: '+91 98765 43210',
+              validator: Validators.indianPhone,
               onChanged: (v) => ref.read(userSignupProvider.notifier).updateField('contactNumber', v),
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
               label: 'Location',
               controller: _locationCtrl,
+              readOnly: true,
+              hint: 'City, State',
               validator: (v) => Validators.required(v, 'Location'),
-              onChanged: (v) => ref.read(userSignupProvider.notifier).updateField('location', v),
+              onTap: () async {
+                final loc = await showLocationPicker(context);
+                if (loc != null) {
+                  _locationCtrl.text = loc;
+                  ref.read(userSignupProvider.notifier).updateField('location', loc);
+                }
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             Row(
@@ -227,7 +237,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                         builder: (ctx) => SafeArea(
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            children: ['Male', 'Female', 'Non-Binary', 'Prefer not to say'].map((g) => ListTile(
+                            children: ['Male', 'Female', 'Others', 'Prefers not to say'].map((g) => ListTile(
                               title: Text(g, style: const TextStyle(color: Colors.white)),
                               onTap: () {
                                 _genderCtrl.text = g;
@@ -296,8 +306,6 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                 }
               },
             ),
-            const SizedBox(height: AppSpacing.sm),
-            SocialAuthButton.facebook(onPressed: () {}),
             const SizedBox(height: AppSpacing.xl),
           ],
         ),

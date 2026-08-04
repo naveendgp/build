@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/utils/haptics.dart';
 import '../providers/dashboard_providers.dart';
 import '../widgets/dashboard_kpi_cards.dart';
 import '../widgets/dashboard_charts.dart';
 import '../widgets/dashboard_post_card_list.dart';
+import '../widgets/dashboard_demographics.dart';
+import '../widgets/dashboard_top_content.dart';
 
 class BrandDashboardScreen extends ConsumerWidget {
   const BrandDashboardScreen({super.key});
@@ -46,6 +50,8 @@ class BrandDashboardScreen extends ConsumerWidget {
           ref.invalidate(dashboardSummaryProvider);
           ref.invalidate(dashboardChartsProvider);
           ref.invalidate(dashboardPostsProvider);
+          ref.invalidate(followerDemographicsProvider);
+          ref.invalidate(topContentProvider);
         },
         color: context.colors.primaryAccent,
         backgroundColor: context.colors.surface,
@@ -58,7 +64,7 @@ class BrandDashboardScreen extends ConsumerWidget {
               // 1. KPI Cards
               summaryAsync.when(
                 data: (summary) => DashboardKpiCards(summary: summary),
-                loading: () => const _LoadingSkeleton(height: 240),
+                loading: () => const _LoadingSkeleton(height: 360),
                 error: (err, stack) => _ErrorWidget(error: err),
               ),
               const SizedBox(height: AppSpacing.xxl),
@@ -71,7 +77,15 @@ class BrandDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xxl),
 
-              // 3. Posts List (Premium Cards)
+              // 3. Follower Demographics
+              const DashboardDemographics(),
+              const SizedBox(height: AppSpacing.xxl),
+
+              // 4. Top Content by Month
+              const DashboardTopContent(),
+              const SizedBox(height: AppSpacing.xxl),
+
+              // 5. Posts List (Premium Cards)
               postsAsync.when(
                 data: (posts) => DashboardPostCardList(posts: posts),
                 loading: () => const _LoadingSkeleton(height: 300),
@@ -180,32 +194,104 @@ class BrandDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildPeriodSelector(BuildContext context, WidgetRef ref) {
-    final currentPeriod = ref.watch(dashboardPeriodProvider);
+    final dateRange = ref.watch(dashboardDateRangeProvider);
     
-    return PopupMenuButton<int>(
-      initialValue: currentPeriod,
-      icon: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary, size: 20),
-      color: context.colors.surfaceSecondary,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      onSelected: (value) {
-        ref.read(dashboardPeriodProvider.notifier).state = value;
-      },
-      itemBuilder: (context) => [
-        _buildPopupItem(context, 7, 'Last 7 Days', currentPeriod),
-        _buildPopupItem(context, 30, 'Last 30 Days', currentPeriod),
-        _buildPopupItem(context, 90, 'Last 90 Days', currentPeriod),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (dateRange.isCustom)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: context.colors.primaryAccent.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '${DateFormat('MMM d').format(dateRange.startDate!)} – ${DateFormat('MMM d').format(dateRange.endDate!)}',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.w600),
+            ),
+          ),
+        PopupMenuButton<String>(
+          icon: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary, size: 20),
+          color: context.colors.surfaceSecondary,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          onSelected: (value) async {
+            if (value == 'custom') {
+              Haptics.selection();
+              final picked = await showDateRangePicker(
+                context: context,
+                firstDate: DateTime.now().subtract(const Duration(days: 365)),
+                lastDate: DateTime.now(),
+                initialDateRange: dateRange.isCustom
+                    ? DateTimeRange(start: dateRange.startDate!, end: dateRange.endDate!)
+                    : DateTimeRange(
+                        start: DateTime.now().subtract(const Duration(days: 30)),
+                        end: DateTime.now(),
+                      ),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: ColorScheme.dark(
+                        primary: context.colors.primaryAccent,
+                        onPrimary: Colors.white,
+                        surface: context.colors.surface,
+                        onSurface: context.colors.textPrimary,
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (picked != null) {
+                ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(
+                  presetDays: null,
+                  startDate: picked.start,
+                  endDate: picked.end,
+                );
+              }
+            } else {
+              final days = int.parse(value);
+              ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(presetDays: days);
+            }
+          },
+          itemBuilder: (context) {
+            final currentPreset = dateRange.presetDays;
+            return [
+              _buildPopupItem(context, '7', 'Last 7 Days', currentPreset == 7 && !dateRange.isCustom),
+              _buildPopupItem(context, '30', 'Last 30 Days', currentPreset == 30 && !dateRange.isCustom),
+              _buildPopupItem(context, '90', 'Last 90 Days', currentPreset == 90 && !dateRange.isCustom),
+              const PopupMenuDivider(),
+              PopupMenuItem<String>(
+                value: 'custom',
+                child: Row(
+                  children: [
+                    Icon(Icons.date_range_rounded, size: 18, color: dateRange.isCustom ? context.colors.primaryAccent : context.colors.textSecondary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Custom Range',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: dateRange.isCustom ? context.colors.primaryAccent : context.colors.textPrimary,
+                        fontWeight: dateRange.isCustom ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ];
+          },
+        ),
       ],
     );
   }
 
-  PopupMenuItem<int> _buildPopupItem(BuildContext context, int value, String label, int current) {
-    return PopupMenuItem<int>(
+  PopupMenuItem<String> _buildPopupItem(BuildContext context, String value, String label, bool isSelected) {
+    return PopupMenuItem<String>(
       value: value,
       child: Text(
         label,
         style: AppTypography.bodyMedium.copyWith(
-          color: value == current ? context.colors.primaryAccent : context.colors.textPrimary,
-          fontWeight: value == current ? FontWeight.w600 : FontWeight.normal,
+          color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary,
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
         ),
       ),
     );

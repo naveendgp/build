@@ -94,18 +94,26 @@ class FormTemplate {
   final String id;
   final String? postId;
   final String? brandId;
+  final String? name;
   final String title;
   final String? intro;
+  final String? thankYouMsg;
   final int viewCount;
+  final bool isArchived;
+  final String? postTitle;
   final List<FormFieldDefinition> fields;
 
   const FormTemplate({
     required this.id,
     this.postId,
     this.brandId,
+    this.name,
     required this.title,
     this.intro,
+    this.thankYouMsg,
     this.viewCount = 0,
+    this.isArchived = false,
+    this.postTitle,
     this.fields = const [],
   });
 
@@ -114,9 +122,13 @@ class FormTemplate {
       id: json['id'] ?? '',
       postId: json['postId'],
       brandId: json['brandId'],
+      name: json['name'],
       title: json['title'] ?? 'Untitled Form',
       intro: json['intro'],
+      thankYouMsg: json['thankYouMsg'],
       viewCount: json['viewCount'] ?? 0,
+      isArchived: json['isArchived'] ?? false,
+      postTitle: json['post']?['title'],
       fields: (json['fields'] as List<dynamic>?)?.map((e) => FormFieldDefinition.fromJson(e)).toList() ?? [],
     );
   }
@@ -125,18 +137,26 @@ class FormTemplate {
     String? id,
     String? postId,
     String? brandId,
+    String? name,
     String? title,
     String? intro,
+    String? thankYouMsg,
     int? viewCount,
+    bool? isArchived,
+    String? postTitle,
     List<FormFieldDefinition>? fields,
   }) {
     return FormTemplate(
       id: id ?? this.id,
       postId: postId ?? this.postId,
       brandId: brandId ?? this.brandId,
+      name: name ?? this.name,
       title: title ?? this.title,
       intro: intro ?? this.intro,
+      thankYouMsg: thankYouMsg ?? this.thankYouMsg,
       viewCount: viewCount ?? this.viewCount,
+      isArchived: isArchived ?? this.isArchived,
+      postTitle: postTitle ?? this.postTitle,
       fields: fields ?? this.fields,
     );
   }

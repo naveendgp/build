@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
@@ -7,8 +8,9 @@ import 'models/user_profile_models.dart';
 import 'widgets/vault/save_item_card.dart';
 import 'package:go_router/go_router.dart';
 import '../explore/screens/explore_post_detail_screen.dart';
+import 'providers/collections_provider.dart';
 
-class CollectionDetailScreen extends StatefulWidget {
+class CollectionDetailScreen extends ConsumerStatefulWidget {
   final CollectionItem collection;
 
   const CollectionDetailScreen({
@@ -17,10 +19,10 @@ class CollectionDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<CollectionDetailScreen> createState() => _CollectionDetailScreenState();
+  ConsumerState<CollectionDetailScreen> createState() => _CollectionDetailScreenState();
 }
 
-class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
+class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
 
@@ -187,13 +189,15 @@ class _CollectionDetailScreenState extends State<CollectionDetailScreen> {
                   final item = widget.collection.posts[index];
                   return SaveItemCard(
                     item: item,
-                    onTap: () {
-                      Navigator.push(
+                    onTap: () async {
+                      await Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => ExplorePostDetailScreen(postId: item.id),
                         ),
                       );
+                      // Refresh collections after returning so unsave reflects immediately
+                      ref.invalidate(collectionsProvider);
                     },
                   );
                 },

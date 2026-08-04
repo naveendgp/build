@@ -17,6 +17,7 @@ class FormPreview extends StatefulWidget {
 class _FormPreviewState extends State<FormPreview> {
   final Map<String, dynamic> _answers = {};
   bool _consentGiven = false;
+  bool _isSubmitted = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +48,8 @@ class _FormPreviewState extends State<FormPreview> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Form Preview', style: AppTypography.headlineSmall.copyWith(color: context.colors.textPrimary)),
+                      Text(widget.leadForm.name.isNotEmpty ? widget.leadForm.name : 'Form Preview', 
+                           style: AppTypography.headlineSmall.copyWith(color: context.colors.textPrimary)),
                       IconButton(
                         icon: Icon(Icons.close_rounded, color: context.colors.textSecondary),
                         onPressed: () => Navigator.of(context).pop(),
@@ -57,7 +59,47 @@ class _FormPreviewState extends State<FormPreview> {
                 ),
                 
                 // Form Content
-                Expanded(
+                if (_isSubmitted)
+                  Expanded(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xl),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(AppSpacing.md),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: context.colors.primaryAccent.withValues(alpha: 0.1),
+                              ),
+                              child: Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent, size: 48),
+                            ),
+                            const SizedBox(height: AppSpacing.lg),
+                            Text(
+                              widget.leadForm.thankYouMessage.isNotEmpty 
+                                ? widget.leadForm.thankYouMessage 
+                                : 'Thank you for submitting the form',
+                              textAlign: TextAlign.center,
+                              style: AppTypography.titleLarge.copyWith(color: context.colors.textPrimary),
+                            ),
+                            const SizedBox(height: AppSpacing.xl),
+                            ElevatedButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: context.colors.surface,
+                                foregroundColor: context.colors.textPrimary,
+                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              ),
+                              child: const Text('Close'),
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  Expanded(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
@@ -127,27 +169,22 @@ class _FormPreviewState extends State<FormPreview> {
                   ),
                 ),
                 
-                // Submit Button
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // Mock Submit
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Preview Submit Success!', style: TextStyle(color: context.colors.textPrimary)),
-                            backgroundColor: context.colors.surface,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.colors.primaryAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                if (!_isSubmitted)
+                  // Submit Button
+                  Padding(
+                    padding: const EdgeInsets.all(AppSpacing.lg),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Mock Submit
+                          setState(() {
+                            _isSubmitted = true;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: context.colors.primaryAccent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusLg),
                       ),
                       child: Text('Submit', style: AppTypography.button.copyWith(color: context.colors.textPrimary)),

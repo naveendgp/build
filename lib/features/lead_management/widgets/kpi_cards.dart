@@ -7,16 +7,12 @@ class KpiCardsSection extends StatelessWidget {
   final int totalForms;
   final int activeForms;
   final int leadsGenerated;
-  final double conversionRate;
-  final double leadQualityScore;
 
   const KpiCardsSection({
     super.key,
     required this.totalForms,
     required this.activeForms,
     required this.leadsGenerated,
-    required this.conversionRate,
-    required this.leadQualityScore,
   });
 
   @override
@@ -36,27 +32,11 @@ class KpiCardsSection extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.md),
           _buildKpiCard(context, 
-            title: 'Conversion Rate',
-            value: '$conversionRate%',
-            trend: '+2.4%',
-            isPositiveTrend: true,
-            icon: Icons.show_chart_rounded,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _buildKpiCard(context, 
             title: 'Active Forms',
             value: '$activeForms / $totalForms',
             trend: 'Stable',
             isPositiveTrend: true,
             icon: Icons.assignment_rounded,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          _buildKpiCard(context, 
-            title: 'Lead Quality',
-            value: '$leadQualityScore / 10',
-            trend: '+0.8',
-            isPositiveTrend: true,
-            icon: Icons.star_rounded,
           ),
         ],
       ),

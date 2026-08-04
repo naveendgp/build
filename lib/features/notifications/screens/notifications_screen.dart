@@ -10,6 +10,7 @@ import '../widgets/notification_card.dart';
 import '../widgets/notification_states.dart';
 import '../models/notification_models.dart';
 import '../../user_profile/providers/reminders_provider.dart';
+import '../../../core/network/api_client.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -27,6 +28,7 @@ class NotificationsScreen extends ConsumerWidget {
         child: Column(
           children: [
             _buildHeader(context, state, notifier),
+            _buildFilterTabs(context, state, notifier),
             Expanded(
               child: _buildListContent(context, ref, state, notifier),
             ),
@@ -92,6 +94,51 @@ class NotificationsScreen extends ConsumerWidget {
   }
 
 
+  Widget _buildFilterTabs(BuildContext context, NotificationsState state, NotificationsNotifier notifier) {
+    final filters = [
+      {'label': 'All', 'value': NotificationFilter.all},
+      {'label': 'Reminders', 'value': NotificationFilter.reminders},
+      {'label': 'Brands', 'value': NotificationFilter.brands},
+      {'label': 'Messages', 'value': NotificationFilter.messages},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      child: Row(
+        children: filters.map((filter) {
+          final isSelected = state.activeFilter == filter['value'];
+          return Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.sm),
+            child: GestureDetector(
+              onTap: () {
+                Haptics.selection();
+                notifier.setFilter(filter['value'] as NotificationFilter);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected ? context.colors.textPrimary : context.colors.surface,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                  border: Border.all(
+                    color: isSelected ? context.colors.textPrimary : context.colors.border,
+                    width: 0.5,
+                  ),
+                ),
+                child: Text(
+                  filter['label'] as String,
+                  style: AppTypography.labelMedium.copyWith(
+                    color: isSelected ? context.colors.background : context.colors.textSecondary,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
 
   Widget _buildListContent(BuildContext context, WidgetRef ref, NotificationsState state, NotificationsNotifier notifier) {
     final bool showUpcoming = state.activeFilter == NotificationFilter.reminders;
@@ -123,7 +170,7 @@ class NotificationsScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
             child: Text('Upcoming', style: AppTypography.titleSmall.copyWith(color: context.colors.textSecondary)),
           ),
-          ...upcomingState.reminders.map((reminder) => _buildUpcomingCard(context, reminder)),
+          ...upcomingState.reminders.map((reminder) => _buildUpcomingCard(context, ref, reminder)),
           if (notifications.isNotEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
@@ -156,7 +203,7 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildUpcomingCard(BuildContext context, UpcomingReminder reminder) {
+  Widget _buildUpcomingCard(BuildContext context, WidgetRef ref, UpcomingReminder reminder) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -205,7 +252,47 @@ class NotificationsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          Icon(Icons.access_time_filled_rounded, color: context.colors.primaryAccent, size: 20),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            icon: Icon(Icons.edit_rounded, color: context.colors.primaryAccent, size: 20),
+            onPressed: () async {
+              Haptics.selection();
+              final date = await showDatePicker(
+                context: context,
+                initialDate: reminder.reminderTime,
+                firstDate: DateTime.now(),
+                lastDate: DateTime.now().add(const Duration(days: 365)),
+              );
+              if (date != null && context.mounted) {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.fromDateTime(reminder.reminderTime),
+                );
+                if (time != null && context.mounted) {
+                  final newDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                  try {
+                    final apiClient = ref.read(apiClientProvider);
+                    await apiClient.dio.put('/reminders/${reminder.id}', data: {
+                      'reminderTime': newDateTime.toIso8601String(),
+                    });
+                    ref.read(remindersProvider.notifier).loadReminders();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Reminder updated successfully')),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to update reminder: $e')),
+                      );
+                    }
+                  }
+                }
+              }
+            },
+          ),
         ],
       ),
     );

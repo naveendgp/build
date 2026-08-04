@@ -114,10 +114,14 @@ class HamburgerMenuSheet extends ConsumerWidget {
               },
             ),
           ),
-          if (ref.watch(authProvider).loggedInRole == UserRole.brand)
-            _buildMenuItem(context, Icons.dashboard_rounded, 'Brand Dashboard', () {
-              context.push('/brand-dashboard');
+          if (ref.watch(authProvider).loggedInRole == UserRole.brand) ...[
+            _buildMenuItem(context, Icons.people_outline_rounded, 'Lead Center', () {
+              context.push('/brand-dashboard/leads');
             }),
+            _buildMenuItem(context, Icons.bookmark_border_rounded, 'Saved Posts', () {
+              context.push('/brand-saved');
+            }),
+          ],
           _buildMenuItem(context, Icons.settings_rounded, 'Settings', () {
             context.push('/settings');
           }),

@@ -13,6 +13,100 @@ import '../../user_profile/providers/user_profile_provider.dart';
 class PreferencesScreen extends ConsumerWidget {
   const PreferencesScreen({Key? key}) : super(key: key);
 
+  void _showInterestSheet(BuildContext context, WidgetRef ref, dynamic profile) {
+    const List<Map<String, dynamic>> interests = [
+      {'label': 'Technology', 'icon': Icons.computer_rounded},
+      {'label': 'Fashion', 'icon': Icons.checkroom_rounded},
+      {'label': 'Food', 'icon': Icons.restaurant_rounded},
+      {'label': 'Travel', 'icon': Icons.flight_rounded},
+      {'label': 'Fitness', 'icon': Icons.fitness_center_rounded},
+      {'label': 'Art', 'icon': Icons.palette_rounded},
+      {'label': 'Music', 'icon': Icons.music_note_rounded},
+      {'label': 'Photography', 'icon': Icons.camera_alt_rounded},
+      {'label': 'Gaming', 'icon': Icons.sports_esports_rounded},
+      {'label': 'Business', 'icon': Icons.business_center_rounded},
+      {'label': 'Education', 'icon': Icons.school_rounded},
+      {'label': 'Lifestyle', 'icon': Icons.spa_rounded},
+    ];
+
+    List<String> selected = List<String>.from(profile.aiIdentityTags);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+            ),
+            decoration: BoxDecoration(
+              color: context.colors.card,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Container(
+                    width: 40, height: 4,
+                    decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(100)),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text('My Interests', style: AppTypography.titleMedium),
+                ),
+                Flexible(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    itemCount: interests.length,
+                    shrinkWrap: true,
+                    itemBuilder: (_, i) {
+                      final item = interests[i];
+                      final label = item['label'] as String;
+                      final isSelected = selected.contains(label);
+                      
+                      return ListTile(
+                        onTap: () { 
+                          Haptics.selection(); 
+                          setState(() {
+                            if (isSelected) {
+                              selected.remove(label);
+                            } else {
+                              selected.add(label);
+                            }
+                          });
+                          ref.read(userProfileProvider.notifier).updateProfile({
+                            'interests': selected.join(',')
+                          });
+                        },
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        leading: Container(
+                          width: 40, height: 40,
+                          decoration: BoxDecoration(
+                            color: isSelected ? context.colors.primaryAccent.withOpacity(0.15) : context.colors.surface,
+                            borderRadius: BorderRadius.circular(8)
+                          ),
+                          child: Icon(item['icon'] as IconData, size: 20, color: isSelected ? context.colors.primaryAccent : context.colors.textSecondary)
+                        ),
+                        title: Text(label, style: AppTypography.labelLarge.copyWith(color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary)),
+                        trailing: isSelected ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent) : null,
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12),
+              ],
+            ),
+          );
+        }
+      ),
+    );
+  }
+
   void _showCategorySheet(BuildContext context, WidgetRef ref, dynamic settings) {
     // We'll reuse the categories list locally to avoid tight coupling to auth widgets
     const List<Map<String, dynamic>> categories = [
@@ -130,6 +224,7 @@ class PreferencesScreen extends ConsumerWidget {
     final isBrand = authState.loggedInRole == UserRole.brand;
     final userSettingsState = ref.watch(userSettingsProvider);
     final brandSettingsState = ref.watch(brandSettingsProvider);
+    final userProfileState = ref.watch(userProfileProvider);
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -156,16 +251,34 @@ class PreferencesScreen extends ConsumerWidget {
             userSettingsState.when(
               data: (settings) => Column(
                 children: [
-                  SettingsGroup(
-                    title: 'Content',
-                    children: [
-                      SettingsItem(
-                        title: 'Category Interests',
-                        icon: Icons.category_outlined,
-                        onTap: () => _showCategorySheet(context, ref, settings),
-                      ),
-                    ],
-                  ),
+                  if (!isBrand && userProfileState.profile != null) ...[
+                    SettingsGroup(
+                      title: 'Personalization',
+                      children: [
+                        SettingsItem(
+                          title: 'My Interests (Tags)',
+                          icon: Icons.favorite_border_rounded,
+                          onTap: () => _showInterestSheet(context, ref, userProfileState.profile),
+                        ),
+                        SettingsItem(
+                          title: 'Category Interests',
+                          icon: Icons.category_outlined,
+                          onTap: () => _showCategorySheet(context, ref, settings),
+                        ),
+                      ],
+                    ),
+                  ] else ...[
+                    SettingsGroup(
+                      title: 'Content Preferences',
+                      children: [
+                        SettingsItem(
+                          title: 'Category Interests',
+                          icon: Icons.category_outlined,
+                          onTap: () => _showCategorySheet(context, ref, settings),
+                        ),
+                      ],
+                    ),
+                  ],
                   SettingsGroup(
                     title: 'Notifications',
                     children: [

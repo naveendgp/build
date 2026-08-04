@@ -11,8 +11,10 @@ import '../../core/utils/validators.dart';
 import 'providers/signup_provider.dart';
 import 'providers/auth_provider.dart';
 import 'widgets/password_strength_bar.dart';
+import 'widgets/social_auth_button.dart';
 import 'widgets/category_selector.dart';
 import 'widgets/sub_category_selector.dart';
+import '../../core/widgets/location_picker.dart';
 
 import 'widgets/upload_area.dart';
 
@@ -31,7 +33,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
-  final _contactCtrl = TextEditingController();
+  final _contactCtrl = TextEditingController(text: '+91 ');
   final _locationCtrl = TextEditingController();
   final _tagCtrl = TextEditingController();
 
@@ -178,15 +180,24 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
               label: 'Contact Number',
               controller: _contactCtrl,
               keyboardType: TextInputType.phone,
-              validator: (v) => Validators.required(v, 'Contact number'),
+              hint: '+91 98765 43210',
+              validator: Validators.indianPhone,
               onChanged: (v) => notifier.updateField('brandContactNumber', v),
             ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
               label: 'Location',
               controller: _locationCtrl,
+              readOnly: true,
+              hint: 'City, State',
               validator: (v) => Validators.required(v, 'Location'),
-              onChanged: (v) => notifier.updateField('brandLocation', v),
+              onTap: () async {
+                final loc = await showLocationPicker(context);
+                if (loc != null) {
+                  _locationCtrl.text = loc;
+                  notifier.updateField('brandLocation', loc);
+                }
+              },
             ),
             const SizedBox(height: AppSpacing.md),
             Text('Business Category', style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary)),

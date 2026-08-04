@@ -14,7 +14,7 @@ import '../brand_profile/widgets/brand_posts_tab.dart';
 import '../brand_profile/widgets/brand_gallery_tab.dart';
 import '../brand_profile/widgets/brand_quicksite_tab.dart';
 import '../reviews/presentation/screens/brand_reviews_tab.dart';
-import '../lead_management/screens/lead_dashboard_screen.dart' as lyket_lead;
+
 import '../../core/network/api_client.dart';
 import '../messaging/screens/chat_screen.dart';
 import '../auth/providers/auth_provider.dart';
@@ -145,11 +145,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                           },
                           onLeadCenterTap: () {
                             Haptics.selection();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (context) => const lyket_lead.LeadDashboardScreen(),
-                              ),
-                            );
+                            context.push('/brand-dashboard');
                           },
                           onFollowToggled: () {
                             // TODO: implement follow API call

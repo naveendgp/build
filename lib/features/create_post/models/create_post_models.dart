@@ -15,8 +15,7 @@ enum CreateStep {
 }
 
 enum MediaDimension {
-  square,   // 1:1
-  vertical, // 9:16
+  square, // 1:1
 }
 
 enum MediaType {
@@ -311,20 +310,24 @@ class FormFieldData {
 }
 
 class LeadFormData {
+  final String name;
   final String headline;
   final String description;
   final File? heroImage;
   final List<FormFieldData> fields;
   final String privacyPolicyUrl;
   final String consentText;
+  final String thankYouMessage;
 
   const LeadFormData({
+    this.name = '',
     this.headline = '',
     this.description = '',
     this.heroImage,
     this.fields = const [],
     this.privacyPolicyUrl = '',
     this.consentText = 'By submitting this form, you agree to our privacy policy.',
+    this.thankYouMessage = 'Thank you for submitting the form',
   });
 
   List<FormFieldData> get sortedFields {
@@ -334,21 +337,25 @@ class LeadFormData {
   }
 
   LeadFormData copyWith({
+    String? name,
     String? headline,
     String? description,
     File? heroImage,
     List<FormFieldData>? fields,
     String? privacyPolicyUrl,
     String? consentText,
+    String? thankYouMessage,
     bool clearHeroImage = false,
   }) {
     return LeadFormData(
+      name: name ?? this.name,
       headline: headline ?? this.headline,
       description: description ?? this.description,
       heroImage: clearHeroImage ? null : (heroImage ?? this.heroImage),
       fields: fields ?? this.fields,
       privacyPolicyUrl: privacyPolicyUrl ?? this.privacyPolicyUrl,
       consentText: consentText ?? this.consentText,
+      thankYouMessage: thankYouMessage ?? this.thankYouMessage,
     );
   }
 }

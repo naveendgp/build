@@ -23,12 +23,16 @@ import '../../features/settings/screens/brand_profile_settings_screen.dart';
 import '../../features/settings/screens/account_information_screen.dart';
 import '../../features/settings/screens/blocked_brands_screen.dart';
 import '../../features/settings/screens/archived_posts_screen.dart';
+import '../../features/settings/screens/interests_screen.dart';
 import '../../features/help_support/screens/help_support_home_screen.dart';
 import '../../features/help_support/screens/faq_screen.dart';
 import '../../features/help_support/screens/raise_ticket_screen.dart';
 import '../../features/help_support/screens/ticket_detail_screen.dart';
 import '../storage/secure_storage.dart';
 import '../../features/brand_dashboard/screens/brand_dashboard_screen.dart';
+import '../../features/brand_profile/screens/brand_saved_posts_screen.dart';
+import '../../features/lead_management/screens/lead_dashboard_screen.dart';
+
 class AppRouter {
   AppRouter._();
 
@@ -424,6 +428,23 @@ class AppRouter {
             ),
           ),
           GoRoute(
+            path: 'interests',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const InterestsScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
             path: 'brand-profile',
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
@@ -447,6 +468,42 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const BrandDashboardScreen(),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(1, 0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+        routes: [
+          GoRoute(
+            path: 'leads',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const LeadDashboardScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+        ],
+      ),
+      GoRoute(
+        path: '/brand-saved',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const BrandSavedPostsScreen(),
           transitionsBuilder: (_, animation, secondaryAnimation, child) {
             return SlideTransition(
               position: Tween<Offset>(

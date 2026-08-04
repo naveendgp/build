@@ -7,15 +7,12 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/create_post_models.dart';
-import 'dimension_selector.dart';
 
 /// Full media preview step with immersive image/video preview,
 /// dimension selector overlay, glassmorphic change button,
 /// and optional PageView with smooth dot indicators for multi-media.
 class MediaPreviewStep extends StatefulWidget {
   final List<MediaItem> media;
-  final MediaDimension dimension;
-  final ValueChanged<MediaDimension> onChangeDimension;
   final ValueChanged<int> onChangeMedia;
   final ValueChanged<int> onRemoveMedia;
   final VoidCallback? onAddMore;
@@ -23,8 +20,6 @@ class MediaPreviewStep extends StatefulWidget {
   const MediaPreviewStep({
     super.key,
     required this.media,
-    required this.dimension,
-    required this.onChangeDimension,
     required this.onChangeMedia,
     required this.onRemoveMedia,
     this.onAddMore,
@@ -57,15 +52,6 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
     super.dispose();
   }
 
-  double get _aspectRatio {
-    switch (widget.dimension) {
-      case MediaDimension.square:
-        return 1.0;
-      case MediaDimension.vertical:
-        return 9.0 / 16.0;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
@@ -79,13 +65,61 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
           mainAxisSize: MainAxisSize.min,
           children: [
             _buildPreviewCard(),
+            const SizedBox(height: AppSpacing.md),
             if (widget.media.length > 1) ...[
-              const SizedBox(height: AppSpacing.md),
               _buildPageIndicator(),
+              const SizedBox(height: AppSpacing.md),
             ],
+            _buildControlsSection(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildControlsSection() {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (widget.media.length > 1)
+              _GlassPillButton(
+                label: 'Remove',
+                icon: Icons.close_rounded,
+                onTap: () {
+                  Haptics.medium();
+                  widget.onRemoveMedia(_currentPage);
+                },
+              )
+            else
+              const SizedBox.shrink(),
+            Row(
+              children: [
+                if (widget.onAddMore != null) ...[
+                  _GlassPillButton(
+                    label: 'Add More',
+                    icon: Icons.add_photo_alternate_rounded,
+                    onTap: () {
+                      Haptics.light();
+                      widget.onAddMore!();
+                    },
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                ],
+                _GlassPillButton(
+                  label: 'Change',
+                  icon: Icons.swap_horiz_rounded,
+                  onTap: () {
+                    Haptics.light();
+                    widget.onChangeMedia(_currentPage);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -97,72 +131,15 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
       child: ClipRRect(
         borderRadius: AppSpacing.borderRadiusXl,
         child: AspectRatio(
-          aspectRatio: _aspectRatio,
+          aspectRatio: 1.0,
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // â”€â”€ Media content â”€â”€
+              // Media content
               if (widget.media.length == 1)
                 _buildSinglePreview(widget.media.first)
               else
                 _buildPageView(),
-
-              // â”€â”€ Change / Add more buttons (top-right) â”€â”€
-              Positioned(
-                top: AppSpacing.md,
-                right: AppSpacing.md,
-                child: Row(
-                  children: [
-                    if (widget.onAddMore != null) ...[
-                      _GlassPillButton(
-                        label: 'Add More',
-                        icon: Icons.add_photo_alternate_rounded,
-                        onTap: () {
-                          Haptics.light();
-                          widget.onAddMore!();
-                        },
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                    ],
-                    _GlassPillButton(
-                      label: 'Change',
-                      icon: Icons.swap_horiz_rounded,
-                      onTap: () {
-                        Haptics.light();
-                        widget.onChangeMedia(_currentPage);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-
-              // â”€â”€ Remove button (top-left, only if multiple) â”€â”€
-              if (widget.media.length > 1)
-                Positioned(
-                  top: AppSpacing.md,
-                  left: AppSpacing.md,
-                  child: _GlassPillButton(
-                    label: 'Remove',
-                    icon: Icons.close_rounded,
-                    onTap: () {
-                      Haptics.medium();
-                      widget.onRemoveMedia(_currentPage);
-                    },
-                  ),
-                ),
-
-              // â”€â”€ Dimension selector (bottom-center) â”€â”€
-              Positioned(
-                bottom: AppSpacing.md,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: DimensionSelector(
-                    currentDimension: widget.dimension,
-                    onChanged: widget.onChangeDimension,
-                  ),
-                ),
-              ),
             ],
           ),
         ),

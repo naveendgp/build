@@ -61,7 +61,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   // â”€â”€â”€ Media â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<bool> pickImage({ImageSource source = ImageSource.gallery, int? replaceIndex}) async {
-    final picked = await _picker.pickImage(source: source, imageQuality: 90, maxWidth: 2048);
+    final picked = await _picker.pickImage(source: source, imageQuality: 70, maxWidth: 1080);
     if (picked != null) {
       final item = MediaItem(
         id: 'media_${DateTime.now().millisecondsSinceEpoch}',
@@ -87,7 +87,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     if (source != ImageSource.gallery) {
       return pickImage(source: source);
     }
-    final picked = await _picker.pickMultiImage(imageQuality: 90, maxWidth: 2048);
+    final picked = await _picker.pickMultiImage(imageQuality: 70, maxWidth: 1080);
     if (picked.isNotEmpty) {
       final items = picked.map((file) => MediaItem(
         id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
@@ -250,11 +250,13 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
 
           return LeadFormTemplate(
             id: json['id'],
-            name: json['title'] ?? 'Untitled Template',
+            name: json['name'] ?? json['title'] ?? 'Untitled Template',
             icon: Icons.article_rounded, // Default icon for now
             data: LeadFormData(
+              name: json['name'] ?? '',
               headline: json['title'] ?? '',
               description: json['intro'] ?? '',
+              thankYouMessage: json['thankYouMsg'] ?? 'Thank you for submitting the form',
               fields: fields,
             ),
           );
@@ -273,8 +275,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     try {
       // 1. Create the template in the backend (no postId)
       final formRes = await _apiClient.dio.post('/lead-form', data: {
+        'name': name, // The name chosen by user in the Save Template popup
         'title': state.leadForm!.headline,
         'intro': state.leadForm!.description,
+        'thankYouMsg': state.leadForm!.thankYouMessage,
       });
 
       if (formRes.statusCode == 200 || formRes.statusCode == 201) {
@@ -343,6 +347,13 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   // ———————————————————————————————————————————— Publish ————————————————————————————————————————————
 
   Future<void> publish() async {
+    if (state.objective == PostObjective.leadGeneration) {
+      if (state.leadForm == null || state.leadForm!.fields.isEmpty) {
+        state = state.copyWith(errorMessage: 'A lead form with at least one question is required for the Lead Generation objective.');
+        return;
+      }
+    }
+    
     state = state.copyWith(uploadStage: UploadStage.uploading, uploadProgress: 0.0, errorMessage: null);
     
     try {
@@ -505,7 +516,13 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
 
     } on DioException catch (e) {
       debugPrint('Publish error: ${e.response?.data}');
-      final msg = e.response?.data?['message'] ?? e.message;
+      String msg = e.message ?? 'Unknown error';
+      final data = e.response?.data;
+      if (data is Map<String, dynamic> && data.containsKey('message')) {
+        msg = data['message'].toString();
+      } else if (data is String) {
+        msg = '${e.response?.statusCode ?? 'Unknown'} Error (Might be too large)';
+      }
       state = state.copyWith(
         uploadStage: UploadStage.failed, 
         errorMessage: 'Server Error: $msg'

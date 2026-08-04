@@ -67,22 +67,14 @@ class LeadDashboardScreen extends ConsumerWidget {
         loading: () => Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
         error: (err, stack) => Center(child: Text('Failed to load KPIs: $err')),
         data: (stats) {
-          int views = 0;
-          for (var p in stats.posts) {
-            views += p.viewCount;
-          }
-          final conversionRate = views > 0 ? (stats.totalSubmissions / views) * 100 : 0.0;
-          
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: AppSpacing.lg),
               KpiCardsSection(
                 totalForms: stats.formCount,
-                activeForms: stats.formCount,
+                activeForms: stats.formCount, // Assuming all are active for now
                 leadsGenerated: stats.totalSubmissions,
-                conversionRate: conversionRate,
-                leadQualityScore: 8.5, // Mocked for now
               ),
               const SizedBox(height: AppSpacing.xl),
               Expanded(

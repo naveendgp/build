@@ -81,10 +81,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
               },
             );
           case CreateStep.preview:
-            return MediaPreviewStep(
-              media: state.media,
-              dimension: state.dimension,
-              onChangeDimension: notifier.setDimension,
+            return SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: MediaPreviewStep(
+                media: state.media,
               onChangeMedia: (index) {
                 showModalBottomSheet(
                   context: context,
@@ -127,6 +127,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                 }
               },
               onAddMore: () => notifier.pickImages(),
+              ),
             );
           case CreateStep.details:
               return ContentDetailsStep(
@@ -161,6 +162,9 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
                   ctaData: state.cta ?? const CtaData(type: CtaType.noButton),
                   onCtaTypeChanged: notifier.updateCtaType,
                   onUrlChanged: notifier.updateCtaUrl,
+                  onUtmSourceChanged: (val) => notifier.updateUtm(source: val),
+                  onUtmMediumChanged: (val) => notifier.updateUtm(medium: val),
+                  onUtmCampaignChanged: (val) => notifier.updateUtm(campaign: val),
                 )
               : Center(
                   child: Text('Please select an objective first.', style: AppTypography.bodyMedium),
@@ -203,11 +207,22 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     if (state.currentStep == CreateStep.objective && state.objective == null) canProceed = false;
     if (state.currentStep == CreateStep.schedule && state.publishMode == PublishMode.scheduled && state.scheduledAt == null) canProceed = false;
     if (state.currentStep.index >= CreateStep.cta.index) {
+      if (state.objective == PostObjective.leadGeneration) {
+        if (state.currentStep.index >= CreateStep.leadForm.index && state.leadForm == null) {
+          canProceed = false;
+        }
+      }
       if (state.objective == PostObjective.traffic ||
           state.objective == PostObjective.conversions ||
           state.objective == PostObjective.getDirections) {
         if (state.cta?.destinationUrl == null || state.cta!.destinationUrl!.trim().isEmpty) {
           canProceed = false;
+        } else {
+          final url = state.cta!.destinationUrl!.trim();
+          final isValidUrl = RegExp(r'^https?:\/\/[\w\-]+(\.[\w\-]+)+[/#?]?.*$').hasMatch(url);
+          if (!isValidUrl) {
+            canProceed = false;
+          }
         }
       }
     }
@@ -227,24 +242,34 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
         ),
         title: _StepIndicator(currentStep: currentIdx, totalSteps: steps.length),
         centerTitle: true,
-        actions: [
-          if (state.uploadStage == UploadStage.idle)
-            TextButton(
-              onPressed: canProceed ? () {
-                Haptics.light();
-                _onNextStep(state, notifier);
-              } : null,
-              child: Text(
-                isLastStep 
-                    ? (state.publishMode == PublishMode.scheduled ? 'Schedule' : 'Publish') 
-                    : 'Next',
-                style: AppTypography.buttonSmall.copyWith(
-                  color: canProceed ? context.colors.primaryAccent : context.colors.textDisabled,
+        // Actions moved to bottom
+      ),
+      bottomNavigationBar: state.uploadStage == UploadStage.idle && state.currentStep != CreateStep.media
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: ElevatedButton(
+                  onPressed: canProceed ? () {
+                    Haptics.light();
+                    _onNextStep(state, notifier);
+                  } : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: canProceed ? context.colors.primaryAccent : context.colors.surfaceSecondary,
+                    foregroundColor: canProceed ? Colors.white : context.colors.textDisabled,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    isLastStep 
+                        ? (state.publishMode == PublishMode.scheduled ? 'Schedule Post' : 'Publish Post') 
+                        : 'Next',
+                    style: AppTypography.button,
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+            )
+          : null,
       body: Stack(
         children: [
           _buildStepContent(state, notifier),

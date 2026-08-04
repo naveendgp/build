@@ -107,6 +107,19 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
     }
     state = state.copyWith(savedPosts: updatedPosts);
   }
+
+  Future<bool> updateProfile(Map<String, dynamic> data) async {
+    try {
+      final res = await apiClient.dio.put('/user/profile', data: data);
+      if (res.statusCode == 200) {
+        await loadProfile();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Update Profile Error: \$e');
+    }
+    return false;
+  }
 }
 
 final userProfileProvider = StateNotifierProvider.autoDispose<UserProfileNotifier, UserProfileState>((ref) {
