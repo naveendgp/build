@@ -13,7 +13,7 @@ class ApiClient {
     _dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
       sendTimeout: const Duration(seconds: 60),
       headers: {
         'Content-Type': 'application/json',
@@ -44,30 +44,41 @@ class ApiClient {
 
   Dio get dio => _dio;
 
+  static const String _origin = 'https://internal.lyket.in';
+
+  /// Hosts that older backend builds baked into stored media URLs. Anything
+  /// still pointing at one of these is rebuilt onto [_origin]; S3 and other
+  /// absolute URLs pass through untouched.
+  static const Set<String> _staleHosts = {
+    'localhost',
+    '127.0.0.1',
+    '10.0.2.2',
+    '65.2.11.145',
+    '13.233.207.224',
+    '3.109.152.20',
+    '13.232.115.69',
+    'internal.lyket.in',
+  };
+
   /// Helper to resolve media URLs, especially if the backend returns 'localhost'
   static String resolveMediaUrl(String? url) {
     if (url == null || url.trim().isEmpty) return '';
-    String trimmed = url.trim();
-    
-    // If backend returns a relative path
-    if (trimmed.startsWith('/') || trimmed.startsWith('uploads/')) {
-      final path = trimmed.startsWith('/') ? trimmed : '/$trimmed';
-      return 'https://internal.lyket.in$path';
-    }
-    
-    // Replace various possible localhost/old IP references with internal.lyket.in
-    String resolved = trimmed
-        .replaceFirst('http://localhost:5000', 'https://internal.lyket.in')
-        .replaceFirst('http://localhost:3001', 'https://internal.lyket.in')
-        .replaceFirst('http://65.2.11.145:3001', 'https://internal.lyket.in')
-        .replaceFirst('13.233.207.224', 'internal.lyket.in')
-        .replaceFirst('3.109.152.20', 'internal.lyket.in')
-        .replaceFirst('localhost', 'internal.lyket.in'); // fallback
+    final trimmed = url.trim();
 
-    if (!resolved.startsWith('http://') && !resolved.startsWith('https://')) {
-      return 'http://$resolved';
+    // Relative path from the backend
+    if (trimmed.startsWith('/') || trimmed.startsWith('uploads/')) {
+      return '$_origin${trimmed.startsWith('/') ? trimmed : '/$trimmed'}';
     }
-    
-    return resolved;
+
+    // Assume https for a bare host so we never downgrade to cleartext
+    final uri = Uri.tryParse(trimmed.contains('://') ? trimmed : 'https://$trimmed');
+    if (uri == null || uri.host.isEmpty) return trimmed;
+
+    // Drop the stale scheme AND port, keeping only the path/query
+    if (_staleHosts.contains(uri.host)) {
+      return '$_origin${uri.path}${uri.hasQuery ? '?${uri.query}' : ''}';
+    }
+
+    return uri.toString();
   }
 }
