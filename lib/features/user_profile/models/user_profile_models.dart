@@ -75,7 +75,7 @@ class UserProfileData {
     final name = json['name']?.toString().trim() ?? '';
     
     return UserProfileData(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       username: json['username'] ?? '',
       name: name.isEmpty ? 'User' : name,
       email: json['email'] ?? '',
@@ -141,7 +141,7 @@ class SavedPostItem {
     }
 
     return SavedPostItem(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       imageUrl: ApiClient.resolveMediaUrl(url),
       videoUrl: vUrl != null ? ApiClient.resolveMediaUrl(vUrl) : null,
       title: json['title'] ?? '',
@@ -195,7 +195,7 @@ class CollectionItem {
     }
 
     return CollectionItem(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       title: json['name'] ?? 'Collection',
       postCount: parsedPosts.length,
       lastUpdated: 'Recently',

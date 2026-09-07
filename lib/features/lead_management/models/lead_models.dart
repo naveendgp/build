@@ -26,10 +26,10 @@ class LeadSubmission {
   factory LeadSubmission.fromJson(Map<String, dynamic> json) {
     final user = json['user'] as Map<String, dynamic>? ?? {};
     return LeadSubmission(
-      id: json['id'] ?? '',
-      formId: json['formId'] ?? '',
-      postId: json['postId'] ?? '',
-      userId: json['userId'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      formId: (json['formId'] ?? '').toString(),
+      postId: (json['postId'] ?? '').toString(),
+      userId: (json['userId'] ?? '').toString(),
       answers: json['answers'] as Map<String, dynamic>? ?? {},
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
       username: user['username'] ?? 'Anonymous',
@@ -61,7 +61,7 @@ class LeadStatItem {
 
   factory LeadStatItem.fromJson(Map<String, dynamic> json) {
     return LeadStatItem(
-      postId: json['postId'] ?? '',
+      postId: (json['postId'] ?? '').toString(),
       postTitle: json['postTitle'],
       formId: json['formId'],
       formTitle: json['formTitle'],

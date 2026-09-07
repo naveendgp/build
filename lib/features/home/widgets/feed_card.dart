@@ -398,11 +398,11 @@ class FeedCard extends ConsumerWidget {
                 if (!isDetailMode)
                   ListTile(
                     leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
-                    title: Text('Hide Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                    title: Text('Not Interested', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
                     onTap: () {
                       Navigator.pop(context);
                       ref.read(feedProvider.notifier).markNotInterested(post.id);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post hidden from your feed.')));
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('We will show fewer posts like this.')));
                     },
                   ),
                 ListTile(
@@ -410,7 +410,7 @@ class FeedCard extends ConsumerWidget {
                   title: Text('Report Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error)),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/help/ticket?type=LIVE_CHAT');
+                    context.push('/help/live-chat?category=SPAM');
                   },
                 ),
               ],

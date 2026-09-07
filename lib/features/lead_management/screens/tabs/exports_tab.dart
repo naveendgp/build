@@ -19,6 +19,22 @@ class ExportsTab extends ConsumerStatefulWidget {
 
 class _ExportsTabState extends ConsumerState<ExportsTab> {
   String? selectedPostId;
+  DateTimeRange? selectedDateRange;
+
+  Future<void> _pickDateRange() async {
+    final now = DateTime.now();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 3),
+      lastDate: now,
+      initialDateRange: selectedDateRange,
+    );
+    if (picked != null) {
+      setState(() => selectedDateRange = picked);
+    }
+  }
+
+  String _formatDate(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +111,40 @@ class _ExportsTabState extends ConsumerState<ExportsTab> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Text('Date Range (Optional)', style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary)),
+                  const SizedBox(height: AppSpacing.sm),
+                  GestureDetector(
+                    onTap: _pickDateRange,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+                      decoration: BoxDecoration(
+                        color: context.colors.surface,
+                        borderRadius: AppSpacing.borderRadiusLg,
+                        border: Border.all(color: context.colors.borderLight.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.date_range_rounded, size: 18, color: context.colors.textSecondary),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: Text(
+                              selectedDateRange == null
+                                  ? 'All time'
+                                  : '${_formatDate(selectedDateRange!.start)} – ${_formatDate(selectedDateRange!.end)}',
+                              style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                            ),
+                          ),
+                          if (selectedDateRange != null)
+                            GestureDetector(
+                              onTap: () => setState(() => selectedDateRange = null),
+                              behavior: HitTestBehavior.opaque,
+                              child: Icon(Icons.close_rounded, size: 18, color: context.colors.textSecondary),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.xxl),
                   GestureDetector(
                     onTap: () async {
@@ -109,6 +159,16 @@ class _ExportsTabState extends ConsumerState<ExportsTab> {
                           final url = '/leads/$selectedPostId/export/csv';
                           final res = await api.dio.get(
                             url,
+                            queryParameters: selectedDateRange == null
+                                ? null
+                                : {
+                                    // .toUtc() so the backend (which parses
+                                    // with `new Date(...)`) doesn't interpret
+                                    // a bare local-time string in its own
+                                    // timezone and shift the range by hours.
+                                    'startDate': selectedDateRange!.start.toUtc().toIso8601String(),
+                                    'endDate': selectedDateRange!.end.toUtc().toIso8601String(),
+                                  },
                             options: Options(responseType: ResponseType.bytes),
                           );
                           

@@ -60,10 +60,10 @@ class FormFieldDefinition {
 
   factory FormFieldDefinition.fromJson(Map<String, dynamic> json) {
     return FormFieldDefinition(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       type: FormFieldType.fromApi(json['type'] ?? 'SHORT_TEXT'),
       label: json['label'] ?? '',
-      isRequired: json['isRequired'] ?? false,
+      isRequired: json['isRequired'] == true || json['isRequired'] == 'true',
       options: (json['options'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       order: json['order'] ?? 0,
       section: json['section'],
@@ -119,7 +119,7 @@ class FormTemplate {
 
   factory FormTemplate.fromJson(Map<String, dynamic> json) {
     return FormTemplate(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       postId: json['postId'],
       brandId: json['brandId'],
       name: json['name'],
@@ -127,7 +127,7 @@ class FormTemplate {
       intro: json['intro'],
       thankYouMsg: json['thankYouMsg'],
       viewCount: json['viewCount'] ?? 0,
-      isArchived: json['isArchived'] ?? false,
+      isArchived: json['isArchived'] == true || json['isArchived'] == 'true',
       postTitle: json['post']?['title'],
       fields: (json['fields'] as List<dynamic>?)?.map((e) => FormFieldDefinition.fromJson(e)).toList() ?? [],
     );

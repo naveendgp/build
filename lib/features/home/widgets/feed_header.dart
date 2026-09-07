@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
-import '../providers/feed_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
 import 'hamburger_menu_sheet.dart';
 
@@ -16,7 +15,6 @@ class FeedHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final feedTitle = ref.watch(feedProvider.select((s) => s.feedTitle));
     final unreadNotifications = ref.watch(notificationsProvider).unreadCount;
     final opacity = (1.0 - (scrollOffset / 100)).clamp(0.0, 1.0);
     final blurSigma = (scrollOffset / 10).clamp(0.0, 20.0);
@@ -42,36 +40,6 @@ class FeedHeader extends ConsumerWidget {
                     fontWeight: FontWeight.w800,
                     letterSpacing: -0.5,
                     color: context.colors.primaryAccent,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              // Dynamic title
-              GestureDetector(
-                onTap: () => ref.read(feedProvider.notifier).cycleFeedTitle(),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  switchInCurve: Curves.easeOut,
-                  switchOutCurve: Curves.easeIn,
-                  transitionBuilder: (child, anim) {
-                    return FadeTransition(
-                      opacity: anim,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.3),
-                          end: Offset.zero,
-                        ).animate(anim),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Text(
-                    feedTitle,
-                    key: ValueKey(feedTitle),
-                    style: AppTypography.labelLarge.copyWith(
-                      color: context.colors.textSecondary,
-                      letterSpacing: 0.3,
-                    ),
                   ),
                 ),
               ),

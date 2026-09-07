@@ -1,12 +1,14 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/brand_profile_models.dart';
 import '../providers/brand_profile_provider.dart';
 
-class BrandGalleryTab extends ConsumerWidget {
+class BrandGalleryTab extends ConsumerStatefulWidget {
   final List<BrandGalleryItem> gallery;
   final bool isOwner;
 
@@ -17,7 +19,44 @@ class BrandGalleryTab extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BrandGalleryTab> createState() => _BrandGalleryTabState();
+}
+
+class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
+  final ImagePicker _picker = ImagePicker();
+  bool _isUploading = false;
+
+  Future<void> _pickAndUploadImage() async {
+    if (_isUploading) return;
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 1080,
+    );
+    if (image == null) return;
+
+    setState(() => _isUploading = true);
+    try {
+      final success = await ref.read(brandProfileProvider('me').notifier).uploadGalleryImage(File(image.path));
+      if (mounted) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Added to gallery!')),
+          );
+        } else {
+          final message = ref.read(brandProfileProvider('me')).lastActionError ?? 'Something went wrong. Please try again.';
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gallery = widget.gallery;
+    final isOwner = widget.isOwner;
     if (gallery.isEmpty && !isOwner) {
       return Center(
         child: Padding(
@@ -98,19 +137,21 @@ class BrandGalleryTab extends ConsumerWidget {
           itemBuilder: (context, index) {
             if (isOwner && index == 0) {
               return InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Image picker coming soon')),
-                  );
-                },
+                onTap: _isUploading ? null : _pickAndUploadImage,
                 child: Container(
                   color: context.colors.surfaceSecondary,
                   child: Center(
-                    child: Icon(
-                      Icons.add_photo_alternate_rounded,
-                      color: context.colors.textTertiary,
-                      size: 32,
-                    ),
+                    child: _isUploading
+                        ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.primaryAccent),
+                          )
+                        : Icon(
+                            Icons.add_photo_alternate_rounded,
+                            color: context.colors.textTertiary,
+                            size: 32,
+                          ),
                   ),
                 ),
               );

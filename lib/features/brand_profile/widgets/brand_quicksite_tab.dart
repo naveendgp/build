@@ -7,12 +7,14 @@ import '../models/brand_profile_models.dart';
 
 class BrandQuicksiteTab extends StatelessWidget {
   final BrandQuicksiteData quicksiteData;
+  final String? gstNumber;
   final bool isOwner;
   final VoidCallback? onEdit;
 
   const BrandQuicksiteTab({
     super.key,
     required this.quicksiteData,
+    this.gstNumber,
     this.isOwner = false,
     this.onEdit,
   });
@@ -208,6 +210,8 @@ class BrandQuicksiteTab extends StatelessWidget {
             _buildContactRow(context, Icons.phone, quicksiteData.contact.phone!),
           if (quicksiteData.contact.address != null && quicksiteData.contact.address!.isNotEmpty)
             _buildContactRow(context, Icons.location_on, quicksiteData.contact.address!),
+          if (gstNumber != null && gstNumber!.isNotEmpty)
+            _buildContactRow(context, Icons.receipt_long_outlined, 'GSTIN: $gstNumber'),
           if (quicksiteData.socialLinks.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(

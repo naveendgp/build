@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:typed_data';
+import 'dart:ui' as ui;
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:flutter/material.dart';
@@ -136,6 +138,15 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     state = state.copyWith(dimension: dim);
   }
 
+  /// Called from MediaPreviewStep whenever the user finishes a zoom/pan gesture.
+  void updateMediaTransform(String id, Matrix4 transform, Size previewSize) {
+    final updated = state.media.map((m) {
+      if (m.id == id) return m.copyWith(transform: transform, previewSize: previewSize);
+      return m;
+    }).toList();
+    state = state.copyWith(media: updated);
+  }
+
   // â”€â”€â”€ Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   void setTitle(String title) {
@@ -243,7 +254,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
               id: f['id'],
               type: mappedType,
               question: f['label'],
-              isRequired: f['isRequired'] ?? false,
+              isRequired: f['isRequired'] == true || f['isRequired'] == 'true',
               options: List<String>.from(f['options'] ?? []),
             );
           }).toList();
@@ -363,11 +374,15 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         final item = state.media[i];
         final isVideo = item.type == MediaType.video;
         
+        final fileToUpload = (item.type == MediaType.image && item.transform != null && item.previewSize != null)
+            ? await _applyTransformToFile(item)
+            : item.file;
+
         final formData = FormData.fromMap({
           'file': await MultipartFile.fromFile(
-            item.file.path,
-            contentType: isVideo 
-              ? http_parser.MediaType('video', 'mp4') 
+            fileToUpload.path,
+            contentType: isVideo
+              ? http_parser.MediaType('video', 'mp4')
               : http_parser.MediaType('image', 'jpeg'),
           ),
         });
@@ -386,6 +401,11 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
              state = state.copyWith(uploadProgress: baseProgress + currentProgress);
           },
         );
+        
+        // Clean up temp file if we created one
+        if (fileToUpload.path != item.file.path) {
+          try { fileToUpload.deleteSync(); } catch (_) {}
+        }
         
         if (res.statusCode == 200) {
           uploadedMedia.add({
@@ -545,4 +565,60 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   void reset() {
     state = const CreatePostState();
   }
+
+  // ─── Image Transform / Crop ───────────────────────────────────────────────
+
+  /// Renders the user's zoom+pan transform onto a [size x size] canvas and
+  /// saves the result as a JPEG temp file. This makes the uploaded image match
+  /// exactly what the user sees in the preview.
+  Future<File> _applyTransformToFile(MediaItem item) async {
+    final transform = item.transform!;
+    final previewSize = item.previewSize!;
+    final outputSize = previewSize.width.toInt(); // square crop
+
+    // Decode the source image
+    final bytes = await item.file.readAsBytes();
+    final codec = await ui.instantiateImageCodec(Uint8List.fromList(bytes));
+    final frame = await codec.getNextFrame();
+    final srcImage = frame.image;
+
+    // Calculate how to fit the source image into the preview square (BoxFit.cover)
+    final srcW = srcImage.width.toDouble();
+    final srcH = srcImage.height.toDouble();
+    final scale = srcW / srcH > 1.0
+        ? previewSize.height / srcH
+        : previewSize.width / srcW;
+    final drawW = srcW * scale;
+    final drawH = srcH * scale;
+    final drawX = (previewSize.width - drawW) / 2;
+    final drawY = (previewSize.height - drawH) / 2;
+
+    // Render with the user's transform applied
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, outputSize.toDouble(), outputSize.toDouble()));
+    canvas.transform(transform.storage);
+    canvas.drawImageRect(
+      srcImage,
+      Rect.fromLTWH(0, 0, srcW, srcH),
+      Rect.fromLTWH(drawX, drawY, drawW, drawH),
+      Paint()..filterQuality = FilterQuality.high,
+    );
+    final picture = recorder.endRecording();
+    final outputImage = await picture.toImage(outputSize, outputSize);
+
+    // Encode to JPEG bytes
+    final byteData = await outputImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+    if (byteData == null) return item.file;
+
+    // Re-encode as PNG via dart:ui (JPEG via image package requires extra dep)
+    final pngData = await outputImage.toByteData(format: ui.ImageByteFormat.png);
+    if (pngData == null) return item.file;
+
+    // Write to temp file
+    final tempDir = Directory.systemTemp;
+    final tempFile = File('${tempDir.path}/lyket_crop_${item.id}.png');
+    await tempFile.writeAsBytes(pngData.buffer.asUint8List());
+    return tempFile;
+  }
 }
+

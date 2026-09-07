@@ -41,8 +41,8 @@ class Comment {
     final actorId = json['userId'] ?? json['brandId'] ?? '';
 
     return Comment(
-      id: json['id'] ?? '',
-      postId: json['postId'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      postId: (json['postId'] ?? '').toString(),
       userId: actorId,
       username: commentUsername,
       profilePic: commentProfilePic,
@@ -54,9 +54,17 @@ class Comment {
           .toList(),
       // Backend doesn't have like count on comments yet — default to 0
       likeCount: json['likeCount'] ?? 0,
-      isLiked: json['isLiked'] ?? false,
-      isBrandReply: json['isBrandReply'] ?? isBrand,
+      isLiked: _parseBool(json['isLiked']),
+      isBrandReply: _parseBool(json['isBrandReply']) || isBrand,
     );
+  }
+
+  static bool _parseBool(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is String) return val.toLowerCase() == 'true' || val == '1';
+    if (val is num) return val > 0;
+    return false;
   }
 
   Comment copyWith({

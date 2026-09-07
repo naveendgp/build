@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../brand_profile/providers/brand_profile_provider.dart';
 import '../../brand_profile/models/brand_profile_models.dart';
 import '../models/settings_models.dart';
@@ -32,6 +33,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   late TextEditingController _gstController;
   late TextEditingController _instagramController;
   late TextEditingController _facebookController;
+  late TextEditingController _twitterController;
   late TextEditingController _whatsappController;
 
   final ImagePicker _picker = ImagePicker();
@@ -59,6 +61,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     _gstController = TextEditingController()..addListener(_markChanged);
     _instagramController = TextEditingController()..addListener(_markChanged);
     _facebookController = TextEditingController()..addListener(_markChanged);
+    _twitterController = TextEditingController()..addListener(_markChanged);
     _whatsappController = TextEditingController()..addListener(_markChanged);
   }
 
@@ -73,12 +76,18 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     _gstController.dispose();
     _instagramController.dispose();
     _facebookController.dispose();
+    _twitterController.dispose();
     _whatsappController.dispose();
     super.dispose();
   }
 
   void _showBrandTagsSheet(BuildContext context, WidgetRef ref, BrandProfile? profile) {
-    if (profile == null) return;
+    if (profile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Brand tags aren\'t ready yet. Please try again in a moment.')),
+      );
+      return;
+    }
     List<String> tags = [
       'Eco-Friendly',
       'Handmade',
@@ -108,12 +117,13 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
+      // Explicit width bound works around a Flutter bottom-sheet-size-listener
+      // regression that otherwise hands descendants (e.g. the ElevatedButton
+      // below) an infinite-width constraint when the sheet's content resizes.
+      constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width),
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
           return Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
-            ),
             decoration: BoxDecoration(
               color: context.colors.card,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -135,8 +145,8 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                 Flexible(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: tags.length,
                     shrinkWrap: true,
+                    itemCount: tags.length,
                     itemBuilder: (_, i) {
                       final label = tags[i];
                       final isSelected = selected.contains(label);
@@ -199,6 +209,15 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
+                        // The app's ElevatedButtonTheme defaults minimumSize to
+                        // Size(double.infinity, ...) for full-width buttons. That's
+                        // fatal here: this button is a non-flex sibling in a Row next
+                        // to an Expanded TextField, and Row measures non-flex children
+                        // with an unbounded max width — combined with an infinite min
+                        // width from the theme, layout gets a forced-infinite-width
+                        // constraint and throws. Give it a normal, bounded, text-field-
+                        // height size instead of shrinking to zero (which looked broken).
+                        style: ElevatedButton.styleFrom(minimumSize: const Size(72, AppSpacing.buttonHeight)),
                         onPressed: () {
                           final text = tagController.text.trim();
                           if (text.isNotEmpty && !tags.contains(text)) {
@@ -235,6 +254,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
         gstVatNumber: _gstController.text,
         instagram: _instagramController.text,
         facebook: _facebookController.text,
+        twitter: _twitterController.text,
         whatsapp: _whatsappController.text,
       );
       
@@ -254,6 +274,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
           },
           if (qs != null) 'instagram': _instagramController.text,
           if (qs != null) 'facebook': _facebookController.text,
+          if (qs != null) 'twitter': _twitterController.text,
           if (qs != null) 'whatsapp': _whatsappController.text,
         };
 
@@ -279,29 +300,67 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   @override
   Widget build(BuildContext context) {
     final settingsState = ref.watch(brandSettingsProvider);
+    final profileState = ref.watch(brandProfileProvider('me'));
+    final isLoading = settingsState.isLoading || profileState.loadState == BrandLoadState.loading || profileState.loadState == BrandLoadState.initial;
 
-    settingsState.whenData((settings) {
-      if (!_initialized && settings != null) {
-        final profile = ref.read(brandProfileProvider('me')).profile;
-        final qs = ref.read(brandProfileProvider('me')).quicksite;
-        _bioController.text = profile?.bio ?? '';
-        _descController.text = settings.businessDescription ?? '';
-        _websiteController.text = settings.website ?? '';
-        _emailController.text = settings.contactEmail ?? '';
-        _phoneController.text = settings.contactPhone ?? '';
-        _addressController.text = settings.businessAddress ?? '';
-        _gstController.text = settings.gstVatNumber ?? '';
-        _instagramController.text = settings.instagram ?? '';
-        _facebookController.text = settings.facebook ?? '';
-        _whatsappController.text = settings.whatsapp ?? '';
-        _services = List.from(qs?.services ?? []);
-        
-        _initialized = true;
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) setState(() => _hasChanges = false);
-        });
-      }
-    });
+    if (isLoading) {
+      return Scaffold(
+        backgroundColor: context.colors.background,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (profileState.loadState == BrandLoadState.error) {
+      return Scaffold(
+        backgroundColor: context.colors.background,
+        appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Failed to load brand profile.',
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () => ref.read(brandProfileProvider('me').notifier).loadBrand('me'),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    final settings = settingsState.value;
+    final profile = profileState.profile;
+
+    if (!_initialized && settings != null && profile != null) {
+      final qs = profileState.quicksite;
+      _bioController.text = profile.bio ?? '';
+      _descController.text = settings.businessDescription ?? '';
+      _websiteController.text = settings.website ?? '';
+      _emailController.text = settings.contactEmail ?? '';
+      _phoneController.text = settings.contactPhone ?? '';
+      _addressController.text = settings.businessAddress ?? '';
+      _gstController.text = settings.gstVatNumber ?? '';
+      _instagramController.text = settings.instagram ?? '';
+      _facebookController.text = settings.facebook ?? '';
+      _twitterController.text = settings.twitter ?? '';
+      _whatsappController.text = settings.whatsapp ?? '';
+      _services = List.from(qs?.services ?? []);
+      
+      _initialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _hasChanges = false);
+      });
+    }
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -400,6 +459,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                 children: [
                   _buildTextField(context, 'Instagram Username', _instagramController),
                   _buildTextField(context, 'Facebook Username', _facebookController),
+                  _buildTextField(context, 'Twitter Username', _twitterController),
                   _buildTextField(context, 'WhatsApp Number', _whatsappController),
                 ],
               ),
@@ -411,7 +471,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                     title: 'Verification Status',
                     icon: Icons.verified_user_outlined,
                     trailing: Text(
-                      settings.verificationStatus.name.toUpperCase(),
+                      verificationStatusLabel(settings.verificationStatus),
                       style: AppTypography.bodyMedium.copyWith(
                         color: settings.verificationStatus == VerificationStatus.verified 
                             ? context.colors.primaryAccent 
@@ -462,7 +522,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   }
 
   Future<void> _pickAndUploadImage(bool isCover) async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 70, maxWidth: 1080);
     if (image == null) return;
 
     setState(() => _isUploadingImage = true);
@@ -473,7 +533,8 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
         if (success) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image updated successfully!')));
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update image.')));
+          final message = ref.read(brandProfileProvider('me')).lastActionError ?? 'Something went wrong. Please try again.';
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
         }
       }
     } finally {
@@ -630,14 +691,15 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
           bottom: MediaQuery.of(ctx).viewInsets.bottom,
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Center(
-                  child: Container(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
@@ -715,6 +777,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                 const SizedBox(height: 16),
               ],
             ),
+          ),
           ),
         ),
       ),

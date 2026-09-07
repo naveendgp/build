@@ -29,7 +29,6 @@ class ObjectiveCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: AppSpacing.borderRadiusXl,
@@ -44,26 +43,45 @@ class ObjectiveCard extends StatelessWidget {
                 ]
               : null,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(meta.icon, size: 32, color: iconColor),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              meta.title,
-              style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+        child: ClipRRect(
+          borderRadius: AppSpacing.borderRadiusXl,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Icon(meta.icon, size: 28, color: iconColor),
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  meta.title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.titleMedium
+                      .copyWith(color: context.colors.textPrimary),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  meta.subtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodySmall
+                      .copyWith(color: context.colors.textSecondary),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  meta.outcome,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.labelSmall
+                      .copyWith(color: context.colors.textTertiary),
+                ),
+              ],
             ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              meta.subtitle,
-              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              meta.outcome,
-              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
-            ),
-          ],
+          ),
         ),
       ),
     );

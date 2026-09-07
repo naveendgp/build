@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
+import '../../home/providers/feed_provider.dart';
 import '../models/comment_models.dart';
 
 class CommentsState {
@@ -56,9 +57,10 @@ class CommentsState {
 
 class CommentsNotifier extends StateNotifier<CommentsState> {
   final ApiClient _api;
+  final Ref _ref;
   final String postId;
 
-  CommentsNotifier(this._api, this.postId) : super(const CommentsState());
+  CommentsNotifier(this._api, this._ref, this.postId) : super(const CommentsState());
 
   Future<void> loadComments() async {
     state = state.copyWith(isLoading: true, clearError: true);
@@ -135,6 +137,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       // Reload comments to get fresh data with proper user info
       state = state.copyWith(isSending: false, clearReply: true);
       await loadComments();
+      _ref.read(feedProvider.notifier).adjustCommentCount(postId, 1);
       return true;
     } catch (e) {
       state = state.copyWith(isSending: false);
@@ -147,6 +150,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       await _api.dio.delete('/comments/$commentId');
       Haptics.light();
       await loadComments();
+      _ref.read(feedProvider.notifier).adjustCommentCount(postId, -1);
     } catch (_) {}
   }
 
@@ -189,6 +193,6 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
 final commentsProvider = StateNotifierProvider.family<CommentsNotifier, CommentsState, String>(
   (ref, postId) {
     final api = ref.read(apiClientProvider);
-    return CommentsNotifier(api, postId)..loadComments();
+    return CommentsNotifier(api, ref, postId)..loadComments();
   },
 );

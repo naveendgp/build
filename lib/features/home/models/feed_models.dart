@@ -79,14 +79,14 @@ class FeedPost {
     if (mediaList.isNotEmpty) {
       mUrl = mediaList[0]['url'] ?? '';
       if (mediaList[0]['type']?.toString().toUpperCase() == 'VIDEO') vUrl = mUrl;
-      cUrls = mediaList.map((e) => e['url'] as String).toList();
+      cUrls = mediaList.map((e) => (e['url'] ?? '').toString()).toList();
     }
 
     final brand = json['brand'] ?? {};
     final cta = json['cta'] ?? {};
 
     return FeedPost(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       brandId: brand['id'] ?? '',
       brandName: brand['name'] ?? 'Unknown Brand',
       brandAvatar: ApiClient.resolveMediaUrl(brand['logoUrl']),
@@ -104,14 +104,14 @@ class FeedPost {
       likeCount: json['likeCount'] ?? 0,
       commentCount: json['commentCount'] ?? 0,
       shareCount: json['shareCount'] ?? 0,
-      isLiked: json['isLiked'] ?? false,
-      isBookmarked: json['isSaved'] ?? false, // backend uses isSaved
-      isFollowing: json['isFollowing'] ?? false, // may not be in this endpoint directly
+      isLiked: _parseBool(json['isLiked']),
+      isBookmarked: _parseBool(json['isSaved']), // backend uses isSaved
+      isFollowing: _parseBool(json['isFollowing']), // may not be in this endpoint directly
       timestamp: json['createdAt'] != null ? _formatTimestamp(json['createdAt']) : 'Just now',
       carouselUrls: cUrls.length > 1 ? cUrls : null,
       matchType: json['matchType'],
       bestFrameTimestamp: json['bestFrameTimestamp'] != null ? (json['bestFrameTimestamp'] as num).toDouble() : null,
-      isHighlighted: json['isHighlighted'] ?? false,
+      isHighlighted: _parseBool(json['isHighlighted']),
       highlightMessage: json['highlightMessage'],
       highlightTheme: json['highlightTheme'],
       highlightAnimation: json['highlightAnimation'],
@@ -129,6 +129,14 @@ class FeedPost {
       return double.tryParse(val) ?? 1.2;
     }
     return 1.2;
+  }
+
+  static bool _parseBool(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is String) return val.toLowerCase() == 'true' || val == '1';
+    if (val is num) return val > 0;
+    return false;
   }
 
   static String _formatTimestamp(String isoDate) {
@@ -155,6 +163,7 @@ class FeedPost {
     bool? isBookmarked,
     bool? isFollowing,
     int? likeCount,
+    int? commentCount,
   }) {
     return FeedPost(
       id: id ?? this.id,
@@ -173,7 +182,11 @@ class FeedPost {
       ctaType: ctaType,
       ctaPayload: ctaPayload,
       likeCount: likeCount ?? this.likeCount,
-      commentCount: commentCount,
+      // Was `commentCount: commentCount` with no matching parameter above —
+      // silently a no-op that always kept the original value, since Dart
+      // resolved the unqualified name to `this.commentCount`. copyWith had
+      // no way to actually change the comment count.
+      commentCount: commentCount ?? this.commentCount,
       shareCount: shareCount,
       isLiked: isLiked ?? this.isLiked,
       isBookmarked: isBookmarked ?? this.isBookmarked,

@@ -68,6 +68,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(loggedInRole: role);
   }
 
+  /// Safely pulls a `message` field out of a DioException's response body.
+  /// A failing request doesn't always come back as the JSON `{message}`
+  /// shape we expect — a 404 for a route that doesn't exist yet, a proxy
+  /// error, etc. all come back as plain HTML/text. Indexing a String
+  /// response with `['message']` throws "type 'String' is not a subtype
+  /// of type 'int'" (String's [] operator wants a character index), which
+  /// used to crash the whole request instead of just failing to show a
+  /// nice message.
+  String _extractErrorMessage(DioException e, String fallback) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] != null) {
+      return data['message'].toString();
+    }
+    return fallback;
+  }
+
   Future<bool> login(String email, String password) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
@@ -113,7 +129,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } on DioException catch (e) {
       debugPrint('DioException in login: ${e.message}');
       debugPrint('Response data: ${e.response?.data}');
-      final msg = e.response?.data?['message'] ?? 'Network error or Invalid credentials';
+      final msg = _extractErrorMessage(e, 'Network error or Invalid credentials');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
@@ -170,8 +186,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> forgotPassword(String email) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/forgot-password', data: {
+      final response = await _apiClient.dio.post('/auth/send-otp', data: {
         'email': email,
+        'type': 'forgot-password',
       });
 
       if (response.statusCode == 200) {
@@ -182,7 +199,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
@@ -194,24 +211,35 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyResetCode(String email, String code) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/verify-reset-code', data: {
+      final response = await _apiClient.dio.post('/auth/verify-otp', data: {
         'email': email,
         'code': code,
+        'type': 'forgot-password',
       });
 
-      if (response.statusCode == 200) {
+      debugPrint('verifyResetCode response: ${response.statusCode} ${response.data}');
+
+      if (response.statusCode == 200 && response.data['verified'] == true) {
         state = state.copyWith(status: AuthStatus.success);
         return true;
       } else {
-        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Invalid verification code');
+        // Surface whatever the backend actually said, if it said anything,
+        // instead of a hardcoded guess — we've guessed wrong twice already.
+        final serverMsg = (response.data is Map) ? response.data['message'] : null;
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: serverMsg ?? 'Invalid verification code (server said: ${response.data})',
+        );
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      debugPrint('verifyResetCode DioException: ${e.response?.statusCode} ${e.response?.data} | ${e.message}');
+      final msg = _extractErrorMessage(e, 'Network error (${e.response?.statusCode}): ${e.response?.data}');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      debugPrint('verifyResetCode unexpected error: $e');
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred: $e');
       return false;
     }
   }
@@ -219,10 +247,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> resetPassword(String email, String code, String newPassword) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/reset-password', data: {
+      final response = await _apiClient.dio.post('/auth/reset-password-with-otp', data: {
         'email': email,
+        // 'code' was being silently dropped here despite the caller passing it
+        // in — the backend has no way to confirm this request is authorized
+        // without it.
         'code': code,
         'newPassword': newPassword,
+        'type': 'forgot-password',
       });
 
       if (response.statusCode == 200) {
@@ -233,7 +265,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
@@ -292,7 +324,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
@@ -317,7 +349,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
@@ -326,10 +358,88 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> deleteAccount() async {
+  /// Sends a verification code to the *logged-in* account's own email —
+  /// the target email is derived server-side from the auth token, never
+  /// from client input, so this can't be pointed at another account.
+  /// Returns the masked email (e.g. "jo***@example.com") on success, or
+  /// null on failure (with errorMessage set).
+  Future<String?> sendChangePasswordOtp() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.delete('/auth/delete-account');
+      final response = await _apiClient.dio.post('/auth/send-change-password-otp');
+      if (response.statusCode == 200) {
+        state = state.copyWith(status: AuthStatus.success);
+        return response.data is Map ? response.data['email'] as String? : null;
+      }
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to send verification code');
+      return null;
+    } on DioException catch (e) {
+      final msg = _extractErrorMessage(e, 'Network error');
+      state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
+      return null;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      return null;
+    }
+  }
+
+  Future<bool> changePasswordWithOtp(String code, String newPassword) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final response = await _apiClient.dio.post('/auth/change-password-with-otp', data: {
+        'code': code,
+        'newPassword': newPassword,
+      });
+
+      if (response.statusCode == 200) {
+        state = state.copyWith(status: AuthStatus.success);
+        return true;
+      } else {
+        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to change password');
+        return false;
+      }
+    } on DioException catch (e) {
+      final msg = _extractErrorMessage(e, 'Network error');
+      state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      return false;
+    }
+  }
+
+  /// Sends a verification code to the *logged-in* account's own email —
+  /// same pattern as [sendChangePasswordOtp]: the target email is derived
+  /// server-side from the auth token, never from client input.
+  /// Returns the masked email on success, or null on failure.
+  Future<String?> sendDeleteAccountOtp() async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final response = await _apiClient.dio.post('/auth/send-delete-account-otp');
+      if (response.statusCode == 200) {
+        state = state.copyWith(status: AuthStatus.success);
+        return response.data is Map ? response.data['email'] as String? : null;
+      }
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to send verification code');
+      return null;
+    } on DioException catch (e) {
+      final msg = _extractErrorMessage(e, 'Network error');
+      state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
+      return null;
+    } catch (e) {
+      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      return null;
+    }
+  }
+
+  /// Deleting the account now requires the code sent by
+  /// [sendDeleteAccountOtp] — this used to delete immediately with no
+  /// re-authentication at all, the most irreversible action in the app
+  /// had less protection than changing a password.
+  Future<bool> deleteAccount(String code) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      final response = await _apiClient.dio.delete('/auth/delete-account', data: {'code': code});
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);
@@ -339,7 +449,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      final msg = e.response?.data?['message'] ?? 'Network error';
+      final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {

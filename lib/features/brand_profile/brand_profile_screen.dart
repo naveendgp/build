@@ -65,14 +65,23 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(brandProfileProvider(widget.brandId));
 
-    if (state.loadState == BrandLoadState.initial || state.loadState == BrandLoadState.loading) {
+    // Only show the blocking full-screen spinner when there's no profile
+    // to display yet (the true first load). Background refreshes — e.g.
+    // loadBrand() re-running after a gallery upload — also flip loadState
+    // to `loading`, but tearing down the whole tab tree for those unmounts
+    // DefaultTabController and resets the selected tab back to "Posts".
+    if (state.profile == null &&
+        (state.loadState == BrandLoadState.initial || state.loadState == BrandLoadState.loading)) {
       return Scaffold(
         backgroundColor: context.colors.background,
         body: Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
       );
     }
 
-    if (state.loadState == BrandLoadState.error) {
+    // Same reasoning as above: only replace the whole screen with the error
+    // state if we have nothing to show — a failed background refresh with
+    // existing data on screen shouldn't nuke the tab selection either.
+    if (state.profile == null && state.loadState == BrandLoadState.error) {
       return Scaffold(
         backgroundColor: context.colors.background,
         body: Center(
@@ -115,6 +124,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     if (showQuicksite) {
       tabViews.add(_buildTabWrapper(BrandQuicksiteTab(
         quicksiteData: state.quicksite!,
+        gstNumber: profile.gstNumber,
         isOwner: profile.isOwner,
         onEdit: () => context.push('/settings/brand-profile'),
       )));
@@ -154,7 +164,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             try {
                               final api = ref.read(apiClientProvider);
                               final res = await api.dio.post('/conversations/start', data: {'brandId': profile.id});
-                              final conversationId = res.data['id'];
+                              final conversationId = res.data['id'].toString();
                               if (!context.mounted) return;
                               Navigator.of(context).push(
                                 MaterialPageRoute(

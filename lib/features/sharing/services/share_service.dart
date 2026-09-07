@@ -7,11 +7,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ShareService {
   ShareService._();
 
-  /// Canonical deep link URL for a post
-  static String postUrl(String postId) => 'https://lyket.app/post/$postId';
+  /// Canonical deep link URL for a post — path matches lyket-web's
+  /// /posts/[id] route (plural). A singular /post/ path here would 404
+  /// even with the right domain.
+  static String postUrl(String postId) => 'https://www.lyket.in/posts/$postId';
 
   /// Brand profile URL
-  static String brandUrl(String brandId) => 'https://lyket.app/brand/$brandId';
+  static String brandUrl(String brandId) => 'https://www.lyket.in/brand/$brandId';
 
   // ─── Copy Link ─────────────────────────────────────────────────────
 

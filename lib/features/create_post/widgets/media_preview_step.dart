@@ -1,12 +1,14 @@
 import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/create_post_models.dart';
+import '../providers/create_post_provider.dart';
 
 /// Full media preview step with immersive image/video preview,
 /// dimension selector overlay, glassmorphic change button,
@@ -16,6 +18,12 @@ class MediaPreviewStep extends StatefulWidget {
   final ValueChanged<int> onChangeMedia;
   final ValueChanged<int> onRemoveMedia;
   final VoidCallback? onAddMore;
+  // Fired while a finger is down on the zoomable image, so an ancestor
+  // Scrollable (this step is wrapped in one for smaller screens) can
+  // disable its own scroll physics and stop stealing single-finger pan
+  // gestures from InteractiveViewer's gesture arena.
+  final VoidCallback? onImageInteractionStart;
+  final VoidCallback? onImageInteractionEnd;
 
   const MediaPreviewStep({
     super.key,
@@ -23,6 +31,8 @@ class MediaPreviewStep extends StatefulWidget {
     required this.onChangeMedia,
     required this.onRemoveMedia,
     this.onAddMore,
+    this.onImageInteractionStart,
+    this.onImageInteractionEnd,
   });
 
   @override
@@ -34,6 +44,34 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
   late final PageController _pageController;
   late final AnimationController _fadeController;
   int _currentPage = 0;
+  // While the active page's image is zoomed in, the carousel PageView must
+  // stop claiming horizontal drags — otherwise it wins the gesture arena
+  // against InteractiveViewer's pan every time, and a sideways drag meant
+  // to reposition the zoomed image instead flips to the next photo.
+  bool _isZoomed = false;
+
+  // Intrinsic width/height ratio per media id. Needed so the preview can lay
+  // the image out at its full cover-scaled size (overflowing the square crop
+  // frame) instead of letting BoxFit.cover pre-crop it — otherwise there is
+  // no off-frame content to drag into view and repositioning is impossible.
+  final Map<String, double> _aspectCache = {};
+
+  void _ensureAspect(MediaItem item) {
+    if (item.type != MediaType.image || _aspectCache.containsKey(item.id)) return;
+    final stream = FileImage(item.file).resolve(const ImageConfiguration());
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (info, _) {
+        stream.removeListener(listener);
+        if (!mounted) return;
+        setState(() {
+          _aspectCache[item.id] = info.image.width / info.image.height;
+        });
+      },
+      onError: (_, _) => stream.removeListener(listener),
+    );
+    stream.addListener(listener);
+  }
 
   @override
   void initState() {
@@ -149,27 +187,59 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
 
   // ——— Single image preview ———————————————————————————————————————————————
   Widget _buildSinglePreview(MediaItem item) {
-    return _ZoomableMedia(
-      key: ValueKey(item.id),
-      child: _buildMediaContent(item),
-    );
+    _ensureAspect(item);
+    return LayoutBuilder(builder: (context, constraints) {
+      final size = Size(constraints.maxWidth, constraints.maxHeight);
+      return _ZoomableMedia(
+        key: ValueKey(item.id),
+        contentAspect: _aspectCache[item.id],
+        onTransformChanged: (matrix) {
+          final ref = ProviderScope.containerOf(context);
+          ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
+        },
+        onPanStart: widget.onImageInteractionStart,
+        onPanEnd: widget.onImageInteractionEnd,
+        child: _buildMediaContent(item),
+      );
+    });
   }
 
   // ——— PageView for multiple media ————————————————————————————————————————
   Widget _buildPageView() {
     return PageView.builder(
       controller: _pageController,
+      // Disabled while zoomed in so a sideways drag pans the image via
+      // InteractiveViewer instead of the PageView stealing it to flip pages.
+      physics: _isZoomed ? const NeverScrollableScrollPhysics() : const PageScrollPhysics(),
       itemCount: widget.media.length,
       onPageChanged: (index) {
-        setState(() => _currentPage = index);
+        setState(() {
+          _currentPage = index;
+          _isZoomed = false;
+        });
         Haptics.selection();
       },
       itemBuilder: (context, index) {
         final item = widget.media[index];
-        return _ZoomableMedia(
-          key: ValueKey(item.id),
-          child: _buildMediaContent(item),
-        );
+        _ensureAspect(item);
+        return LayoutBuilder(builder: (context, constraints) {
+          final size = Size(constraints.maxWidth, constraints.maxHeight);
+          return _ZoomableMedia(
+            key: ValueKey(item.id),
+            contentAspect: _aspectCache[item.id],
+            onTransformChanged: (matrix) {
+              final ref = ProviderScope.containerOf(context);
+              ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
+            },
+            onScaleChanged: (scale) {
+              final zoomed = scale > 1.01;
+              if (zoomed != _isZoomed) setState(() => _isZoomed = zoomed);
+            },
+            onPanStart: widget.onImageInteractionStart,
+            onPanEnd: widget.onImageInteractionEnd,
+            child: _buildMediaContent(item),
+          );
+        });
       },
     );
   }
@@ -322,7 +392,27 @@ class _GlassPillButtonState extends State<_GlassPillButton> {
 // zoom in/out buttons (bottom-left), independent per carousel page.
 class _ZoomableMedia extends StatefulWidget {
   final Widget child;
-  const _ZoomableMedia({super.key, required this.child});
+  final ValueChanged<Matrix4>? onTransformChanged;
+  final VoidCallback? onPanStart;
+  final VoidCallback? onPanEnd;
+  // Fired whenever the current zoom scale changes (pinch gesture or the
+  // +/- buttons), so an ancestor carousel PageView can disable its own
+  // swipe physics while zoomed in — see MediaPreviewStep._isZoomed.
+  final ValueChanged<double>? onScaleChanged;
+  // Intrinsic width/height of the media, when known. Drives the cover-size
+  // layout + pan bounds so the user can drag the off-frame part of the image
+  // into view. Null (e.g. video, or aspect not resolved yet) falls back to
+  // the previous fill-the-frame behaviour.
+  final double? contentAspect;
+  const _ZoomableMedia({
+    super.key,
+    required this.child,
+    this.onTransformChanged,
+    this.onPanStart,
+    this.onPanEnd,
+    this.onScaleChanged,
+    this.contentAspect,
+  });
 
   @override
   State<_ZoomableMedia> createState() => _ZoomableMediaState();
@@ -338,10 +428,19 @@ class _ZoomableMediaState extends State<_ZoomableMedia> {
 
   void _zoomBy(double delta) {
     Haptics.light();
-    final newScale = (_currentScale + delta).clamp(_minScale, _maxScale);
+    final current = _currentScale;
+    final newScale = (current + delta).clamp(_minScale, _maxScale);
+    if (newScale == current) return;
     setState(() {
-      _transformController.value = Matrix4.diagonal3Values(newScale, newScale, 1.0);
+      // Scale relative to the existing matrix instead of replacing it with a
+      // fresh diagonal one — the old approach silently discarded whatever
+      // repositioning the user had already done.
+      final factor = newScale / current;
+      _transformController.value = _transformController.value.clone()
+        ..scaleByDouble(factor, factor, 1.0, 1.0);
     });
+    widget.onTransformChanged?.call(_transformController.value);
+    widget.onScaleChanged?.call(newScale);
   }
 
   @override
@@ -355,12 +454,70 @@ class _ZoomableMediaState extends State<_ZoomableMedia> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        InteractiveViewer(
-          transformationController: _transformController,
-          minScale: _minScale,
-          maxScale: _maxScale,
-          onInteractionEnd: (_) => setState(() {}),
-          child: widget.child,
+        // Listener (not a gesture recognizer) fires on the raw pointer
+        // stream regardless of which recognizer wins the gesture arena, so
+        // this reliably brackets every touch on the image — used to tell
+        // the ancestor Scrollable to stand down for the duration so it
+        // stops competing for single-finger pan gestures.
+        Listener(
+          onPointerDown: (_) => widget.onPanStart?.call(),
+          onPointerUp: (_) => widget.onPanEnd?.call(),
+          onPointerCancel: (_) => widget.onPanEnd?.call(),
+          child: LayoutBuilder(builder: (context, constraints) {
+            final vw = constraints.maxWidth;
+            final vh = constraints.maxHeight;
+            final aspect = widget.contentAspect;
+
+            var content = widget.child;
+            // Default zero margin clamps translation to exactly (0,0) when
+            // the child is the same size as the viewport — which is why
+            // repositioning did nothing before.
+            var boundary = EdgeInsets.zero;
+
+            if (aspect != null && aspect > 0 && vw.isFinite && vh.isFinite && vw > 0 && vh > 0) {
+              // Size the image to *cover* the frame, letting it overflow on
+              // the long axis, so there is real content off-frame to drag in.
+              final viewportAspect = vw / vh;
+              final double cw, ch;
+              if (aspect > viewportAspect) {
+                ch = vh;
+                cw = vh * aspect;
+              } else {
+                cw = vw;
+                ch = vw / aspect;
+              }
+              content = OverflowBox(
+                maxWidth: double.infinity,
+                maxHeight: double.infinity,
+                child: SizedBox(width: cw, height: ch, child: widget.child),
+              );
+              // Allow panning exactly as far as the overflow — reveals every
+              // part of the image, never drags blank space into frame.
+              boundary = EdgeInsets.symmetric(
+                horizontal: ((cw - vw) / 2).clamp(0.0, double.infinity),
+                vertical: ((ch - vh) / 2).clamp(0.0, double.infinity),
+              );
+            }
+
+            return InteractiveViewer(
+              transformationController: _transformController,
+              minScale: _minScale,
+              maxScale: _maxScale,
+              boundaryMargin: boundary,
+              // Reported continuously (not just at gesture end) so a pinch
+              // that crosses back to scale 1.0 mid-gesture re-enables the
+              // carousel swipe in time for the very next drag.
+              onInteractionUpdate: (details) {
+                widget.onScaleChanged?.call(_currentScale);
+              },
+              onInteractionEnd: (details) {
+                setState(() {});
+                widget.onTransformChanged?.call(_transformController.value);
+                widget.onScaleChanged?.call(_currentScale);
+              },
+              child: content,
+            );
+          }),
         ),
         Positioned(
           bottom: AppSpacing.md,

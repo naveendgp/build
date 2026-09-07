@@ -1,18 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/utils/haptics.dart';
 import '../providers/reminders_provider.dart';
 
 class RemindersSection extends ConsumerWidget {
-  const RemindersSection({super.key});
+  /// Which reminders list to show. Defaults to the upcoming-only list
+  /// (used on the notifications bell); pass [allRemindersProvider] for the
+  /// full history (used on the dedicated Reminders page).
+  final StateNotifierProvider<RemindersNotifier, RemindersState>? provider;
+  final String emptyText;
+
+  const RemindersSection({
+    super.key,
+    this.provider,
+    this.emptyText = 'No upcoming reminders.',
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(remindersProvider);
+    final state = ref.watch(provider ?? remindersProvider);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
@@ -36,9 +49,9 @@ class RemindersSection extends ConsumerWidget {
           if (state.isLoading)
             const Center(child: CircularProgressIndicator(strokeWidth: 2))
           else if (state.error != null)
-            Text('Failed to load reminders.', style: AppTypography.bodyMedium.copyWith(color: context.colors.error))
+            Text(state.error!, style: AppTypography.bodyMedium.copyWith(color: context.colors.error))
           else if (state.reminders.isEmpty)
-            Text('No upcoming reminders.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary))
+            Text(emptyText, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary))
           else
             ListView.separated(
               shrinkWrap: true,
@@ -95,6 +108,15 @@ class RemindersSection extends ConsumerWidget {
                         ],
                       ),
                     ),
+                    // Only upcoming (not-yet-triggered) reminders can be
+                    // rescheduled — a past/triggered one has already fired.
+                    if (!reminder.isTriggered)
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(Icons.edit_rounded, color: context.colors.primaryAccent, size: 20),
+                        onPressed: () => _editReminder(context, ref, reminder),
+                      ),
                   ],
                 );
               },
@@ -102,5 +124,58 @@ class RemindersSection extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _editReminder(BuildContext context, WidgetRef ref, UpcomingReminder reminder) async {
+    Haptics.selection();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: reminder.reminderTime,
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+    );
+    if (date == null || !context.mounted) return;
+
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(reminder.reminderTime),
+    );
+    if (time == null || !context.mounted) return;
+
+    final newDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    try {
+      final apiClient = ref.read(apiClientProvider);
+      await apiClient.dio.put('/reminders/${reminder.id}', data: {
+        // .toUtc() is required — a bare local-time ISO string (no 'Z') gets
+        // parsed by the backend as server-local time, not phone-local time.
+        // Depending on the timezone gap that can shift a genuinely-future
+        // time into "the past" server-side, which the backend rejects with
+        // a 500 (see setReminder in feed_provider.dart, which already does
+        // this correctly for reminder creation).
+        'reminderTime': newDateTime.toUtc().toIso8601String(),
+      });
+      // Refresh whichever list is actually being shown (upcoming or full
+      // history) rather than assuming — a stale list would still show the
+      // old time even though the update succeeded.
+      ref.read((provider ?? remindersProvider).notifier).loadReminders();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Reminder updated successfully')),
+        );
+      }
+    } on DioException catch (e) {
+      final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update reminder: ${serverMsg ?? e.message}')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to update reminder: $e')),
+        );
+      }
+    }
   }
 }

@@ -10,11 +10,21 @@ import '../../settings/providers/settings_provider.dart';
 class ProfileHeader extends ConsumerWidget {
   final UserProfileData profile;
   final int savedCount;
+  final int collectionsCount;
+  final int remindersCount;
+  final VoidCallback? onSavedTap;
+  final VoidCallback? onCollectionsTap;
+  final VoidCallback? onRemindersTap;
 
   const ProfileHeader({
     super.key,
     required this.profile,
     required this.savedCount,
+    this.collectionsCount = 0,
+    this.remindersCount = 0,
+    this.onSavedTap,
+    this.onCollectionsTap,
+    this.onRemindersTap,
   });
 
   @override
@@ -112,17 +122,41 @@ class ProfileHeader extends ConsumerWidget {
   }
 
   Widget _buildStatsRow(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: () => showFollowingBottomSheet(context),
-          behavior: HitTestBehavior.opaque,
-          child: _buildStatItem(context, profile.followingCount, 'Following'),
+    // Wrapped in a horizontally-scrollable, centered container: 4 stat items
+    // (up from 2) with word-length labels like "Collections" can overflow
+    // narrower phone widths if simply centered in a plain Row.
+    return Center(
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () => showFollowingBottomSheet(context),
+              behavior: HitTestBehavior.opaque,
+              child: _buildStatItem(context, profile.followingCount, 'Following'),
+            ),
+            _buildDotSeparator(context),
+            GestureDetector(
+              onTap: onSavedTap,
+              behavior: HitTestBehavior.opaque,
+              child: _buildStatItem(context, savedCount, 'Saved'),
+            ),
+            _buildDotSeparator(context),
+            GestureDetector(
+              onTap: onCollectionsTap,
+              behavior: HitTestBehavior.opaque,
+              child: _buildStatItem(context, collectionsCount, 'Collections'),
+            ),
+            _buildDotSeparator(context),
+            GestureDetector(
+              onTap: onRemindersTap,
+              behavior: HitTestBehavior.opaque,
+              child: _buildStatItem(context, remindersCount, 'Reminders'),
+            ),
+          ],
         ),
-        _buildDotSeparator(context),
-        _buildStatItem(context, savedCount, 'Saved'),
-      ],
+      ),
     );
   }
 
@@ -149,7 +183,10 @@ class ProfileHeader extends ConsumerWidget {
 
   Widget _buildDotSeparator(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+      // Tightened from AppSpacing.md now that the row holds 4 stat items
+      // (Following/Saved/Collections/Reminders) instead of 2 — the wider
+      // gap would overflow on narrow phone widths.
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Text(
         '·',
         style: AppTypography.titleMedium.copyWith(

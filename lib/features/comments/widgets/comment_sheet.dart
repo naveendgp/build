@@ -5,7 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
-import '../models/comment_models.dart';
 import '../providers/comments_provider.dart';
 import 'comment_card.dart';
 import 'comment_composer.dart';
@@ -46,7 +45,6 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
     with SingleTickerProviderStateMixin {
   late AnimationController _entryController;
   late Animation<double> _fadeAnimation;
-  CommentFilter _selectedFilter = CommentFilter.newest;
 
   @override
   void initState() {
@@ -136,9 +134,6 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
 
                             // Header
                             _buildHeader(context, state),
-
-                            // Filter Chips
-                            _buildFilterChips(notifier),
 
                             // Divider
                             Container(
@@ -245,79 +240,6 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChips(CommentsNotifier notifier) {
-    final filters = [
-      (CommentFilter.newest, 'Newest', Icons.schedule_rounded),
-      (CommentFilter.top, 'Top', Icons.trending_up_rounded),
-      (CommentFilter.brandReplies, 'Brand Replies', Icons.verified_rounded),
-    ];
-
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20, 0, 20, 12),
-      child: SizedBox(
-        height: 34,
-        child: ListView.separated(
-          scrollDirection: Axis.horizontal,
-          itemCount: filters.length,
-          separatorBuilder: (context, index) => SizedBox(width: 8),
-          itemBuilder: (context, index) {
-            final (filter, label, icon) = filters[index];
-            final isSelected = _selectedFilter == filter;
-
-            return GestureDetector(
-              onTap: () {
-                Haptics.selection();
-                setState(() => _selectedFilter = filter);
-                notifier.setFilter(filter);
-              },
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 250),
-                curve: Curves.easeOutCubic,
-                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? context.colors.primaryAccent.withValues(alpha: 0.12)
-                      : context.colors.card,
-                  borderRadius: AppSpacing.borderRadiusFull,
-                  border: Border.all(
-                    color: isSelected
-                        ? context.colors.primaryAccent.withValues(alpha: 0.3)
-                        : context.colors.border,
-                    width: 0.5,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      icon,
-                      size: 14,
-                      color: isSelected
-                          ? context.colors.primaryAccent
-                          : context.colors.textTertiary,
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      label,
-                      style: AppTypography.labelSmall.copyWith(
-                        color: isSelected
-                            ? context.colors.primaryAccent
-                            : context.colors.textSecondary,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w500,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ),
       ),
     );
   }

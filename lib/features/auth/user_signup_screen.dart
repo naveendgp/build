@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/app_spacing.dart';
@@ -14,6 +16,8 @@ import 'widgets/interest_selector.dart';
 import 'widgets/social_auth_button.dart';
 import 'providers/auth_provider.dart';
 import '../../core/widgets/location_picker.dart';
+import 'screens/terms_screen.dart';
+import 'widgets/terms_checkbox.dart';
 
 class UserSignupScreen extends ConsumerStatefulWidget {
   const UserSignupScreen({super.key});
@@ -33,9 +37,32 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
   final _locationCtrl = TextEditingController();
   final _genderCtrl = TextEditingController();
   final _dobCtrl = TextEditingController();
+  bool _termsAccepted = true;
+  Timer? _otpTimer;
+  final List<String> _otpDigits = ['', '', '', '', '', ''];
+  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+
+  void _startOtpTimer() {
+    _otpTimer?.cancel();
+    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      final notifier = ref.read(userSignupProvider.notifier);
+      final currentCooldown = ref.read(userSignupProvider).otpCooldown;
+      if (currentCooldown > 0) {
+        notifier.setOtpCooldown(currentCooldown - 1);
+      } else {
+        timer.cancel();
+      }
+    });
+  }
 
   @override
   void dispose() {
+    _otpTimer?.cancel();
     _pageCtrl.dispose();
     _fullNameCtrl.dispose();
     _usernameCtrl.dispose();
@@ -46,6 +73,12 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
     _locationCtrl.dispose();
     _genderCtrl.dispose();
     _dobCtrl.dispose();
+    for (var node in _otpFocusNodes) {
+      node.dispose();
+    }
+    for (var ctrl in _otpControllers) {
+      ctrl.dispose();
+    }
     super.dispose();
   }
 
@@ -58,6 +91,17 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
   void _nextStep() {
     final state = ref.read(userSignupProvider);
     final step = state.currentStep;
+
+    if (step == 0 && !state.isEmailVerified) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please verify your email first'),
+          backgroundColor: context.colors.error,
+        ),
+      );
+      return;
+    }
+
     if (_formKeys[step].currentState?.validate() ?? false) {
       if (step < 2) _goToStep(step + 1);
     }
@@ -82,6 +126,9 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
             backgroundColor: context.colors.error,
           ),
         );
+      }
+      if ((prev?.otpCooldown ?? 0) == 0 && next.otpCooldown == 60) {
+        _startOtpTimer();
       }
     });
 
@@ -130,15 +177,22 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                       ? null
                       : state.currentStep == 2
                           ? () {
-                              if (state.interests.length >= 3) {
-                                _submit();
-                              } else {
+                              if (state.interests.length < 3) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Please select at least 3 interests'),
                                     backgroundColor: context.colors.error,
                                   ),
                                 );
+                              } else if (!_termsAccepted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('Please accept the Terms & Conditions to continue'),
+                                    backgroundColor: context.colors.error,
+                                  ),
+                                );
+                              } else {
+                                _submit();
                               }
                             }
                           : _nextStep,
@@ -164,6 +218,9 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
   }
 
   Widget _buildStep1() {
+    final state = ref.watch(userSignupProvider);
+    final notifier = ref.read(userSignupProvider.notifier);
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Form(
@@ -194,8 +251,157 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               validator: Validators.email,
-              onChanged: (v) => ref.read(userSignupProvider.notifier).updateField('email', v),
+              onChanged: (v) {
+                notifier.updateField('email', v);
+                notifier.resetEmailVerification();
+                setState(() {
+                  for (int i = 0; i < 6; i++) {
+                    _otpDigits[i] = '';
+                  }
+                });
+              },
             ),
+            const SizedBox(height: AppSpacing.sm),
+            if (state.isEmailVerified)
+              Row(
+                children: [
+                  Icon(Icons.check_circle, color: context.colors.success, size: 16),
+                  const SizedBox(width: AppSpacing.xs),
+                  Text('Email verified', style: AppTypography.labelMedium.copyWith(color: context.colors.success)),
+                ],
+              )
+            else if (!state.showOtpInput)
+              SizedBox(
+                width: double.infinity,
+                height: 36,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.colors.primaryAccent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    padding: EdgeInsets.zero,
+                  ),
+                  onPressed: (_emailCtrl.text.isEmpty || Validators.email(_emailCtrl.text) != null || state.isOtpSending)
+                      ? null
+                      : () {
+                          notifier.sendEmailOtp(_emailCtrl.text, 'signup');
+                        },
+                  child: state.isOtpSending
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : Text('Verify Email', style: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.w600)),
+                ),
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Enter the 6-digit code sent to your email', style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary)),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(6, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        width: 48,
+                        decoration: BoxDecoration(
+                          color: context.colors.surface,
+                          border: Border.all(
+                            color: _otpDigits[index].isNotEmpty ? context.colors.primaryAccent : context.colors.borderLight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        alignment: Alignment.center,
+                        child: RawKeyboardListener(
+                          focusNode: FocusNode(),
+                          onKey: (event) {
+                            if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+                              if (_otpDigits[index].isEmpty && index > 0) {
+                                _otpFocusNodes[index - 1].requestFocus();
+                              }
+                            }
+                          },
+                          child: state.isOtpVerifying && index == 5 && _otpDigits[5].isNotEmpty
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              : TextField(
+                                  controller: _otpControllers[index],
+                                  focusNode: _otpFocusNodes[index],
+                                  textAlign: TextAlign.center,
+                                textAlignVertical: TextAlignVertical.center,
+                                keyboardType: TextInputType.number,
+                                maxLength: 1,
+                                style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                decoration: const InputDecoration(
+                                  counterText: '',
+                                  border: InputBorder.none,
+                                  enabledBorder: InputBorder.none,
+                                  focusedBorder: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                                ),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _otpDigits[index] = value;
+                                  });
+                                  if (value.isNotEmpty && index < 5) {
+                                    _otpFocusNodes[index + 1].requestFocus();
+                                  } else if (value.isEmpty && index > 0) {
+                                    _otpFocusNodes[index - 1].requestFocus();
+                                  }
+                                  
+                                  if (index == 5 && value.isNotEmpty) {
+                                    final code = _otpDigits.join();
+                                    if (code.length == 6) {
+                                      notifier.verifyEmailOtp(_emailCtrl.text, code);
+                                    }
+                                  }
+                                },
+                              ),
+                        ),
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  if (state.otpError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                      child: Text(state.otpError!, style: AppTypography.labelSmall.copyWith(color: context.colors.error)),
+                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        state.otpCooldown > 0 ? 'Resend code in ${state.otpCooldown}s' : '',
+                        style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+                      ),
+                      TextButton(
+                        onPressed: state.otpCooldown > 0 || state.otpSendCount >= 3 || state.isOtpSending
+                            ? null
+                            : () {
+                                notifier.sendEmailOtp(_emailCtrl.text, 'signup');
+                                setState(() {
+                                  for (int i = 0; i < 6; i++) {
+                                    _otpDigits[i] = '';
+                                    _otpControllers[i].clear();
+                                  }
+                                  _otpFocusNodes[0].requestFocus();
+                                });
+                              },
+                        style: TextButton.styleFrom(
+                          minimumSize: Size.zero,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          state.otpSendCount >= 3 ? 'Max attempts reached' : 'Resend',
+                          style: AppTypography.labelMedium.copyWith(
+                            color: state.otpCooldown > 0 || state.otpSendCount >= 3 ? context.colors.textTertiary : context.colors.primaryAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             const SizedBox(height: AppSpacing.md),
             LyketTextField(
               label: 'Phone Number',
@@ -368,6 +574,13 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
               selectedInterests: state.interests,
               onToggle: (i) => ref.read(userSignupProvider.notifier).toggleInterest(i),
             ),
+            const SizedBox(height: AppSpacing.xl),
+            TermsCheckbox(
+              accepted: _termsAccepted,
+              onChanged: (v) => setState(() => _termsAccepted = v),
+              termsType: TermsType.user,
+            ),
+            const SizedBox(height: AppSpacing.lg),
           ],
         ),
       ),

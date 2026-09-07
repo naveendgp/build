@@ -1,11 +1,11 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/explore_models.dart';
 
-// Lyket Explore â€” Category Discovery Chips
+// Lyket Explore — Category Discovery Chips
 class CategoryChips extends StatelessWidget {
   final List<ExploreCategory> categories;
   final String? selectedCategory;

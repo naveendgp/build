@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models/create_post_models.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_spacing.dart';

@@ -122,9 +122,6 @@ class HamburgerMenuSheet extends ConsumerWidget {
               context.push('/brand-saved');
             }),
           ],
-          _buildMenuItem(context, Icons.settings_rounded, 'Settings', () {
-            context.push('/settings');
-          }),
           _buildMenuItem(context, Icons.help_outline_rounded, 'Help & Support', () {
             context.push('/help');
           }),

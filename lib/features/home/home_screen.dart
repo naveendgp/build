@@ -16,7 +16,7 @@ import 'widgets/feed_card.dart';
 import 'widgets/grid_feed_card.dart';
 import 'widgets/bottom_nav_dock.dart';
 import '../notifications/providers/notifications_provider.dart';
-import '../sharing/widgets/share_sheet.dart';
+import '../sharing/services/share_service.dart';
 import '../../core/services/notification_service.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -150,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 }
               },
             ),
-            _buildReminderOption(sheetContext, 'Next day', postId, notifier, const Duration(days: 1)),
+            _buildReminderOption(sheetContext, 'Tomorrow', postId, notifier, const Duration(days: 1)),
             _buildReminderOption(sheetContext, '3 days after', postId, notifier, const Duration(days: 3)),
             _buildReminderOption(sheetContext, '7 days after', postId, notifier, const Duration(days: 7)),
             _buildReminderOption(sheetContext, '14 days after', postId, notifier, const Duration(days: 14)),
@@ -335,7 +335,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               }
             },
             onFollow: () => notifier.toggleFollow(post.id),
-            onShare: () => ShareSheet.show(context, post),
+            onShare: () => ShareService.nativeShare(
+              postId: post.id,
+              title: post.title,
+              brandName: post.brandName,
+            ),
             onReminder: () => _showReminderSheet(post.id, notifier),
             onTap: () {},
           );

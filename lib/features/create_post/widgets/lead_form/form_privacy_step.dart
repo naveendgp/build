@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../models/create_post_models.dart';
 
 class FormPrivacyStep extends StatelessWidget {

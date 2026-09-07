@@ -32,7 +32,7 @@ class FollowingBrand {
 
   factory FollowingBrand.fromJson(Map<String, dynamic> json) {
     return FollowingBrand(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       name: json['name'] ?? '',
       username: json['username'] ?? '',
       logoUrl: json['logoUrl'] ?? '',

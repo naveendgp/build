@@ -12,6 +12,8 @@ import 'widgets/profile_action_buttons.dart';
 import 'widgets/profile_tab_bar.dart';
 import 'widgets/tabs/saved_tab.dart';
 import 'widgets/tabs/collections_tab.dart';
+import 'providers/collections_provider.dart';
+import 'providers/reminders_provider.dart';
 import '../home/widgets/bottom_nav_dock.dart';
 
 class UserProfileScreen extends ConsumerWidget {
@@ -75,6 +77,10 @@ class UserProfileScreen extends ConsumerWidget {
     }
 
     final profile = state.profile!;
+    final collectionsState = ref.watch(collectionsProvider);
+    // Full history count here (not the upcoming-only remindersProvider) so
+    // this matches what the web app shows on the profile.
+    final remindersState = ref.watch(allRemindersProvider);
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -111,6 +117,20 @@ class UserProfileScreen extends ConsumerWidget {
                 child: ProfileHeader(
                   profile: profile,
                   savedCount: state.savedPosts.length,
+                  collectionsCount: collectionsState.value?.length ?? 0,
+                  remindersCount: remindersState.reminders.length,
+                  onSavedTap: () {
+                    Haptics.light();
+                    notifier.setTab(ProfileTab.saved);
+                  },
+                  onCollectionsTap: () {
+                    Haptics.light();
+                    notifier.setTab(ProfileTab.collections);
+                  },
+                  onRemindersTap: () {
+                    Haptics.light();
+                    context.push('/reminders');
+                  },
                 ),
               ),
 

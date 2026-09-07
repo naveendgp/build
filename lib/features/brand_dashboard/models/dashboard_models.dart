@@ -125,7 +125,7 @@ class PostAnalytics {
 
   factory PostAnalytics.fromJson(Map<String, dynamic> json) {
     return PostAnalytics(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       objective: json['objective'] ?? '',
@@ -251,7 +251,7 @@ class TopContentPost {
 
   factory TopContentPost.fromJson(Map<String, dynamic> json) {
     return TopContentPost(
-      id: json['id'] ?? '',
+      id: (json['id'] ?? '').toString(),
       title: json['title'] ?? '',
       thumbnail: json['thumbnail'],
       reach: json['reach'] ?? 0,

@@ -278,10 +278,10 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   }
 
   Widget _buildFieldInput(Map<String, dynamic> field) {
-    final fieldId = field['id'] as String;
-    final type = field['type'] as String;
-    final label = field['label'] as String;
-    final isRequired = field['isRequired'] as bool? ?? false;
+    final fieldId = (field['id'] ?? '').toString();
+    final type = (field['type'] ?? '').toString();
+    final label = (field['label'] ?? '').toString();
+    final isRequired = field['isRequired'] == true || field['isRequired'] == 'true';
     final options = (field['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
 
     if (type == 'SELECT' || type == 'RADIO') {

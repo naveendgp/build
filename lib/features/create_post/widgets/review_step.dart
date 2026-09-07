@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
@@ -77,7 +77,7 @@ class ReviewStep extends StatelessWidget {
             _Section(
               title: 'Call to Action',
               child: Text(
-                '${state.cta!.displayLabel} â†’ ${state.cta!.destinationUrl ?? ''}',
+                '${state.cta!.displayLabel} → ${state.cta!.destinationUrl ?? ''}',
                 style: AppTypography.bodyMedium.copyWith(color: context.colors.primaryAccent),
               ),
             ),

@@ -67,24 +67,32 @@ class AppNotification {
     );
   }
 
+  static bool _parseBool(dynamic val) {
+    if (val == null) return false;
+    if (val is bool) return val;
+    if (val is String) return val.toLowerCase() == 'true' || val == '1';
+    if (val is num) return val > 0;
+    return false;
+  }
+
   factory AppNotification.fromJson(Map<String, dynamic> json) {
     return AppNotification(
-      id: json['id'] as String,
+      id: (json['id'] ?? '').toString(),
       type: NotificationType.values.firstWhere(
-        (e) => e.name.toLowerCase() == (json['type'] as String).toLowerCase(),
+        (e) => e.name.toLowerCase() == (json['type']?.toString() ?? 'system').toLowerCase(),
         orElse: () => NotificationType.system,
       ),
-      title: json['title'] as String,
-      message: (json['body'] ?? json['message'] ?? '') as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      isRead: json['isRead'] as bool? ?? false,
-      isPriority: json['isPriority'] as bool? ?? false,
-      avatarUrl: json['avatarUrl'] as String?,
-      referenceId: json['referenceId'] as String?,
-      entityType: json['entityType'] as String?,
-      ctaText: json['ctaText'] as String?,
+      title: (json['title'] ?? '').toString(),
+      message: (json['body'] ?? json['message'] ?? '').toString(),
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      isRead: _parseBool(json['isRead']),
+      isPriority: _parseBool(json['isPriority']),
+      avatarUrl: json['avatarUrl']?.toString(),
+      referenceId: json['referenceId']?.toString(),
+      entityType: json['entityType']?.toString(),
+      ctaText: json['ctaText']?.toString(),
       expiresAt: json['expiresAt'] != null
-          ? DateTime.parse(json['expiresAt'] as String)
+          ? DateTime.tryParse(json['expiresAt'].toString())
           : null,
     );
   }

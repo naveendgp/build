@@ -11,7 +11,7 @@ import '../../home/providers/feed_provider.dart';
 import '../../home/widgets/save_to_collection_sheet.dart';
 import '../../comments/widgets/comment_sheet.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
-import '../../sharing/widgets/share_sheet.dart';
+import '../../sharing/services/share_service.dart';
 import '../../../core/network/api_client.dart';
 
 class ExplorePostDetailScreen extends ConsumerStatefulWidget {
@@ -247,7 +247,11 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
                             child: FeedCard(
                               post: _post!,
                               onLike: _handleLike,
-                              onShare: () => ShareSheet.show(context, _post!),
+                              onShare: () => ShareService.nativeShare(
+                                postId: _post!.id,
+                                title: _post!.title,
+                                brandName: _post!.brandName,
+                              ),
                               onBookmark: _handleBookmark,
                               onFollow: () {},
                               onReminder: () => _showReminderSheet(context),

@@ -274,7 +274,10 @@ class NotificationsScreen extends ConsumerWidget {
                   try {
                     final apiClient = ref.read(apiClientProvider);
                     await apiClient.dio.put('/reminders/${reminder.id}', data: {
-                      'reminderTime': newDateTime.toIso8601String(),
+                      // .toUtc() matters — see reminders_section.dart's
+                      // _editReminder for why a bare local ISO string can
+                      // get rejected as "in the past" by the backend.
+                      'reminderTime': newDateTime.toUtc().toIso8601String(),
                     });
                     ref.read(remindersProvider.notifier).loadReminders();
                     if (context.mounted) {

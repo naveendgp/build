@@ -32,6 +32,30 @@ String _verificationStatusToString(VerificationStatus status) {
   }
 }
 
+/// User-facing label for a verification status. Keep this separate from
+/// the wire format above — "NOT_SUBMITTED" reads oddly to a brand owner
+/// who's simply never been through verification yet.
+String verificationStatusLabel(VerificationStatus status) {
+  switch (status) {
+    case VerificationStatus.underReview:
+      return 'Under Review';
+    case VerificationStatus.verified:
+      return 'Verified';
+    case VerificationStatus.rejected:
+      return 'Rejected';
+    case VerificationStatus.notSubmitted:
+      return 'Not Verified';
+  }
+}
+
+bool _parseBool(dynamic value, {bool defaultValue = false}) {
+  if (value == null) return defaultValue;
+  if (value is bool) return value;
+  if (value is String) return value.toLowerCase() == 'true' || value == '1';
+  if (value is num) return value > 0;
+  return defaultValue;
+}
+
 class UserSettings {
   final String id;
   final String userId;
@@ -61,20 +85,20 @@ class UserSettings {
 
   factory UserSettings.fromJson(Map<String, dynamic> json) {
     return UserSettings(
-      id: json['id'] as String,
-      userId: json['userId'] as String,
-      everyoneCanMessageMe: json['everyoneCanMessageMe'] as bool? ?? true,
+      id: (json['id'] ?? '').toString(),
+      userId: (json['userId'] ?? '').toString(),
+      everyoneCanMessageMe: _parseBool(json['everyoneCanMessageMe'], defaultValue: true),
       categoryInterests: (json['categoryInterests'] as List<dynamic>?)
-              ?.map((e) => e as String)
+              ?.map((e) => e.toString())
               .toList() ??
           [],
-      pushNotifications: json['pushNotifications'] as bool? ?? true,
-      appReminders: json['appReminders'] as bool? ?? true,
-      campaignReminders: json['campaignReminders'] as bool? ?? true,
-      platformReminders: json['platformReminders'] as bool? ?? true,
-      followedBrandPosts: json['followedBrandPosts'] as bool? ?? true,
-      savedBrandPosts: json['savedBrandPosts'] as bool? ?? true,
-      recommendedBrandPosts: json['recommendedBrandPosts'] as bool? ?? true,
+      pushNotifications: _parseBool(json['pushNotifications'], defaultValue: true),
+      appReminders: _parseBool(json['appReminders'], defaultValue: true),
+      campaignReminders: _parseBool(json['campaignReminders'], defaultValue: true),
+      platformReminders: _parseBool(json['platformReminders'], defaultValue: true),
+      followedBrandPosts: _parseBool(json['followedBrandPosts'], defaultValue: true),
+      savedBrandPosts: _parseBool(json['savedBrandPosts'], defaultValue: true),
+      recommendedBrandPosts: _parseBool(json['recommendedBrandPosts'], defaultValue: true),
     );
   }
 
@@ -130,6 +154,7 @@ class BrandSettings {
   final String? gstVatNumber;
   final String? instagram;
   final String? facebook;
+  final String? twitter;
   final String? whatsapp;
   final VerificationStatus verificationStatus;
   final List<String> businessDocuments;
@@ -149,6 +174,7 @@ class BrandSettings {
     this.gstVatNumber,
     this.instagram,
     this.facebook,
+    this.twitter,
     this.whatsapp,
     this.verificationStatus = VerificationStatus.notSubmitted,
     this.businessDocuments = const [],
@@ -160,26 +186,27 @@ class BrandSettings {
 
   factory BrandSettings.fromJson(Map<String, dynamic> json) {
     return BrandSettings(
-      id: json['id'] as String,
-      brandId: json['brandId'] as String,
-      businessDescription: json['businessDescription'] as String?,
-      website: json['website'] as String?,
-      contactEmail: json['contactEmail'] as String?,
-      contactPhone: json['contactPhone'] as String?,
-      businessAddress: json['businessAddress'] as String?,
-      gstVatNumber: json['gstVatNumber'] as String?,
-      instagram: json['instagram'] as String?,
-      facebook: json['facebook'] as String?,
-      whatsapp: json['whatsapp'] as String?,
-      verificationStatus: _verificationStatusFromString(json['verificationStatus'] as String?),
+      id: (json['id'] ?? '').toString(),
+      brandId: (json['brandId'] ?? '').toString(),
+      businessDescription: json['businessDescription']?.toString(),
+      website: json['website']?.toString(),
+      contactEmail: json['contactEmail']?.toString(),
+      contactPhone: json['contactPhone']?.toString(),
+      businessAddress: json['businessAddress']?.toString(),
+      gstVatNumber: json['gstVatNumber']?.toString(),
+      instagram: json['instagram']?.toString(),
+      facebook: json['facebook']?.toString(),
+      twitter: json['twitter']?.toString(),
+      whatsapp: json['whatsapp']?.toString(),
+      verificationStatus: _verificationStatusFromString(json['verificationStatus']?.toString()),
       businessDocuments: (json['businessDocuments'] as List<dynamic>?)
-              ?.map((e) => e as String)
+              ?.map((e) => e.toString())
               .toList() ??
           [],
-      newFollowerNotification: json['newFollowerNotification'] as bool? ?? true,
-      newMessageNotification: json['newMessageNotification'] as bool? ?? true,
-      newLeadNotification: json['newLeadNotification'] as bool? ?? true,
-      newOrderNotification: json['newOrderNotification'] as bool? ?? true,
+      newFollowerNotification: _parseBool(json['newFollowerNotification'], defaultValue: true),
+      newMessageNotification: _parseBool(json['newMessageNotification'], defaultValue: true),
+      newLeadNotification: _parseBool(json['newLeadNotification'], defaultValue: true),
+      newOrderNotification: _parseBool(json['newOrderNotification'], defaultValue: true),
     );
   }
 
@@ -193,6 +220,7 @@ class BrandSettings {
       'gstVatNumber': gstVatNumber,
       'instagram': instagram,
       'facebook': facebook,
+      'twitter': twitter,
       'whatsapp': whatsapp,
       'verificationStatus': _verificationStatusToString(verificationStatus),
       'businessDocuments': businessDocuments,
@@ -212,6 +240,7 @@ class BrandSettings {
     String? gstVatNumber,
     String? instagram,
     String? facebook,
+    String? twitter,
     String? whatsapp,
     VerificationStatus? verificationStatus,
     List<String>? businessDocuments,
@@ -221,8 +250,8 @@ class BrandSettings {
     bool? newOrderNotification,
   }) {
     return BrandSettings(
-      id: id ?? this.id,
-      brandId: brandId ?? this.brandId,
+      id: this.id,
+      brandId: this.brandId,
       businessDescription: businessDescription ?? this.businessDescription,
       website: website ?? this.website,
       contactEmail: contactEmail ?? this.contactEmail,
@@ -231,6 +260,7 @@ class BrandSettings {
       gstVatNumber: gstVatNumber ?? this.gstVatNumber,
       instagram: instagram ?? this.instagram,
       facebook: facebook ?? this.facebook,
+      twitter: twitter ?? this.twitter,
       whatsapp: whatsapp ?? this.whatsapp,
       verificationStatus: verificationStatus ?? this.verificationStatus,
       businessDocuments: businessDocuments ?? this.businessDocuments,
@@ -263,13 +293,13 @@ class BlockedBrand {
 
   factory BlockedBrand.fromJson(Map<String, dynamic> json) {
     return BlockedBrand(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      username: json['username'] as String,
-      logoUrl: json['logoUrl'] as String?,
-      category: json['category'] as String?,
-      isBrandPublic: json['isBrandPublic'] as bool? ?? true,
-      blockedAt: DateTime.parse(json['blockedAt'] as String),
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      logoUrl: json['logoUrl']?.toString(),
+      category: json['category']?.toString(),
+      isBrandPublic: _parseBool(json['isBrandPublic'], defaultValue: true),
+      blockedAt: DateTime.tryParse(json['blockedAt']?.toString() ?? '') ?? DateTime.now(),
     );
   }
 }

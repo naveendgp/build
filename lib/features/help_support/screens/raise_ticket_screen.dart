@@ -9,7 +9,7 @@ import '../providers/support_provider.dart';
 
 class RaiseTicketScreen extends ConsumerStatefulWidget {
   final String initialType;
-  const RaiseTicketScreen({super.key, this.initialType = 'LIVE_CHAT'});
+  const RaiseTicketScreen({super.key, this.initialType = 'BUG'});
 
   @override
   ConsumerState<RaiseTicketScreen> createState() => _RaiseTicketScreenState();
@@ -56,12 +56,8 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
     ref.listen<CreateTicketState>(createTicketProvider, (prev, next) {
       if (next.status == TicketUploadState.success && next.result != null) {
         ref.invalidate(myTicketsProvider);
-        if (_ticketType == 'LIVE_CHAT' && next.result!.conversation != null) {
-          context.pushReplacement('/messages/${next.result!.conversation!['id']}');
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
-          context.pop();
-        }
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
+        context.pop();
       } else if (next.status == TicketUploadState.error) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.errorMessage ?? 'Error')));
       }
@@ -80,7 +76,7 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          _ticketType == 'LIVE_CHAT' ? 'Start Live Chat' : 'Create Ticket',
+          'Create Ticket',
           style: AppTypography.titleMedium.copyWith(
             color: context.colors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -98,7 +94,7 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
                 label: 'Ticket Type',
                 value: _ticketType,
                 items: const [
-                  DropdownMenuItem(value: 'LIVE_CHAT', child: Text('Live Chat')),
+                  DropdownMenuItem(value: 'SUPPORT', child: Text('General Support')),
                   DropdownMenuItem(value: 'BUG', child: Text('Bug Report')),
                 ],
                 onChanged: (v) => setState(() => _ticketType = v!),
@@ -145,7 +141,7 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
                   child: isLoading
                       ? const CircularProgressIndicator(color: Colors.white)
                       : Text(
-                          _ticketType == 'LIVE_CHAT' ? 'Start Chat' : 'Submit Ticket',
+                          'Submit Ticket',
                           style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                 ),

@@ -22,13 +22,49 @@ class CreatePostScreen extends ConsumerStatefulWidget {
   ConsumerState<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
-class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
+class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with WidgetsBindingObserver {
   final PageController _pageController = PageController();
+  // While true, a finger is down on the preview image — the surrounding
+  // SingleChildScrollView disables its own scroll physics so it stops
+  // winning the gesture arena against InteractiveViewer's pan (see
+  // MediaPreviewStep.onImageInteractionStart/End for why this is needed).
+  bool _isInteractingWithImage = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state != AppLifecycleState.resumed) return;
+
+    // Backgrounding the app tears down the native TextInputConnection, but
+    // the Flutter-side FocusNode never loses focus — so on return, tapping
+    // the still-"focused" field doesn't fire a focus-change and the
+    // keyboard never reopens. Forcing an unfocus + refocus cycle re-attaches
+    // a fresh TextInputConnection so the keyboard comes back without the
+    // user having to tap elsewhere first.
+    final focused = FocusManager.instance.primaryFocus;
+    if (focused == null || !focused.hasFocus) return;
+    final context = focused.context;
+    if (context == null) return;
+
+    focused.unfocus();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && context.mounted) {
+        FocusScope.of(context).requestFocus(focused);
+      }
+    });
   }
 
   void _onNextStep(CreatePostState state, CreatePostNotifier notifier) {
@@ -83,8 +119,16 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
           case CreateStep.preview:
             return SingleChildScrollView(
               padding: const EdgeInsets.only(bottom: 24),
+              // Disabled entirely while the user's finger is on the image so
+              // InteractiveViewer's pan gesture isn't stolen by this
+              // ancestor Scrollable — see the bool's doc comment above.
+              physics: _isInteractingWithImage
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
               child: MediaPreviewStep(
                 media: state.media,
+              onImageInteractionStart: () => setState(() => _isInteractingWithImage = true),
+              onImageInteractionEnd: () => setState(() => _isInteractingWithImage = false),
               onChangeMedia: (index) {
                 showModalBottomSheet(
                   context: context,

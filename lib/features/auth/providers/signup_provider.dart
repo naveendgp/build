@@ -17,6 +17,14 @@ class SignupState {
   final String? businessCategory, brandSubCategory;
   final Set<String> brandTags;
   final String? logoPath, coverPath;
+  // OTP verification state
+  final bool isEmailVerified;
+  final bool isOtpSending;
+  final bool isOtpVerifying;
+  final bool showOtpInput;
+  final String? otpError;
+  final int otpCooldown;
+  final int otpSendCount;
 
   const SignupState({
     this.currentStep = 0,
@@ -31,6 +39,13 @@ class SignupState {
     this.brandContactNumber = '', this.brandLocation = '',
     this.businessCategory, this.brandSubCategory, this.brandTags = const {},
     this.logoPath, this.coverPath,
+    this.isEmailVerified = false,
+    this.isOtpSending = false,
+    this.isOtpVerifying = false,
+    this.showOtpInput = false,
+    this.otpError,
+    this.otpCooldown = 0,
+    this.otpSendCount = 0,
   });
 
   SignupState copyWith({
@@ -43,6 +58,8 @@ class SignupState {
     String? brandContactNumber, String? brandLocation,
     String? businessCategory, String? brandSubCategory, Set<String>? brandTags,
     String? logoPath, String? coverPath,
+    bool? isEmailVerified, bool? isOtpSending, bool? isOtpVerifying, bool? showOtpInput,
+    String? otpError, int? otpCooldown, int? otpSendCount,
   }) {
     return SignupState(
       currentStep: currentStep ?? this.currentStep,
@@ -71,6 +88,13 @@ class SignupState {
       brandTags: brandTags ?? this.brandTags,
       logoPath: logoPath ?? this.logoPath,
       coverPath: coverPath ?? this.coverPath,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      isOtpSending: isOtpSending ?? this.isOtpSending,
+      isOtpVerifying: isOtpVerifying ?? this.isOtpVerifying,
+      showOtpInput: showOtpInput ?? this.showOtpInput,
+      otpError: otpError,
+      otpCooldown: otpCooldown ?? this.otpCooldown,
+      otpSendCount: otpSendCount ?? this.otpSendCount,
     );
   }
 }
@@ -128,6 +152,77 @@ class SignupNotifier extends StateNotifier<SignupState> {
   void setCover(String p) => state = state.copyWith(coverPath: p);
   void removeLogo() => state = state.copyWith(logoPath: '');
   void removeCover() => state = state.copyWith(coverPath: '');
+
+  // ─── Email OTP Verification ─────────────────────────────────
+  Future<bool> sendEmailOtp(String email, String type) async {
+    if (state.otpCooldown > 0 || state.otpSendCount >= 3) return false;
+    state = state.copyWith(isOtpSending: true, otpError: null);
+    try {
+      final res = await _apiClient.dio.post('/auth/send-otp', data: {
+        'email': email,
+        'type': type,
+      });
+      if (res.statusCode == 200) {
+        state = state.copyWith(
+          isOtpSending: false,
+          showOtpInput: true,
+          otpCooldown: 60,
+          otpSendCount: state.otpSendCount + 1,
+        );
+        return true;
+      }
+      state = state.copyWith(isOtpSending: false, otpError: 'Failed to send code');
+      return false;
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Failed to send verification code';
+      state = state.copyWith(isOtpSending: false, otpError: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isOtpSending: false, otpError: 'Network error');
+      return false;
+    }
+  }
+
+  Future<bool> verifyEmailOtp(String email, String code) async {
+    state = state.copyWith(isOtpVerifying: true, otpError: null);
+    try {
+      final res = await _apiClient.dio.post('/auth/verify-otp', data: {
+        'email': email,
+        'code': code,
+      });
+      if (res.statusCode == 200 && res.data['verified'] == true) {
+        state = state.copyWith(
+          isOtpVerifying: false,
+          isEmailVerified: true,
+          showOtpInput: false,
+        );
+        return true;
+      }
+      state = state.copyWith(isOtpVerifying: false, otpError: 'Invalid code');
+      return false;
+    } on DioException catch (e) {
+      final msg = e.response?.data?['message'] ?? 'Verification failed';
+      state = state.copyWith(isOtpVerifying: false, otpError: msg);
+      return false;
+    } catch (e) {
+      state = state.copyWith(isOtpVerifying: false, otpError: 'Network error');
+      return false;
+    }
+  }
+
+  void resetEmailVerification() {
+    state = state.copyWith(
+      isEmailVerified: false,
+      showOtpInput: false,
+      otpError: null,
+      otpCooldown: 0,
+      otpSendCount: 0,
+    );
+  }
+
+  void setOtpCooldown(int value) {
+    state = state.copyWith(otpCooldown: value);
+  }
 
   Future<bool> submitUserSignup() async {
     state = state.copyWith(isLoading: true, errorMessage: null);

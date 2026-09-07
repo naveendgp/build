@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../providers/support_provider.dart';
+import '../models/support_chat_models.dart';
 
 class HelpSupportHomeScreen extends ConsumerStatefulWidget {
   final int initialTabIndex;
@@ -25,7 +26,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: widget.initialTabIndex);
+    _tabController = TabController(length: 3, vsync: this, initialIndex: widget.initialTabIndex);
   }
 
   @override
@@ -75,6 +76,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
               onTap: (_) => Haptics.light(),
               tabs: const [
                 Tab(text: 'Contact Us'),
+                Tab(text: 'Live Chats'),
                 Tab(text: 'My Tickets'),
               ],
             ),
@@ -85,6 +87,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
         controller: _tabController,
         children: [
           _buildContactUsTab(context),
+          _buildLiveChatsTab(context),
           _buildMyTicketsTab(context),
         ],
       ),
@@ -153,7 +156,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
                 title: 'Live Chat',
                 icon: Icons.chat_bubble_outline_rounded,
                 color: context.colors.primaryAccent,
-                onTap: () => context.push('/help/ticket?type=LIVE_CHAT'),
+                onTap: () => context.push('/help/live-chat'),
               ),
               _buildGridCard(
                 title: 'Bug Report',
@@ -211,6 +214,50 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
     );
   }
 
+  Widget _buildLiveChatsTab(BuildContext context) {
+    final chatsAsync = ref.watch(myChatsProvider);
+
+    return chatsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (err, stack) => Center(
+        child: Text('Failed to load live chats', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+      ),
+      data: (chats) {
+        if (chats.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.chat_bubble_outline_rounded, size: 64, color: context.colors.textTertiary),
+                const SizedBox(height: 16),
+                Text(
+                  'No live chats yet',
+                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Start a live chat from Contact Us to talk to an agent',
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(myChatsProvider.future),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(24),
+            itemCount: chats.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => _LiveChatListTile(chat: chats[index]),
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildMyTicketsTab(BuildContext context) {
     final ticketsAsync = ref.watch(myTicketsProvider);
 
@@ -241,34 +288,130 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
           );
         }
 
-        return ListView.separated(
-          padding: const EdgeInsets.all(24),
-          itemCount: tickets.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) {
-            final ticket = tickets[index];
-            return _TicketListTile(ticket: ticket);
-          },
+        return RefreshIndicator(
+          onRefresh: () => ref.refresh(myTicketsProvider.future),
+          child: ListView.separated(
+            padding: const EdgeInsets.all(24),
+            itemCount: tickets.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final ticket = tickets[index];
+              return _TicketListTile(ticket: ticket);
+            },
+          ),
         );
       },
     );
   }
 }
 
-class _TicketListTile extends StatelessWidget {
+class _LiveChatListTile extends StatelessWidget {
+  final SupportChat chat;
+
+  const _LiveChatListTile({required this.chat});
+
+  String _categoryLabel(String category) {
+    switch (category) {
+      case 'URGENT':
+        return 'Urgent';
+      case 'SPAM':
+        return 'Report Spam';
+      case 'SERVICES':
+        return 'Services Issue';
+      case 'SECURITY':
+        return 'Security';
+      default:
+        return 'Live Chat';
+    }
+  }
+
+  String _formatDate(DateTime date) => '${date.day}/${date.month}/${date.year}';
+
+  @override
+  Widget build(BuildContext context) {
+    final statusColor = chat.isOpen ? context.colors.success : context.colors.textSecondary;
+    final preview = chat.lastMessage?.message;
+
+    return GestureDetector(
+      onTap: () {
+        Haptics.light();
+        context.push('/help/chat/${chat.id}');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.colors.borderLight),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _categoryLabel(chat.category),
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                ),
+                Row(
+                  children: [
+                    if (chat.unreadCount > 0) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(color: context.colors.primaryAccent, borderRadius: BorderRadius.circular(10)),
+                        child: Text(
+                          '${chat.unreadCount}',
+                          style: AppTypography.labelSmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: Text(chat.status, style: AppTypography.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            if (preview != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                preview,
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            const SizedBox(height: 8),
+            Text(_formatDate(chat.updatedAt), style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TicketListTile extends ConsumerWidget {
   final dynamic ticket; // Will be SupportTicket
 
   const _TicketListTile({required this.ticket});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isResolved = ticket.status == 'RESOLVED' || ticket.status == 'CLOSED';
     final statusColor = isResolved ? context.colors.success : context.colors.warning;
 
     return GestureDetector(
-      onTap: () {
+      onTap: () async {
         Haptics.light();
-        context.push('/help/ticket/${ticket.id}');
+        await context.push('/help/ticket/${ticket.id}');
+        // The detail screen always fetches fresh — re-sync the list on
+        // return so a status an admin changed elsewhere (no push/socket
+        // event for ticket updates) shows up without a manual pull-to-refresh.
+        ref.invalidate(myTicketsProvider);
       },
       child: Container(
         padding: const EdgeInsets.all(16),

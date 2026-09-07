@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart' as http_parser;
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
@@ -24,7 +25,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: source);
+      final XFile? pickedFile = await _picker.pickImage(source: source, imageQuality: 70, maxWidth: 1080);
       if (pickedFile == null) return;
 
       await _uploadAvatar(File(pickedFile.path));
@@ -48,7 +49,11 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
       String fileName = imageFile.path.split('/').last;
       
       FormData formData = FormData.fromMap({
-        "avatar": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+        "avatar": await MultipartFile.fromFile(
+          imageFile.path, 
+          filename: fileName,
+          contentType: http_parser.MediaType('image', 'jpeg'),
+        ),
       });
 
       final response = await apiClient.dio.post(

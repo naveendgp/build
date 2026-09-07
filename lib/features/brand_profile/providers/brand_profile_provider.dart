@@ -19,6 +19,7 @@ class BrandProfileState {
   final BrandAnalytics? analytics;
   final int activeTab;
   final String? errorMessage;
+  final String? lastActionError;
 
   const BrandProfileState({
     this.loadState = BrandLoadState.initial,
@@ -31,6 +32,7 @@ class BrandProfileState {
     this.analytics,
     this.activeTab = 0,
     this.errorMessage,
+    this.lastActionError,
   });
 
   BrandProfileState copyWith({
@@ -44,6 +46,7 @@ class BrandProfileState {
     BrandAnalytics? analytics,
     int? activeTab,
     String? errorMessage,
+    String? lastActionError,
   }) {
     return BrandProfileState(
       loadState: loadState ?? this.loadState,
@@ -56,6 +59,7 @@ class BrandProfileState {
       analytics: analytics ?? this.analytics,
       activeTab: activeTab ?? this.activeTab,
       errorMessage: errorMessage ?? this.errorMessage,
+      lastActionError: lastActionError,
     );
   }
 }
@@ -174,7 +178,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
   Future<bool> uploadGalleryImage(File file) async {
     try {
       final filename = file.path.split('/').last;
-      
+
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
@@ -184,10 +188,18 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       });
 
       final uploadRes = await apiClient.dio.post('/upload', data: formData);
-      if (uploadRes.statusCode != 200) return false;
+      if (uploadRes.statusCode != 200) {
+        debugPrint('Gallery upload error: upload status ${uploadRes.statusCode} ${uploadRes.data}');
+        state = state.copyWith(lastActionError: _friendlyErrorMessage(uploadRes.statusCode));
+        return false;
+      }
 
-      final uploadedUrl = uploadRes.data['url'];
-      if (uploadedUrl == null) return false;
+      final uploadedUrl = uploadRes.data is Map ? uploadRes.data['url'] : null;
+      if (uploadedUrl == null) {
+        debugPrint('Gallery upload error: response missing url ${uploadRes.data}');
+        state = state.copyWith(lastActionError: _friendlyErrorMessage(null));
+        return false;
+      }
 
       final galleryRes = await apiClient.dio.post('/gallery', data: {
         'url': uploadedUrl,
@@ -197,11 +209,20 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       if (galleryRes.statusCode == 200 || galleryRes.statusCode == 201) {
         // Refresh gallery by reloading brand
         await loadBrand('me');
+        state = state.copyWith(lastActionError: null);
         return true;
       }
+      debugPrint('Gallery upload error: gallery post status ${galleryRes.statusCode} ${galleryRes.data}');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(galleryRes.statusCode));
+      return false;
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      debugPrint('Gallery upload error: $statusCode ${e.response?.data ?? e.message}');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(statusCode, isTimeout: e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout, isConnectionError: e.type == DioExceptionType.connectionError));
       return false;
     } catch (e) {
       debugPrint('Gallery upload error: $e');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(null));
       return false;
     }
   }
@@ -214,34 +235,64 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
         'file': await MultipartFile.fromFile(
           file.path,
           filename: filename,
+          contentType: http_parser.MediaType('image', 'jpeg'),
         ),
       });
 
       final uploadRes = await apiClient.dio.post('/upload', data: formData);
-      if (uploadRes.statusCode != 200) return false;
+      if (uploadRes.statusCode != 200) {
+        debugPrint('Profile image upload error: status ${uploadRes.statusCode} ${uploadRes.data}');
+        state = state.copyWith(lastActionError: _friendlyErrorMessage(uploadRes.statusCode));
+        return false;
+      }
 
-      final uploadedUrl = uploadRes.data['url'];
-      if (uploadedUrl == null) return false;
+      final uploadedUrl = uploadRes.data is Map ? uploadRes.data['url'] : null;
+      if (uploadedUrl == null) {
+        debugPrint('Profile image upload error: response missing url ${uploadRes.data}');
+        state = state.copyWith(lastActionError: _friendlyErrorMessage(null));
+        return false;
+      }
 
-      final updateData = isCover ? {'coverUrl': uploadedUrl} : {'logoUrl': uploadedUrl};
+      final updateData = isCover ? {'coverImageUrl': uploadedUrl} : {'logoUrl': uploadedUrl};
       final updateRes = await apiClient.dio.put('/brand/profile', data: updateData);
 
       if (updateRes.statusCode == 200) {
         if (state.profile != null) {
+          final resolvedUrl = ApiClient.resolveMediaUrl(uploadedUrl.toString());
           state = state.copyWith(
             profile: state.profile!.copyWith(
-              logoUrl: isCover ? null : uploadedUrl,
-              coverUrl: isCover ? uploadedUrl : null,
-            )
+              logoUrl: isCover ? null : resolvedUrl,
+              coverUrl: isCover ? resolvedUrl : null,
+            ),
+            lastActionError: null,
           );
         }
         return true;
       }
+      debugPrint('Profile image upload error: profile update status ${updateRes.statusCode} ${updateRes.data}');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(updateRes.statusCode));
+      return false;
+    } on DioException catch (e) {
+      final statusCode = e.response?.statusCode;
+      debugPrint('Profile image upload error: $statusCode ${e.response?.data ?? e.message}');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(statusCode, isTimeout: e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout, isConnectionError: e.type == DioExceptionType.connectionError));
       return false;
     } catch (e) {
       debugPrint('Profile image upload error: $e');
+      state = state.copyWith(lastActionError: _friendlyErrorMessage(null));
       return false;
     }
+  }
+
+  /// Maps technical failures to short, user-facing copy. Full technical
+  /// detail is always logged via debugPrint above for diagnosis.
+  String _friendlyErrorMessage(int? statusCode, {bool isTimeout = false, bool isConnectionError = false}) {
+    if (isConnectionError) return 'No internet connection. Please check your network and try again.';
+    if (isTimeout) return 'The upload timed out. Please try again.';
+    if (statusCode == 413) return 'That image is too large. Please choose a smaller photo.';
+    if (statusCode == 401 || statusCode == 403) return 'Your session has expired. Please log in again.';
+    if (statusCode != null && statusCode >= 500) return 'Our servers are having trouble right now. Please try again shortly.';
+    return 'Something went wrong. Please try again.';
   }
 
   Future<bool> updateBrandDetails({String? bio, Map<String, dynamic>? quicksite, List<String>? tags}) async {
@@ -257,7 +308,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       if (res.statusCode == 200) {
         if (state.profile != null) {
           state = state.copyWith(
-            profile: state.profile!.copyWith(bio: bio),
+            profile: state.profile!.copyWith(bio: bio, tags: tags),
             quicksite: quicksite != null ? BrandQuicksiteData.fromJson({'quicksite': quicksite}) : state.quicksite,
           );
         }

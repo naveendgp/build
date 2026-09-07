@@ -6,6 +6,7 @@ import '../models/brand_profile_models.dart';
 import 'followers_bottom_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/utils/haptics.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../settings/providers/settings_provider.dart';
 
@@ -81,6 +82,30 @@ class BrandHeroHeader extends ConsumerWidget {
                     ),
                   ),
                 ),
+                // Settings Button (brand owner viewing their own profile)
+                if (profile.isOwner)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 8,
+                    right: 16,
+                    child: GestureDetector(
+                      onTap: () {
+                        Haptics.selection();
+                        context.push('/settings');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.menu_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                    ),
+                  ),
                 // More Options Button
                 if (isUser)
                   Positioned(
@@ -133,7 +158,7 @@ class BrandHeroHeader extends ConsumerWidget {
                                     ),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      context.push('/help/ticket?type=LIVE_CHAT');
+                                      context.push('/help/live-chat?category=SPAM');
                                     },
                                   ),
                                   ListTile(
@@ -238,6 +263,32 @@ class BrandHeroHeader extends ConsumerWidget {
                         label: 'Followers',
                       ),
                     ),
+                    // Only the brand owner has their own saved posts to
+                    // show — visiting another brand's profile shouldn't
+                    // surface someone else's private saved list. No count
+                    // is shown (unlike Posts/Followers) since that data
+                    // isn't loaded on this screen — an icon + label reads
+                    // more honestly than a fake/blank number would.
+                    if (profile.isOwner) ...[
+                      const SizedBox(width: 24),
+                      GestureDetector(
+                        onTap: () {
+                          Haptics.selection();
+                          context.push('/brand-saved');
+                        },
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          children: [
+                            Icon(Icons.bookmark_border_rounded, size: 18, color: context.colors.textPrimary),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Saved',
+                              style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ],

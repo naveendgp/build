@@ -8,6 +8,14 @@ enum MessageType {
   cta,
 }
 
+bool _parseBool(dynamic val) {
+  if (val == null) return false;
+  if (val is bool) return val;
+  if (val is String) return val.toLowerCase() == 'true' || val == '1';
+  if (val is num) return val > 0;
+  return false;
+}
+
 class ChatParticipant {
   final String id;
   final String name;
@@ -27,12 +35,12 @@ class ChatParticipant {
 
   factory ChatParticipant.fromJson(Map<String, dynamic> json) {
     return ChatParticipant(
-      id: json['id'] ?? '',
-      name: json['name'] ?? json['username'] ?? json['brandName'] ?? 'Unknown',
+      id: json['id']?.toString() ?? '',
+      name: (json['name'] ?? json['username'] ?? json['brandName'] ?? 'Unknown').toString(),
       avatarUrl: json['avatarUrl'] ?? json['profilePic'] ?? json['logo'],
-      isBrand: json['isBrand'] ?? false,
-      isOnline: json['isOnline'] ?? false,
-      category: json['category'],
+      isBrand: _parseBool(json['isBrand']),
+      isOnline: _parseBool(json['isOnline']),
+      category: json['category']?.toString(),
     );
   }
 }
@@ -97,12 +105,12 @@ class Message {
     } catch (_) {}
 
     return Message(
-      id: json['id'] ?? '',
-      conversationId: json['conversationId'] ?? '',
-      senderId: json['senderId'] ?? json['senderUserId'] ?? json['senderBrandId'] ?? '',
+      id: json['id']?.toString() ?? '',
+      conversationId: json['conversationId']?.toString() ?? '',
+      senderId: (json['senderId'] ?? json['senderUserId'] ?? json['senderBrandId'])?.toString() ?? '',
       content: content,
-      createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
-      isRead: json['isRead'] ?? false,
+      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
+      isRead: _parseBool(json['isRead']),
       type: type,
       metadata: metadata,
     );
@@ -137,7 +145,7 @@ class Conversation {
       final list = json['participants'] as List;
       // try to find the one that is not current user
       try {
-        participantJson = list.firstWhere((p) => p['userId'] != currentUserId && p['brandId'] != currentUserId) as Map<String, dynamic>;
+        participantJson = list.firstWhere((p) => p['userId']?.toString() != currentUserId && p['brandId']?.toString() != currentUserId) as Map<String, dynamic>;
       } catch (e) {
         // If we only found ourselves (like in a new support ticket), don't set participantJson to ourselves.
         // Leave it null so we can fall back to a "Lyket Support" default for support chats.
@@ -173,7 +181,7 @@ class Conversation {
     final isSupportChat = json['isSupportChat'] == true;
 
     return Conversation(
-      id: json['conversationId'] ?? json['id'] ?? '',
+      id: (json['conversationId'] ?? json['id'])?.toString() ?? '',
       otherParticipant: participantJson != null 
         ? ChatParticipant.fromJson(participantJson)
         : (isSupportChat 
@@ -182,7 +190,7 @@ class Conversation {
       lastMessage: lastMsg,
       unreadCount: json['unreadCount'] ?? 0,
       updatedAt: DateTime.tryParse(json['updatedAt'] ?? '') ?? DateTime.now(),
-      isRequest: json['isRequest'] ?? false,
+      isRequest: _parseBool(json['isRequest']),
     );
   }
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_tokens.dart';
 
 // â”€â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -112,7 +113,9 @@ class ObjectiveMeta {
       subtitle: 'Maximize visibility and reach',
       outcome: 'More impressions & brand recall',
       icon: Icons.visibility_rounded,
-      accentColor: Color(0xFF818CF8),
+      // Unified to the app's single red brand color across every objective
+      // instead of a distinct hue each — was previously indigo here.
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.visitProfile, CtaType.followUs, CtaType.noButton, CtaType.seeMore, CtaType.learnMore, CtaType.discover],
     ),
     ObjectiveMeta(
@@ -121,7 +124,7 @@ class ObjectiveMeta {
       subtitle: 'Drive visits to your destination',
       outcome: 'More website clicks & visits',
       icon: Icons.trending_up_rounded,
-      accentColor: Color(0xFF38BDF8),
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.visitWebsite, CtaType.learnMore, CtaType.shopNow, CtaType.getOffer, CtaType.viewDetails, CtaType.visitProfile, CtaType.explore],
     ),
     ObjectiveMeta(
@@ -130,7 +133,7 @@ class ObjectiveMeta {
       subtitle: 'Collect qualified leads',
       outcome: 'More form submissions & inquiries',
       icon: Icons.person_add_rounded,
-      accentColor: Color(0xFF4ADE80),
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.bookNow, CtaType.signUp, CtaType.getQuote, CtaType.enquireNow, CtaType.learnMore],
     ),
     ObjectiveMeta(
@@ -139,7 +142,7 @@ class ObjectiveMeta {
       subtitle: 'Drive purchases and actions',
       outcome: 'More sales & sign-ups',
       icon: Icons.shopping_bag_rounded,
-      accentColor: Color(0xFFFB923C),
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.buyNow, CtaType.shopNow, CtaType.bookNow, CtaType.signUp, CtaType.getOffer, CtaType.getStarted],
     ),
     ObjectiveMeta(
@@ -148,7 +151,7 @@ class ObjectiveMeta {
       subtitle: 'Guide customers to your location',
       outcome: 'More store visits & foot traffic',
       icon: Icons.location_on_rounded,
-      accentColor: Color(0xFFF472B6),
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.getDirections, CtaType.visitUs, CtaType.locateUs],
     ),
     ObjectiveMeta(
@@ -157,7 +160,7 @@ class ObjectiveMeta {
       subtitle: 'Start conversations with customers',
       outcome: 'More direct messages & inquiries',
       icon: Icons.chat_rounded,
-      accentColor: Color(0xFF2DD4BF),
+      accentColor: ThemeTokens.primaryAccent,
       availableCtas: [CtaType.sendMessage, CtaType.enquireNow, CtaType.chatNow, CtaType.askQuestion, CtaType.contactUs, CtaType.getQuote],
     ),
   ];
@@ -170,20 +173,32 @@ class MediaItem {
   final File file;
   final MediaType type;
   final double? uploadProgress;
+  /// The zoom/pan transform the user applied in the preview. If null, no transform.
+  final Matrix4? transform;
+  /// The size of the preview container, used to compute the crop.
+  final Size? previewSize;
 
   const MediaItem({
     required this.id,
     required this.file,
     required this.type,
     this.uploadProgress,
+    this.transform,
+    this.previewSize,
   });
 
-  MediaItem copyWith({double? uploadProgress}) {
+  MediaItem copyWith({
+    double? uploadProgress,
+    Matrix4? transform,
+    Size? previewSize,
+  }) {
     return MediaItem(
       id: id,
       file: file,
       type: type,
       uploadProgress: uploadProgress ?? this.uploadProgress,
+      transform: transform ?? this.transform,
+      previewSize: previewSize ?? this.previewSize,
     );
   }
 }

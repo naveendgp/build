@@ -32,10 +32,10 @@ class FollowerUser {
 
   factory FollowerUser.fromJson(Map<String, dynamic> json) {
     return FollowerUser(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      username: json['username'] ?? '',
-      avatarUrl: json['avatarUrl'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      avatarUrl: (json['avatarUrl'] ?? '').toString(),
     );
   }
 }

@@ -14,6 +14,7 @@ import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/brand_profile/brand_profile_screen.dart';
 import '../../features/create_post/create_post_screen.dart';
 import '../../features/user_profile/user_profile_screen.dart';
+import '../../features/user_profile/screens/reminders_screen.dart';
 import '../../features/messaging/screens/messaging_home_screen.dart';
 import '../../features/messaging/screens/chat_screen.dart';
 import '../../features/settings/screens/settings_home_screen.dart';
@@ -28,10 +29,13 @@ import '../../features/help_support/screens/help_support_home_screen.dart';
 import '../../features/help_support/screens/faq_screen.dart';
 import '../../features/help_support/screens/raise_ticket_screen.dart';
 import '../../features/help_support/screens/ticket_detail_screen.dart';
+import '../../features/help_support/screens/live_chat_screen.dart';
+import '../../features/help_support/screens/support_chat_detail_screen.dart';
 import '../storage/secure_storage.dart';
 import '../../features/brand_dashboard/screens/brand_dashboard_screen.dart';
 import '../../features/brand_profile/screens/brand_saved_posts_screen.dart';
 import '../../features/lead_management/screens/lead_dashboard_screen.dart';
+import '../../features/auth/screens/terms_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -39,19 +43,21 @@ class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) async {
-      final isGoingToAuth = state.matchedLocation == '/login' || 
-                            state.matchedLocation == '/signup/user' || 
-                            state.matchedLocation == '/signup/brand' || 
+      final isPublic = state.matchedLocation == '/terms';
+
+      final isGoingToAuth = state.matchedLocation == '/login' ||
+                            state.matchedLocation == '/signup/user' ||
+                            state.matchedLocation == '/signup/brand' ||
                             state.matchedLocation == '/auth' ||
                             state.matchedLocation == '/forgot-password' ||
                             state.matchedLocation == '/splash';
-                            
+
       final hasSession = await SecureStorage.hasSession();
 
-      if (!hasSession && !isGoingToAuth) {
+      if (!hasSession && !isGoingToAuth && !isPublic) {
         return '/auth';
       }
-      
+
       if (hasSession && isGoingToAuth && state.matchedLocation != '/splash') {
         return '/home';
       }
@@ -169,6 +175,24 @@ class AppRouter {
           },
           transitionDuration: const Duration(milliseconds: 400),
         ),
+      ),
+      GoRoute(
+        path: '/terms',
+        pageBuilder: (context, state) {
+          final type = state.extra == 'brand' ? TermsType.brand : TermsType.user;
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: TermsScreen(type: type),
+            transitionsBuilder: (_, animation, __, child) => SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+              child: child,
+            ),
+            transitionDuration: const Duration(milliseconds: 350),
+          );
+        },
       ),
       GoRoute(
         path: '/home',
@@ -316,6 +340,26 @@ class AppRouter {
         pageBuilder: (context, state) => CustomTransitionPage(
           key: state.pageKey,
           child: const NotificationsScreen(),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                child: child,
+              ),
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      ),
+      GoRoute(
+        path: '/reminders',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: const RemindersScreen(),
           transitionsBuilder: (_, animation, secondaryAnimation, child) {
             return FadeTransition(
               opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
@@ -520,7 +564,7 @@ class AppRouter {
         path: '/help',
         pageBuilder: (context, state) {
           final tabStr = state.uri.queryParameters['tab'];
-          final initialTab = tabStr == 'tickets' ? 1 : 0;
+          final initialTab = tabStr == 'tickets' ? 2 : (tabStr == 'chats' ? 1 : 0);
           return CustomTransitionPage(
             key: state.pageKey,
             child: HelpSupportHomeScreen(initialTabIndex: initialTab),
@@ -551,7 +595,7 @@ class AppRouter {
           GoRoute(
             path: 'ticket',
             pageBuilder: (context, state) {
-              final type = state.uri.queryParameters['type'] ?? 'LIVE_CHAT';
+              final type = state.uri.queryParameters['type'] ?? 'BUG';
               return CustomTransitionPage(
                 key: state.pageKey,
                 child: RaiseTicketScreen(initialType: type),
@@ -575,6 +619,43 @@ class AppRouter {
               child: TicketDetailScreen(ticketId: state.pathParameters['id']!),
               transitionsBuilder: (_, animation, secondaryAnimation, child) {
                 return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'live-chat',
+            pageBuilder: (context, state) {
+              final category = state.uri.queryParameters['category'];
+              return CustomTransitionPage(
+                key: state.pageKey,
+                child: LiveChatScreen(initialCategory: category),
+                transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(1, 0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                    child: child,
+                  );
+                },
+                transitionDuration: const Duration(milliseconds: 300),
+              );
+            },
+          ),
+          GoRoute(
+            path: 'chat/:id',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: SupportChatDetailScreen(chatId: state.pathParameters['id']!),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
               },
               transitionDuration: const Duration(milliseconds: 300),
             ),

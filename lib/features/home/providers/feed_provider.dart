@@ -14,16 +14,12 @@ class FeedState {
   final List<FeedPost> posts;
   final FeedViewMode viewMode;
   final FeedLoadState loadState;
-  final String feedTitle;
-  final int feedTitleIndex;
   final String? nextCursor;
 
   const FeedState({
     this.posts = const [],
     this.viewMode = FeedViewMode.single,
     this.loadState = FeedLoadState.initial,
-    this.feedTitle = 'For You',
-    this.feedTitleIndex = 0,
     this.nextCursor,
   });
 
@@ -31,16 +27,12 @@ class FeedState {
     List<FeedPost>? posts,
     FeedViewMode? viewMode,
     FeedLoadState? loadState,
-    String? feedTitle,
-    int? feedTitleIndex,
     String? nextCursor,
   }) {
     return FeedState(
       posts: posts ?? this.posts,
       viewMode: viewMode ?? this.viewMode,
       loadState: loadState ?? this.loadState,
-      feedTitle: feedTitle ?? this.feedTitle,
-      feedTitleIndex: feedTitleIndex ?? this.feedTitleIndex,
       nextCursor: nextCursor ?? this.nextCursor,
     );
   }
@@ -54,8 +46,6 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   ApiClient get _apiClient => ref.read(apiClientProvider);
-
-  static const _titles = ['For You', 'Trending', 'Inspired by You'];
 
   Future<void> loadFeed() async {
     state = state.copyWith(loadState: FeedLoadState.loading);
@@ -129,10 +119,19 @@ class FeedNotifier extends StateNotifier<FeedState> {
     state = state.copyWith(viewMode: mode);
   }
 
-  void cycleFeedTitle() {
-    final next = (state.feedTitleIndex + 1) % _titles.length;
-    state = state.copyWith(feedTitle: _titles[next], feedTitleIndex: next);
-    // In a real app we might refetch based on the title category here
+  /// Adjusts a post's comment count by [delta] (+1 on add, -1 on delete).
+  /// A delta rather than setting an absolute count, because the comment
+  /// sheet only ever loads one page at a time — its loaded-list length
+  /// isn't the true total once a post has more comments than fit on a page.
+  void adjustCommentCount(String postId, int delta) {
+    final updated = state.posts.map((p) {
+      if (p.id == postId) {
+        final next = (p.commentCount + delta).clamp(0, 1 << 31);
+        return p.copyWith(commentCount: next);
+      }
+      return p;
+    }).toList();
+    state = state.copyWith(posts: updated);
   }
 
   Future<void> toggleLike(String postId) async {

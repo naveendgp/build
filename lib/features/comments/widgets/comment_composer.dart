@@ -175,22 +175,6 @@ class _CommentComposerState extends State<CommentComposer> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Avatar
-        Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color: context.colors.card,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            Icons.person,
-            color: context.colors.textTertiary,
-            size: 18,
-          ),
-        ),
-        const SizedBox(width: 10),
-
         // Text field
         Expanded(
           child: Container(

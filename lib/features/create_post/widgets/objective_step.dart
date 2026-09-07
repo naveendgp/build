@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
@@ -39,7 +39,7 @@ class ObjectiveStep extends StatelessWidget {
               crossAxisCount: 2,
               mainAxisSpacing: AppSpacing.md,
               crossAxisSpacing: AppSpacing.md,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.78,
             ),
             itemCount: ObjectiveMeta.all.length,
             itemBuilder: (context, index) {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../core/network/api_client.dart';
 
@@ -92,37 +93,49 @@ class BrandProfile {
   }
 
   factory BrandProfile.fromJson(Map<String, dynamic> json) {
+    bool parseBool(dynamic value, {bool defaultValue = false}) {
+      if (value == null) return defaultValue;
+      if (value is bool) return value;
+      if (value is String) return value.toLowerCase() == 'true' || value == '1';
+      if (value is num) return value > 0;
+      return defaultValue;
+    }
+
     return BrandProfile(
-      id: json['id'] ?? '',
-      username: json['username'] ?? '',
-      name: json['name'] ?? 'Brand',
-      tagline: json['tagline'],
-      bio: json['bio'],
-      logoUrl: json['logoUrl'] ?? '',
-      coverUrl: json['coverImageUrl'] ?? 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
-      category: json['category'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      username: (json['username'] ?? '').toString(),
+      name: (json['name'] ?? 'Brand').toString(),
+      tagline: json['tagline']?.toString(),
+      bio: json['bio']?.toString(),
+      logoUrl: json['logoUrl'] != null
+          ? ApiClient.resolveMediaUrl(json['logoUrl'].toString())
+          : '',
+      coverUrl: json['coverImageUrl'] != null
+          ? ApiClient.resolveMediaUrl(json['coverImageUrl'].toString())
+          : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
+      category: (json['category'] ?? '').toString(),
       isVerified: json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
-      isFollowing: json['isFollowing'] ?? false,
-      isOwner: json['isOwner'] ?? false,
+      isFollowing: parseBool(json['isFollowing']),
+      isOwner: parseBool(json['isOwner']),
       followerCount: json['followerCount'] ?? 0,
       postCount: json['postCount'] ?? 0,
       engagementRate: 0,
-      websiteUrl: json['website'],
-      email: json['email'],
-      contactNumber: json['contactNumber'],
-      whatsapp: json['whatsapp'],
-      instagram: json['instagram'],
-      facebook: json['facebook'],
-      businessType: json['businessType'],
-      industry: json['industry'],
-      gstNumber: json['gstNumber'],
-      isGalleryEnabled: json['isGalleryEnabled'] ?? true,
-      isBrandPublic: json['isBrandPublic'] ?? true,
-      showContactInfo: json['showContactInfo'] ?? true,
-      allowDMs: json['allowDMs'] ?? true,
-      allowNotifications: json['allowNotifications'] ?? true,
-      allowEmailNotifications: json['allowEmailNotifications'] ?? true,
-      tags: json['tags'] != null ? List<String>.from(json['tags']) : const [],
+      websiteUrl: json['website']?.toString(),
+      email: json['email']?.toString(),
+      contactNumber: json['contactNumber']?.toString(),
+      whatsapp: json['whatsapp']?.toString(),
+      instagram: json['instagram']?.toString(),
+      facebook: json['facebook']?.toString(),
+      businessType: json['businessType']?.toString(),
+      industry: json['industry']?.toString(),
+      gstNumber: json['gstNumber']?.toString(),
+      isGalleryEnabled: parseBool(json['isGalleryEnabled'], defaultValue: true),
+      isBrandPublic: parseBool(json['isBrandPublic'], defaultValue: true),
+      showContactInfo: parseBool(json['showContactInfo'], defaultValue: true),
+      allowDMs: parseBool(json['allowDMs'], defaultValue: true),
+      allowNotifications: parseBool(json['allowNotifications'], defaultValue: true),
+      allowEmailNotifications: parseBool(json['allowEmailNotifications'], defaultValue: true),
+      tags: json['tags'] != null ? (json['tags'] as List).map((e) => e.toString()).toList() : const [],
     );
   }
 
@@ -190,8 +203,8 @@ class BrandGalleryItem {
 
   factory BrandGalleryItem.fromJson(Map<String, dynamic> json) {
     return BrandGalleryItem(
-      id: json['id'] ?? '',
-      imageUrl: ApiClient.resolveMediaUrl(json['url'] as String?),
+      id: (json['id'] ?? '').toString(),
+      imageUrl: ApiClient.resolveMediaUrl(json['url']?.toString()),
       aspectRatio: (json['aspectRatio'] as num?)?.toDouble() ?? 1.0,
     );
   }
@@ -216,6 +229,12 @@ class BrandQuicksiteData {
   factory BrandQuicksiteData.fromJson(Map<String, dynamic> json) {
     List<dynamic> parseList(dynamic data) {
       if (data == null) return [];
+      if (data is String) {
+        try {
+          final decoded = jsonDecode(data);
+          if (decoded is List) return decoded;
+        } catch (_) {}
+      }
       if (data is List) return data;
       return [];
     }
@@ -225,24 +244,24 @@ class BrandQuicksiteData {
       qs = Map<String, dynamic>.from(json['quicksite'] as Map);
     }
     return BrandQuicksiteData(
-      about: qs?['about'] ?? json['bio'] ?? '', 
+      about: (qs?['about'] ?? json['bio'] ?? '').toString(),
       services: parseList(qs?['services']).map((e) => BrandService.fromJson(e)).toList(),
       products: parseList(qs?['products']).map((e) => BrandProduct.fromJson(e)).toList(),
       contact: BrandContactInfo(
-        email: qs?['email'] ?? json['email'],
-        phone: qs?['phone'] ?? json['contactNumber'],
-        address: qs?['address'] ?? json['location'],
+        email: (qs?['email'] ?? json['email'])?.toString(),
+        phone: (qs?['phone'] ?? json['contactNumber'])?.toString(),
+        address: (qs?['address'] ?? json['location'])?.toString(),
         hours: json['businessHours']?.toString(), // Safely convert Json object to string
       ),
       socialLinks: <String, String>{
-        if (qs?['instagram'] ?? json['instagram'] != null) 'instagram': (qs?['instagram'] ?? json['instagram']).toString(),
-        if (qs?['facebook'] ?? json['facebook'] != null) 'facebook': (qs?['facebook'] ?? json['facebook']).toString(),
-        if (qs?['twitter'] ?? json['twitter'] != null) 'twitter': (qs?['twitter'] ?? json['twitter']).toString(),
-        if (qs?['linkedin'] ?? json['linkedin'] != null) 'linkedin': (qs?['linkedin'] ?? json['linkedin']).toString(),
-        if (qs?['youtube'] ?? json['youtube'] != null) 'youtube': (qs?['youtube'] ?? json['youtube']).toString(),
-        if (qs?['whatsapp'] ?? json['whatsapp'] != null) 'whatsapp': (qs?['whatsapp'] ?? json['whatsapp']).toString(),
-        if (qs?['tiktok'] ?? json['tiktok'] != null) 'tiktok': (qs?['tiktok'] ?? json['tiktok']).toString(),
-        if (qs?['website'] ?? json['website'] != null) 'website': (qs?['website'] ?? json['website']).toString(),
+        if ((qs?['instagram'] ?? json['instagram']) != null) 'instagram': (qs?['instagram'] ?? json['instagram']).toString(),
+        if ((qs?['facebook'] ?? json['facebook']) != null) 'facebook': (qs?['facebook'] ?? json['facebook']).toString(),
+        if ((qs?['twitter'] ?? json['twitter']) != null) 'twitter': (qs?['twitter'] ?? json['twitter']).toString(),
+        if ((qs?['linkedin'] ?? json['linkedin']) != null) 'linkedin': (qs?['linkedin'] ?? json['linkedin']).toString(),
+        if ((qs?['youtube'] ?? json['youtube']) != null) 'youtube': (qs?['youtube'] ?? json['youtube']).toString(),
+        if ((qs?['whatsapp'] ?? json['whatsapp']) != null) 'whatsapp': (qs?['whatsapp'] ?? json['whatsapp']).toString(),
+        if ((qs?['tiktok'] ?? json['tiktok']) != null) 'tiktok': (qs?['tiktok'] ?? json['tiktok']).toString(),
+        if ((qs?['website'] ?? json['website']) != null) 'website': (qs?['website'] ?? json['website']).toString(),
       },
     );
   }
@@ -256,11 +275,16 @@ class BrandService {
 
   const BrandService({required this.name, required this.description, this.price, required this.icon});
 
-  factory BrandService.fromJson(Map<String, dynamic> json) {
+  factory BrandService.fromJson(dynamic data) {
+    Map<String, dynamic> json = {};
+    if (data is String) {
+      try { data = jsonDecode(data); } catch (_) {}
+    }
+    if (data is Map) json = Map<String, dynamic>.from(data);
     return BrandService(
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      price: json['price'],
+      name: json['name']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      price: json['price']?.toString(),
       icon: Icons.style_rounded, // Default icon or parse from string
     );
   }
@@ -281,11 +305,16 @@ class BrandProduct {
 
   const BrandProduct({required this.name, required this.imageUrl, required this.price});
 
-  factory BrandProduct.fromJson(Map<String, dynamic> json) {
+  factory BrandProduct.fromJson(dynamic data) {
+    Map<String, dynamic> json = {};
+    if (data is String) {
+      try { data = jsonDecode(data); } catch (_) {}
+    }
+    if (data is Map) json = Map<String, dynamic>.from(data);
     return BrandProduct(
-      name: json['name'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      price: json['price'] ?? '',
+      name: json['name']?.toString() ?? '',
+      imageUrl: json['imageUrl']?.toString() ?? '',
+      price: json['price']?.toString() ?? '',
     );
   }
 
@@ -339,18 +368,18 @@ class BrandReview {
 
   factory BrandReview.fromJson(Map<String, dynamic> json) {
     return BrandReview(
-      id: json['id'] ?? '',
-      authorName: json['user']?['name'] ?? 'Anonymous',
-      authorAvatarUrl: json['user']?['profilePic'],
-      authorId: json['user']?['id'] ?? json['userId'] ?? '',
+      id: (json['id'] ?? '').toString(),
+      authorName: (json['user']?['name'] ?? 'Anonymous').toString(),
+      authorAvatarUrl: json['user']?['profilePic']?.toString(),
+      authorId: (json['user']?['id'] ?? json['userId'] ?? '').toString(),
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      title: json['title'],
-      description: json['description'] ?? '',
-      verifiedInteraction: json['verifiedInteraction'] ?? false,
-      status: json['status'] ?? 'APPROVED',
-      brandResponse: json['brandResponse'],
-      brandResponseDate: json['brandResponseDate'] != null ? DateTime.parse(json['brandResponseDate']) : null,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : DateTime.now(),
+      title: json['title']?.toString(),
+      description: (json['description'] ?? '').toString(),
+      verifiedInteraction: json['verifiedInteraction'] == true || json['verifiedInteraction'] == 'true',
+      status: (json['status'] ?? 'APPROVED').toString(),
+      brandResponse: json['brandResponse']?.toString(),
+      brandResponseDate: json['brandResponseDate'] != null ? DateTime.parse(json['brandResponseDate'].toString()) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
     );
   }
 }
@@ -403,13 +432,13 @@ class BrandTestimonial {
 
   factory BrandTestimonial.fromJson(Map<String, dynamic> json) {
     return BrandTestimonial(
-      id: json['id'] ?? '',
-      authorName: json['authorName'] ?? '',
-      authorTitle: json['authorTitle'],
-      authorAvatarUrl: json['authorAvatarUrl'],
-      quote: json['quote'] ?? '',
-      mediaUrl: json['mediaUrl'],
-      isVideo: json['isVideo'] ?? false,
+      id: (json['id'] ?? '').toString(),
+      authorName: (json['authorName'] ?? '').toString(),
+      authorTitle: json['authorTitle']?.toString(),
+      authorAvatarUrl: json['authorAvatarUrl']?.toString(),
+      quote: (json['quote'] ?? '').toString(),
+      mediaUrl: json['mediaUrl']?.toString(),
+      isVideo: json['isVideo'] == true || json['isVideo'] == 'true',
     );
   }
 }
