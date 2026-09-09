@@ -210,7 +210,13 @@ class SearchNotifier extends StateNotifier<SearchState> {
     final filtered = all.where(
       (s) => s.text.toLowerCase().contains(query.toLowerCase()),
     ).toList();
-    state = state.copyWith(query: query, suggestions: filtered);
+    // Back to idle so the suggestions dropdown reappears while the user edits
+    // the query, and hides again once the next search resolves.
+    state = state.copyWith(
+      query: query,
+      suggestions: filtered,
+      searchLoadState: SearchLoadState.idle,
+    );
 
     _debounceTimer?.cancel();
     _debounceTimer = Timer(const Duration(milliseconds: 600), () {

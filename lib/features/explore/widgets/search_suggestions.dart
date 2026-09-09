@@ -41,47 +41,52 @@ class SearchSuggestions extends StatelessWidget {
             duration: Duration(milliseconds: 300),
             switchInCurve: Curves.easeOut,
             switchOutCurve: Curves.easeIn,
-            child: Column(
+            // Scrolls within the max height the caller imposes, so a full
+            // list of recents stays reachable instead of overflowing.
+            child: SingleChildScrollView(
               key: ValueKey('${recentSearches.length}_${suggestions.length}'),
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (recentSearches.isNotEmpty) ...[
-                  _buildSectionHeader(context, 
-                    title: 'Recent Searches',
-                    trailing: GestureDetector(
-                      onTap: onClear,
-                      behavior: HitTestBehavior.opaque,
-                      child: Text(
-                        'Clear all',
-                        style: AppTypography.labelSmall.copyWith(
-                          color: context.colors.primaryAccent,
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (recentSearches.isNotEmpty) ...[
+                    _buildSectionHeader(context, 
+                      title: 'Recent Searches',
+                      trailing: GestureDetector(
+                        onTap: onClear,
+                        behavior: HitTestBehavior.opaque,
+                        child: Text(
+                          'Clear all',
+                          style: AppTypography.labelSmall.copyWith(
+                            color: context.colors.primaryAccent,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  ...recentSearches.map(
-                    (query) => _RecentSearchItem(
-                      query: query,
-                      onTap: () => onSelect(query),
-                      onRemove: onRemoveRecent != null
-                          ? () => onRemoveRecent!(query)
-                          : null,
+                    ...recentSearches.map(
+                      (query) => _RecentSearchItem(
+                        query: query,
+                        onTap: () => onSelect(query),
+                        onRemove: onRemoveRecent != null
+                            ? () => onRemoveRecent!(query)
+                            : null,
+                      ),
                     ),
-                  ),
-                  _buildDivider(context),
-                ],
-                if (suggestions.isNotEmpty) ...[
-                  _buildSectionHeader(context, title: 'Suggestions'),
-                  ...suggestions.map(
-                    (suggestion) => _SuggestionItem(
-                      suggestion: suggestion,
-                      onTap: () => onSelect(suggestion.text),
+                    _buildDivider(context),
+                  ],
+                  if (suggestions.isNotEmpty) ...[
+                    _buildSectionHeader(context, title: 'Suggestions'),
+                    ...suggestions.map(
+                      (suggestion) => _SuggestionItem(
+                        suggestion: suggestion,
+                        onTap: () => onSelect(suggestion.text),
+                      ),
                     ),
-                  ),
+                  ],
+                  SizedBox(height: AppSpacing.sm),
                 ],
-                SizedBox(height: AppSpacing.sm),
-              ],
+              ),
             ),
           ),
         ),

@@ -104,6 +104,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   double get _currentHeaderHeight =>
       _isScrolled ? _headerCollapsedHeight : _headerExpandedHeight;
 
+  /// The dropdown floats in the Stack, so nothing else bounds its height —
+  /// without a cap, eight recents plus suggestions cover the whole screen.
+  double _suggestionsMaxHeight(BuildContext context, double topPad) {
+    final mq = MediaQuery.of(context);
+    final available = mq.size.height -
+        (topPad + _currentHeaderHeight) -
+        mq.viewInsets.bottom -
+        24;
+    return available.clamp(120.0, 420.0);
+  }
+
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchProvider);
@@ -182,24 +193,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _buildFloatingHeader(topPad),
 
           // ── Search suggestions overlay ─────────────────────
-          if (searchState.isActive)
+          if (searchState.isActive &&
+              searchState.searchLoadState == SearchLoadState.idle)
             Positioned(
               top: topPad + _currentHeaderHeight - 4,
               left: 16,
               right: 16,
-              child: SearchSuggestions(
-                suggestions: searchState.suggestions,
-                recentSearches: searchState.recentSearches,
-                onClear: () =>
-                    ref.read(searchProvider.notifier).clearRecent(),
-                onSelect: (term) {
-                  _searchCtrl.text = term;
-                  _searchFocus.unfocus();
-                  ref.read(searchProvider.notifier).updateQuery(term);
-                  ref.read(searchProvider.notifier).search();
-                },
-                onRemoveRecent: (term) =>
-                    ref.read(searchProvider.notifier).removeRecent(term),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: _suggestionsMaxHeight(context, topPad),
+                ),
+                child: SearchSuggestions(
+                  suggestions: searchState.suggestions,
+                  recentSearches: searchState.recentSearches,
+                  onClear: () =>
+                      ref.read(searchProvider.notifier).clearRecent(),
+                  onSelect: (term) {
+                    _searchCtrl.text = term;
+                    _searchFocus.unfocus();
+                    ref.read(searchProvider.notifier).updateQuery(term);
+                    ref.read(searchProvider.notifier).search();
+                  },
+                  onRemoveRecent: (term) =>
+                      ref.read(searchProvider.notifier).removeRecent(term),
+                ),
               ),
             ),
 
