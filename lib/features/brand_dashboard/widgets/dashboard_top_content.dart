@@ -49,7 +49,9 @@ class DashboardTopContent extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         'No content for ${DateFormat('MMMM yyyy').format(selectedMonth)}',
-                        style: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textTertiary,
+                        ),
                       ),
                     ],
                   ),
@@ -61,10 +63,11 @@ class DashboardTopContent extends ConsumerWidget {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: posts.length,
               separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
-              itemBuilder: (context, index) => _buildTopPostCard(context, posts[index], index + 1)
-                  .animate()
-                  .fadeIn(delay: (50 * index).ms)
-                  .slideX(begin: 0.05, end: 0),
+              itemBuilder: (context, index) => _buildTopPostCard(
+                context,
+                posts[index],
+                index + 1,
+              ).animate().fadeIn(delay: (50 * index).ms).slideX(begin: 0.05, end: 0),
             );
           },
           loading: () => Container(
@@ -81,7 +84,10 @@ class DashboardTopContent extends ConsumerWidget {
               color: context.colors.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text('Failed to load top content', style: AppTypography.bodySmall.copyWith(color: context.colors.error)),
+            child: Text(
+              'Failed to load top content',
+              style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+            ),
           ),
         ),
       ],
@@ -110,7 +116,9 @@ class DashboardTopContent extends ConsumerWidget {
                   color: isSelected ? context.colors.textPrimary : context.colors.surfaceSecondary,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                   border: Border.all(
-                    color: isSelected ? context.colors.textPrimary : context.colors.borderLight.withOpacity(0.1),
+                    color: isSelected
+                        ? context.colors.textPrimary
+                        : context.colors.borderLight.withOpacity(0.1),
                     width: 0.5,
                   ),
                 ),
@@ -144,7 +152,9 @@ class DashboardTopContent extends ConsumerWidget {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: rank <= 3 ? context.colors.primaryAccent.withOpacity(0.15) : context.colors.surface,
+              color: rank <= 3
+                  ? context.colors.primaryAccent.withOpacity(0.15)
+                  : context.colors.surface,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Center(
@@ -210,7 +220,13 @@ class DashboardTopContent extends ConsumerWidget {
       children: [
         Icon(icon, size: 12, color: context.colors.textTertiary),
         const SizedBox(width: 3),
-        Text(value, style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: AppTypography.labelSmall.copyWith(
+            color: context.colors.textSecondary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }

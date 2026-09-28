@@ -206,40 +206,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             top: 0, left: 0, right: 0,
             child: AnimatedBuilder(
               animation: activeCtrl,
-              builder: (ctx, child) => FeedHeader(scrollOffset: activeCtrl.hasClients ? activeCtrl.offset : 0),
+              builder: (ctx, child) => FeedHeader(
+                scrollOffset: activeCtrl.hasClients ? activeCtrl.offset : 0,
+                layoutSwitch: FeedViewToggle(
+                  currentMode: state.viewMode,
+                  onChanged: notifier.setViewMode,
+                ),
+              ),
             ),
           ),
 
           // View Toggle — hides while scrolling down, reappears as soon as you
           // scroll back up (same pattern as the bottom nav), instead of only
           // being reachable by scrolling all the way back to the top.
-          Positioned(
-            top: topPad + 70,
-            left: 0, right: 0,
-            child: AnimatedBuilder(
-              animation: activeCtrl,
-              builder: (_, child) {
-                final offset = activeCtrl.hasClients ? activeCtrl.offset : 0.0;
-                final scrollingDown = activeCtrl.hasClients &&
-                    activeCtrl.position.userScrollDirection.name == 'reverse';
-                final hide = offset > 100 && scrollingDown;
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 250),
-                  offset: hide ? const Offset(0, -1) : Offset.zero,
-                  child: AnimatedOpacity(
-                    duration: const Duration(milliseconds: 250),
-                    opacity: hide ? 0.0 : 1.0,
-                    child: child,
-                  ),
-                );
-              },
-              child: FeedViewToggle(
-                currentMode: state.viewMode,
-                onChanged: notifier.setViewMode,
-              ),
-            ),
-          ),
-
           // Bottom Nav Dock
           Positioned(
             bottom: 0, left: 0, right: 0,
@@ -293,7 +272,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         key: const PageStorageKey('feed_list_view'),
         controller: _listScrollCtrl,
         padding: EdgeInsets.only(
-          top: MediaQuery.of(context).padding.top + 130,
+          // Clears the bar; the list/grid switch sits inside it now rather than
+      // floating below it.
+      top: MediaQuery.of(context).padding.top + 76,
           bottom: 120,
         ),
         physics: const BouncingScrollPhysics(),
@@ -356,7 +337,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 130,
+        // Clears the bar; the list/grid switch sits inside it now rather than
+      // floating below it.
+      top: MediaQuery.of(context).padding.top + 76,
         left: 16, right: 16, bottom: 120,
       ),
       physics: const BouncingScrollPhysics(),

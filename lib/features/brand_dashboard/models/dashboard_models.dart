@@ -10,6 +10,10 @@ class DashboardSummary {
   final MetricValue leads;
   final MetricValue messages;
 
+  /// Uploads and likes: the brand's own output and what it drew, both
+  /// already counted by the backend.
+  final MetricValue likes;
+
   DashboardSummary({
     required this.followers,
     required this.posts,
@@ -19,6 +23,7 @@ class DashboardSummary {
     required this.remindersSet,
     required this.leads,
     required this.messages,
+    required this.likes,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
@@ -31,6 +36,7 @@ class DashboardSummary {
       remindersSet: MetricValue.fromJson(json['remindersSet'] ?? {}),
       leads: MetricValue.fromJson(json['leads'] ?? {}),
       messages: MetricValue.fromJson(json['messages'] ?? {}),
+      likes: MetricValue.fromJson(json['likes'] ?? {}),
     );
   }
 }
@@ -42,10 +48,7 @@ class MetricValue {
   MetricValue({required this.value, required this.growth});
 
   factory MetricValue.fromJson(Map<String, dynamic> json) {
-    return MetricValue(
-      value: json['value'] ?? 0,
-      growth: (json['growth'] ?? 0.0).toDouble(),
-    );
+    return MetricValue(value: json['value'] ?? 0, growth: (json['growth'] ?? 0.0).toDouble());
   }
 }
 
@@ -64,10 +67,14 @@ class DashboardChartsData {
 
   factory DashboardChartsData.fromJson(Map<String, dynamic> json) {
     return DashboardChartsData(
-      reachTrend: (json['reachTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
-      engagementTrend: (json['engagementTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
-      leadTrend: (json['leadTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
-      trafficSources: (json['trafficSources'] as List?)?.map((e) => TrafficSource.fromJson(e)).toList() ?? [],
+      reachTrend:
+          (json['reachTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
+      engagementTrend:
+          (json['engagementTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
+      leadTrend:
+          (json['leadTrend'] as List?)?.map((e) => TimeSeriesData.fromJson(e)).toList() ?? [],
+      trafficSources:
+          (json['trafficSources'] as List?)?.map((e) => TrafficSource.fromJson(e)).toList() ?? [],
     );
   }
 }
@@ -79,10 +86,7 @@ class TimeSeriesData {
   TimeSeriesData({required this.date, required this.value});
 
   factory TimeSeriesData.fromJson(Map<String, dynamic> json) {
-    return TimeSeriesData(
-      date: json['date'] ?? '',
-      value: json['value'] ?? 0,
-    );
+    return TimeSeriesData(date: json['date'] ?? '', value: json['value'] ?? 0);
   }
 }
 
@@ -221,10 +225,7 @@ class DemographicItem {
   DemographicItem({required this.label, required this.count});
 
   factory DemographicItem.fromJson(Map<String, dynamic> json) {
-    return DemographicItem(
-      label: json['label'] ?? '',
-      count: json['count'] ?? 0,
-    );
+    return DemographicItem(label: json['label'] ?? '', count: json['count'] ?? 0);
   }
 }
 

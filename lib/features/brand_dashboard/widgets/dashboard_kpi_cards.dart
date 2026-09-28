@@ -85,6 +85,30 @@ class DashboardKpiCards extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: AppSpacing.md),
+        Row(
+          children: [
+            Expanded(
+              child: _KpiCard(
+                title: 'Posts',
+                value: _formatNumber(summary.posts.value),
+                growth: summary.posts.growth,
+                icon: Icons.grid_view_rounded,
+                delay: 500,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: _KpiCard(
+                title: 'Likes',
+                value: _formatNumber(summary.likes.value),
+                growth: summary.likes.growth,
+                icon: Icons.favorite_rounded,
+                delay: 500,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -119,79 +143,78 @@ class _KpiCard extends StatelessWidget {
     final isPositive = growth >= 0;
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: context.colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.colors.borderLight.withOpacity(0.1),
-        ),
-        boxShadow: context.shadows.layer1,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          decoration: BoxDecoration(
+            color: context.colors.surfaceSecondary,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: context.colors.borderLight.withOpacity(0.1)),
+            boxShadow: context.shadows.layer1,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: AppTypography.labelLarge.copyWith(
-                    color: context.colors.textSecondary,
-                    fontWeight: FontWeight.w500,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: context.colors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: context.colors.surface,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, size: 16, color: context.colors.primaryAccent),
+                  ),
+                ],
               ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: context.colors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 16, color: context.colors.primaryAccent),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          Text(
-            value,
-            style: AppTypography.headlineMedium.copyWith(
-              color: context.colors.textPrimary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Icon(
-                isPositive ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-                size: 16,
-                color: isPositive ? context.colors.success : context.colors.error,
-              ),
-              const SizedBox(width: 4),
+              const SizedBox(height: AppSpacing.md),
               Text(
-                '${growth.abs().toStringAsFixed(1)}%',
-                style: AppTypography.labelMedium.copyWith(
-                  color: isPositive ? context.colors.success : context.colors.error,
-                  fontWeight: FontWeight.w600,
+                value,
+                style: AppTypography.headlineMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  'vs last period',
-                  style: AppTypography.labelSmall.copyWith(
-                    color: context.colors.textTertiary,
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  Icon(
+                    isPositive ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                    size: 16,
+                    color: isPositive ? context.colors.success : context.colors.error,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${growth.abs().toStringAsFixed(1)}%',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: isPositive ? context.colors.success : context.colors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      'vs last period',
+                      style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    ).animate().fadeIn(delay: delay.ms, duration: 400.ms).slideY(begin: 0.1, end: 0, delay: delay.ms, duration: 400.ms, curve: Curves.easeOutQuad);
+        )
+        .animate()
+        .fadeIn(delay: delay.ms, duration: 400.ms)
+        .slideY(begin: 0.1, end: 0, delay: delay.ms, duration: 400.ms, curve: Curves.easeOutQuad);
   }
 }

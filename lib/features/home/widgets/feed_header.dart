@@ -9,9 +9,17 @@ import 'hamburger_menu_sheet.dart';
 
 /// Floating translucent header with blur, logo, dynamic title, and actions
 class FeedHeader extends ConsumerWidget {
+  /// The list/grid switch, shown in the bar itself rather than floating
+  /// under it. Null on screens that are not the feed.
+  final Widget? layoutSwitch;
+
   final double scrollOffset;
 
-  const FeedHeader({super.key, this.scrollOffset = 0});
+  const FeedHeader({
+    super.key,
+    this.scrollOffset = 0,
+    this.layoutSwitch,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

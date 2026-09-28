@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
 import '../../../core/utils/app_messenger.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class LeadFormViewerSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -256,9 +257,57 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
             ),
           ),
 
+          // The wording is the brand's own, with its policy link beside it,
+          // so what a person agrees to is set by whoever collects the answers.
+          Builder(
+            builder: (context) {
+              final consent = (_formData?['consentText'] ?? '').toString().trim();
+              final policyUrl = (_formData?['privacyPolicyUrl'] ?? '').toString().trim();
+              if (consent.isEmpty && policyUrl.isEmpty) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (consent.isNotEmpty)
+                      Text(
+                        consent,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: context.colors.textTertiary,
+                          height: 1.5,
+                        ),
+                      ),
+                    if (policyUrl.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      GestureDetector(
+                        onTap: () async {
+                          final uri = Uri.tryParse(
+                            policyUrl.startsWith('http') ? policyUrl : 'https://$policyUrl',
+                          );
+                          if (uri != null && await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        },
+                        child: Text(
+                          'Privacy policy',
+                          style: AppTypography.labelMedium.copyWith(
+                            color: context.colors.primaryAccent,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                            decorationColor: context.colors.primaryAccent,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
+
           // Submit Button
           Padding(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 34),
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 34),
             child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitForm,
               style: ElevatedButton.styleFrom(

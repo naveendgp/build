@@ -49,7 +49,10 @@ class DashboardDemographics extends ConsumerWidget {
               color: context.colors.error.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Text('Failed to load demographics', style: AppTypography.bodySmall.copyWith(color: context.colors.error)),
+            child: Text(
+              'Failed to load demographics',
+              style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+            ),
           ),
         ),
       ],
@@ -59,7 +62,12 @@ class DashboardDemographics extends ConsumerWidget {
   Widget _buildAgeSection(BuildContext context, List<DemographicItem> ageData) {
     final total = ageData.fold<int>(0, (sum, item) => sum + item.count);
     if (total == 0) {
-      return _buildEmptyCard(context, 'Age Distribution', Icons.cake_rounded, 'Age data not yet available');
+      return _buildEmptyCard(
+        context,
+        'Age Distribution',
+        Icons.cake_rounded,
+        'Age data not yet available',
+      );
     }
 
     return Container(
@@ -76,7 +84,13 @@ class DashboardDemographics extends ConsumerWidget {
             children: [
               Icon(Icons.cake_rounded, size: 18, color: context.colors.primaryAccent),
               const SizedBox(width: 8),
-              Text('Age Distribution', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+              Text(
+                'Age Distribution',
+                style: AppTypography.titleMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -88,7 +102,13 @@ class DashboardDemographics extends ConsumerWidget {
                 children: [
                   SizedBox(
                     width: 48,
-                    child: Text(item.label, style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500)),
+                    child: Text(
+                      item.label,
+                      style: AppTypography.labelMedium.copyWith(
+                        color: context.colors.textSecondary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -107,7 +127,10 @@ class DashboardDemographics extends ConsumerWidget {
                     width: 40,
                     child: Text(
                       '${percentage.toStringAsFixed(0)}%',
-                      style: AppTypography.labelMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+                      style: AppTypography.labelMedium.copyWith(
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
                       textAlign: TextAlign.end,
                     ),
                   ),
@@ -123,7 +146,12 @@ class DashboardDemographics extends ConsumerWidget {
   Widget _buildLocationSection(BuildContext context, List<DemographicItem> locationData) {
     final total = locationData.fold<int>(0, (sum, item) => sum + item.count);
     if (total == 0) {
-      return _buildEmptyCard(context, 'Top Locations', Icons.location_on_rounded, 'Location data not yet available');
+      return _buildEmptyCard(
+        context,
+        'Top Locations',
+        Icons.location_on_rounded,
+        'Location data not yet available',
+      );
     }
 
     final top5 = locationData.take(5).toList();
@@ -142,7 +170,13 @@ class DashboardDemographics extends ConsumerWidget {
             children: [
               Icon(Icons.location_on_rounded, size: 18, color: context.colors.secondaryAccent),
               const SizedBox(width: 8),
-              Text('Top Locations', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+              Text(
+                'Top Locations',
+                style: AppTypography.titleMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -161,15 +195,31 @@ class DashboardDemographics extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Center(
-                      child: Text('${entry.key + 1}', style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary, fontWeight: FontWeight.w700)),
+                      child: Text(
+                        '${entry.key + 1}',
+                        style: AppTypography.labelSmall.copyWith(
+                          color: context.colors.textTertiary,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(item.label, style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary), overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      item.label,
+                      style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   const SizedBox(width: 8),
-                  Text('${percentage.toStringAsFixed(1)}%', style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w600)),
+                  Text(
+                    '${percentage.toStringAsFixed(1)}%',
+                    style: AppTypography.labelMedium.copyWith(
+                      color: context.colors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ],
               ),
             );
@@ -182,7 +232,12 @@ class DashboardDemographics extends ConsumerWidget {
   Widget _buildGenderSection(BuildContext context, List<DemographicItem> genderData) {
     final total = genderData.fold<int>(0, (sum, item) => sum + item.count);
     if (total == 0) {
-      return _buildEmptyCard(context, 'Gender', Icons.people_rounded, 'Gender data not yet available');
+      return _buildEmptyCard(
+        context,
+        'Gender',
+        Icons.people_rounded,
+        'Gender data not yet available',
+      );
     }
 
     final colors = [
@@ -206,7 +261,13 @@ class DashboardDemographics extends ConsumerWidget {
             children: [
               Icon(Icons.people_rounded, size: 18, color: const Color(0xFF10B981)),
               const SizedBox(width: 8),
-              Text('Gender', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+              Text(
+                'Gender',
+                style: AppTypography.titleMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -237,8 +298,12 @@ class DashboardDemographics extends ConsumerWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 10, height: 10,
-                    decoration: BoxDecoration(color: colors[entry.key % colors.length], shape: BoxShape.circle),
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: colors[entry.key % colors.length],
+                      shape: BoxShape.circle,
+                    ),
                   ),
                   const SizedBox(width: 6),
                   Text(
@@ -268,11 +333,20 @@ class DashboardDemographics extends ConsumerWidget {
             children: [
               Icon(icon, size: 18, color: context.colors.textTertiary),
               const SizedBox(width: 8),
-              Text(title, style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+              Text(
+                title,
+                style: AppTypography.titleMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          Text(message, style: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary)),
+          Text(
+            message,
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
+          ),
           const SizedBox(height: AppSpacing.md),
         ],
       ),

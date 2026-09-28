@@ -14,7 +14,11 @@ class DashboardService {
     return DashboardSummary.fromJson(response.data);
   }
 
-  Future<DashboardChartsData> getCharts({int? periodDays, DateTime? startDate, DateTime? endDate}) async {
+  Future<DashboardChartsData> getCharts({
+    int? periodDays,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     final params = <String, dynamic>{};
     if (startDate != null && endDate != null) {
       params['startDate'] = startDate.toIso8601String();
@@ -32,19 +36,19 @@ class DashboardService {
   }
 
   Future<List<TopContentPost>> getTopContent(int month, int year) async {
-    final response = await _dio.get('/analytics/top-content', queryParameters: {
-      'month': month,
-      'year': year,
-    });
+    final response = await _dio.get(
+      '/analytics/top-content',
+      queryParameters: {'month': month, 'year': year},
+    );
     final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => TopContentPost.fromJson(json)).toList();
   }
 
   Future<List<PostAnalytics>> getPostAnalytics({int page = 1, String? status}) async {
-    final response = await _dio.get('/analytics/posts', queryParameters: {
-      'page': page,
-      if (status != null && status != 'All') 'status': status,
-    });
+    final response = await _dio.get(
+      '/analytics/posts',
+      queryParameters: {'page': page, if (status != null && status != 'All') 'status': status},
+    );
     final List<dynamic> data = response.data['data'] ?? [];
     return data.map((json) => PostAnalytics.fromJson(json)).toList();
   }

@@ -40,10 +40,7 @@ class BrandDashboardScreen extends ConsumerWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          _buildPeriodSelector(context, ref),
-          const SizedBox(width: 8),
-        ],
+        actions: [_buildPeriodSelector(context, ref), const SizedBox(width: 8)],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -101,7 +98,7 @@ class BrandDashboardScreen extends ConsumerWidget {
 
   Widget _buildAnalyticsDrawer(BuildContext context, WidgetRef ref) {
     final post = ref.watch(selectedPostProvider);
-    
+
     if (post == null) {
       return Drawer(
         backgroundColor: context.colors.surface,
@@ -124,8 +121,11 @@ class BrandDashboardScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'Analytics: ${post.title}', 
-                      style: AppTypography.titleLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                      'Analytics: ${post.title}',
+                      style: AppTypography.titleLarge.copyWith(
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.bold,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -142,20 +142,72 @@ class BrandDashboardScreen extends ConsumerWidget {
               child: ListView(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 children: [
-                  Text('Reach & Engagement', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Reach & Engagement',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  _buildDrawerMetric(context, Icons.visibility_rounded, 'Total Reach', _formatNumber(post.metrics.impressions)),
-                  _buildDrawerMetric(context, Icons.favorite_rounded, 'Likes', _formatNumber(post.metrics.likes)),
-                  _buildDrawerMetric(context, Icons.chat_bubble_rounded, 'Comments', _formatNumber(post.metrics.comments)),
-                  _buildDrawerMetric(context, Icons.send_rounded, 'Shares', _formatNumber(post.metrics.shares)),
-                  _buildDrawerMetric(context, Icons.bookmark_rounded, 'Saves', _formatNumber(post.metrics.saves)),
-                  
+                  _buildDrawerMetric(
+                    context,
+                    Icons.visibility_rounded,
+                    'Total Reach',
+                    _formatNumber(post.metrics.impressions),
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.favorite_rounded,
+                    'Likes',
+                    _formatNumber(post.metrics.likes),
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.chat_bubble_rounded,
+                    'Comments',
+                    _formatNumber(post.metrics.comments),
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.send_rounded,
+                    'Shares',
+                    _formatNumber(post.metrics.shares),
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.bookmark_rounded,
+                    'Saves',
+                    _formatNumber(post.metrics.saves),
+                  ),
+
                   const SizedBox(height: AppSpacing.xl),
-                  Text('Conversion', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold)),
+                  Text(
+                    'Conversion',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  _buildDrawerMetric(context, Icons.touch_app_rounded, 'Click Through Rate', '${post.metrics.ctr}%'),
-                  _buildDrawerMetric(context, Icons.person_add_rounded, 'Leads Generated', _formatNumber(post.metrics.leads)),
-                  _buildDrawerMetric(context, Icons.forum_rounded, 'Messages Started', _formatNumber(post.metrics.messages)),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.touch_app_rounded,
+                    'Click Through Rate',
+                    '${post.metrics.ctr}%',
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.person_add_rounded,
+                    'Leads Generated',
+                    _formatNumber(post.metrics.leads),
+                  ),
+                  _buildDrawerMetric(
+                    context,
+                    Icons.forum_rounded,
+                    'Messages Started',
+                    _formatNumber(post.metrics.messages),
+                  ),
                 ],
               ),
             ),
@@ -180,14 +232,26 @@ class BrandDashboardScreen extends ConsumerWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: context.colors.surfaceSecondary, borderRadius: BorderRadius.circular(8)),
+                decoration: BoxDecoration(
+                  color: context.colors.surfaceSecondary,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Icon(icon, size: 16, color: context.colors.primaryAccent),
               ),
               const SizedBox(width: 12),
-              Text(label, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+              Text(
+                label,
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+              ),
             ],
           ),
-          Text(value, style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+          Text(
+            value,
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.textPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
@@ -195,7 +259,7 @@ class BrandDashboardScreen extends ConsumerWidget {
 
   Widget _buildPeriodSelector(BuildContext context, WidgetRef ref) {
     final dateRange = ref.watch(dashboardDateRangeProvider);
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -208,7 +272,10 @@ class BrandDashboardScreen extends ConsumerWidget {
             ),
             child: Text(
               '${DateFormat('MMM d').format(dateRange.startDate!)} – ${DateFormat('MMM d').format(dateRange.endDate!)}',
-              style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.w600),
+              style: AppTypography.labelSmall.copyWith(
+                color: context.colors.primaryAccent,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         PopupMenuButton<String>(
@@ -251,26 +318,51 @@ class BrandDashboardScreen extends ConsumerWidget {
               }
             } else {
               final days = int.parse(value);
-              ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(presetDays: days);
+              ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(
+                presetDays: days,
+              );
             }
           },
           itemBuilder: (context) {
             final currentPreset = dateRange.presetDays;
             return [
-              _buildPopupItem(context, '7', 'Last 7 Days', currentPreset == 7 && !dateRange.isCustom),
-              _buildPopupItem(context, '30', 'Last 30 Days', currentPreset == 30 && !dateRange.isCustom),
-              _buildPopupItem(context, '90', 'Last 90 Days', currentPreset == 90 && !dateRange.isCustom),
+              _buildPopupItem(
+                context,
+                '7',
+                'Last 7 Days',
+                currentPreset == 7 && !dateRange.isCustom,
+              ),
+              _buildPopupItem(
+                context,
+                '30',
+                'Last 30 Days',
+                currentPreset == 30 && !dateRange.isCustom,
+              ),
+              _buildPopupItem(
+                context,
+                '90',
+                'Last 90 Days',
+                currentPreset == 90 && !dateRange.isCustom,
+              ),
               const PopupMenuDivider(),
               PopupMenuItem<String>(
                 value: 'custom',
                 child: Row(
                   children: [
-                    Icon(Icons.date_range_rounded, size: 18, color: dateRange.isCustom ? context.colors.primaryAccent : context.colors.textSecondary),
+                    Icon(
+                      Icons.date_range_rounded,
+                      size: 18,
+                      color: dateRange.isCustom
+                          ? context.colors.primaryAccent
+                          : context.colors.textSecondary,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       'Custom Range',
                       style: AppTypography.bodyMedium.copyWith(
-                        color: dateRange.isCustom ? context.colors.primaryAccent : context.colors.textPrimary,
+                        color: dateRange.isCustom
+                            ? context.colors.primaryAccent
+                            : context.colors.textPrimary,
                         fontWeight: dateRange.isCustom ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
@@ -284,7 +376,12 @@ class BrandDashboardScreen extends ConsumerWidget {
     );
   }
 
-  PopupMenuItem<String> _buildPopupItem(BuildContext context, String value, String label, bool isSelected) {
+  PopupMenuItem<String> _buildPopupItem(
+    BuildContext context,
+    String value,
+    String label,
+    bool isSelected,
+  ) {
     return PopupMenuItem<String>(
       value: value,
       child: Text(

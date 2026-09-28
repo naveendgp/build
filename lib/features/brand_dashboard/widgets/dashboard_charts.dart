@@ -76,9 +76,7 @@ class DashboardCharts extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.md),
-          Expanded(
-            child: hasData ? _buildLineChart(context, trend) : _buildEmptyState(context),
-          ),
+          Expanded(child: hasData ? _buildLineChart(context, trend) : _buildEmptyState(context)),
         ],
       ),
     );
@@ -134,7 +132,9 @@ class DashboardCharts extends StatelessWidget {
                 if (idx < 0 || idx >= trend.length) return const SizedBox.shrink();
                 final dateStr = trend[idx].date;
                 final dateParts = dateStr.split('-');
-                final formatted = dateParts.length == 3 ? '${dateParts[2]}/${dateParts[1]}' : dateStr;
+                final formatted = dateParts.length == 3
+                    ? '${dateParts[2]}/${dateParts[1]}'
+                    : dateStr;
                 return Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: Text(
@@ -188,7 +188,9 @@ class DashboardCharts extends StatelessWidget {
               final idx = spot.x.toInt();
               if (idx < 0 || idx >= trend.length) return null;
               final dateParts = trend[idx].date.split('-');
-              final label = dateParts.length == 3 ? '${dateParts[2]}/${dateParts[1]}' : trend[idx].date;
+              final label = dateParts.length == 3
+                  ? '${dateParts[2]}/${dateParts[1]}'
+                  : trend[idx].date;
               return LineTooltipItem(
                 '${_formatNumber(spot.y.toInt())}\n',
                 AppTypography.labelMedium.copyWith(
@@ -206,7 +208,11 @@ class DashboardCharts extends StatelessWidget {
           ),
           getTouchedSpotIndicator: (barData, spotIndexes) => spotIndexes.map((_) {
             return TouchedSpotIndicatorData(
-              FlLine(color: context.colors.primaryAccent.withOpacity(0.4), strokeWidth: 1.5, dashArray: [4, 4]),
+              FlLine(
+                color: context.colors.primaryAccent.withOpacity(0.4),
+                strokeWidth: 1.5,
+                dashArray: [4, 4],
+              ),
               FlDotData(
                 getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
                   radius: 5,
@@ -292,16 +298,15 @@ class DashboardCharts extends StatelessWidget {
                           Container(
                             width: 12,
                             height: 12,
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                            ),
+                            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               e.value.source,
-                              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: context.colors.textSecondary,
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -328,12 +333,7 @@ class DashboardCharts extends StatelessWidget {
   List<PieChartSectionData> _getDonutSections(BuildContext context) {
     return data.trafficSources.asMap().entries.map((e) {
       final color = _getColorForIndex(context, e.key);
-      return PieChartSectionData(
-        color: color,
-        value: e.value.percentage,
-        title: '',
-        radius: 20,
-      );
+      return PieChartSectionData(color: color, value: e.value.percentage, title: '', radius: 20);
     }).toList();
   }
 
@@ -404,4 +404,3 @@ class DashboardCharts extends StatelessWidget {
     return (length / 5).ceilToDouble();
   }
 }
-

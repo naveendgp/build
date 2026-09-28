@@ -21,15 +21,21 @@ class DashboardDateRange {
   String get label {
     if (isCustom) return 'Custom';
     switch (presetDays) {
-      case 7: return '7 Days';
-      case 30: return '30 Days';
-      case 90: return '90 Days';
-      default: return '${presetDays}d';
+      case 7:
+        return '7 Days';
+      case 30:
+        return '30 Days';
+      case 90:
+        return '90 Days';
+      default:
+        return '${presetDays}d';
     }
   }
 }
 
-final dashboardDateRangeProvider = StateProvider<DashboardDateRange>((ref) => const DashboardDateRange());
+final dashboardDateRangeProvider = StateProvider<DashboardDateRange>(
+  (ref) => const DashboardDateRange(),
+);
 
 // Keep legacy period provider for backward compat
 final dashboardPeriodProvider = Provider<int>((ref) {

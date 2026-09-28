@@ -30,7 +30,8 @@ class _DashboardPostCardListState extends ConsumerState<DashboardPostCardList> {
     final filteredPosts = widget.posts.where((p) {
       final matchesSearch = p.title.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesObjective = _selectedObjective == 'All' || p.objective == _selectedObjective;
-      final matchesPerformance = _selectedPerformance == 'All' || p.performanceScore == _selectedPerformance;
+      final matchesPerformance =
+          _selectedPerformance == 'All' || p.performanceScore == _selectedPerformance;
       return matchesSearch && matchesObjective && matchesPerformance;
     }).toList();
 
@@ -109,7 +110,9 @@ class _DashboardPostCardListState extends ConsumerState<DashboardPostCardList> {
                 child: Text(
                   displayNames[tab]!,
                   style: AppTypography.labelMedium.copyWith(
-                    color: isSelected ? const Color(0xFFFF0000) : const Color(0xFFFF0000).withOpacity(0.5),
+                    color: isSelected
+                        ? const Color(0xFFFF0000)
+                        : const Color(0xFFFF0000).withOpacity(0.5),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
@@ -141,7 +144,11 @@ class _DashboardPostCardListState extends ConsumerState<DashboardPostCardList> {
               decoration: InputDecoration(
                 hintText: 'Search posts...',
                 hintStyle: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
-                prefixIcon: Icon(Icons.search_rounded, size: 20, color: context.colors.textTertiary),
+                prefixIcon: Icon(
+                  Icons.search_rounded,
+                  size: 20,
+                  color: context.colors.textTertiary,
+                ),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
@@ -166,7 +173,12 @@ class _DashboardPostCardListState extends ConsumerState<DashboardPostCardList> {
     );
   }
 
-  Widget _buildDropdown(BuildContext context, {required String value, required List<String> items, required ValueChanged<String?> onChanged}) {
+  Widget _buildDropdown(
+    BuildContext context, {
+    required String value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -178,7 +190,11 @@ class _DashboardPostCardListState extends ConsumerState<DashboardPostCardList> {
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          icon: Icon(Icons.keyboard_arrow_down_rounded, color: context.colors.textSecondary, size: 20),
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: context.colors.textSecondary,
+            size: 20,
+          ),
           dropdownColor: context.colors.surfaceSecondary,
           style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
           onChanged: onChanged,
@@ -194,11 +210,7 @@ class _PostAnalyticsCard extends ConsumerWidget {
   final VoidCallback onTap;
   final String statusFilter;
 
-  const _PostAnalyticsCard({
-    required this.post,
-    required this.onTap,
-    required this.statusFilter,
-  });
+  const _PostAnalyticsCard({required this.post, required this.onTap, required this.statusFilter});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -268,7 +280,11 @@ class _PostAnalyticsCard extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(16),
                               child: Padding(
                                 padding: const EdgeInsets.all(4),
-                                child: Icon(Icons.more_vert_rounded, size: 20, color: context.colors.textSecondary),
+                                child: Icon(
+                                  Icons.more_vert_rounded,
+                                  size: 20,
+                                  color: context.colors.textSecondary,
+                                ),
                               ),
                             ),
                           ],
@@ -281,7 +297,9 @@ class _PostAnalyticsCard extends ConsumerWidget {
                           children: [
                             Text(
                               formattedDate,
-                              style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+                              style: AppTypography.labelSmall.copyWith(
+                                color: context.colors.textTertiary,
+                              ),
                             ),
                             _buildBadge(context, post.objective, context.colors.primaryAccent),
                             _buildStatusPill(context, post.performanceScore),
@@ -295,7 +313,10 @@ class _PostAnalyticsCard extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               // Row 2: Metrics
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
                 decoration: BoxDecoration(
                   color: context.colors.background,
                   borderRadius: BorderRadius.circular(8),
@@ -304,10 +325,30 @@ class _PostAnalyticsCard extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    _buildCompactMetric(context, 'Reach', _formatNumber(post.metrics.impressions), post.trends.impressionsTrend),
-                    _buildCompactMetric(context, 'Leads', post.metrics.leads.toString(), post.trends.leadsTrend),
-                    _buildCompactMetric(context, 'CTR', '${post.metrics.ctr}%', post.trends.ctrTrend),
-                    _buildCompactMetric(context, 'Msgs', post.metrics.messages.toString(), post.trends.messagesTrend),
+                    _buildCompactMetric(
+                      context,
+                      'Reach',
+                      _formatNumber(post.metrics.impressions),
+                      post.trends.impressionsTrend,
+                    ),
+                    _buildCompactMetric(
+                      context,
+                      'Leads',
+                      post.metrics.leads.toString(),
+                      post.trends.leadsTrend,
+                    ),
+                    _buildCompactMetric(
+                      context,
+                      'CTR',
+                      '${post.metrics.ctr}%',
+                      post.trends.ctrTrend,
+                    ),
+                    _buildCompactMetric(
+                      context,
+                      'Msgs',
+                      post.metrics.messages.toString(),
+                      post.trends.messagesTrend,
+                    ),
                   ],
                 ),
               ),
@@ -397,11 +438,20 @@ class _PostAnalyticsCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildMenuAction(BuildContext context, {required IconData icon, required String label, required VoidCallback onTap, bool isDestructive = false}) {
+  Widget _buildMenuAction(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
     final color = isDestructive ? context.colors.error : context.colors.textPrimary;
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(label, style: AppTypography.bodyMedium.copyWith(color: color, fontWeight: FontWeight.w500)),
+      title: Text(
+        label,
+        style: AppTypography.bodyMedium.copyWith(color: color, fontWeight: FontWeight.w500),
+      ),
       onTap: onTap,
     );
   }
@@ -442,12 +492,18 @@ class _PostAnalyticsCard extends ConsumerWidget {
             value: post.performanceScoreValue / 100,
             strokeWidth: 2.5,
             backgroundColor: context.colors.borderLight.withOpacity(0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(context, post.performanceScoreValue))),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              _getScoreColor(context, post.performanceScoreValue),
+            ),
+          ),
         ),
         const SizedBox(width: 6),
         Text(
           '${post.performanceScoreValue}',
-          style: AppTypography.labelMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+          style: AppTypography.labelMedium.copyWith(
+            color: context.colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ],
     );
@@ -460,7 +516,10 @@ class _PostAnalyticsCard extends ConsumerWidget {
       children: [
         Text(
           label,
-          style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary, fontSize: 10),
+          style: AppTypography.labelSmall.copyWith(
+            color: context.colors.textTertiary,
+            fontSize: 10,
+          ),
         ),
         const SizedBox(height: 2),
         Row(
@@ -468,11 +527,17 @@ class _PostAnalyticsCard extends ConsumerWidget {
           children: [
             Text(
               value,
-              style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+              style: AppTypography.labelLarge.copyWith(
+                color: context.colors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(width: 4),
-            Icon(isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded, 
-                size: 10, color: isPositive ? context.colors.success : context.colors.error),
+            Icon(
+              isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+              size: 10,
+              color: isPositive ? context.colors.success : context.colors.error,
+            ),
           ],
         ),
       ],
@@ -488,7 +553,11 @@ class _PostAnalyticsCard extends ConsumerWidget {
       ),
       child: Text(
         text,
-        style: AppTypography.labelSmall.copyWith(color: color, fontSize: 10, fontWeight: FontWeight.w600),
+        style: AppTypography.labelSmall.copyWith(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -496,10 +565,18 @@ class _PostAnalyticsCard extends ConsumerWidget {
   Widget _buildStatusPill(BuildContext context, String status) {
     Color color;
     switch (status) {
-      case 'Excellent': color = context.colors.success; break;
-      case 'Good': color = context.colors.primaryAccent; break;
-      case 'Poor': color = context.colors.error; break;
-      default: color = const Color(0xFFF59E0B); break; // Amber
+      case 'Excellent':
+        color = context.colors.success;
+        break;
+      case 'Good':
+        color = context.colors.primaryAccent;
+        break;
+      case 'Poor':
+        color = context.colors.error;
+        break;
+      default:
+        color = const Color(0xFFF59E0B);
+        break; // Amber
     }
     return _buildBadge(context, status, color);
   }

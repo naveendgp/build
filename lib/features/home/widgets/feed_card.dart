@@ -49,7 +49,9 @@ class FeedCard extends ConsumerWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        // Posts sit closer together and the card runs wider: the list had a
+        // gap of its own as well as the card's margin.
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.circular(28),
@@ -107,7 +109,7 @@ class FeedCard extends ConsumerWidget {
     final isBrand = authState.loggedInRole == UserRole.brand;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 12, 10),
+      padding: const EdgeInsets.fromLTRB(14, 10, 10, 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -568,7 +570,7 @@ class FeedCard extends ConsumerWidget {
     final isBrand = authState.loggedInRole == UserRole.brand;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
