@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/brand_profile_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class BrandQuicksiteTab extends StatelessWidget {
   final BrandQuicksiteData quicksiteData;
@@ -21,22 +22,30 @@ class BrandQuicksiteTab extends StatelessWidget {
 
   Widget _buildContactRow(BuildContext context, IconData icon, String text, {String? url}) {
     return InkWell(
-      onTap: url != null ? () async {
-        final uri = Uri.parse(url.startsWith('http') ? url : 'https://$url');
-        if (await canLaunchUrl(uri)) {
-          await launchUrl(uri, mode: LaunchMode.externalApplication);
-        } else {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open link')));
-          }
-        }
-      } : null,
+      onTap: url != null
+          ? () async {
+              final uri = Uri.parse(url.startsWith('http') ? url : 'https://$url');
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                if (context.mounted) {
+                  AppMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Could not open link')));
+                }
+              }
+            }
+          : null,
       child: Padding(
         padding: const EdgeInsets.only(bottom: 12.0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: url != null ? context.colors.primaryAccent : context.colors.textSecondary, size: 20),
+            Icon(
+              icon,
+              color: url != null ? context.colors.primaryAccent : context.colors.textSecondary,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -61,7 +70,9 @@ class BrandQuicksiteTab extends StatelessWidget {
           await launchUrl(uri, mode: LaunchMode.externalApplication);
         } else {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Could not open link')));
+            AppMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Could not open link')));
           }
         }
       },
@@ -93,11 +104,16 @@ class BrandQuicksiteTab extends StatelessWidget {
 
   IconData _getSocialIcon(String platform) {
     switch (platform.toLowerCase()) {
-      case 'facebook': return Icons.facebook;
-      case 'whatsapp': return Icons.chat;
-      case 'instagram': return Icons.camera_alt;
-      case 'website': return Icons.language;
-      default: return Icons.link;
+      case 'facebook':
+        return Icons.facebook;
+      case 'whatsapp':
+        return Icons.chat;
+      case 'instagram':
+        return Icons.camera_alt;
+      case 'website':
+        return Icons.language;
+      default:
+        return Icons.link;
     }
   }
 
@@ -113,9 +129,7 @@ class BrandQuicksiteTab extends StatelessWidget {
             children: [
               Text(
                 'Business Information',
-                style: AppTypography.titleMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
               ),
               if (isOwner)
                 InkWell(
@@ -131,78 +145,67 @@ class BrandQuicksiteTab extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             quicksiteData.about,
-            style: AppTypography.bodyMedium.copyWith(
-              color: context.colors.textSecondary,
-            ),
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
           ),
           const SizedBox(height: 24),
           if (quicksiteData.services.isNotEmpty) ...[
             Text(
               'Services',
-              style: AppTypography.titleMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            ...quicksiteData.services.map((service) => Padding(
-              padding: const EdgeInsets.only(bottom: 16.0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.check_circle_outline,
-                    color: context.colors.primaryAccent,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                service.name,
-                                style: AppTypography.bodyLarge.copyWith(
-                                  fontWeight: FontWeight.w600,
+            ...quicksiteData.services.map(
+              (service) => Padding(
+                padding: const EdgeInsets.only(bottom: 16.0),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.check_circle_outline, color: context.colors.primaryAccent, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  service.name,
+                                  style: AppTypography.bodyLarge.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
                               ),
-                            ),
-                            if (service.price != null && service.price!.isNotEmpty)
-                              Text(
-                                service.price!,
-                                style: AppTypography.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: context.colors.primaryAccent,
+                              if (service.price != null && service.price!.isNotEmpty)
+                                Text(
+                                  service.price!,
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: context.colors.primaryAccent,
+                                  ),
                                 ),
-                              ),
-                          ],
-                        ),
-                        if (service.description.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            service.description,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: context.colors.textSecondary,
-                            ),
+                            ],
                           ),
+                          if (service.description.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              service.description,
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: context.colors.textSecondary,
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            )),
+            ),
             const SizedBox(height: 8),
           ],
-          Text(
-            'Contact',
-            style: AppTypography.titleMedium.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('Contact', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
           if (quicksiteData.contact.email != null && quicksiteData.contact.email!.isNotEmpty)
             _buildContactRow(context, Icons.email, quicksiteData.contact.email!),
@@ -216,9 +219,7 @@ class BrandQuicksiteTab extends StatelessWidget {
             const SizedBox(height: 24),
             Text(
               'Social Links',
-              style: AppTypography.titleMedium.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Wrap(
@@ -227,7 +228,7 @@ class BrandQuicksiteTab extends StatelessWidget {
               children: quicksiteData.socialLinks.entries.map((e) {
                 String platform = '${e.key[0].toUpperCase()}${e.key.substring(1)}';
                 String url = e.value;
-                
+
                 if (e.key.toLowerCase() == 'whatsapp' && !url.contains('wa.me')) {
                   url = 'https://wa.me/${url.replaceAll(RegExp(r'[^0-9]'), '')}';
                 } else if (e.key.toLowerCase() == 'instagram' && !url.contains('instagram.com')) {
@@ -239,7 +240,7 @@ class BrandQuicksiteTab extends StatelessWidget {
                 return _buildSocialButton(context, platform, url, _getSocialIcon(e.key));
               }).toList(),
             ),
-          ]
+          ],
         ],
       ),
     );

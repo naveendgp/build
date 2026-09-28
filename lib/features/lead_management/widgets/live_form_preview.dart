@@ -54,10 +54,7 @@ class LiveFormPreview extends StatelessWidget {
                   borderRadius: AppSpacing.borderRadiusMd,
                 ),
                 alignment: Alignment.center,
-                child: Text(
-                  'Submit',
-                  style: AppTypography.button.copyWith(color: Colors.white),
-                ),
+                child: Text('Submit', style: AppTypography.button.copyWith(color: Colors.white)),
               ),
             ],
           ),

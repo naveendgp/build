@@ -15,14 +15,23 @@ class LeadApiService {
   }
 
   // --- Leads ---
-  Future<List<LeadSubmission>> getLeadsForPost(String postId) async {
-    final response = await _apiClient.dio.get('/leads/$postId');
+  Future<List<LeadSubmission>> getLeadsForPost(String postId, {bool archived = false}) async {
+    final response = await _apiClient.dio.get(
+      '/leads/$postId',
+      queryParameters: {'archived': archived.toString()},
+    );
     final data = response.data as List<dynamic>;
     return data.map((e) => LeadSubmission.fromJson(e)).toList();
   }
 
-  Future<void> deleteLeadSubmission(String submissionId) async {
-    await _apiClient.dio.delete('/leads/submissions/$submissionId');
+  /// Archives a lead, or puts it back. The delete endpoint is gone: the
+  /// answers belong to the person who sent them, so they are only ever moved
+  /// out of the way.
+  Future<void> setLeadArchived(String submissionId, bool archived) async {
+    await _apiClient.dio.patch(
+      '/leads/submissions/$submissionId/archive',
+      data: {'archived': archived},
+    );
   }
 
   String getExportCsvUrl(String postId) {
@@ -32,14 +41,13 @@ class LeadApiService {
 
   // --- Form Builder ---
   Future<FormTemplate> createForm({String? postId, required String title, String? intro}) async {
-    final response = await _apiClient.dio.post('/lead-form', data: {
-      'postId': postId,
-      'title': title,
-      'intro': intro,
-    });
+    final response = await _apiClient.dio.post(
+      '/lead-form',
+      data: {'postId': postId, 'title': title, 'intro': intro},
+    );
     return FormTemplate.fromJson(response.data);
   }
-  
+
   Future<FormTemplate> getFormById(String formId) async {
     final response = await _apiClient.dio.get('/lead-form/$formId');
     return FormTemplate.fromJson(response.data);
@@ -84,10 +92,15 @@ final brandLeadStatsProvider = FutureProvider<BrandLeadStats>((ref) async {
 });
 
 // Provides state for lead submissions by post
-final postLeadsProvider = FutureProvider.family<List<LeadSubmission>, String>((ref, postId) async {
-  if (postId.isEmpty) return [];
+typedef LeadsQuery = ({String postId, bool archived});
+
+final postLeadsProvider = FutureProvider.family<List<LeadSubmission>, LeadsQuery>((
+  ref,
+  query,
+) async {
+  if (query.postId.isEmpty) return [];
   final api = ref.watch(leadApiServiceProvider);
-  return api.getLeadsForPost(postId);
+  return api.getLeadsForPost(query.postId, archived: query.archived);
 });
 
 // Provides state for brand forms

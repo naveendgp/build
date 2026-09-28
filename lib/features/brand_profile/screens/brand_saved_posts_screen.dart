@@ -89,7 +89,7 @@ class _BrandSavedPostsGrid extends ConsumerWidget {
     final savedAsync = ref.watch(brandSavedPostsProvider);
 
     return savedAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator.adaptive()),
       error: (e, _) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

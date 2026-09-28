@@ -32,13 +32,10 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
       if (res.statusCode == 200 && res.data != null) {
         final fields = res.data['fields'] as List<dynamic>? ?? [];
         final mapped = <String, String>{};
-        
+
         for (var entry in widget.lead.answers.entries) {
           // Find the field label
-          final field = fields.firstWhere(
-            (f) => f['id'] == entry.key, 
-            orElse: () => null,
-          );
+          final field = fields.firstWhere((f) => f['id'] == entry.key, orElse: () => null);
           final label = field != null ? field['label'] : entry.key;
           mapped[label] = entry.value?.toString() ?? '';
         }
@@ -84,58 +81,73 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
           ),
         ),
         body: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header Profile Info
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
-                  child: Text(
-                    widget.lead.username.isNotEmpty ? widget.lead.username.substring(0, 1).toUpperCase() : '?',
-                    style: AppTypography.headlineMedium.copyWith(color: context.colors.primaryAccent),
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Profile Info
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
+                    child: Text(
+                      widget.lead.username.isNotEmpty
+                          ? widget.lead.username.substring(0, 1).toUpperCase()
+                          : '?',
+                      style: AppTypography.headlineMedium.copyWith(
+                        color: context.colors.primaryAccent,
+                      ),
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(widget.lead.username, style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold)),
-                      const SizedBox(height: AppSpacing.xxs),
-                      if (widget.lead.email != null)
-                        Text(widget.lead.email!, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-                    ],
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.lead.username,
+                          style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                        if (widget.lead.email != null)
+                          Text(
+                            widget.lead.email!,
+                            style: AppTypography.bodyMedium.copyWith(
+                              color: context.colors.textSecondary,
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
-                _buildQualityScore(context, widget.lead.qualityScore),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            
-            // Source Info
-            _buildSectionHeader(context, 'Acquisition Source'),
-            const SizedBox(height: AppSpacing.md),
-            _buildInfoCard(context, [
-              _InfoRow('Date', _formatDate(widget.lead.createdAt)),
-            ]),
-            const SizedBox(height: AppSpacing.xl),
-            
-            // Form Answers
-            _buildSectionHeader(context, 'Form Answers'),
-            const SizedBox(height: AppSpacing.md),
-            if (_isLoadingForm)
-              const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator()))
-            else
-              _buildInfoCard(
-                context,
-                _mappedAnswers.entries.map((e) => _InfoRow(e.key, e.value)).toList(),
+                  _buildQualityScore(context, widget.lead.qualityScore),
+                ],
               ),
-          ],
-        ),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Source Info
+              _buildSectionHeader(context, 'Acquisition Source'),
+              const SizedBox(height: AppSpacing.md),
+              _buildInfoCard(context, [_InfoRow('Date', _formatDate(widget.lead.createdAt))]),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Form Answers
+              _buildSectionHeader(context, 'Form Answers'),
+              const SizedBox(height: AppSpacing.md),
+              if (_isLoadingForm)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(20),
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                )
+              else
+                _buildInfoCard(
+                  context,
+                  _mappedAnswers.entries.map((e) => _InfoRow(e.key, e.value)).toList(),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -191,8 +203,6 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
     );
   }
 
-
-
   Widget _buildQualityScore(BuildContext context, double score) {
     Color color = context.colors.success;
     if (score < 5) {
@@ -212,15 +222,9 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
         children: [
           Text(
             score.toStringAsFixed(1),
-            style: AppTypography.headlineSmall.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppTypography.headlineSmall.copyWith(color: color, fontWeight: FontWeight.bold),
           ),
-          Text(
-            'Score',
-            style: AppTypography.labelSmall.copyWith(color: color),
-          ),
+          Text('Score', style: AppTypography.labelSmall.copyWith(color: color)),
         ],
       ),
     );

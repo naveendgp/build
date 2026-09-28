@@ -42,19 +42,14 @@ class ExploreSectionHeader extends StatelessWidget {
                         letterSpacing: -0.4,
                       ),
                     ),
-                    if (badge != null) ...[
-                      const SizedBox(width: 8),
-                      badge!,
-                    ],
+                    if (badge != null) ...[const SizedBox(width: 8), badge!],
                   ],
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: context.colors.textTertiary,
-                    ),
+                    style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
                   ),
                 ],
               ],

@@ -73,10 +73,7 @@ class BrandTabBar extends StatelessWidget {
                       bottom: 0,
                       left: 0,
                       right: 0,
-                      child: Container(
-                        height: 0.5,
-                        color: context.colors.borderLight,
-                      ),
+                      child: Container(height: 0.5, color: context.colors.borderLight),
                     ),
                     // Active indicator
                     AnimatedPositioned(

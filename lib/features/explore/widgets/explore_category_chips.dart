@@ -49,11 +49,7 @@ class _CategoryChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _CategoryChip({
-    required this.category,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _CategoryChip({required this.category, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -64,14 +60,10 @@ class _CategoryChip extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected
-              ? category.color.withOpacity(0.18)
-              : context.colors.surface,
+          color: isSelected ? category.color.withOpacity(0.18) : context.colors.surface,
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: Border.all(
-            color: isSelected
-                ? category.color.withOpacity(0.6)
-                : context.colors.borderLight,
+            color: isSelected ? category.color.withOpacity(0.6) : context.colors.borderLight,
             width: isSelected ? 1.5 : 1.0,
           ),
           boxShadow: isSelected

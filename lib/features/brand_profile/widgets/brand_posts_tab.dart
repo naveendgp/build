@@ -9,11 +9,7 @@ class BrandPostsTab extends StatelessWidget {
   final List<BrandPost> posts;
   final BrandProfile profile;
 
-  const BrandPostsTab({
-    super.key,
-    required this.posts,
-    required this.profile,
-  });
+  const BrandPostsTab({super.key, required this.posts, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +18,11 @@ class BrandPostsTab extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.grid_on,
-              size: 48,
-              color: context.colors.textTertiary,
-            ),
+            Icon(Icons.grid_on, size: 48, color: context.colors.textTertiary),
             const SizedBox(height: 16),
             Text(
               'No posts yet',
-              style: AppTypography.titleMedium.copyWith(
-                color: context.colors.textSecondary,
-              ),
+              style: AppTypography.titleMedium.copyWith(color: context.colors.textSecondary),
             ),
           ],
         ),
@@ -57,11 +47,7 @@ class BrandPostsTab extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ExplorePostDetailScreen(
-                  postId: post.id,
-                ),
-              ),
+              MaterialPageRoute(builder: (context) => ExplorePostDetailScreen(postId: post.id)),
             );
           },
           child: Stack(
@@ -86,9 +72,7 @@ class BrandPostsTab extends StatelessWidget {
                     alignment: Alignment.center,
                     child: Text(
                       post.title.isNotEmpty ? post.title : 'No media',
-                      style: AppTypography.labelSmall.copyWith(
-                        color: context.colors.textSecondary,
-                      ),
+                      style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
                       textAlign: TextAlign.center,
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
@@ -99,11 +83,7 @@ class BrandPostsTab extends StatelessWidget {
                 const Positioned(
                   top: 8,
                   right: 8,
-                  child: Icon(
-                    Icons.play_arrow_rounded,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
                 ),
             ],
           ),

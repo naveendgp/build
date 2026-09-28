@@ -29,67 +29,82 @@ class LeadDashboardScreen extends ConsumerWidget {
       child: Scaffold(
         backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.background,
         appBar: AppBar(
-          backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.surface.withValues(alpha: 0.9),
-        flexibleSpace: ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(color: Colors.transparent),
+          backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.surface.withValues(
+            alpha: 0.9,
           ),
-        ),
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.colors.textPrimary, size: 20),
-          onPressed: () {
-            Haptics.light();
-            context.pop();
-          },
-        ),
-        title: Text(
-          'Lead Management',
-          style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w600),
-        ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(60),
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.sm, left: AppSpacing.lg, right: AppSpacing.lg),
-            child: _SegmentedNavigation(
-              activeTab: state.activeTab,
-              onTabSelected: (tab) {
-                Haptics.light();
-                notifier.setActiveTab(tab);
-              },
+          flexibleSpace: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: context.colors.textPrimary,
+              size: 20,
+            ),
+            onPressed: () {
+              Haptics.light();
+              context.pop();
+            },
+          ),
+          title: Text(
+            'Lead Management',
+            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w600),
+          ),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(60),
+            child: Padding(
+              padding: const EdgeInsets.only(
+                bottom: AppSpacing.sm,
+                left: AppSpacing.lg,
+                right: AppSpacing.lg,
+              ),
+              child: _SegmentedNavigation(
+                activeTab: state.activeTab,
+                onTabSelected: (tab) {
+                  Haptics.light();
+                  notifier.setActiveTab(tab);
+                },
+              ),
             ),
           ),
         ),
-      ),
-      body: statsAsync.when(
-        loading: () => Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
-        error: (err, stack) => Center(child: Text('Failed to load KPIs: $err')),
-        data: (stats) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.lg),
-              KpiCardsSection(
-                totalForms: stats.formCount,
-                activeForms: stats.formCount, // Assuming all are active for now
-                leadsGenerated: stats.totalSubmissions,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 300),
-                  child: _buildActiveTabContent(state.activeTab),
+        body: statsAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+            ),
+          ),
+          error: (err, stack) => Center(child: Text('Failed to load KPIs: $err')),
+          data: (stats) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSpacing.lg),
+                KpiCardsSection(
+                  totalForms: stats.formCount,
+                  activeForms: stats.formCount, // Assuming all are active for now
+                  leadsGenerated: stats.totalSubmissions,
                 ),
-              ),
-            ],
-          );
-        },
-      ),
+                const SizedBox(height: AppSpacing.xl),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: _buildActiveTabContent(state.activeTab),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
+
   Widget _buildActiveTabContent(LeadDashboardTab tab) {
     switch (tab) {
       case LeadDashboardTab.forms:
@@ -108,10 +123,7 @@ class _SegmentedNavigation extends StatelessWidget {
   final LeadDashboardTab activeTab;
   final ValueChanged<LeadDashboardTab> onTabSelected;
 
-  const _SegmentedNavigation({
-    required this.activeTab,
-    required this.onTabSelected,
-  });
+  const _SegmentedNavigation({required this.activeTab, required this.onTabSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -154,14 +166,16 @@ class _SegmentedNavigation extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isActive ? context.colors.card : Colors.transparent,
                   borderRadius: AppSpacing.borderRadiusFull,
-                  border: isActive ? Border.all(color: context.colors.borderLight.withValues(alpha: 0.2)) : null,
+                  border: isActive
+                      ? Border.all(color: context.colors.borderLight.withValues(alpha: 0.2))
+                      : null,
                   boxShadow: isActive
                       ? [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(0, 1),
-                          )
+                          ),
                         ]
                       : null,
                 ),

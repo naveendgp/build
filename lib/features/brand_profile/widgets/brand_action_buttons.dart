@@ -5,6 +5,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/brand_profile_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class BrandActionButtons extends StatelessWidget {
   final BrandProfile profile;
@@ -16,6 +17,10 @@ class BrandActionButtons extends StatelessWidget {
   final VoidCallback? onEditProfileTap;
   final VoidCallback? onLeadCenterTap;
 
+  /// The bell. Shown to anyone who follows this brand - personal accounts and
+  /// brands alike - so a brand's posts can be muted without unfollowing.
+  final VoidCallback? onNotificationsToggled;
+
   const BrandActionButtons({
     super.key,
     required this.profile,
@@ -26,6 +31,7 @@ class BrandActionButtons extends StatelessWidget {
     this.isOwner = false,
     this.onEditProfileTap,
     this.onLeadCenterTap,
+    this.onNotificationsToggled,
   });
 
   @override
@@ -96,31 +102,30 @@ class BrandActionButtons extends StatelessWidget {
         children: [
           if (!isBrand)
             Expanded(
-            child: GestureDetector(
-              onTap: () {
-                Haptics.light();
-                onFollowToggled();
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                height: 40,
-                decoration: BoxDecoration(
-                  color: context.colors.primaryAccent,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  profile.isFollowing ? 'Following' : 'Follow',
-                  style: AppTypography.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+              child: GestureDetector(
+                onTap: () {
+                  Haptics.light();
+                  onFollowToggled();
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: context.colors.primaryAccent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    profile.isFollowing ? 'Following' : 'Follow',
+                    style: AppTypography.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-          if (!isBrand)
-            const SizedBox(width: 8),
+          if (!isBrand) const SizedBox(width: 8),
           Expanded(
             child: GestureDetector(
               onTap: () {
@@ -154,9 +159,9 @@ class BrandActionButtons extends StatelessWidget {
                   Haptics.light();
                   await Clipboard.setData(ClipboardData(text: '@${profile.username}'));
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Profile link copied!')),
-                    );
+                    AppMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
                   }
                 },
                 behavior: HitTestBehavior.opaque,
@@ -178,15 +183,50 @@ class BrandActionButtons extends StatelessWidget {
                 ),
               ),
             )
-          else
+          else ...[
+            if (profile.isFollowing && onNotificationsToggled != null) ...[
+              GestureDetector(
+                onTap: () {
+                  Haptics.light();
+                  onNotificationsToggled!();
+                },
+                behavior: HitTestBehavior.opaque,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: profile.notifyOnPosts
+                        ? context.colors.surface
+                        : context.colors.primaryAccent.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: profile.notifyOnPosts
+                          ? context.colors.borderLight
+                          : context.colors.primaryAccent.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    profile.notifyOnPosts
+                        ? Icons.notifications_none_rounded
+                        : Icons.notifications_off_rounded,
+                    size: 20,
+                    color: profile.notifyOnPosts
+                        ? context.colors.textPrimary
+                        : context.colors.primaryAccent,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             GestureDetector(
               onTap: () async {
                 Haptics.light();
                 await Clipboard.setData(ClipboardData(text: '@${profile.username}'));
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Profile link copied!')),
-                  );
+                  AppMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
                 }
               },
               behavior: HitTestBehavior.opaque,
@@ -199,13 +239,10 @@ class BrandActionButtons extends StatelessWidget {
                   border: Border.all(color: context.colors.borderLight),
                 ),
                 alignment: Alignment.center,
-                child: Icon(
-                  Icons.share_outlined,
-                  size: 20,
-                  color: context.colors.textPrimary,
-                ),
+                child: Icon(Icons.share_outlined, size: 20, color: context.colors.textPrimary),
               ),
             ),
+          ],
         ],
       ),
     );

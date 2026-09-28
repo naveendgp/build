@@ -129,10 +129,7 @@ class _BrandCard extends StatelessWidget {
                           gradient: LinearGradient(
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withOpacity(0.5),
-                            ],
+                            colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
                           ),
                         ),
                       ),
@@ -232,9 +229,7 @@ class _BrandCard extends StatelessWidget {
                         duration: const Duration(milliseconds: 250),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                         decoration: BoxDecoration(
-                          color: isFollowed
-                              ? context.colors.surface
-                              : context.colors.primaryAccent,
+                          color: isFollowed ? context.colors.surface : context.colors.primaryAccent,
                           borderRadius: BorderRadius.circular(100),
                           border: Border.all(
                             color: isFollowed
@@ -245,9 +240,7 @@ class _BrandCard extends StatelessWidget {
                         child: Text(
                           isFollowed ? 'Following' : 'Follow',
                           style: AppTypography.labelSmall.copyWith(
-                            color: isFollowed
-                                ? context.colors.textSecondary
-                                : Colors.white,
+                            color: isFollowed ? context.colors.textSecondary : Colors.white,
                             fontWeight: FontWeight.w700,
                             fontSize: 10,
                           ),

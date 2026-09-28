@@ -11,12 +11,7 @@ class ChatComposer extends StatefulWidget {
 
   final String? initialText;
 
-  const ChatComposer({
-    super.key,
-    required this.onSend,
-    this.isTyping = false,
-    this.initialText,
-  });
+  const ChatComposer({super.key, required this.onSend, this.isTyping = false, this.initialText});
 
   @override
   State<ChatComposer> createState() => _ChatComposerState();
@@ -56,7 +51,7 @@ class _ChatComposerState extends State<ChatComposer> {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    
+
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
@@ -69,12 +64,7 @@ class _ChatComposerState extends State<ChatComposer> {
           ),
           decoration: BoxDecoration(
             color: context.colors.background.withValues(alpha: 0.75),
-            border: Border(
-              top: BorderSide(
-                color: context.colors.border,
-                width: 0.5,
-              ),
-            ),
+            border: Border(top: BorderSide(color: context.colors.border, width: 0.5)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -96,10 +86,7 @@ class _ChatComposerState extends State<ChatComposer> {
                           controller: _controller,
                           maxLines: null,
                           keyboardAppearance: Brightness.dark,
-                          style: GoogleFonts.inter(
-                            color: context.colors.textPrimary,
-                            fontSize: 15,
-                          ),
+                          style: GoogleFonts.inter(color: context.colors.textPrimary, fontSize: 15),
                           decoration: InputDecoration(
                             hintText: 'Message...',
                             hintStyle: GoogleFonts.inter(

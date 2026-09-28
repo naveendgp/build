@@ -13,6 +13,7 @@ import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_item.dart';
 import '../../../core/utils/haptics.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class BrandProfileSettingsScreen extends ConsumerStatefulWidget {
   const BrandProfileSettingsScreen({Key? key}) : super(key: key);
@@ -83,7 +84,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
 
   void _showBrandTagsSheet(BuildContext context, WidgetRef ref, BrandProfile? profile) {
     if (profile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Brand tags aren\'t ready yet. Please try again in a moment.')),
       );
       return;
@@ -283,13 +284,13 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
           quicksite: quicksiteMap,
         );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Settings saved successfully')),
           );
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Error saving settings: $e')),
           );
         }
@@ -307,7 +308,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
       return Scaffold(
         backgroundColor: context.colors.background,
         appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const Center(child: CircularProgressIndicator.adaptive()),
       );
     }
 
@@ -485,7 +486,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
             ],
           ),
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (e, st) => Center(child: Text('Error loading settings: $e')),
       ),
     );
@@ -531,10 +532,10 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
       final success = await ref.read(brandProfileProvider('me').notifier).updateProfileImage(File(image.path), isCover: isCover);
       if (mounted) {
         if (success) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image updated successfully!')));
+          AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image updated successfully!')));
         } else {
           final message = ref.read(brandProfileProvider('me')).lastActionError ?? 'Something went wrong. Please try again.';
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+          AppMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
         }
       }
     } finally {
@@ -617,7 +618,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
             Positioned.fill(
               child: Container(
                 color: Colors.black.withValues(alpha: 0.5),
-                child: const Center(child: CircularProgressIndicator()),
+                child: const Center(child: CircularProgressIndicator.adaptive()),
               ),
             ),
         ],
@@ -744,7 +745,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                       child: ElevatedButton(
                         onPressed: () {
                           if (nameCtrl.text.trim().isEmpty || priceCtrl.text.trim().isEmpty) {
-                            ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Name and Pricing are required')));
+                            AppMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Name and Pricing are required')));
                             return;
                           }
                           final newService = BrandService(

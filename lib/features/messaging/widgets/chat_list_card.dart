@@ -23,18 +23,10 @@ class ChatListCard extends StatelessWidget {
       onTap: () => context.push('/messages/${conversation.id}'),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
           color: context.colors.background,
-          border: Border(
-            bottom: BorderSide(
-              color: context.colors.border,
-              width: 0.5,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: context.colors.border, width: 0.5)),
         ),
         child: Row(
           children: [
@@ -46,10 +38,7 @@ class ChatListCard extends StatelessWidget {
                   height: 56,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: context.colors.borderLight,
-                      width: 1,
-                    ),
+                    border: Border.all(color: context.colors.borderLight, width: 1),
                     image: participant.avatarUrl != null
                         ? DecorationImage(
                             image: CachedNetworkImageProvider(participant.avatarUrl!),
@@ -71,17 +60,14 @@ class ChatListCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: context.colors.success,
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: context.colors.background,
-                          width: 2,
-                        ),
+                        border: Border.all(color: context.colors.background, width: 2),
                       ),
                     ),
                   ),
               ],
             ),
             SizedBox(width: AppSpacing.md),
-            
+
             // Text Content
             Expanded(
               child: Column(
@@ -107,11 +93,7 @@ class ChatListCard extends StatelessWidget {
                             ),
                             if (participant.isBrand) ...[
                               SizedBox(width: 4),
-                              Icon(
-                                Icons.verified_rounded,
-                                size: 14,
-                                color: Colors.red,
-                              ),
+                              Icon(Icons.verified_rounded, size: 14, color: Colors.red),
                             ],
                           ],
                         ),
@@ -122,7 +104,9 @@ class ChatListCard extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 12,
                             fontWeight: isUnread ? FontWeight.w600 : FontWeight.w500,
-                            color: isUnread ? context.colors.primaryAccent : context.colors.textTertiary,
+                            color: isUnread
+                                ? context.colors.primaryAccent
+                                : context.colors.textTertiary,
                           ),
                         ),
                     ],
@@ -136,7 +120,9 @@ class ChatListCard extends StatelessWidget {
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
-                            color: isUnread ? context.colors.textPrimary : context.colors.textSecondary,
+                            color: isUnread
+                                ? context.colors.textPrimary
+                                : context.colors.textSecondary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -151,7 +137,9 @@ class ChatListCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            conversation.unreadCount > 99 ? '99+' : conversation.unreadCount.toString(),
+                            conversation.unreadCount > 99
+                                ? '99+'
+                                : conversation.unreadCount.toString(),
                             style: GoogleFonts.inter(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,

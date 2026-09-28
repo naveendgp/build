@@ -29,10 +29,12 @@ class FormBuilderState {
 class FormBuilderNotifier extends StateNotifier<FormBuilderState> {
   final LeadApiService _apiService;
 
-  FormBuilderNotifier(this._apiService) 
-      : super(FormBuilderState(
+  FormBuilderNotifier(this._apiService)
+    : super(
+        FormBuilderState(
           template: const FormTemplate(id: 'new_form', title: 'Untitled Form'),
-        ));
+        ),
+      );
 
   void setStep(FormBuilderStep step) {
     state = state.copyWith(currentStep: step);
@@ -48,7 +50,8 @@ class FormBuilderNotifier extends StateNotifier<FormBuilderState> {
   }
 
   void removeField(String id) {
-    final fields = List<FormFieldDefinition>.from(state.template.fields)..removeWhere((f) => f.id == id);
+    final fields = List<FormFieldDefinition>.from(state.template.fields)
+      ..removeWhere((f) => f.id == id);
     state = state.copyWith(template: state.template.copyWith(fields: fields));
   }
 

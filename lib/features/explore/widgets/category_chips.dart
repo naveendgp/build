@@ -27,7 +27,10 @@ class CategoryChips extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Text(
             'Explore Categories',
-            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+            style: AppTypography.titleSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colors.textPrimary,
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -59,11 +62,7 @@ class _CategoryChip extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _CategoryChip({
-    required this.category,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _CategoryChip({required this.category, required this.isSelected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

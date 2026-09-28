@@ -14,12 +14,16 @@ class BrandProfile {
   final String category;
   final bool isVerified;
   final bool isFollowing;
+
+  /// The bell: whether this brand's new posts notify me. Only meaningful
+  /// while [isFollowing]; brands that follow brands get it too.
+  final bool notifyOnPosts;
   final bool isOwner;
   final int followerCount;
   final int postCount;
   final double engagementRate;
   final String? websiteUrl;
-  
+
   // Settings / Profile Edit Fields
   final String? email;
   final String? contactNumber;
@@ -50,6 +54,7 @@ class BrandProfile {
     required this.category,
     this.isVerified = false,
     this.isFollowing = false,
+    this.notifyOnPosts = true,
     this.isOwner = false,
     this.followerCount = 0,
     this.postCount = 0,
@@ -72,22 +77,46 @@ class BrandProfile {
     this.tags = const [],
   });
 
-  BrandProfile copyWith({bool? isFollowing, int? followerCount, String? logoUrl, String? coverUrl, String? bio, List<String>? tags}) {
+  BrandProfile copyWith({
+    bool? notifyOnPosts,
+    bool? isFollowing,
+    int? followerCount,
+    String? logoUrl,
+    String? coverUrl,
+    String? bio,
+    List<String>? tags,
+  }) {
     return BrandProfile(
-      id: id, username: username, name: name, tagline: tagline, bio: bio ?? this.bio,
-      logoUrl: logoUrl ?? this.logoUrl, coverUrl: coverUrl ?? this.coverUrl, category: category,
+      id: id,
+      username: username,
+      name: name,
+      tagline: tagline,
+      bio: bio ?? this.bio,
+      logoUrl: logoUrl ?? this.logoUrl,
+      coverUrl: coverUrl ?? this.coverUrl,
+      category: category,
       isVerified: isVerified,
       isFollowing: isFollowing ?? this.isFollowing,
+      notifyOnPosts: notifyOnPosts ?? this.notifyOnPosts,
       isOwner: isOwner,
       followerCount: followerCount ?? this.followerCount,
-      postCount: postCount, engagementRate: engagementRate,
+      postCount: postCount,
+      engagementRate: engagementRate,
       websiteUrl: websiteUrl,
-      email: email, contactNumber: contactNumber, whatsapp: whatsapp,
-      instagram: instagram, facebook: facebook, businessType: businessType,
-      industry: industry, gstNumber: gstNumber,
-      isGalleryEnabled: isGalleryEnabled, isBrandPublic: isBrandPublic,
-      showContactInfo: showContactInfo, allowDMs: allowDMs,
-      allowNotifications: allowNotifications, allowEmailNotifications: allowEmailNotifications,
+      email: email,
+      contactNumber: contactNumber,
+      whatsapp: whatsapp,
+      instagram: instagram,
+      facebook: facebook,
+      businessType: businessType,
+      industry: industry,
+      gstNumber: gstNumber,
+      isGalleryEnabled: isGalleryEnabled,
+      isBrandPublic: isBrandPublic,
+      showContactInfo: showContactInfo,
+      allowDMs: allowDMs,
+      allowNotifications: allowNotifications,
+      allowEmailNotifications: allowEmailNotifications,
       tags: tags ?? this.tags,
     );
   }
@@ -107,15 +136,15 @@ class BrandProfile {
       name: (json['name'] ?? 'Brand').toString(),
       tagline: json['tagline']?.toString(),
       bio: json['bio']?.toString(),
-      logoUrl: json['logoUrl'] != null
-          ? ApiClient.resolveMediaUrl(json['logoUrl'].toString())
-          : '',
+      logoUrl: json['logoUrl'] != null ? ApiClient.resolveMediaUrl(json['logoUrl'].toString()) : '',
       coverUrl: json['coverImageUrl'] != null
           ? ApiClient.resolveMediaUrl(json['coverImageUrl'].toString())
           : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
       category: (json['category'] ?? '').toString(),
-      isVerified: json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
+      isVerified:
+          json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
       isFollowing: parseBool(json['isFollowing']),
+      notifyOnPosts: json['notifyOnPosts'] != false,
       isOwner: parseBool(json['isOwner']),
       followerCount: json['followerCount'] ?? 0,
       postCount: json['postCount'] ?? 0,
@@ -135,11 +164,11 @@ class BrandProfile {
       allowDMs: parseBool(json['allowDMs'], defaultValue: true),
       allowNotifications: parseBool(json['allowNotifications'], defaultValue: true),
       allowEmailNotifications: parseBool(json['allowEmailNotifications'], defaultValue: true),
-      tags: json['tags'] != null ? (json['tags'] as List).map((e) => e.toString()).toList() : const [],
+      tags: json['tags'] != null
+          ? (json['tags'] as List).map((e) => e.toString()).toList()
+          : const [],
     );
   }
-
-
 }
 
 // ─── Brand Post (for Posts tab) ─────────────────────────────
@@ -183,7 +212,9 @@ class BrandPost {
       likeCount: json['likeCount'] ?? 0,
       commentCount: json['commentCount'] ?? 0,
       objectiveLabel: json['objective']?.toString(),
-      aspectRatio: media != null && media is Map ? (media['aspectRatio'] as num?)?.toDouble() ?? 1.0 : 1.0,
+      aspectRatio: media != null && media is Map
+          ? (media['aspectRatio'] as num?)?.toDouble() ?? 1.0
+          : 1.0,
       publishStatus: (json['publishStatus'] ?? 'PUBLISHED').toString(),
     );
   }
@@ -195,17 +226,30 @@ class BrandGalleryItem {
   final String imageUrl;
   final double aspectRatio;
 
+  /// The caption the brand wrote for this photo. Asked for on upload and
+  /// editable afterwards; read under the tile and in the viewer.
+  final String description;
+
   const BrandGalleryItem({
     required this.id,
     required this.imageUrl,
     this.aspectRatio = 1.0,
+    this.description = '',
   });
+
+  BrandGalleryItem copyWith({String? description}) => BrandGalleryItem(
+    id: id,
+    imageUrl: imageUrl,
+    aspectRatio: aspectRatio,
+    description: description ?? this.description,
+  );
 
   factory BrandGalleryItem.fromJson(Map<String, dynamic> json) {
     return BrandGalleryItem(
       id: (json['id'] ?? '').toString(),
       imageUrl: ApiClient.resolveMediaUrl(json['url']?.toString()),
       aspectRatio: (json['aspectRatio'] as num?)?.toDouble() ?? 1.0,
+      description: (json['description'] ?? '').toString(),
     );
   }
 }
@@ -238,7 +282,7 @@ class BrandQuicksiteData {
       if (data is List) return data;
       return [];
     }
-    
+
     Map<String, dynamic>? qs;
     if (json['quicksite'] is Map) {
       qs = Map<String, dynamic>.from(json['quicksite'] as Map);
@@ -254,14 +298,22 @@ class BrandQuicksiteData {
         hours: json['businessHours']?.toString(), // Safely convert Json object to string
       ),
       socialLinks: <String, String>{
-        if ((qs?['instagram'] ?? json['instagram']) != null) 'instagram': (qs?['instagram'] ?? json['instagram']).toString(),
-        if ((qs?['facebook'] ?? json['facebook']) != null) 'facebook': (qs?['facebook'] ?? json['facebook']).toString(),
-        if ((qs?['twitter'] ?? json['twitter']) != null) 'twitter': (qs?['twitter'] ?? json['twitter']).toString(),
-        if ((qs?['linkedin'] ?? json['linkedin']) != null) 'linkedin': (qs?['linkedin'] ?? json['linkedin']).toString(),
-        if ((qs?['youtube'] ?? json['youtube']) != null) 'youtube': (qs?['youtube'] ?? json['youtube']).toString(),
-        if ((qs?['whatsapp'] ?? json['whatsapp']) != null) 'whatsapp': (qs?['whatsapp'] ?? json['whatsapp']).toString(),
-        if ((qs?['tiktok'] ?? json['tiktok']) != null) 'tiktok': (qs?['tiktok'] ?? json['tiktok']).toString(),
-        if ((qs?['website'] ?? json['website']) != null) 'website': (qs?['website'] ?? json['website']).toString(),
+        if ((qs?['instagram'] ?? json['instagram']) != null)
+          'instagram': (qs?['instagram'] ?? json['instagram']).toString(),
+        if ((qs?['facebook'] ?? json['facebook']) != null)
+          'facebook': (qs?['facebook'] ?? json['facebook']).toString(),
+        if ((qs?['twitter'] ?? json['twitter']) != null)
+          'twitter': (qs?['twitter'] ?? json['twitter']).toString(),
+        if ((qs?['linkedin'] ?? json['linkedin']) != null)
+          'linkedin': (qs?['linkedin'] ?? json['linkedin']).toString(),
+        if ((qs?['youtube'] ?? json['youtube']) != null)
+          'youtube': (qs?['youtube'] ?? json['youtube']).toString(),
+        if ((qs?['whatsapp'] ?? json['whatsapp']) != null)
+          'whatsapp': (qs?['whatsapp'] ?? json['whatsapp']).toString(),
+        if ((qs?['tiktok'] ?? json['tiktok']) != null)
+          'tiktok': (qs?['tiktok'] ?? json['tiktok']).toString(),
+        if ((qs?['website'] ?? json['website']) != null)
+          'website': (qs?['website'] ?? json['website']).toString(),
       },
     );
   }
@@ -273,12 +325,19 @@ class BrandService {
   final String? price;
   final IconData icon;
 
-  const BrandService({required this.name, required this.description, this.price, required this.icon});
+  const BrandService({
+    required this.name,
+    required this.description,
+    this.price,
+    required this.icon,
+  });
 
   factory BrandService.fromJson(dynamic data) {
     Map<String, dynamic> json = {};
     if (data is String) {
-      try { data = jsonDecode(data); } catch (_) {}
+      try {
+        data = jsonDecode(data);
+      } catch (_) {}
     }
     if (data is Map) json = Map<String, dynamic>.from(data);
     return BrandService(
@@ -290,11 +349,7 @@ class BrandService {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'description': description,
-      if (price != null) 'price': price,
-    };
+    return {'name': name, 'description': description, if (price != null) 'price': price};
   }
 }
 
@@ -308,7 +363,9 @@ class BrandProduct {
   factory BrandProduct.fromJson(dynamic data) {
     Map<String, dynamic> json = {};
     if (data is String) {
-      try { data = jsonDecode(data); } catch (_) {}
+      try {
+        data = jsonDecode(data);
+      } catch (_) {}
     }
     if (data is Map) json = Map<String, dynamic>.from(data);
     return BrandProduct(
@@ -319,11 +376,7 @@ class BrandProduct {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'imageUrl': imageUrl,
-      'price': price,
-    };
+    return {'name': name, 'imageUrl': imageUrl, 'price': price};
   }
 }
 
@@ -375,11 +428,16 @@ class BrandReview {
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       title: json['title']?.toString(),
       description: (json['description'] ?? '').toString(),
-      verifiedInteraction: json['verifiedInteraction'] == true || json['verifiedInteraction'] == 'true',
+      verifiedInteraction:
+          json['verifiedInteraction'] == true || json['verifiedInteraction'] == 'true',
       status: (json['status'] ?? 'APPROVED').toString(),
       brandResponse: json['brandResponse']?.toString(),
-      brandResponseDate: json['brandResponseDate'] != null ? DateTime.parse(json['brandResponseDate'].toString()) : null,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+      brandResponseDate: json['brandResponseDate'] != null
+          ? DateTime.parse(json['brandResponseDate'].toString())
+          : null,
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
+          : DateTime.now(),
     );
   }
 }
@@ -471,7 +529,11 @@ class BrandAnalytics {
       totalSaves: json['totalSaves'] ?? 0,
       totalShares: json['totalShares'] ?? 0,
       avgEngagement: (json['avgEngagement'] as num?)?.toDouble() ?? 0.0,
-      audienceSplit: (json['audienceSplit'] as Map<String, dynamic>?)?.map((k, v) => MapEntry(k, (v as num).toDouble())) ?? {},
+      audienceSplit:
+          (json['audienceSplit'] as Map<String, dynamic>?)?.map(
+            (k, v) => MapEntry(k, (v as num).toDouble()),
+          ) ??
+          {},
     );
   }
 }
@@ -497,7 +559,8 @@ class MockBrandData {
       name: 'Velvet Studio',
       username: 'velvetstudio',
       tagline: 'Where luxury meets modernity',
-      bio: 'Premium fashion house redefining contemporary elegance. Handcrafted pieces, sustainable materials, timeless design.',
+      bio:
+          'Premium fashion house redefining contemporary elegance. Handcrafted pieces, sustainable materials, timeless design.',
       logoUrl: _img[1],
       coverUrl: _img[4],
       category: 'Fashion & Luxury',
@@ -512,14 +575,65 @@ class MockBrandData {
   }
 
   static List<BrandPost> getPosts() => [
-    BrandPost(id: 'bp1', imageUrl: _img[1], title: 'Summer Collection Drop', likeCount: 5291, objectiveLabel: 'Launch', aspectRatio: 0.8),
-    BrandPost(id: 'bp2', imageUrl: _img[4], title: 'Sustainable Fashion Forward', likeCount: 12400, aspectRatio: 1.2),
-    BrandPost(id: 'bp3', imageUrl: _img[3], title: 'Evening Elegance Lookbook', likeCount: 8734, objectiveLabel: 'Awareness', aspectRatio: 0.75),
-    BrandPost(id: 'bp4', imageUrl: _img[0], title: 'Behind the Scenes', likeCount: 3200, aspectRatio: 1.0),
-    BrandPost(id: 'bp5', imageUrl: _img[7], title: 'Artisan Craftsmanship', likeCount: 6100, aspectRatio: 1.3),
-    BrandPost(id: 'bp6', imageUrl: _img[5], title: 'Studio Tour Experience', likeCount: 4800, objectiveLabel: 'Engagement', aspectRatio: 0.9),
-    BrandPost(id: 'bp7', imageUrl: _img[8], title: 'Accessories Preview', likeCount: 2300, aspectRatio: 1.1),
-    BrandPost(id: 'bp8', imageUrl: _img[2], title: 'Workspace Aesthetic', likeCount: 1900, aspectRatio: 0.85),
+    BrandPost(
+      id: 'bp1',
+      imageUrl: _img[1],
+      title: 'Summer Collection Drop',
+      likeCount: 5291,
+      objectiveLabel: 'Launch',
+      aspectRatio: 0.8,
+    ),
+    BrandPost(
+      id: 'bp2',
+      imageUrl: _img[4],
+      title: 'Sustainable Fashion Forward',
+      likeCount: 12400,
+      aspectRatio: 1.2,
+    ),
+    BrandPost(
+      id: 'bp3',
+      imageUrl: _img[3],
+      title: 'Evening Elegance Lookbook',
+      likeCount: 8734,
+      objectiveLabel: 'Awareness',
+      aspectRatio: 0.75,
+    ),
+    BrandPost(
+      id: 'bp4',
+      imageUrl: _img[0],
+      title: 'Behind the Scenes',
+      likeCount: 3200,
+      aspectRatio: 1.0,
+    ),
+    BrandPost(
+      id: 'bp5',
+      imageUrl: _img[7],
+      title: 'Artisan Craftsmanship',
+      likeCount: 6100,
+      aspectRatio: 1.3,
+    ),
+    BrandPost(
+      id: 'bp6',
+      imageUrl: _img[5],
+      title: 'Studio Tour Experience',
+      likeCount: 4800,
+      objectiveLabel: 'Engagement',
+      aspectRatio: 0.9,
+    ),
+    BrandPost(
+      id: 'bp7',
+      imageUrl: _img[8],
+      title: 'Accessories Preview',
+      likeCount: 2300,
+      aspectRatio: 1.1,
+    ),
+    BrandPost(
+      id: 'bp8',
+      imageUrl: _img[2],
+      title: 'Workspace Aesthetic',
+      likeCount: 1900,
+      aspectRatio: 0.85,
+    ),
   ];
 
   static List<BrandGalleryItem> getGallery() => [
@@ -536,17 +650,46 @@ class MockBrandData {
   ];
 
   static BrandQuicksiteData getQuicksite() => const BrandQuicksiteData(
-    about: 'Founded in 2018, Velvet Studio has grown from a boutique atelier in Milan to a globally recognized luxury fashion house. Our commitment to sustainable craftsmanship and modern aesthetics drives everything we create.\n\nEvery piece tells a story of meticulous attention to detail, ethically sourced materials, and timeless design philosophy.',
+    about:
+        'Founded in 2018, Velvet Studio has grown from a boutique atelier in Milan to a globally recognized luxury fashion house. Our commitment to sustainable craftsmanship and modern aesthetics drives everything we create.\n\nEvery piece tells a story of meticulous attention to detail, ethically sourced materials, and timeless design philosophy.',
     services: [
-      BrandService(name: 'Personal Styling', description: 'One-on-one luxury styling sessions', icon: Icons.style_rounded),
-      BrandService(name: 'Custom Tailoring', description: 'Bespoke garments crafted to perfection', icon: Icons.content_cut_rounded),
-      BrandService(name: 'Virtual Showroom', description: 'Immersive digital experience', icon: Icons.view_in_ar_rounded),
-      BrandService(name: 'Corporate Events', description: 'Premium fashion events & shows', icon: Icons.event_rounded),
+      BrandService(
+        name: 'Personal Styling',
+        description: 'One-on-one luxury styling sessions',
+        icon: Icons.style_rounded,
+      ),
+      BrandService(
+        name: 'Custom Tailoring',
+        description: 'Bespoke garments crafted to perfection',
+        icon: Icons.content_cut_rounded,
+      ),
+      BrandService(
+        name: 'Virtual Showroom',
+        description: 'Immersive digital experience',
+        icon: Icons.view_in_ar_rounded,
+      ),
+      BrandService(
+        name: 'Corporate Events',
+        description: 'Premium fashion events & shows',
+        icon: Icons.event_rounded,
+      ),
     ],
     products: [
-      BrandProduct(name: 'Summer Dress', imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400', price: '\$480'),
-      BrandProduct(name: 'Silk Blazer', imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400', price: '\$720'),
-      BrandProduct(name: 'Leather Tote', imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400', price: '\$340'),
+      BrandProduct(
+        name: 'Summer Dress',
+        imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
+        price: '\$480',
+      ),
+      BrandProduct(
+        name: 'Silk Blazer',
+        imageUrl: 'https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400',
+        price: '\$720',
+      ),
+      BrandProduct(
+        name: 'Leather Tote',
+        imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+        price: '\$340',
+      ),
     ],
     contact: BrandContactInfo(
       email: 'hello@velvetstudio.com',
@@ -559,20 +702,32 @@ class MockBrandData {
 
   static List<BrandReview> getReviews() => [
     BrandReview(
-      id: 'r1', authorName: 'Sophia Chen', authorId: 'u1', rating: 5.0,
+      id: 'r1',
+      authorName: 'Sophia Chen',
+      authorId: 'u1',
+      rating: 5.0,
       authorAvatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200',
-      description: 'Absolutely stunning quality. The silk blazer exceeded all my expectations — the craftsmanship is impeccable and the fit is divine.',
+      description:
+          'Absolutely stunning quality. The silk blazer exceeded all my expectations — the craftsmanship is impeccable and the fit is divine.',
       createdAt: DateTime.now().subtract(const Duration(days: 3)),
     ),
     BrandReview(
-      id: 'r2', authorName: 'James Porter', authorId: 'u2', rating: 4.5,
-      description: 'Great brand with exceptional attention to detail. Shipping was a bit slow to the US but the product quality more than makes up for it.',
+      id: 'r2',
+      authorName: 'James Porter',
+      authorId: 'u2',
+      rating: 4.5,
+      description:
+          'Great brand with exceptional attention to detail. Shipping was a bit slow to the US but the product quality more than makes up for it.',
       createdAt: DateTime.now().subtract(const Duration(days: 12)),
     ),
     BrandReview(
-      id: 'r3', authorName: 'Amara Obi', authorId: 'u3', rating: 5.0,
+      id: 'r3',
+      authorName: 'Amara Obi',
+      authorId: 'u3',
+      rating: 5.0,
       authorAvatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-      description: 'My go-to brand for every special occasion. The personal styling service is worth every penny — they truly understand modern elegance.',
+      description:
+          'My go-to brand for every special occasion. The personal styling service is worth every penny — they truly understand modern elegance.',
       createdAt: DateTime.now().subtract(const Duration(days: 21)),
     ),
   ];
@@ -582,20 +737,23 @@ class MockBrandData {
       id: 't1',
       authorName: 'Elena Voss',
       authorTitle: 'Fashion Editor, VOGUE Italia',
-      quote: 'Velvet Studio represents the future of sustainable luxury. Their commitment to ethical fashion without compromising on elegance is extraordinary.',
+      quote:
+          'Velvet Studio represents the future of sustainable luxury. Their commitment to ethical fashion without compromising on elegance is extraordinary.',
       mediaUrl: 'https://images.unsplash.com/photo-1526178613552-2b45c6c302f0?w=600',
     ),
     const BrandTestimonial(
       id: 't2',
       authorName: 'David Kim',
       authorTitle: 'Creative Director',
-      quote: 'Every collection feels like a curated art exhibition. The attention to texture, draping, and silhouette is unmatched in contemporary fashion.',
+      quote:
+          'Every collection feels like a curated art exhibition. The attention to texture, draping, and silhouette is unmatched in contemporary fashion.',
     ),
     const BrandTestimonial(
       id: 't3',
       authorName: 'Isabella Laurent',
       authorTitle: 'Celebrity Stylist',
-      quote: 'I dress A-list clients in Velvet Studio because their pieces photograph beautifully and feel incredible. That\'s a rare combination.',
+      quote:
+          'I dress A-list clients in Velvet Studio because their pieces photograph beautifully and feel incredible. That\'s a rare combination.',
       mediaUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600',
     ),
   ];

@@ -18,6 +18,11 @@ class ApiClient {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        // Every answer here depends on who is asking, so none of it may be
+        // stored. Without this an intermediary could hand back its own copy
+        // and a brand you had just followed still read "Follow".
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache',
       },
     ));
 

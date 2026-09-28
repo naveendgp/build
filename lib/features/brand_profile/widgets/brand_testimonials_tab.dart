@@ -69,10 +69,7 @@ class BrandTestimonialsTab extends StatelessWidget {
                     child: Center(
                       child: Container(
                         padding: const EdgeInsets.all(AppSpacing.sm),
-                        decoration: BoxDecoration(
-                          color: Colors.black54,
-                          shape: BoxShape.circle,
-                        ),
+                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                         child: Icon(
                           Icons.play_arrow_rounded,
                           color: context.colors.textPrimary,
@@ -129,7 +126,9 @@ class BrandTestimonialsTab extends StatelessWidget {
                           if (testimonial.authorTitle != null)
                             Text(
                               testimonial.authorTitle!,
-                              style: AppTypography.bodySmall.copyWith(color: const Color(0xFF7C5CFF)),
+                              style: AppTypography.bodySmall.copyWith(
+                                color: const Color(0xFF7C5CFF),
+                              ),
                               overflow: TextOverflow.ellipsis,
                             ),
                         ],

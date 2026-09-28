@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/haptics.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class BrandHeroHeader extends ConsumerWidget {
   final BrandProfile profile;
@@ -27,7 +28,7 @@ class BrandHeroHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isUser = ref.watch(authProvider).loggedInRole == UserRole.user;
-    
+
     return SliverToBoxAdapter(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -46,9 +47,8 @@ class BrandHeroHeader extends ConsumerWidget {
                   child: Image.network(
                     profile.coverUrl,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      color: context.colors.surface,
-                    ),
+                    errorBuilder: (context, error, stackTrace) =>
+                        Container(color: context.colors.surface),
                   ),
                 ),
                 // Subtle gradient for text legibility if needed later, omitted to keep clean unless specified
@@ -98,11 +98,7 @@ class BrandHeroHeader extends ConsumerWidget {
                           color: Colors.black.withOpacity(0.3),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.menu_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        child: const Icon(Icons.menu_rounded, color: Colors.white, size: 24),
                       ),
                     ),
                   ),
@@ -135,15 +131,24 @@ class BrandHeroHeader extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 12),
                                   ListTile(
-                                    leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
+                                    leading: Icon(
+                                      Icons.visibility_off_outlined,
+                                      color: context.colors.textPrimary,
+                                    ),
                                     title: Text(
                                       'Not Interested',
-                                      style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                                      style: AppTypography.bodyLarge.copyWith(
+                                        color: context.colors.textPrimary,
+                                      ),
                                     ),
                                     onTap: () {
                                       Navigator.pop(context);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('We will show fewer posts from this brand.')),
+                                      AppMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'We will show fewer posts from this brand.',
+                                          ),
+                                        ),
                                       );
                                     },
                                   ),
@@ -162,7 +167,10 @@ class BrandHeroHeader extends ConsumerWidget {
                                     },
                                   ),
                                   ListTile(
-                                    leading: Icon(Icons.block_outlined, color: context.colors.error),
+                                    leading: Icon(
+                                      Icons.block_outlined,
+                                      color: context.colors.error,
+                                    ),
                                     title: Text(
                                       'Block Brand',
                                       style: AppTypography.bodyLarge.copyWith(
@@ -171,11 +179,15 @@ class BrandHeroHeader extends ConsumerWidget {
                                       ),
                                     ),
                                     onTap: () {
-                                      final messenger = ScaffoldMessenger.of(context);
+                                      final messenger = AppMessenger.of(context);
                                       Navigator.pop(context);
-                                      ref.read(blockedBrandsProvider.notifier).blockBrand(profile.id);
+                                      ref
+                                          .read(blockedBrandsProvider.notifier)
+                                          .blockBrand(profile.id);
                                       messenger.showSnackBar(
-                                        const SnackBar(content: Text('Brand blocked successfully.')),
+                                        const SnackBar(
+                                          content: Text('Brand blocked successfully.'),
+                                        ),
                                       );
                                     },
                                   ),
@@ -192,11 +204,7 @@ class BrandHeroHeader extends ConsumerWidget {
                           color: Colors.black.withOpacity(0.3),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.more_vert_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                        child: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
                       ),
                     ),
                   ),
@@ -219,27 +227,19 @@ class BrandHeroHeader extends ConsumerWidget {
                     ),
                     if (profile.isVerified) ...[
                       const SizedBox(width: AppSpacing.xs),
-                      Icon(
-                        Icons.verified,
-                        size: 20,
-                        color: Colors.red,
-                      ),
+                      Icon(Icons.verified, size: 20, color: Colors.red),
                     ],
                   ],
                 ),
                 Text(
                   '@${profile.username}',
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: context.colors.textSecondary,
-                  ),
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
                 ),
                 if (profile.bio != null && profile.bio!.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     profile.bio!,
-                    style: AppTypography.bodySmall.copyWith(
-                      color: context.colors.textPrimary,
-                    ),
+                    style: AppTypography.bodySmall.copyWith(color: context.colors.textPrimary),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -248,11 +248,7 @@ class BrandHeroHeader extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    _buildStatItem(
-                      context,
-                      count: _formatCount(profile.postCount),
-                      label: 'Posts',
-                    ),
+                    _buildStatItem(context, count: _formatCount(profile.postCount), label: 'Posts'),
                     const SizedBox(width: 24),
                     GestureDetector(
                       onTap: () => showFollowersBottomSheet(context, profile.id),
@@ -279,11 +275,17 @@ class BrandHeroHeader extends ConsumerWidget {
                         behavior: HitTestBehavior.opaque,
                         child: Row(
                           children: [
-                            Icon(Icons.bookmark_border_rounded, size: 18, color: context.colors.textPrimary),
+                            Icon(
+                              Icons.bookmark_border_rounded,
+                              size: 18,
+                              color: context.colors.textPrimary,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Saved',
-                              style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: context.colors.textPrimary,
+                              ),
                             ),
                           ],
                         ),
@@ -310,12 +312,7 @@ class BrandHeroHeader extends ConsumerWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: AppTypography.bodyMedium.copyWith(
-            color: context.colors.textSecondary,
-          ),
-        ),
+        Text(label, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
       ],
     );
   }

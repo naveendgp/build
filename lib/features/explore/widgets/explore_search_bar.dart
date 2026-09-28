@@ -31,8 +31,7 @@ class ExploreSearchBar extends StatefulWidget {
   State<ExploreSearchBar> createState() => _ExploreSearchBarState();
 }
 
-class _ExploreSearchBarState extends State<ExploreSearchBar>
-    with SingleTickerProviderStateMixin {
+class _ExploreSearchBarState extends State<ExploreSearchBar> with SingleTickerProviderStateMixin {
   late final FocusNode _focusNode;
   late final AnimationController _animController;
   late final Animation<double> _glowAnimation;
@@ -43,14 +42,8 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _focusNode.addListener(_handleFocusChange);
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-    _glowAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
+    _glowAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
   }
 
   void _handleFocusChange() {
@@ -88,10 +81,7 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 4,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 decoration: BoxDecoration(
                   color: context.colors.card.withValues(alpha: 0.7),
                   borderRadius: AppSpacing.borderRadiusFull,
@@ -104,8 +94,7 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
                   boxShadow: glowValue > 0
                       ? [
                           BoxShadow(
-                            color: context.colors.primaryAccent
-                                .withValues(alpha: 0.08 * glowValue),
+                            color: context.colors.primaryAccent.withValues(alpha: 0.08 * glowValue),
                             blurRadius: 20 * glowValue,
                             spreadRadius: 2 * glowValue,
                           ),
@@ -149,9 +138,7 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
               focusNode: _focusNode,
               onChanged: widget.onChanged,
               onSubmitted: widget.onSubmitted,
-              style: AppTypography.bodyMedium.copyWith(
-                color: context.colors.textPrimary,
-              ),
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
               cursorColor: context.colors.primaryAccent,
               cursorWidth: 1.5,
               decoration: InputDecoration(
@@ -163,9 +150,7 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
                 errorBorder: InputBorder.none,
                 disabledBorder: InputBorder.none,
                 hintText: widget.hintText,
-                hintStyle: AppTypography.bodyMedium.copyWith(
-                  color: context.colors.textTertiary,
-                ),
+                hintStyle: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
                 isDense: true,
                 contentPadding: const EdgeInsets.symmetric(vertical: 14),
               ),
@@ -176,4 +161,3 @@ class _ExploreSearchBarState extends State<ExploreSearchBar>
     );
   }
 }
-

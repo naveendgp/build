@@ -7,6 +7,7 @@ import '../models/explore_models.dart';
 // Lyket Explore — State Management
 
 enum ExploreLoadState { initial, loading, loaded, error }
+
 enum SearchLoadState { idle, loading, loaded, empty, error }
 
 // ─── Explore State ────────────────────────────────────────
@@ -39,6 +40,7 @@ class ExploreState {
     List<ExploreOffer>? offers,
     ExploreLoadState? loadState,
     String? selectedCategory,
+    bool clearCategory = false,
     String? nextCursor,
   }) {
     return ExploreState(
@@ -48,7 +50,7 @@ class ExploreState {
       brands: brands ?? this.brands,
       offers: offers ?? this.offers,
       loadState: loadState ?? this.loadState,
-      selectedCategory: selectedCategory,
+      selectedCategory: clearCategory ? null : (selectedCategory ?? this.selectedCategory),
       nextCursor: nextCursor ?? this.nextCursor,
     );
   }
@@ -60,6 +62,10 @@ class SearchState {
   final bool isActive;
   final List<SearchSuggestion> suggestions;
   final List<FeedPost> results;
+
+  /// Posts near the answer rather than in it - same category, or the same
+  /// brands - shown under the results so a thin search still leads somewhere.
+  final List<FeedPost> similarResults;
   final List<String> recentSearches;
   final SearchLoadState searchLoadState;
 
@@ -68,6 +74,7 @@ class SearchState {
     this.isActive = false,
     this.suggestions = const [],
     this.results = const [],
+    this.similarResults = const [],
     this.recentSearches = const ['minimal lifestyle', 'luxury watches', 'tech startups'],
     this.searchLoadState = SearchLoadState.idle,
   });
@@ -77,6 +84,7 @@ class SearchState {
     bool? isActive,
     List<SearchSuggestion>? suggestions,
     List<FeedPost>? results,
+    List<FeedPost>? similarResults,
     List<String>? recentSearches,
     SearchLoadState? searchLoadState,
   }) {
@@ -85,6 +93,7 @@ class SearchState {
       isActive: isActive ?? this.isActive,
       suggestions: suggestions ?? this.suggestions,
       results: results ?? this.results,
+      similarResults: similarResults ?? this.similarResults,
       recentSearches: recentSearches ?? this.recentSearches,
       searchLoadState: searchLoadState ?? this.searchLoadState,
     );
@@ -105,11 +114,11 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
       final queryParams = state.selectedCategory != null
           ? {'category': state.selectedCategory}
           : null;
-      
+
       // Fetch both main feed and limited offers in parallel
       final results = await Future.wait([
         _apiClient.dio.get('/feed/explore', queryParameters: queryParams),
-        _apiClient.dio.get('/search/limited-offers')
+        _apiClient.dio.get('/search/limited-offers'),
       ]);
 
       final res = results[0];
@@ -176,8 +185,10 @@ class ExploreNotifier extends StateNotifier<ExploreState> {
   }
 
   void selectCategory(String? category) {
+    final deselecting = category == null || category == state.selectedCategory;
     state = state.copyWith(
-      selectedCategory: category == state.selectedCategory ? null : category,
+      selectedCategory: deselecting ? null : category,
+      clearCategory: deselecting,
     );
     loadExplore();
   }
@@ -199,17 +210,11 @@ class SearchNotifier extends StateNotifier<SearchState> {
   void updateQuery(String query) {
     if (query.isEmpty) {
       _debounceTimer?.cancel();
-      state = state.copyWith(
-        query: query,
-        suggestions: [],
-        searchLoadState: SearchLoadState.idle,
-      );
+      state = state.copyWith(query: query, suggestions: [], searchLoadState: SearchLoadState.idle);
       return;
     }
     final all = MockExploreData.searchSuggestions();
-    final filtered = all.where(
-      (s) => s.text.toLowerCase().contains(query.toLowerCase()),
-    ).toList();
+    final filtered = all.where((s) => s.text.toLowerCase().contains(query.toLowerCase())).toList();
     // Back to idle so the suggestions dropdown reappears while the user edits
     // the query, and hides again once the next search resolves.
     state = state.copyWith(
@@ -219,11 +224,10 @@ class SearchNotifier extends StateNotifier<SearchState> {
     );
 
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(milliseconds: 600), () {
-      if (state.query.isNotEmpty && state.isActive) {
-        search();
-      }
-    });
+    // Searching is done on Enter, not while typing: a half-typed word sent a
+    // request of its own and the answer for it could land after the one for
+    // the whole word.
+    _debounceTimer?.cancel();
   }
 
   Future<void> search() async {
@@ -244,14 +248,19 @@ class SearchNotifier extends StateNotifier<SearchState> {
           throw Exception('Unexpected data structure: ${res.data}');
         }
 
-        final results = dataList
+        final results = dataList.map((j) => FeedPost.fromJson(j as Map<String, dynamic>)).toList();
+
+        final similarRaw = res.data is Map && res.data['similarPosts'] is List
+            ? res.data['similarPosts'] as List
+            : const [];
+        final similar = similarRaw
             .map((j) => FeedPost.fromJson(j as Map<String, dynamic>))
             .toList();
 
         state = state.copyWith(
           results: results,
-          searchLoadState:
-              results.isEmpty ? SearchLoadState.empty : SearchLoadState.loaded,
+          similarResults: similar,
+          searchLoadState: results.isEmpty ? SearchLoadState.empty : SearchLoadState.loaded,
         );
       } else {
         throw Exception('Status code: ${res.statusCode}');
@@ -261,6 +270,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       state = state.copyWith(
         searchLoadState: SearchLoadState.error,
         results: [],
+        similarResults: [],
       );
     }
   }
@@ -270,6 +280,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       query: '',
       suggestions: [],
       results: [],
+      similarResults: [],
       isActive: false,
       searchLoadState: SearchLoadState.idle,
     );
@@ -280,14 +291,12 @@ class SearchNotifier extends StateNotifier<SearchState> {
   }
 
   void addRecent(String term) {
-    final updated =
-        [term, ...state.recentSearches.where((s) => s != term)].take(8).toList();
+    final updated = [term, ...state.recentSearches.where((s) => s != term)].take(8).toList();
     state = state.copyWith(recentSearches: updated);
   }
 
   void removeRecent(String term) {
-    state = state.copyWith(
-        recentSearches: state.recentSearches.where((s) => s != term).toList());
+    state = state.copyWith(recentSearches: state.recentSearches.where((s) => s != term).toList());
   }
 
   void clearRecent() {
@@ -296,12 +305,10 @@ class SearchNotifier extends StateNotifier<SearchState> {
 }
 
 // ─── Providers ────────────────────────────────────────────
-final exploreProvider =
-    StateNotifierProvider.autoDispose<ExploreNotifier, ExploreState>(
+final exploreProvider = StateNotifierProvider.autoDispose<ExploreNotifier, ExploreState>(
   (ref) => ExploreNotifier(ref.watch(apiClientProvider)),
 );
 
-final searchProvider =
-    StateNotifierProvider.autoDispose<SearchNotifier, SearchState>(
+final searchProvider = StateNotifierProvider.autoDispose<SearchNotifier, SearchState>(
   (ref) => SearchNotifier(ref.watch(apiClientProvider)),
 );

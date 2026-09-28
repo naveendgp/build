@@ -23,7 +23,8 @@ class KpiCardsSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
         children: [
-          _buildKpiCard(context, 
+          _buildKpiCard(
+            context,
             title: 'Leads Generated',
             value: leadsGenerated.toString(),
             trend: '+12%',
@@ -31,7 +32,8 @@ class KpiCardsSection extends StatelessWidget {
             icon: Icons.people_alt_rounded,
           ),
           const SizedBox(width: AppSpacing.md),
-          _buildKpiCard(context, 
+          _buildKpiCard(
+            context,
             title: 'Active Forms',
             value: '$activeForms / $totalForms',
             trend: 'Stable',
@@ -43,7 +45,8 @@ class KpiCardsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildKpiCard(BuildContext context, {
+  Widget _buildKpiCard(
+    BuildContext context, {
     required String title,
     required String value,
     required String trend,
@@ -57,9 +60,9 @@ class KpiCardsSection extends StatelessWidget {
         color: context.colors.surface,
         borderRadius: AppSpacing.borderRadiusXl,
         border: Border.all(
-          color: isPositiveTrend 
-            ? context.colors.success.withValues(alpha: 0.15) 
-            : context.colors.borderLight.withValues(alpha: 0.1),
+          color: isPositiveTrend
+              ? context.colors.success.withValues(alpha: 0.15)
+              : context.colors.borderLight.withValues(alpha: 0.1),
         ),
         boxShadow: [
           BoxShadow(
@@ -87,7 +90,9 @@ class KpiCardsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isPositiveTrend ? context.colors.success.withValues(alpha: 0.15) : context.colors.error.withValues(alpha: 0.15),
+                  color: isPositiveTrend
+                      ? context.colors.success.withValues(alpha: 0.15)
+                      : context.colors.error.withValues(alpha: 0.15),
                   borderRadius: AppSpacing.borderRadiusFull,
                 ),
                 child: Row(

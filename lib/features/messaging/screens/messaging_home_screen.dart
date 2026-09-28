@@ -45,16 +45,18 @@ class MessagingHomeScreen extends ConsumerWidget {
                 Expanded(
                   child: inboxState.isLoading
                       ? Center(
-                          child: CircularProgressIndicator(color: context.colors.primaryAccent),
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                          ),
                         )
                       : inboxState.error != null
-                          ? Center(
-                              child: Text(
-                                inboxState.error!,
-                                style: GoogleFonts.inter(color: context.colors.error),
-                              ),
-                            )
-                          : _buildList(context, inboxState, notifier),
+                      ? Center(
+                          child: Text(
+                            inboxState.error!,
+                            style: GoogleFonts.inter(color: context.colors.error),
+                          ),
+                        )
+                      : _buildList(context, inboxState, notifier),
                 ),
               ],
             ),
@@ -63,10 +65,7 @@ class MessagingHomeScreen extends ConsumerWidget {
             bottom: 0,
             left: 0,
             right: 0,
-            child: BottomNavDock(
-              currentIndex: 3,
-              onTap: (i) => _navTo(context, ref, i),
-            ),
+            child: BottomNavDock(currentIndex: 3, onTap: (i) => _navTo(context, ref, i)),
           ),
         ],
       ),
@@ -95,7 +94,7 @@ class MessagingHomeScreen extends ConsumerWidget {
 
   Widget _buildTabs(BuildContext context, String activeTab, InboxNotifier notifier) {
     final tabs = ['Brands', 'Profiles', 'Requests'];
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Container(
@@ -125,7 +124,7 @@ class MessagingHomeScreen extends ConsumerWidget {
                               color: context.colors.primaryAccent.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
-                            )
+                            ),
                           ]
                         : null,
                     border: isActive ? null : null,
@@ -177,10 +176,7 @@ class MessagingHomeScreen extends ConsumerWidget {
               state.activeTab == 'Brands'
                   ? 'Connect with your favorite brands'
                   : 'Start a conversation',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: context.colors.textSecondary,
-              ),
+              style: GoogleFonts.inter(fontSize: 14, color: context.colors.textSecondary),
             ),
           ],
         ),

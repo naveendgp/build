@@ -64,12 +64,10 @@ class _FollowersBottomSheetState extends ConsumerState<FollowersBottomSheet> {
     try {
       final api = ref.read(apiClientProvider);
       final response = await api.dio.get('/brand/${widget.brandId}/followers');
-      
+
       if (mounted) {
         setState(() {
-          followers = (response.data as List)
-              .map((data) => FollowerUser.fromJson(data))
-              .toList();
+          followers = (response.data as List).map((data) => FollowerUser.fromJson(data)).toList();
           isLoading = false;
         });
       }
@@ -86,7 +84,7 @@ class _FollowersBottomSheetState extends ConsumerState<FollowersBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height * 0.75;
-    
+
     return Container(
       height: height,
       decoration: BoxDecoration(
@@ -112,7 +110,7 @@ class _FollowersBottomSheetState extends ConsumerState<FollowersBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
@@ -136,11 +134,9 @@ class _FollowersBottomSheetState extends ConsumerState<FollowersBottomSheet> {
             ),
           ),
           Divider(color: context.colors.borderLight, height: 1),
-          
+
           // Content
-          Expanded(
-            child: _buildContent(context),
-          ),
+          Expanded(child: _buildContent(context)),
         ],
       ),
     );
@@ -149,7 +145,9 @@ class _FollowersBottomSheetState extends ConsumerState<FollowersBottomSheet> {
   Widget _buildContent(BuildContext context) {
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator(color: context.colors.primaryAccent),
+        child: CircularProgressIndicator.adaptive(
+          valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+        ),
       );
     }
 

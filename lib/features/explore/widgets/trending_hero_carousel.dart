@@ -12,11 +12,7 @@ class TrendingHeroCarousel extends StatefulWidget {
   final List<FeedPost> posts;
   final ValueChanged<FeedPost> onTap;
 
-  const TrendingHeroCarousel({
-    super.key,
-    required this.posts,
-    required this.onTap,
-  });
+  const TrendingHeroCarousel({super.key, required this.posts, required this.onTap});
 
   @override
   State<TrendingHeroCarousel> createState() => _TrendingHeroCarouselState();
@@ -91,9 +87,7 @@ class _TrendingHeroCarouselState extends State<TrendingHeroCarousel> {
               width: active ? 20 : 5,
               height: 5,
               decoration: BoxDecoration(
-                color: active
-                    ? context.colors.primaryAccent
-                    : context.colors.borderLight,
+                color: active ? context.colors.primaryAccent : context.colors.borderLight,
                 borderRadius: BorderRadius.circular(100),
               ),
             );
@@ -114,8 +108,7 @@ class _HeroCard extends StatefulWidget {
   State<_HeroCard> createState() => _HeroCardState();
 }
 
-class _HeroCardState extends State<_HeroCard>
-    with SingleTickerProviderStateMixin {
+class _HeroCardState extends State<_HeroCard> with SingleTickerProviderStateMixin {
   late final AnimationController _pressCtrl;
   late final Animation<double> _scaleAnim;
 

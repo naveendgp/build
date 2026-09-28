@@ -12,11 +12,7 @@ class RecommendedForYouRow extends StatelessWidget {
   final List<FeedPost> posts;
   final ValueChanged<FeedPost> onTap;
 
-  const RecommendedForYouRow({
-    super.key,
-    required this.posts,
-    required this.onTap,
-  });
+  const RecommendedForYouRow({super.key, required this.posts, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +27,7 @@ class RecommendedForYouRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         itemCount: posts.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, i) => _RecommendedCard(
-          post: posts[i],
-          onTap: () => onTap(posts[i]),
-        ),
+        itemBuilder: (context, i) => _RecommendedCard(post: posts[i], onTap: () => onTap(posts[i])),
       ),
     );
   }
@@ -117,10 +110,7 @@ class _RecommendedCard extends StatelessWidget {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       stops: const [0.35, 1.0],
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.78),
-                      ],
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.78)],
                     ),
                   ),
                 ),
@@ -243,8 +233,7 @@ class _EmptyRecommendations extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.auto_awesome_rounded,
-                color: context.colors.primaryAccent, size: 32),
+            Icon(Icons.auto_awesome_rounded, color: context.colors.primaryAccent, size: 32),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -261,9 +250,7 @@ class _EmptyRecommendations extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Follow brands and save posts to unlock AI recommendations.',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: context.colors.textSecondary,
-                    ),
+                    style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                   ),
                 ],
               ),

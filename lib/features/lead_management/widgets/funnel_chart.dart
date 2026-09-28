@@ -7,11 +7,7 @@ class FunnelChart extends StatelessWidget {
   final int views;
   final int submissions;
 
-  const FunnelChart({
-    super.key,
-    required this.views,
-    required this.submissions,
-  });
+  const FunnelChart({super.key, required this.views, required this.submissions});
 
   @override
   Widget build(BuildContext context) {
@@ -30,8 +26,20 @@ class FunnelChart extends StatelessWidget {
             style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: AppSpacing.xl),
-          _buildFunnelStage(context, 'Views', views, views, context.colors.primaryAccent.withValues(alpha: 0.3)),
-          _buildFunnelStage(context, 'Submissions', submissions, views, context.colors.primaryAccent),
+          _buildFunnelStage(
+            context,
+            'Views',
+            views,
+            views,
+            context.colors.primaryAccent.withValues(alpha: 0.3),
+          ),
+          _buildFunnelStage(
+            context,
+            'Submissions',
+            submissions,
+            views,
+            context.colors.primaryAccent,
+          ),
         ],
       ),
     );
@@ -39,7 +47,7 @@ class FunnelChart extends StatelessWidget {
 
   Widget _buildFunnelStage(BuildContext context, String label, int value, int max, Color color) {
     final double percentage = max > 0 ? value / max : 0;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Row(

@@ -11,11 +11,7 @@ class ExploreMasonryFeed extends StatelessWidget {
   final List<FeedPost> posts;
   final ValueChanged<FeedPost> onTap;
 
-  const ExploreMasonryFeed({
-    super.key,
-    required this.posts,
-    required this.onTap,
-  });
+  const ExploreMasonryFeed({super.key, required this.posts, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +39,12 @@ class ExploreMasonryFeed extends StatelessWidget {
           Expanded(
             child: Column(
               children: leftPosts
-                  .map((p) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _MasonryCard(post: p, onTap: () => onTap(p)),
-                      ))
+                  .map(
+                    (p) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _MasonryCard(post: p, onTap: () => onTap(p)),
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -57,10 +55,12 @@ class ExploreMasonryFeed extends StatelessWidget {
               children: [
                 const SizedBox(height: 32), // offset to create stagger
                 ...rightPosts
-                    .map((p) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: _MasonryCard(post: p, onTap: () => onTap(p)),
-                        ))
+                    .map(
+                      (p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _MasonryCard(post: p, onTap: () => onTap(p)),
+                      ),
+                    )
                     .toList(),
               ],
             ),
@@ -81,8 +81,7 @@ class _MasonryCard extends StatefulWidget {
   State<_MasonryCard> createState() => _MasonryCardState();
 }
 
-class _MasonryCardState extends State<_MasonryCard>
-    with SingleTickerProviderStateMixin {
+class _MasonryCardState extends State<_MasonryCard> with SingleTickerProviderStateMixin {
   late final AnimationController _pressCtrl;
 
   @override
@@ -173,10 +172,7 @@ class _MasonryCardState extends State<_MasonryCard>
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.65),
-                        ],
+                        colors: [Colors.transparent, Colors.black.withOpacity(0.65)],
                       ),
                     ),
                   ),
@@ -269,18 +265,15 @@ class _ShimmerBox extends StatefulWidget {
   State<_ShimmerBox> createState() => _ShimmerBoxState();
 }
 
-class _ShimmerBoxState extends State<_ShimmerBox>
-    with SingleTickerProviderStateMixin {
+class _ShimmerBoxState extends State<_ShimmerBox> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _anim;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200))
+      ..repeat(reverse: true);
     _anim = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
 
@@ -317,11 +310,7 @@ class _EmptyFeedState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 48, horizontal: AppSpacing.lg),
       child: Column(
         children: [
-          Icon(
-            Icons.explore_off_rounded,
-            size: 56,
-            color: context.colors.textTertiary,
-          ),
+          Icon(Icons.explore_off_rounded, size: 56, color: context.colors.textTertiary),
           const SizedBox(height: 16),
           Text(
             'Nothing here yet',

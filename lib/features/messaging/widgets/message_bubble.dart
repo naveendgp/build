@@ -10,30 +10,21 @@ class MessageBubble extends StatelessWidget {
   final Message message;
   final bool isMe;
 
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isMe,
-  });
+  const MessageBubble({super.key, required this.message, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
     final timeString = DateFormat('h:mm a').format(message.createdAt.toLocal());
-    
+
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       child: Row(
         mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
             child: Container(
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.75,
-              ),
+              constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
               padding: const EdgeInsets.only(
                 left: 12,
                 right: 12,
@@ -52,9 +43,7 @@ class MessageBubble extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Flexible(
-                    child: _buildContent(context),
-                  ),
+                  Flexible(child: _buildContent(context)),
                   const SizedBox(width: 8),
                   Padding(
                     padding: const EdgeInsets.only(bottom: 2), // slightly align with baseline
@@ -125,7 +114,7 @@ class MessageBubble extends StatelessWidget {
                   color: isMe ? Colors.white : context.colors.textPrimary,
                 ),
               ),
-            ]
+            ],
           ],
         );
       default:

@@ -13,19 +13,14 @@ class TrendingGrid extends StatelessWidget {
   final VoidCallback? onSeeAll;
   final ValueChanged<FeedPost>? onTap;
 
-  const TrendingGrid({
-    super.key,
-    required this.posts,
-    this.onSeeAll,
-    this.onTap,
-  });
+  const TrendingGrid({super.key, required this.posts, this.onSeeAll, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, ),
+        _buildHeader(context),
         SizedBox(height: AppSpacing.md),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 20),
@@ -36,24 +31,25 @@ class TrendingGrid extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
             itemCount: posts.length,
-            itemBuilder: (context, index) => _TrendingCard(
-              post: posts[index],
-              onTap: () => onTap?.call(posts[index]),
-            ),
+            itemBuilder: (context, index) =>
+                _TrendingCard(post: posts[index], onTap: () => onTap?.call(posts[index])),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildHeader(BuildContext context, ) {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Text(
             'Trending Now',
-            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+            style: AppTypography.titleSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -65,10 +61,7 @@ class _TrendingCard extends StatelessWidget {
   final FeedPost post;
   final VoidCallback? onTap;
 
-  const _TrendingCard({
-    required this.post,
-    this.onTap,
-  });
+  const _TrendingCard({required this.post, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -102,17 +95,23 @@ class _TrendingCard extends StatelessWidget {
                             color: context.colors.surface,
                             child: Center(
                               child: SizedBox(
-                                width: 18, height: 18,
-                                child: CircularProgressIndicator(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator.adaptive(
                                   strokeWidth: 1.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.borderLight),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    context.colors.borderLight,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                           errorWidget: (context, url, error) => Container(
                             color: context.colors.surface,
-                            child: Icon(Icons.image_not_supported, color: context.colors.textTertiary),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: context.colors.textTertiary,
+                            ),
                           ),
                         ),
                 ),
@@ -150,7 +149,10 @@ class _TrendingCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: context.colors.surface,
-                      image: DecorationImage(image: CachedNetworkImageProvider(post.brandAvatar), fit: BoxFit.cover),
+                      image: DecorationImage(
+                        image: CachedNetworkImageProvider(post.brandAvatar),
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   SizedBox(width: 6),

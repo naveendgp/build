@@ -5,6 +5,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../create_post/models/create_post_models.dart';
 import '../../create_post/widgets/lead_form/lead_form_builder.dart';
 import '../../create_post/providers/create_post_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class FormBuilderScreen extends ConsumerStatefulWidget {
   const FormBuilderScreen({super.key});
@@ -36,14 +37,16 @@ class _FormBuilderScreenState extends ConsumerState<FormBuilderScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Form saved successfully!')),
-                );
+                AppMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Form saved successfully!')));
                 Navigator.pop(context);
               },
               child: Text(
                 'Save',
-                style: AppTypography.buttonSmall.copyWith(color: AppTheme.darkTheme.extension<AppThemeColors>()!.primaryAccent),
+                style: AppTypography.buttonSmall.copyWith(
+                  color: AppTheme.darkTheme.extension<AppThemeColors>()!.primaryAccent,
+                ),
               ),
             ),
           ],

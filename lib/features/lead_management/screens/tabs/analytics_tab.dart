@@ -23,16 +23,15 @@ class AnalyticsTab extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
           physics: const BouncingScrollPhysics(),
           children: [
-            FunnelChart(
-              views: totalViews,
-              submissions: stats.totalSubmissions,
-            ),
+            FunnelChart(views: totalViews, submissions: stats.totalSubmissions),
             const SizedBox(height: AppSpacing.xxl),
           ],
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (err, stack) => Center(child: Text('Error loading stats', style: TextStyle(color: context.colors.error))),
+      loading: () => const Center(child: CircularProgressIndicator.adaptive()),
+      error: (err, stack) => Center(
+        child: Text('Error loading stats', style: TextStyle(color: context.colors.error)),
+      ),
     );
   }
 }

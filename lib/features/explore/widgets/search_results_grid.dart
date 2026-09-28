@@ -13,12 +13,7 @@ class SearchResultsGrid extends StatelessWidget {
   final bool isLoading;
   final VoidCallback? onRetry;
 
-  const SearchResultsGrid({
-    super.key,
-    required this.results,
-    this.isLoading = false,
-    this.onRetry,
-  });
+  const SearchResultsGrid({super.key, required this.results, this.isLoading = false, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -81,11 +76,7 @@ class SearchResultsGrid extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: context.colors.borderLight),
             ),
-            child: Icon(
-              Icons.search_off_rounded,
-              size: 40,
-              color: context.colors.textTertiary,
-            ),
+            child: Icon(Icons.search_off_rounded, size: 40, color: context.colors.textTertiary),
           ),
           SizedBox(height: AppSpacing.xl),
           Text(
@@ -119,8 +110,12 @@ class _SkeletonPulseState extends State<_SkeletonPulse> with SingleTickerProvide
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)..repeat(reverse: true);
-    _opacity = Tween<double>(begin: 0.3, end: 0.7).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _ctrl = AnimationController(duration: const Duration(milliseconds: 1000), vsync: this)
+      ..repeat(reverse: true);
+    _opacity = Tween<double>(
+      begin: 0.3,
+      end: 0.7,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -167,7 +162,10 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
   void initState() {
     super.initState();
     _ctrl = AnimationController(duration: Duration(milliseconds: 150), vsync: this);
-    _scale = Tween(begin: 1.0, end: 0.97).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _scale = Tween(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -221,7 +219,10 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
                             placeholder: (context, url) => Container(color: context.colors.surface),
                             errorWidget: (context, url, error) => Container(
                               color: context.colors.surface,
-                              child: Icon(Icons.image_not_supported, color: context.colors.textTertiary),
+                              child: Icon(
+                                Icons.image_not_supported,
+                                color: context.colors.textTertiary,
+                              ),
                             ),
                           ),
                   ),
@@ -242,7 +243,11 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
                             const SizedBox(width: 4),
                             Text(
                               'Match @ ${_formatTime(widget.post.bestFrameTimestamp!)}',
-                              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
@@ -263,7 +268,10 @@ class _SearchResultCardState extends State<_SearchResultCard> with SingleTickerP
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             color: context.colors.surface,
-                            image: DecorationImage(image: CachedNetworkImageProvider(widget.post.brandAvatar), fit: BoxFit.cover),
+                            image: DecorationImage(
+                              image: CachedNetworkImageProvider(widget.post.brandAvatar),
+                              fit: BoxFit.cover,
+                            ),
                           ),
                           child: null,
                         ),

@@ -11,12 +11,7 @@ class SuggestedCarousel extends StatelessWidget {
   final VoidCallback? onSeeAll;
   final ValueChanged<FeedPost>? onTap;
 
-  const SuggestedCarousel({
-    super.key,
-    required this.posts,
-    this.onSeeAll,
-    this.onTap,
-  });
+  const SuggestedCarousel({super.key, required this.posts, this.onSeeAll, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +27,8 @@ class SuggestedCarousel extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20),
             itemCount: posts.length,
             separatorBuilder: (context, index) => SizedBox(width: 14),
-            itemBuilder: (context, index) => _SuggestedCard(
-              post: posts[index],
-              onTap: () => onTap?.call(posts[index]),
-            ),
+            itemBuilder: (context, index) =>
+                _SuggestedCard(post: posts[index], onTap: () => onTap?.call(posts[index])),
           ),
         ),
       ],
@@ -49,7 +42,10 @@ class SuggestedCarousel extends StatelessWidget {
         children: [
           Text(
             'Suggested For You',
-            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+            style: AppTypography.titleSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colors.textPrimary,
+            ),
           ),
           SizedBox(width: 6),
           Icon(Icons.auto_awesome, size: 16, color: context.colors.primaryAccent),
@@ -63,10 +59,7 @@ class _SuggestedCard extends StatelessWidget {
   final FeedPost post;
   final VoidCallback? onTap;
 
-  const _SuggestedCard({
-    required this.post,
-    this.onTap,
-  });
+  const _SuggestedCard({required this.post, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -100,9 +93,7 @@ class _SuggestedCard extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: post.mediaUrl,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    color: context.colors.surface,
-                  ),
+                  placeholder: (context, url) => Container(color: context.colors.surface),
                   errorWidget: (context, url, error) => Container(
                     color: context.colors.surface,
                     child: Icon(Icons.image_outlined, color: context.colors.textTertiary),

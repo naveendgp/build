@@ -22,7 +22,6 @@ import 'widgets/recommended_for_you_row.dart';
 import 'widgets/explore_section_header.dart';
 import '../home/models/feed_models.dart';
 
-
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
 
@@ -30,8 +29,7 @@ class ExploreScreen extends ConsumerStatefulWidget {
   ConsumerState<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends ConsumerState<ExploreScreen>
-    with SingleTickerProviderStateMixin {
+class _ExploreScreenState extends ConsumerState<ExploreScreen> with SingleTickerProviderStateMixin {
   final _scrollCtrl = ScrollController();
   final _searchCtrl = TextEditingController();
   final FocusNode _searchFocus = FocusNode();
@@ -46,12 +44,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   @override
   void initState() {
     super.initState();
-    _headerAnimCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 250),
-    );
-    _headerFadeAnim =
-        CurvedAnimation(parent: _headerAnimCtrl, curve: Curves.easeOut);
+    _headerAnimCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
+    _headerFadeAnim = CurvedAnimation(parent: _headerAnimCtrl, curve: Curves.easeOut);
     _scrollCtrl.addListener(_onScroll);
     _searchFocus.addListener(_onFocusChange);
   }
@@ -101,17 +95,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
-  double get _currentHeaderHeight =>
-      _isScrolled ? _headerCollapsedHeight : _headerExpandedHeight;
+  double get _currentHeaderHeight => _isScrolled ? _headerCollapsedHeight : _headerExpandedHeight;
 
   /// The dropdown floats in the Stack, so nothing else bounds its height —
   /// without a cap, eight recents plus suggestions cover the whole screen.
   double _suggestionsMaxHeight(BuildContext context, double topPad) {
     final mq = MediaQuery.of(context);
-    final available = mq.size.height -
-        (topPad + _currentHeaderHeight) -
-        mq.viewInsets.bottom -
-        24;
+    final available = mq.size.height - (topPad + _currentHeaderHeight) - mq.viewInsets.bottom - 24;
     return available.clamp(120.0, 420.0);
   }
 
@@ -134,10 +124,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    context.colors.primaryAccent.withOpacity(0.12),
-                    Colors.transparent,
-                  ],
+                  colors: [context.colors.primaryAccent.withOpacity(0.12), Colors.transparent],
                 ),
               ),
             ),
@@ -151,10 +138,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
-                  colors: [
-                    context.colors.secondaryAccent.withOpacity(0.08),
-                    Colors.transparent,
-                  ],
+                  colors: [context.colors.secondaryAccent.withOpacity(0.08), Colors.transparent],
                 ),
               ),
             ),
@@ -168,14 +152,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             edgeOffset: topPad + _currentHeaderHeight,
             child: CustomScrollView(
               controller: _scrollCtrl,
-              physics: const BouncingScrollPhysics(
-                  parent: AlwaysScrollableScrollPhysics()),
+              physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
               slivers: [
                 // Top spacer for floating header
-                SliverToBoxAdapter(
-                  child: SizedBox(
-                      height: topPad + _currentHeaderHeight + 12),
-                ),
+                SliverToBoxAdapter(child: SizedBox(height: topPad + _currentHeaderHeight + 12)),
 
                 // Content
                 if (searchState.isActive || searchState.query.isNotEmpty)
@@ -193,29 +173,24 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _buildFloatingHeader(topPad),
 
           // ── Search suggestions overlay ─────────────────────
-          if (searchState.isActive &&
-              searchState.searchLoadState == SearchLoadState.idle)
+          if (searchState.isActive && searchState.searchLoadState == SearchLoadState.idle)
             Positioned(
               top: topPad + _currentHeaderHeight - 4,
               left: 16,
               right: 16,
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: _suggestionsMaxHeight(context, topPad),
-                ),
+                constraints: BoxConstraints(maxHeight: _suggestionsMaxHeight(context, topPad)),
                 child: SearchSuggestions(
                   suggestions: searchState.suggestions,
                   recentSearches: searchState.recentSearches,
-                  onClear: () =>
-                      ref.read(searchProvider.notifier).clearRecent(),
+                  onClear: () => ref.read(searchProvider.notifier).clearRecent(),
                   onSelect: (term) {
                     _searchCtrl.text = term;
                     _searchFocus.unfocus();
                     ref.read(searchProvider.notifier).updateQuery(term);
                     ref.read(searchProvider.notifier).search();
                   },
-                  onRemoveRecent: (term) =>
-                      ref.read(searchProvider.notifier).removeRecent(term),
+                  onRemoveRecent: (term) => ref.read(searchProvider.notifier).removeRecent(term),
                 ),
               ),
             ),
@@ -243,16 +218,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       right: 0,
       child: ClipRect(
         child: BackdropFilter(
-          filter: ImageFilter.blur(
-            sigmaX: _isScrolled ? 24 : 0,
-            sigmaY: _isScrolled ? 24 : 0,
-          ),
+          filter: ImageFilter.blur(sigmaX: _isScrolled ? 24 : 0, sigmaY: _isScrolled ? 24 : 0),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutCubic,
-            color: _isScrolled
-                ? context.colors.background.withOpacity(0.82)
-                : Colors.transparent,
+            color: _isScrolled ? context.colors.background.withOpacity(0.82) : Colors.transparent,
             padding: EdgeInsets.only(
               top: topPad + 12,
               bottom: 14,
@@ -266,9 +236,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 // Title — collapses when scrolled or searching
                 AnimatedCrossFade(
                   duration: const Duration(milliseconds: 220),
-                  crossFadeState: showTitle
-                      ? CrossFadeState.showFirst
-                      : CrossFadeState.showSecond,
+                  crossFadeState: showTitle ? CrossFadeState.showFirst : CrossFadeState.showSecond,
                   firstChild: _buildHeaderTitle(),
                   secondChild: const SizedBox(height: 0, width: double.infinity),
                 ),
@@ -281,8 +249,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   controller: _searchCtrl,
                   focusNode: _searchFocus,
                   hintText: 'Search brands, products, offers...',
-                  onChanged: (val) =>
-                      ref.read(searchProvider.notifier).updateQuery(val),
+                  onChanged: (val) => ref.read(searchProvider.notifier).updateQuery(val),
                   onSubmitted: (val) {
                     _searchFocus.unfocus();
                     ref.read(searchProvider.notifier).search();
@@ -314,13 +281,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
             Text(
               'Curated just for you',
-              style: AppTypography.bodySmall.copyWith(
-                color: context.colors.textSecondary,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
             ),
           ],
         ),
-
       ],
     );
   }
@@ -329,9 +293,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildSearchResultsSliver() {
     final searchState = ref.watch(searchProvider);
     return SliverToBoxAdapter(
-      child: SearchResultsGrid(
-        results: searchState.results,
-        isLoading: searchState.searchLoadState == SearchLoadState.loading,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SearchResultsGrid(
+            results: searchState.results,
+            isLoading: searchState.searchLoadState == SearchLoadState.loading,
+          ),
+          // Near the answer rather than in it: shown under the results so a
+          // thin search still leads somewhere.
+          if (searchState.similarResults.isNotEmpty &&
+              searchState.searchLoadState != SearchLoadState.loading) ...[
+            const SizedBox(height: 28),
+            ExploreSectionHeader(
+              title: 'Similar results',
+              subtitle: 'Posts close to what you searched for',
+            ),
+            const SizedBox(height: 14),
+            SearchResultsGrid(results: searchState.similarResults, isLoading: false),
+          ],
+        ],
       ),
     );
   }
@@ -345,18 +326,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       return SliverToBoxAdapter(child: _buildLoadingSkeleton());
     }
 
-    if (state.loadState == ExploreLoadState.error &&
-        state.trendingPosts.isEmpty) {
+    if (state.loadState == ExploreLoadState.error && state.trendingPosts.isEmpty) {
       return SliverToBoxAdapter(child: _buildErrorState());
     }
 
     return SliverList(
       delegate: SliverChildListDelegate([
         // ── Section 1: Trending Now ──────────────────────
-        ExploreSectionHeader(
-          title: 'Trending Now',
-          subtitle: 'Most engaging posts right now',
-        ),
+        ExploreSectionHeader(title: 'Trending Now', subtitle: 'Most engaging posts right now'),
         const SizedBox(height: 14),
         TrendingHeroCarousel(
           posts: state.trendingPosts,
@@ -380,26 +357,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             offers: state.offers,
             onTap: (offer) {
               Haptics.selection();
-              context.push('/explore/post', extra: FeedPost(
-                id: offer.id,
-                brandId: '', 
-                brandName: offer.brandName,
-                brandAvatar: '',
-                mediaUrl: offer.mediaUrl,
-                title: offer.title,
-                description: offer.description,
-                timestamp: 'Limited Offer',
-              ));
+              context.push(
+                '/explore/post',
+                extra: FeedPost(
+                  id: offer.id,
+                  brandId: '',
+                  brandName: offer.brandName,
+                  brandAvatar: '',
+                  mediaUrl: offer.mediaUrl,
+                  title: offer.title,
+                  description: offer.description,
+                  timestamp: 'Limited Offer',
+                ),
+              );
             },
           ),
           const SizedBox(height: 28),
         ],
 
         // ── Section 4: Recommended For You ────────────────
-        ExploreSectionHeader(
-          title: 'Recommended For You',
-          subtitle: 'Based on your activity',
-        ),
+        ExploreSectionHeader(title: 'Recommended For You', subtitle: 'Based on your activity'),
         const SizedBox(height: 14),
         RecommendedForYouRow(
           posts: state.recommendedPosts,
@@ -410,8 +387,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         ),
 
         const SizedBox(height: 28),
-
-
 
         // ── Section 6: Explore Feed (masonry) ─────────────
         ExploreSectionHeader(
@@ -474,8 +449,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
           const SizedBox(height: 24),
           Center(
-            child: CircularProgressIndicator(
-              color: context.colors.primaryAccent,
+            child: CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
               strokeWidth: 2,
             ),
           ),
@@ -491,8 +466,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       child: Column(
         children: [
           const SizedBox(height: 48),
-          Icon(Icons.wifi_off_rounded,
-              size: 56, color: context.colors.textTertiary),
+          Icon(Icons.wifi_off_rounded, size: 56, color: context.colors.textTertiary),
           const SizedBox(height: 16),
           Text(
             'Couldn\'t load content',
@@ -504,8 +478,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           const SizedBox(height: 8),
           Text(
             'Check your connection and pull down to refresh.',
-            style: AppTypography.bodySmall
-                .copyWith(color: context.colors.textSecondary),
+            style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -539,18 +512,15 @@ class _LiveBadge extends StatefulWidget {
   State<_LiveBadge> createState() => _LiveBadgeState();
 }
 
-class _LiveBadgeState extends State<_LiveBadge>
-    with SingleTickerProviderStateMixin {
+class _LiveBadgeState extends State<_LiveBadge> with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
   late final Animation<double> _pulse;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
+    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))
+      ..repeat(reverse: true);
     _pulse = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut);
   }
 
@@ -569,9 +539,7 @@ class _LiveBadgeState extends State<_LiveBadge>
         decoration: BoxDecoration(
           color: const Color(0xFFFF3B30).withOpacity(0.15 + 0.08 * _pulse.value),
           borderRadius: BorderRadius.circular(100),
-          border: Border.all(
-            color: const Color(0xFFFF3B30).withOpacity(0.5),
-          ),
+          border: Border.all(color: const Color(0xFFFF3B30).withOpacity(0.5)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -581,8 +549,7 @@ class _LiveBadgeState extends State<_LiveBadge>
               height: 6,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFFF3B30)
-                    .withOpacity(0.6 + 0.4 * _pulse.value),
+                color: const Color(0xFFFF3B30).withOpacity(0.6 + 0.4 * _pulse.value),
               ),
             ),
             const SizedBox(width: 5),
@@ -639,14 +606,12 @@ class _AiBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.primaryAccent.withOpacity(0.12),
         borderRadius: BorderRadius.circular(100),
-        border: Border.all(
-            color: context.colors.primaryAccent.withOpacity(0.4)),
+        border: Border.all(color: context.colors.primaryAccent.withOpacity(0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.auto_awesome_rounded,
-              size: 9, color: context.colors.primaryAccent),
+          Icon(Icons.auto_awesome_rounded, size: 9, color: context.colors.primaryAccent),
           const SizedBox(width: 4),
           Text(
             'AI',

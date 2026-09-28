@@ -25,7 +25,7 @@ class BrandSpotlight extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildHeader(context, ),
+        _buildHeader(context),
         const SizedBox(height: AppSpacing.md),
         SizedBox(
           height: 240,
@@ -45,14 +45,17 @@ class BrandSpotlight extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, ) {
+  Widget _buildHeader(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
           Text(
             'Discover Brands',
-            style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+            style: AppTypography.titleSmall.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.colors.textPrimary,
+            ),
           ),
         ],
       ),
@@ -65,11 +68,7 @@ class _BrandCard extends StatelessWidget {
   final VoidCallback onFollow;
   final VoidCallback? onTap;
 
-  const _BrandCard({
-    required this.brand,
-    required this.onFollow,
-    this.onTap,
-  });
+  const _BrandCard({required this.brand, required this.onFollow, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +124,11 @@ class _BrandCard extends StatelessWidget {
                           placeholder: (context, url) => Container(color: context.colors.surface),
                           errorWidget: (context, url, error) => Container(
                             color: context.colors.surface,
-                            child: Icon(Icons.business, size: 16, color: context.colors.textTertiary),
+                            child: Icon(
+                              Icons.business,
+                              size: 16,
+                              color: context.colors.textTertiary,
+                            ),
                           ),
                         ),
                       ),
@@ -166,7 +169,9 @@ class _BrandCard extends StatelessWidget {
                         duration: const Duration(milliseconds: 250),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
                         decoration: BoxDecoration(
-                          color: brand.isFollowing ? Colors.transparent : context.colors.primaryAccent,
+                          color: brand.isFollowing
+                              ? Colors.transparent
+                              : context.colors.primaryAccent,
                           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
                           border: brand.isFollowing
                               ? Border.all(color: context.colors.border, width: 0.5)

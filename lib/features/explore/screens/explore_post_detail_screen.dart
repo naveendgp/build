@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../home/models/feed_models.dart';
 import '../../home/widgets/feed_card.dart';
@@ -13,13 +14,14 @@ import '../../comments/widgets/comment_sheet.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
 import '../../sharing/services/share_service.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class ExplorePostDetailScreen extends ConsumerStatefulWidget {
   final FeedPost? post;
   final String? postId;
 
-  const ExplorePostDetailScreen({super.key, this.post, this.postId}) 
-      : assert(post != null || postId != null, 'Must provide either post or postId');
+  const ExplorePostDetailScreen({super.key, this.post, this.postId})
+    : assert(post != null || postId != null, 'Must provide either post or postId');
 
   @override
   ConsumerState<ExplorePostDetailScreen> createState() => _ExplorePostDetailScreenState();
@@ -39,6 +41,9 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
     }
   }
 
+  /// The post could not be loaded: gone, or never there.
+  bool _isGone = false;
+
   Future<void> _fetchPost() async {
     setState(() => _isLoading = true);
     try {
@@ -51,6 +56,10 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
       }
     } catch (e) {
       debugPrint('Failed to fetch post: $e');
+      // A link to a post that is no longer there is the ordinary case here -
+      // archived, or taken down by the brand - so the screen says so rather
+      // than spinning forever.
+      if (mounted) setState(() => _isGone = true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -74,13 +83,16 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
       _post = _post!.copyWith(isBookmarked: !wasBookmarked);
     });
     ref.read(feedProvider.notifier).toggleBookmark(_post!.id);
-    
+
     if (!wasBookmarked) {
       ref.read(userProfileProvider.notifier).loadProfile();
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).clearSnackBars();
+      AppMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Saved to collections', style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+          content: Text(
+            'Saved to collections',
+            style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
+          ),
           backgroundColor: context.colors.surface,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
@@ -117,7 +129,14 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(10))),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.colors.border,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(24),
@@ -132,22 +151,32 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
               trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
               onTap: () async {
                 Navigator.pop(sheetContext);
-                final date = await showDatePicker(
-                  context: parentContext,
+                final date = await showAdaptiveDatePicker(
+                  parentContext,
                   initialDate: DateTime.now().add(const Duration(days: 1)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (date != null && parentContext.mounted) {
-                  final time = await showTimePicker(
-                    context: parentContext,
+                  final time = await showAdaptiveTimePicker(
+                    parentContext,
                     initialTime: TimeOfDay.now(),
                   );
                   if (time != null && parentContext.mounted) {
-                    final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                    final dateTime = DateTime(
+                      date.year,
+                      date.month,
+                      date.day,
+                      time.hour,
+                      time.minute,
+                    );
                     notifier.setReminder(_post!.id, dateTime);
-                    ScaffoldMessenger.of(parentContext).showSnackBar(
-                      SnackBar(content: Text('Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}')),
+                    AppMessenger.of(parentContext).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
+                        ),
+                      ),
                     );
                   }
                 }
@@ -160,7 +189,12 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
     );
   }
 
-  Widget _buildReminderOption(BuildContext context, String label, Duration duration, FeedNotifier notifier) {
+  Widget _buildReminderOption(
+    BuildContext context,
+    String label,
+    Duration duration,
+    FeedNotifier notifier,
+  ) {
     return ListTile(
       title: Text(label, style: AppTypography.bodyLarge),
       trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
@@ -168,9 +202,7 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
         Navigator.pop(context);
         final dateTime = DateTime.now().add(duration);
         notifier.setReminder(_post!.id, dateTime);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reminder set for $label')),
-        );
+        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
       },
     );
   }
@@ -184,20 +216,15 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
           // Blurred background image for premium feel
           if (_post != null)
             Positioned.fill(
-              child: CachedNetworkImage(
-                imageUrl: _post!.mediaUrl,
-                fit: BoxFit.cover,
-              ),
+              child: CachedNetworkImage(imageUrl: _post!.mediaUrl, fit: BoxFit.cover),
             ),
           Positioned.fill(
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-              child: Container(
-                color: Colors.black.withValues(alpha: 0.65),
-              ),
+              child: Container(color: Colors.black.withValues(alpha: 0.65)),
             ),
           ),
-          
+
           // Main Content
           SafeArea(
             bottom: false,
@@ -217,7 +244,11 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
                           ),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                          child: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ),
                       ),
                       const Spacer(),
@@ -235,11 +266,43 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
                     ],
                   ),
                 ),
-                
+
                 // The immersive premium post view
                 Expanded(
-                  child: _isLoading || _post == null
-                      ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                  child: _isGone || (!_isLoading && _post == null)
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 40),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.link_off_rounded, size: 48, color: Colors.white54),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'This post is no longer available',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'The brand may have removed it.',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : _isLoading || _post == null
+                      ? const Center(
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
                       : SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
                           child: Padding(

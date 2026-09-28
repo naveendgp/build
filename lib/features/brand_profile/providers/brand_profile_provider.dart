@@ -74,7 +74,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
     try {
       final isMe = brandId == 'me';
       final endpoint = isMe ? '/brand/profile' : '/brand/$brandId';
-      
+
       final profileRes = await apiClient.dio.get(endpoint);
       final profileData = Map<String, dynamic>.from(profileRes.data);
       if (isMe) {
@@ -87,30 +87,36 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
           } catch (_) {}
         }
       }
-      
+
       final postsEndpoint = isMe ? '/brand/me/posts' : '/brand/$brandId/posts';
       final postsRes = await apiClient.dio.get(postsEndpoint);
-      
+
       final profile = BrandProfile.fromJson(profileData);
       final quicksite = BrandQuicksiteData.fromJson(profileData);
-      
+
       List<dynamic> parseList(dynamic data) {
         if (data == null) return [];
         if (data is List) return data;
         return [];
       }
-      
+
       final galleryRaw = parseList(profileData['gallery']);
       final gallery = galleryRaw.map((e) => BrandGalleryItem.fromJson(e)).toList();
-      
+
       final postsRaw = parseList(postsRes.data);
       final posts = postsRaw.map((e) => BrandPost.fromJson(e)).toList();
 
-      final reviews = parseList(profileData['reviews']).map((e) => BrandReview.fromJson(e)).toList();
-      final testimonials = parseList(profileData['testimonials']).map((e) => BrandTestimonial.fromJson(e)).toList();
+      final reviews = parseList(
+        profileData['reviews'],
+      ).map((e) => BrandReview.fromJson(e)).toList();
+      final testimonials = parseList(
+        profileData['testimonials'],
+      ).map((e) => BrandTestimonial.fromJson(e)).toList();
       BrandAnalytics? analytics;
       if (isMe) {
-        analytics = profileData['analytics'] != null ? BrandAnalytics.fromJson(profileData['analytics']) : MockBrandData.getAnalytics();
+        analytics = profileData['analytics'] != null
+            ? BrandAnalytics.fromJson(profileData['analytics'])
+            : MockBrandData.getAnalytics();
       }
 
       state = state.copyWith(
@@ -126,10 +132,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       );
     } catch (e) {
       debugPrint('BrandProfile API Error: $e');
-      state = state.copyWith(
-        loadState: BrandLoadState.error,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(loadState: BrandLoadState.error, errorMessage: e.toString());
     }
   }
 
@@ -138,16 +141,14 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
   }
 
   void removePost(String postId) {
-    state = state.copyWith(
-      posts: state.posts.where((p) => p.id != postId).toList(),
-    );
+    state = state.copyWith(posts: state.posts.where((p) => p.id != postId).toList());
   }
 
   Future<void> toggleFollow() async {
     if (state.profile == null) return;
     final p = state.profile!;
     final newFollowing = !p.isFollowing;
-    
+
     // Optimistic update
     state = state.copyWith(
       profile: p.copyWith(
@@ -166,16 +167,56 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       // Revert on error
       if (mounted) {
         state = state.copyWith(
-          profile: p.copyWith(
-            isFollowing: !newFollowing,
-            followerCount: p.followerCount,
-          ),
+          profile: p.copyWith(isFollowing: !newFollowing, followerCount: p.followerCount),
         );
       }
     }
   }
 
-  Future<bool> uploadGalleryImage(File file) async {
+  /// The bell: mutes or unmutes this brand's new posts for whoever is
+  /// signed in. Personal accounts and brands that follow brands both use it.
+  Future<void> togglePostNotifications() async {
+    final p = state.profile;
+    if (p == null || !p.isFollowing) return;
+    final next = !p.notifyOnPosts;
+
+    state = state.copyWith(profile: p.copyWith(notifyOnPosts: next));
+    try {
+      await apiClient.dio.patch('/follow/${p.id}/notifications', data: {'notify': next});
+    } catch (e) {
+      if (mounted) {
+        state = state.copyWith(profile: p.copyWith(notifyOnPosts: !next));
+      }
+    }
+  }
+
+  /// Adds a photo to the gallery. The caption is asked for before the upload
+  /// starts, so a photo never sits in the grid without one.
+  /// Rewrites a photo's caption. The grid and the viewer both read it, so the
+  /// item is swapped in place rather than reloading the whole brand.
+  Future<bool> updateGalleryDescription(String itemId, String description) async {
+    final previous = state.gallery;
+    if (previous.isEmpty) return false;
+    final updated = [
+      for (final item in previous)
+        if (item.id == itemId) item.copyWith(description: description.trim()) else item,
+    ];
+    state = state.copyWith(gallery: updated);
+
+    try {
+      await apiClient.dio.patch(
+        '/gallery/$itemId/description',
+        data: {'description': description.trim()},
+      );
+      return true;
+    } catch (e) {
+      debugPrint('Gallery description error: $e');
+      if (mounted) state = state.copyWith(gallery: previous);
+      return false;
+    }
+  }
+
+  Future<bool> uploadGalleryImage(File file, {String description = ''}) async {
     try {
       final filename = file.path.split('/').last;
 
@@ -201,10 +242,14 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
         return false;
       }
 
-      final galleryRes = await apiClient.dio.post('/gallery', data: {
-        'url': uploadedUrl,
-        'type': 'IMAGE',
-      });
+      final galleryRes = await apiClient.dio.post(
+        '/gallery',
+        data: {
+          'url': uploadedUrl,
+          'type': 'IMAGE',
+          if (description.trim().isNotEmpty) 'description': description.trim(),
+        },
+      );
 
       if (galleryRes.statusCode == 200 || galleryRes.statusCode == 201) {
         // Refresh gallery by reloading brand
@@ -212,13 +257,24 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
         state = state.copyWith(lastActionError: null);
         return true;
       }
-      debugPrint('Gallery upload error: gallery post status ${galleryRes.statusCode} ${galleryRes.data}');
+      debugPrint(
+        'Gallery upload error: gallery post status ${galleryRes.statusCode} ${galleryRes.data}',
+      );
       state = state.copyWith(lastActionError: _friendlyErrorMessage(galleryRes.statusCode));
       return false;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       debugPrint('Gallery upload error: $statusCode ${e.response?.data ?? e.message}');
-      state = state.copyWith(lastActionError: _friendlyErrorMessage(statusCode, isTimeout: e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout, isConnectionError: e.type == DioExceptionType.connectionError));
+      state = state.copyWith(
+        lastActionError: _friendlyErrorMessage(
+          statusCode,
+          isTimeout:
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.receiveTimeout,
+          isConnectionError: e.type == DioExceptionType.connectionError,
+        ),
+      );
       return false;
     } catch (e) {
       debugPrint('Gallery upload error: $e');
@@ -230,7 +286,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
   Future<bool> updateProfileImage(File file, {required bool isCover}) async {
     try {
       final filename = file.path.split('/').last;
-      
+
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
@@ -269,13 +325,24 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
         }
         return true;
       }
-      debugPrint('Profile image upload error: profile update status ${updateRes.statusCode} ${updateRes.data}');
+      debugPrint(
+        'Profile image upload error: profile update status ${updateRes.statusCode} ${updateRes.data}',
+      );
       state = state.copyWith(lastActionError: _friendlyErrorMessage(updateRes.statusCode));
       return false;
     } on DioException catch (e) {
       final statusCode = e.response?.statusCode;
       debugPrint('Profile image upload error: $statusCode ${e.response?.data ?? e.message}');
-      state = state.copyWith(lastActionError: _friendlyErrorMessage(statusCode, isTimeout: e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.sendTimeout || e.type == DioExceptionType.receiveTimeout, isConnectionError: e.type == DioExceptionType.connectionError));
+      state = state.copyWith(
+        lastActionError: _friendlyErrorMessage(
+          statusCode,
+          isTimeout:
+              e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.receiveTimeout,
+          isConnectionError: e.type == DioExceptionType.connectionError,
+        ),
+      );
       return false;
     } catch (e) {
       debugPrint('Profile image upload error: $e');
@@ -286,16 +353,27 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
 
   /// Maps technical failures to short, user-facing copy. Full technical
   /// detail is always logged via debugPrint above for diagnosis.
-  String _friendlyErrorMessage(int? statusCode, {bool isTimeout = false, bool isConnectionError = false}) {
-    if (isConnectionError) return 'No internet connection. Please check your network and try again.';
+  String _friendlyErrorMessage(
+    int? statusCode, {
+    bool isTimeout = false,
+    bool isConnectionError = false,
+  }) {
+    if (isConnectionError)
+      return 'No internet connection. Please check your network and try again.';
     if (isTimeout) return 'The upload timed out. Please try again.';
     if (statusCode == 413) return 'That image is too large. Please choose a smaller photo.';
-    if (statusCode == 401 || statusCode == 403) return 'Your session has expired. Please log in again.';
-    if (statusCode != null && statusCode >= 500) return 'Our servers are having trouble right now. Please try again shortly.';
+    if (statusCode == 401 || statusCode == 403)
+      return 'Your session has expired. Please log in again.';
+    if (statusCode != null && statusCode >= 500)
+      return 'Our servers are having trouble right now. Please try again shortly.';
     return 'Something went wrong. Please try again.';
   }
 
-  Future<bool> updateBrandDetails({String? bio, Map<String, dynamic>? quicksite, List<String>? tags}) async {
+  Future<bool> updateBrandDetails({
+    String? bio,
+    Map<String, dynamic>? quicksite,
+    List<String>? tags,
+  }) async {
     try {
       final updateData = <String, dynamic>{};
       if (bio != null) updateData['bio'] = bio;
@@ -309,7 +387,9 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
         if (state.profile != null) {
           state = state.copyWith(
             profile: state.profile!.copyWith(bio: bio, tags: tags),
-            quicksite: quicksite != null ? BrandQuicksiteData.fromJson({'quicksite': quicksite}) : state.quicksite,
+            quicksite: quicksite != null
+                ? BrandQuicksiteData.fromJson({'quicksite': quicksite})
+                : state.quicksite,
           );
         }
         return true;
@@ -322,7 +402,8 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
   }
 }
 
-final brandProfileProvider = StateNotifierProvider.autoDispose.family<BrandProfileNotifier, BrandProfileState, String>((ref, id) {
-  final apiClient = ref.watch(apiClientProvider);
-  return BrandProfileNotifier(apiClient)..loadBrand(id);
-});
+final brandProfileProvider = StateNotifierProvider.autoDispose
+    .family<BrandProfileNotifier, BrandProfileState, String>((ref, id) {
+      final apiClient = ref.watch(apiClientProvider);
+      return BrandProfileNotifier(apiClient)..loadBrand(id);
+    });

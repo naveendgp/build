@@ -12,11 +12,7 @@ class LimitedOffersRow extends StatelessWidget {
   final List<ExploreOffer> offers;
   final ValueChanged<ExploreOffer> onTap;
 
-  const LimitedOffersRow({
-    super.key,
-    required this.offers,
-    required this.onTap,
-  });
+  const LimitedOffersRow({super.key, required this.offers, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -28,10 +24,8 @@ class LimitedOffersRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         itemCount: offers.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) => _OfferCard(
-          offer: offers[index],
-          onTap: () => onTap(offers[index]),
-        ),
+        itemBuilder: (context, index) =>
+            _OfferCard(offer: offers[index], onTap: () => onTap(offers[index])),
       ),
     );
   }
@@ -94,10 +88,7 @@ class _OfferCard extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black.withOpacity(0.15),
-                        Colors.black.withOpacity(0.80),
-                      ],
+                      colors: [Colors.black.withOpacity(0.15), Colors.black.withOpacity(0.80)],
                     ),
                   ),
                 ),

@@ -11,30 +11,49 @@ enum FormFieldType {
 
   String toApi() {
     switch (this) {
-      case FormFieldType.shortText: return 'SHORT_TEXT';
-      case FormFieldType.longText: return 'LONG_TEXT';
-      case FormFieldType.email: return 'EMAIL';
-      case FormFieldType.phone: return 'PHONE';
-      case FormFieldType.dropdown: return 'DROPDOWN';
-      case FormFieldType.checkbox: return 'CHECKBOX';
-      case FormFieldType.radio: return 'RADIO';
-      case FormFieldType.appointment: return 'APPOINTMENT';
-      case FormFieldType.storeLocator: return 'STORE_LOCATOR';
+      case FormFieldType.shortText:
+        return 'SHORT_TEXT';
+      case FormFieldType.longText:
+        return 'LONG_TEXT';
+      case FormFieldType.email:
+        return 'EMAIL';
+      case FormFieldType.phone:
+        return 'PHONE';
+      case FormFieldType.dropdown:
+        return 'DROPDOWN';
+      case FormFieldType.checkbox:
+        return 'CHECKBOX';
+      case FormFieldType.radio:
+        return 'RADIO';
+      case FormFieldType.appointment:
+        return 'APPOINTMENT';
+      case FormFieldType.storeLocator:
+        return 'STORE_LOCATOR';
     }
   }
 
   static FormFieldType fromApi(String value) {
     switch (value) {
-      case 'SHORT_TEXT': return FormFieldType.shortText;
-      case 'LONG_TEXT': return FormFieldType.longText;
-      case 'EMAIL': return FormFieldType.email;
-      case 'PHONE': return FormFieldType.phone;
-      case 'DROPDOWN': return FormFieldType.dropdown;
-      case 'CHECKBOX': return FormFieldType.checkbox;
-      case 'RADIO': return FormFieldType.radio;
-      case 'APPOINTMENT': return FormFieldType.appointment;
-      case 'STORE_LOCATOR': return FormFieldType.storeLocator;
-      default: return FormFieldType.shortText;
+      case 'SHORT_TEXT':
+        return FormFieldType.shortText;
+      case 'LONG_TEXT':
+        return FormFieldType.longText;
+      case 'EMAIL':
+        return FormFieldType.email;
+      case 'PHONE':
+        return FormFieldType.phone;
+      case 'DROPDOWN':
+        return FormFieldType.dropdown;
+      case 'CHECKBOX':
+        return FormFieldType.checkbox;
+      case 'RADIO':
+        return FormFieldType.radio;
+      case 'APPOINTMENT':
+        return FormFieldType.appointment;
+      case 'STORE_LOCATOR':
+        return FormFieldType.storeLocator;
+      default:
+        return FormFieldType.shortText;
     }
   }
 }
@@ -82,13 +101,7 @@ class FormFieldDefinition {
   }
 }
 
-enum FormBuilderStep {
-  intro,
-  userInfo,
-  customQuestions,
-  privacy,
-  review,
-}
+enum FormBuilderStep { intro, userInfo, customQuestions, privacy, review }
 
 class FormTemplate {
   final String id;
@@ -129,7 +142,11 @@ class FormTemplate {
       viewCount: json['viewCount'] ?? 0,
       isArchived: json['isArchived'] == true || json['isArchived'] == 'true',
       postTitle: json['post']?['title'],
-      fields: (json['fields'] as List<dynamic>?)?.map((e) => FormFieldDefinition.fromJson(e)).toList() ?? [],
+      fields:
+          (json['fields'] as List<dynamic>?)
+              ?.map((e) => FormFieldDefinition.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 

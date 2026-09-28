@@ -374,7 +374,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         final item = state.media[i];
         final isVideo = item.type == MediaType.video;
         
-        final fileToUpload = (item.type == MediaType.image && item.transform != null && item.previewSize != null)
+        final fileToUpload = (item.type == MediaType.image &&
+                item.transform != null &&
+                item.previewSize != null &&
+                !_isIdentity(item.transform!))
             ? await _applyTransformToFile(item)
             : item.file;
 
@@ -567,6 +570,24 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   }
 
   // ─── Image Transform / Crop ───────────────────────────────────────────────
+
+  /// Whether the preview transform still shows the whole picture.
+  ///
+  /// Any touch on the preview records a transform, including a nudge that
+  /// springs back. Rasterising for one of those would square-crop a picture
+  /// nobody asked to crop — a 736x1104 poster came back 1080x1080 with its
+  /// heading clipped. The original file is sent instead; the backend fits
+  /// rather than crops, so the whole picture survives inside the square, and
+  /// cropping stays opt-in through a real zoom or pan.
+  static bool _isIdentity(Matrix4 transform) {
+    const epsilon = 0.01;
+    final m = transform.storage;
+    final identity = Matrix4.identity().storage;
+    for (var i = 0; i < 16; i++) {
+      if ((m[i] - identity[i]).abs() > epsilon) return false;
+    }
+    return true;
+  }
 
   /// Renders the user's zoom+pan transform onto a [size x size] canvas and
   /// saves the result as a JPEG temp file. This makes the uploaded image match

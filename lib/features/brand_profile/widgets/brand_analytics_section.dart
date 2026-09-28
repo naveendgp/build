@@ -16,10 +16,7 @@ class BrandAnalyticsSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Performance Overview',
-            style: AppTypography.titleLarge,
-          ),
+          Text('Performance Overview', style: AppTypography.titleLarge),
           const SizedBox(height: AppSpacing.md),
           GridView.count(
             crossAxisCount: 2,
@@ -29,17 +26,42 @@ class BrandAnalyticsSection extends StatelessWidget {
             crossAxisSpacing: AppSpacing.md,
             childAspectRatio: 1.3,
             children: [
-              _buildStatCard(context, 'Impressions', _formatNumber(analytics.impressions), Icons.visibility_rounded, isPositive: true, trend: '+12.4%'),
-              _buildStatCard(context, 'Engagement', '${analytics.avgEngagement}%', Icons.favorite_rounded, isPositive: true, trend: '+2.1%'),
-              _buildStatCard(context, 'Saves', _formatNumber(analytics.totalSaves), Icons.bookmark_rounded, isPositive: false, trend: '-1.2%'),
-              _buildStatCard(context, 'CTR', '${analytics.ctr}%', Icons.touch_app_rounded, isPositive: true, trend: '+0.8%'),
+              _buildStatCard(
+                context,
+                'Impressions',
+                _formatNumber(analytics.impressions),
+                Icons.visibility_rounded,
+                isPositive: true,
+                trend: '+12.4%',
+              ),
+              _buildStatCard(
+                context,
+                'Engagement',
+                '${analytics.avgEngagement}%',
+                Icons.favorite_rounded,
+                isPositive: true,
+                trend: '+2.1%',
+              ),
+              _buildStatCard(
+                context,
+                'Saves',
+                _formatNumber(analytics.totalSaves),
+                Icons.bookmark_rounded,
+                isPositive: false,
+                trend: '-1.2%',
+              ),
+              _buildStatCard(
+                context,
+                'CTR',
+                '${analytics.ctr}%',
+                Icons.touch_app_rounded,
+                isPositive: true,
+                trend: '+0.8%',
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          Text(
-            'Audience Insights',
-            style: AppTypography.titleLarge,
-          ),
+          Text('Audience Insights', style: AppTypography.titleLarge),
           const SizedBox(height: AppSpacing.md),
           _buildAudienceChart(context),
         ],
@@ -47,7 +69,14 @@ class BrandAnalyticsSection extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String title, String value, IconData icon, {required bool isPositive, required String trend}) {
+  Widget _buildStatCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon, {
+    required bool isPositive,
+    required String trend,
+  }) {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
@@ -66,7 +95,9 @@ class BrandAnalyticsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
                 decoration: BoxDecoration(
-                  color: isPositive ? context.colors.success.withValues(alpha: 0.1) : context.colors.error.withValues(alpha: 0.1),
+                  color: isPositive
+                      ? context.colors.success.withValues(alpha: 0.1)
+                      : context.colors.error.withValues(alpha: 0.1),
                   borderRadius: AppSpacing.borderRadiusSm,
                 ),
                 child: Text(
@@ -81,14 +112,8 @@ class BrandAnalyticsSection extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                value,
-                style: AppTypography.headlineMedium,
-              ),
-              Text(
-                title,
-                style: AppTypography.bodySmall,
-              ),
+              Text(value, style: AppTypography.headlineMedium),
+              Text(title, style: AppTypography.bodySmall),
             ],
           ),
         ],
@@ -117,10 +142,7 @@ class BrandAnalyticsSection extends StatelessWidget {
                   height: 150,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF7C5CFF),
-                      width: 20,
-                    ),
+                    border: Border.all(color: const Color(0xFF7C5CFF), width: 20),
                   ),
                 ),
                 Container(
@@ -129,14 +151,8 @@ class BrandAnalyticsSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border(
-                      top: BorderSide(
-                        color: context.colors.secondaryAccent,
-                        width: 20,
-                      ),
-                      right: BorderSide(
-                        color: context.colors.secondaryAccent,
-                        width: 20,
-                      ),
+                      top: BorderSide(color: context.colors.secondaryAccent, width: 20),
+                      right: BorderSide(color: context.colors.secondaryAccent, width: 20),
                     ),
                   ),
                 ),
@@ -154,9 +170,24 @@ class BrandAnalyticsSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildLegendItem(context, '18-24', const Color(0xFF7C5CFF), '${(analytics.audienceSplit['18-24'] ?? 0) * 100}%'),
-              _buildLegendItem(context, '25-34', context.colors.secondaryAccent, '${(analytics.audienceSplit['25-34'] ?? 0) * 100}%'),
-              _buildLegendItem(context, '35-44', context.colors.warning, '${(analytics.audienceSplit['35-44'] ?? 0) * 100}%'),
+              _buildLegendItem(
+                context,
+                '18-24',
+                const Color(0xFF7C5CFF),
+                '${(analytics.audienceSplit['18-24'] ?? 0) * 100}%',
+              ),
+              _buildLegendItem(
+                context,
+                '25-34',
+                context.colors.secondaryAccent,
+                '${(analytics.audienceSplit['25-34'] ?? 0) * 100}%',
+              ),
+              _buildLegendItem(
+                context,
+                '35-44',
+                context.colors.warning,
+                '${(analytics.audienceSplit['35-44'] ?? 0) * 100}%',
+              ),
             ],
           ),
         ],
@@ -170,10 +201,7 @@ class BrandAnalyticsSection extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: AppSpacing.xs),
         Column(

@@ -10,6 +10,10 @@ class LeadSubmission {
   final String? contactNumber;
   final double qualityScore;
 
+  /// A lead is archived, never deleted - the answers belong to the person who
+  /// sent them, so nothing in the app can destroy one.
+  final bool isArchived;
+
   const LeadSubmission({
     required this.id,
     required this.formId,
@@ -21,6 +25,7 @@ class LeadSubmission {
     this.email,
     this.contactNumber,
     this.qualityScore = 0,
+    this.isArchived = false,
   });
 
   factory LeadSubmission.fromJson(Map<String, dynamic> json) {
@@ -36,6 +41,7 @@ class LeadSubmission {
       email: user['email'],
       contactNumber: user['contactNumber'],
       qualityScore: (json['qualityScore'] as num?)?.toDouble() ?? 0,
+      isArchived: json['isArchived'] == true,
     );
   }
 }
@@ -77,11 +83,7 @@ class BrandLeadStats {
   final int totalSubmissions;
   final int formCount;
 
-  const BrandLeadStats({
-    required this.posts,
-    this.totalSubmissions = 0,
-    this.formCount = 0,
-  });
+  const BrandLeadStats({required this.posts, this.totalSubmissions = 0, this.formCount = 0});
 
   factory BrandLeadStats.fromJson(Map<String, dynamic> json) {
     return BrandLeadStats(

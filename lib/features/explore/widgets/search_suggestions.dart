@@ -32,10 +32,7 @@ class SearchSuggestions extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.colors.card.withValues(alpha: 0.85),
             borderRadius: AppSpacing.borderRadiusXl,
-            border: Border.all(
-              color: context.colors.borderLight,
-              width: 1,
-            ),
+            border: Border.all(color: context.colors.borderLight, width: 1),
           ),
           child: AnimatedSwitcher(
             duration: Duration(milliseconds: 300),
@@ -51,7 +48,8 @@ class SearchSuggestions extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (recentSearches.isNotEmpty) ...[
-                    _buildSectionHeader(context, 
+                    _buildSectionHeader(
+                      context,
                       title: 'Recent Searches',
                       trailing: GestureDetector(
                         onTap: onClear,
@@ -68,9 +66,7 @@ class SearchSuggestions extends StatelessWidget {
                       (query) => _RecentSearchItem(
                         query: query,
                         onTap: () => onSelect(query),
-                        onRemove: onRemoveRecent != null
-                            ? () => onRemoveRecent!(query)
-                            : null,
+                        onRemove: onRemoveRecent != null ? () => onRemoveRecent!(query) : null,
                       ),
                     ),
                     _buildDivider(context),
@@ -94,17 +90,9 @@ class SearchSuggestions extends StatelessWidget {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, {
-    required String title,
-    Widget? trailing,
-  }) {
+  Widget _buildSectionHeader(BuildContext context, {required String title, Widget? trailing}) {
     return Padding(
-      padding: EdgeInsets.only(
-        left: 16,
-        top: 20,
-        bottom: 12,
-        right: 16,
-      ),
+      padding: EdgeInsets.only(left: 16, top: 20, bottom: 12, right: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -125,10 +113,7 @@ class SearchSuggestions extends StatelessWidget {
   Widget _buildDivider(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-      child: Divider(
-        height: 1,
-        color: context.colors.border,
-      ),
+      child: Divider(height: 1, color: context.colors.border),
     );
   }
 }
@@ -139,11 +124,7 @@ class _RecentSearchItem extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onRemove;
 
-  const _RecentSearchItem({
-    required this.query,
-    required this.onTap,
-    this.onRemove,
-  });
+  const _RecentSearchItem({required this.query, required this.onTap, this.onRemove});
 
   @override
   Widget build(BuildContext context) {
@@ -156,18 +137,12 @@ class _RecentSearchItem extends StatelessWidget {
           padding: EdgeInsets.only(left: 16, right: 8),
           child: Row(
             children: [
-              Icon(
-                Icons.history_rounded,
-                size: 18,
-                color: context.colors.textTertiary,
-              ),
+              Icon(Icons.history_rounded, size: 18, color: context.colors.textTertiary),
               SizedBox(width: AppSpacing.sm + 4),
               Expanded(
                 child: Text(
                   query,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: context.colors.textPrimary,
-                  ),
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -178,11 +153,7 @@ class _RecentSearchItem extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.xs),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 16,
-                      color: context.colors.textTertiary,
-                    ),
+                    child: Icon(Icons.close_rounded, size: 16, color: context.colors.textTertiary),
                   ),
                 ),
             ],
@@ -198,10 +169,7 @@ class _SuggestionItem extends StatelessWidget {
   final SearchSuggestion suggestion;
   final VoidCallback onTap;
 
-  const _SuggestionItem({
-    required this.suggestion,
-    required this.onTap,
-  });
+  const _SuggestionItem({required this.suggestion, required this.onTap});
 
   IconData _iconForType(SuggestionType type) {
     switch (type) {
@@ -252,9 +220,7 @@ class _SuggestionItem extends StatelessWidget {
                   children: [
                     Text(
                       suggestion.text,
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: context.colors.textPrimary,
-                      ),
+                      style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -271,11 +237,7 @@ class _SuggestionItem extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.north_west_rounded,
-                size: 14,
-                color: context.colors.textTertiary,
-              ),
+              Icon(Icons.north_west_rounded, size: 14, color: context.colors.textTertiary),
             ],
           ),
         ),

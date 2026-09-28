@@ -19,6 +19,7 @@ import '../../core/network/api_client.dart';
 import '../messaging/screens/chat_screen.dart';
 import '../auth/providers/auth_provider.dart';
 import '../home/widgets/bottom_nav_dock.dart';
+import '../../core/utils/app_messenger.dart';
 
 class BrandProfileScreen extends ConsumerStatefulWidget {
   final String brandId;
@@ -74,7 +75,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
         (state.loadState == BrandLoadState.initial || state.loadState == BrandLoadState.loading)) {
       return Scaffold(
         backgroundColor: context.colors.background,
-        body: Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
+        body: Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+          ),
+        ),
       );
     }
 
@@ -88,7 +93,8 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Text(
-              state.errorMessage ?? 'Failed to load brand profile. Please check your connection or login status.',
+              state.errorMessage ??
+                  'Failed to load brand profile. Please check your connection or login status.',
               style: const TextStyle(color: Colors.red),
               textAlign: TextAlign.center,
             ),
@@ -100,13 +106,15 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     if (state.profile == null) {
       return Scaffold(
         backgroundColor: context.colors.background,
-        body: Center(child: Text('Brand not found', style: TextStyle(color: Colors.white))),
+        body: Center(
+          child: Text('Brand not found', style: TextStyle(color: Colors.white)),
+        ),
       );
     }
 
     final profile = state.profile!;
     final showQuicksite = state.quicksite != null;
-    
+
     final authState = ref.watch(authProvider);
     final isBrand = authState.loggedInRole == UserRole.brand;
 
@@ -116,18 +124,19 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
 
     final tabViews = <Widget>[
       _buildTabWrapper(BrandPostsTab(posts: state.posts, profile: profile)),
-      _buildTabWrapper(BrandGalleryTab(
-        gallery: state.gallery,
-        isOwner: profile.isOwner,
-      )),
+      _buildTabWrapper(BrandGalleryTab(gallery: state.gallery, isOwner: profile.isOwner)),
     ];
     if (showQuicksite) {
-      tabViews.add(_buildTabWrapper(BrandQuicksiteTab(
-        quicksiteData: state.quicksite!,
-        gstNumber: profile.gstNumber,
-        isOwner: profile.isOwner,
-        onEdit: () => context.push('/settings/brand-profile'),
-      )));
+      tabViews.add(
+        _buildTabWrapper(
+          BrandQuicksiteTab(
+            quicksiteData: state.quicksite!,
+            gstNumber: profile.gstNumber,
+            isOwner: profile.isOwner,
+            onEdit: () => context.push('/settings/brand-profile'),
+          ),
+        ),
+      );
     }
     tabViews.add(_buildTabWrapper(BrandReviewsTab(brandId: profile.id, isOwner: profile.isOwner)));
 
@@ -148,6 +157,9 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                         BrandActionButtons(
                           profile: profile,
                           isBrand: isBrand,
+                          onNotificationsToggled: () => ref
+                              .read(brandProfileProvider(widget.brandId).notifier)
+                              .togglePostNotifications(),
                           isOwner: profile.isOwner,
                           onEditProfileTap: () {
                             Haptics.selection();
@@ -163,7 +175,10 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                           onMessageTap: () async {
                             try {
                               final api = ref.read(apiClientProvider);
-                              final res = await api.dio.post('/conversations/start', data: {'brandId': profile.id});
+                              final res = await api.dio.post(
+                                '/conversations/start',
+                                data: {'brandId': profile.id},
+                              );
                               final conversationId = res.data['id'].toString();
                               if (!context.mounted) return;
                               Navigator.of(context).push(
@@ -173,8 +188,10 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                               );
                             } catch (e) {
                               if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Failed to start conversation. Please try again.')),
+                              AppMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to start conversation. Please try again.'),
+                                ),
                               );
                             }
                           },
@@ -186,12 +203,12 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                                 await launchUrl(uri, mode: LaunchMode.externalApplication);
                               } else {
                                 if (!context.mounted) return;
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                AppMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Could not launch website.')),
                                 );
                               }
                             } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                              AppMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('No website listed for this brand.')),
                               );
                             }
@@ -215,7 +232,7 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                               tabs: tabs,
                             ),
                           );
-                        }
+                        },
                       ),
                     ),
                   ),
@@ -226,39 +243,42 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                 children: tabViews,
               ),
             ),
-            
+
             // Custom Back Button Overlay
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 20,
-            child: GestureDetector(
-              onTap: () {
-                Haptics.selection();
-                context.pop();
-              },
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    color: context.colors.surface.withValues(alpha: 0.5),
-                    child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 20,
+              child: GestureDetector(
+                onTap: () {
+                  Haptics.selection();
+                  context.pop();
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      color: context.colors.surface.withValues(alpha: 0.5),
+                      child: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 24),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // Bottom Nav Dock
-          if (profile.isOwner)
-            Positioned(
-              bottom: 0, left: 0, right: 0,
-              child: BottomNavDock(currentIndex: 4, onTap: _navTo),
-            ),
-        ],
+            // Bottom Nav Dock
+            if (profile.isOwner)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: BottomNavDock(currentIndex: 4, onTap: _navTo),
+              ),
+          ],
+        ),
       ),
-    ));
+    );
   }
 
   // Wraps tab content in a SingleChildScrollView so NestedScrollView works correctly with variable heights
@@ -273,13 +293,11 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                 top: AppSpacing.lg,
                 bottom: MediaQuery.of(context).padding.bottom + 100, // Space for floating dock
               ),
-              sliver: SliverToBoxAdapter(
-                child: child,
-              ),
+              sliver: SliverToBoxAdapter(child: child),
             ),
           ],
         );
-      }
+      },
     );
   }
 }
@@ -296,10 +314,7 @@ class _BrandTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: context.colors.background,
-      child: child,
-    );
+    return Container(color: context.colors.background, child: child);
   }
 
   @override
