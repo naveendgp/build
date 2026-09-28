@@ -14,12 +14,14 @@ class FeedState {
   final List<FeedPost> posts;
   final FeedViewMode viewMode;
   final FeedLoadState loadState;
+  final bool isLoadingMore;
   final String? nextCursor;
 
   const FeedState({
     this.posts = const [],
     this.viewMode = FeedViewMode.single,
     this.loadState = FeedLoadState.initial,
+    this.isLoadingMore = false,
     this.nextCursor,
   });
 
@@ -27,12 +29,14 @@ class FeedState {
     List<FeedPost>? posts,
     FeedViewMode? viewMode,
     FeedLoadState? loadState,
+    bool? isLoadingMore,
     String? nextCursor,
   }) {
     return FeedState(
       posts: posts ?? this.posts,
       viewMode: viewMode ?? this.viewMode,
       loadState: loadState ?? this.loadState,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       nextCursor: nextCursor ?? this.nextCursor,
     );
   }
@@ -90,19 +94,32 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   Future<void> loadMore() async {
-    if (state.loadState == FeedLoadState.loading || state.nextCursor == null) return;
+    if (state.isLoadingMore ||
+        state.loadState == FeedLoadState.loading ||
+        state.nextCursor == null) {
+      return;
+    }
+    final requestCursor = state.nextCursor;
+    state = state.copyWith(isLoadingMore: true);
     try {
-      final res = await _apiClient.dio.get('/feed', queryParameters: {'cursor': state.nextCursor});
+      final res = await _apiClient.dio.get('/feed', queryParameters: {'cursor': requestCursor});
       if (res.statusCode == 200) {
         final dataList = res.data['data'] as List;
         final nextCursor = res.data['nextCursor'] as String?;
         final morePosts = dataList.map((j) => FeedPost.fromJson(j)).toList();
+        // Guard against duplicates in case the same page is delivered twice.
+        final existingIds = state.posts.map((p) => p.id).toSet();
+        final deduped = morePosts.where((p) => !existingIds.contains(p.id)).toList();
         state = state.copyWith(
-          posts: [...state.posts, ...morePosts],
+          posts: [...state.posts, ...deduped],
           nextCursor: nextCursor,
+          isLoadingMore: false,
         );
+      } else {
+        state = state.copyWith(isLoadingMore: false);
       }
     } catch (e) {
+      state = state.copyWith(isLoadingMore: false);
       // Ignore or show small toast
     }
   }
@@ -141,7 +158,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
         isLiking = !p.isLiked;
         return p.copyWith(
           isLiked: isLiking,
-          likeCount: isLiking ? p.likeCount + 1 : p.likeCount - 1,
+          likeCount: isLiking ? p.likeCount + 1 : (p.likeCount - 1).clamp(0, 1 << 31),
         );
       }
       return p;

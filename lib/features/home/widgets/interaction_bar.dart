@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/haptics.dart';
 
@@ -38,7 +39,7 @@ class InteractionBar extends StatelessWidget {
     return Row(
       children: [
         _ActionButton(
-          icon: isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          icon: isLiked ? AppIcons.like : AppIcons.likeOutline,
           color: isLiked ? context.colors.primaryAccent : context.colors.textPrimary,
           label: _formatCount(likeCount),
           onTap: onLike,
@@ -46,28 +47,28 @@ class InteractionBar extends StatelessWidget {
         ),
         const SizedBox(width: 16),
         _ActionButton(
-          icon: Icons.chat_bubble_outline_rounded,
+          icon: AppIcons.comment,
           color: context.colors.textPrimary,
           label: _formatCount(commentCount),
           onTap: onComment,
         ),
         const SizedBox(width: 16),
         _ActionButton(
-          icon: Icons.send_outlined,
+          icon: AppIcons.share,
           color: context.colors.textPrimary,
           label: _formatCount(shareCount),
           onTap: onShare,
         ),
         const SizedBox(width: 16),
         _ActionButton(
-          icon: Icons.notifications_active_outlined,
+          icon: AppIcons.reminder,
           color: context.colors.textPrimary,
           onTap: onReminder,
         ),
         const Spacer(),
         if (showBookmark)
           _ActionButton(
-            icon: isBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+            icon: isBookmarked ? AppIcons.bookmark : AppIcons.bookmarkOutline,
             color: isBookmarked ? context.colors.secondaryAccent : context.colors.textPrimary,
             onTap: onBookmark,
             animate: isBookmarked,

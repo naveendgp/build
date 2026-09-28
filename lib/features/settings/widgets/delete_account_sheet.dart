@@ -179,7 +179,7 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
                       )
                     : const Text('Send Code', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
               ),
@@ -253,7 +253,7 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
                 )
               : const Text('Delete My Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         ),

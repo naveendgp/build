@@ -147,7 +147,7 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
   Widget _buildContent(BuildContext context) {
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator(color: context.colors.primaryAccent),
+        child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
       );
     }
 

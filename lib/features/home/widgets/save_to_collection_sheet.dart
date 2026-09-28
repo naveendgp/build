@@ -8,6 +8,7 @@ import '../../user_profile/widgets/create_collection_modal.dart';
 import '../../../../core/utils/haptics.dart';
 
 import '../../home/models/feed_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class SaveToCollectionSheet extends ConsumerWidget {
   final FeedPost post;
@@ -115,7 +116,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
                           isCurrentlyInCollection: isSavedInCollection,
                         ).catchError((e) {
                           if (!context.mounted) return;
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          AppMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Error: Could not save post to collection.'),
                               backgroundColor: Colors.red,
@@ -124,7 +125,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
                         });
 
                         if (!isSavedInCollection) {
-                          ScaffoldMessenger.of(context).showSnackBar(
+                          AppMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text('Saved to ${collection.title}'),
                               behavior: SnackBarBehavior.floating,
@@ -191,7 +192,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
             },
             loading: () => Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
-              child: Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
+              child: Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent))),
             ),
             error: (e, st) => Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),

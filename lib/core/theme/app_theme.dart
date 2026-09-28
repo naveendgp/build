@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -77,12 +78,23 @@ class AppTheme {
     blur: 20.0,
   );
 
+  /// Native page transitions per platform: Cupertino slide + interactive
+  /// swipe-back on iOS; Android keeps the default Material transition.
+  static const _pageTransitions = PageTransitionsTheme(
+    builders: <TargetPlatform, PageTransitionsBuilder>{
+      TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+      TargetPlatform.android: ZoomPageTransitionsBuilder(),
+    },
+  );
+
   // ─── DARK THEME ──────────────────────────────────────────
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
       fontFamily: AppTypography.fontFamily,
+      pageTransitionsTheme: _pageTransitions,
       extensions: <ThemeExtension<dynamic>>[
         _darkColors,
         _darkShadows,
@@ -171,6 +183,7 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       fontFamily: AppTypography.fontFamily,
+      pageTransitionsTheme: _pageTransitions,
       extensions: <ThemeExtension<dynamic>>[
         _lightColors,
         _lightShadows,

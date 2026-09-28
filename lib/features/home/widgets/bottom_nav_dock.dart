@@ -1,6 +1,8 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 
@@ -52,28 +54,28 @@ class BottomNavDock extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _NavItem(
-                  icon: Icons.home_filled,
+                  icon: currentIndex == 0 ? AppIcons.homeFilled : AppIcons.home,
                   label: 'Home',
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
                 ),
                 _NavItem(
-                  icon: Icons.search_rounded,
+                  icon: AppIcons.search,
                   label: 'Explore',
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
                 ),
                 if (isBrand) _UploadButton(onTap: () => onTap(2)),
                 _NavItem(
-                  icon: Icons.send_rounded,
+                  icon: currentIndex == 3 ? AppIcons.messagesFilled : AppIcons.messages,
                   label: 'Messages',
-                  angle: -0.6,
+                  angle: defaultTargetPlatform == TargetPlatform.iOS ? 0.0 : -0.6,
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
                   badgeCount: unreadCount,
                 ),
                 _NavItem(
-                  icon: Icons.person_outline_rounded,
+                  icon: currentIndex == 4 ? AppIcons.profileFilled : AppIcons.profile,
                   label: 'Profile',
                   isSelected: currentIndex == 4,
                   onTap: () => onTap(
@@ -219,7 +221,7 @@ class _UploadButtonState extends State<_UploadButton>
               ),
             ],
           ),
-          child: const Icon(Icons.add_rounded, color: Colors.white, size: 26),
+          child: Icon(AppIcons.add, color: Colors.white, size: 26),
         ),
       ),
     );

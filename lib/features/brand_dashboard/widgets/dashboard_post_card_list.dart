@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../models/dashboard_models.dart';
@@ -405,58 +406,30 @@ class _PostAnalyticsCard extends ConsumerWidget {
     );
   }
 
-  void _showRestoreDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: context.colors.surface,
-          title: Text('Restore Post?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-          content: Text('This post will become publicly visible again.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Cancel', style: AppTypography.buttonSmall.copyWith(color: context.colors.textSecondary)),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                await ref.read(dashboardServiceProvider).unarchivePost(post.id);
-                ref.invalidate(dashboardPostsProvider);
-              },
-              child: Text('Restore', style: AppTypography.buttonSmall.copyWith(color: context.colors.primaryAccent)),
-            ),
-          ],
-        );
-      },
+  void _showRestoreDialog(BuildContext context, WidgetRef ref) async {
+    final confirm = await showAdaptiveConfirmDialog(
+      context,
+      title: 'Restore Post?',
+      message: 'This post will become publicly visible again.',
+      confirmLabel: 'Restore',
     );
+    if (confirm == true) {
+      await ref.read(dashboardServiceProvider).unarchivePost(post.id);
+      ref.invalidate(dashboardPostsProvider);
+    }
   }
 
-  void _showArchiveDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          backgroundColor: context.colors.surface,
-          title: Text('Archive Post?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-          content: Text('This post will be removed from public feeds.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Cancel', style: AppTypography.buttonSmall.copyWith(color: context.colors.textSecondary)),
-            ),
-            TextButton(
-              onPressed: () async {
-                Navigator.pop(dialogContext);
-                await ref.read(dashboardServiceProvider).archivePost(post.id);
-                ref.invalidate(dashboardPostsProvider);
-              },
-              child: Text('Archive', style: AppTypography.buttonSmall.copyWith(color: context.colors.primaryAccent)),
-            ),
-          ],
-        );
-      },
+  void _showArchiveDialog(BuildContext context, WidgetRef ref) async {
+    final confirm = await showAdaptiveConfirmDialog(
+      context,
+      title: 'Archive Post?',
+      message: 'This post will be removed from public feeds.',
+      confirmLabel: 'Archive',
     );
+    if (confirm == true) {
+      await ref.read(dashboardServiceProvider).archivePost(post.id);
+      ref.invalidate(dashboardPostsProvider);
+    }
   }
 
   Widget _buildScoreHeader(BuildContext context) {
@@ -465,12 +438,11 @@ class _PostAnalyticsCard extends ConsumerWidget {
         SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(
+          child: CircularProgressIndicator.adaptive(
             value: post.performanceScoreValue / 100,
             strokeWidth: 2.5,
             backgroundColor: context.colors.borderLight.withOpacity(0.1),
-            valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(context, post.performanceScoreValue)),
-          ),
+            valueColor: AlwaysStoppedAnimation<Color>(_getScoreColor(context, post.performanceScoreValue))),
         ),
         const SizedBox(width: 6),
         Text(

@@ -282,10 +282,9 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
+                  child: CircularProgressIndicator.adaptive(
                     strokeWidth: 2,
-                    color: context.colors.primaryAccent,
-                  ),
+                    valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
                 ),
               ),
             );

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/adaptive/adaptive.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/widgets/lyket_button.dart';
@@ -18,6 +19,7 @@ import 'providers/auth_provider.dart';
 import '../../core/widgets/location_picker.dart';
 import 'screens/terms_screen.dart';
 import 'widgets/terms_checkbox.dart';
+import '../../core/utils/app_messenger.dart';
 
 class UserSignupScreen extends ConsumerStatefulWidget {
   const UserSignupScreen({super.key});
@@ -93,7 +95,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
     final step = state.currentStep;
 
     if (step == 0 && !state.isEmailVerified) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please verify your email first'),
           backgroundColor: context.colors.error,
@@ -120,7 +122,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
 
     ref.listen<SignupState>(userSignupProvider, (prev, next) {
       if (prev?.errorMessage != next.errorMessage && next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
             backgroundColor: context.colors.error,
@@ -178,14 +180,14 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                       : state.currentStep == 2
                           ? () {
                               if (state.interests.length < 3) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                AppMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Please select at least 3 interests'),
                                     backgroundColor: context.colors.error,
                                   ),
                                 );
                               } else if (!_termsAccepted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                AppMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: const Text('Please accept the Terms & Conditions to continue'),
                                     backgroundColor: context.colors.error,
@@ -287,7 +289,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                           notifier.sendEmailOtp(_emailCtrl.text, 'signup');
                         },
                   child: state.isOtpSending
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
                       : Text('Verify Email', style: AppTypography.labelMedium.copyWith(fontWeight: FontWeight.w600)),
                 ),
               )
@@ -321,7 +323,7 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                             }
                           },
                           child: state.isOtpVerifying && index == 5 && _otpDigits[5].isNotEmpty
-                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                              ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(strokeWidth: 2))
                               : TextField(
                                   controller: _otpControllers[index],
                                   focusNode: _otpFocusNodes[index],
@@ -465,8 +467,8 @@ class _UserSignupScreenState extends ConsumerState<UserSignupScreen> {
                     readOnly: true,
                     validator: (v) => Validators.required(v, 'Date of birth'),
                     onTap: () async {
-                      final date = await showDatePicker(
-                        context: context,
+                      final date = await showAdaptiveDatePicker(
+                        context,
                         initialDate: DateTime.now().subtract(const Duration(days: 365 * 18)),
                         firstDate: DateTime(1900),
                         lastDate: DateTime.now(),

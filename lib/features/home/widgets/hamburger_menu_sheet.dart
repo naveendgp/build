@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
@@ -81,7 +82,7 @@ class HamburgerMenuSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
               error: (_, _) => Row(
                 children: [
                   const CircleAvatar(radius: 24, child: Icon(Icons.person)),
@@ -105,9 +106,9 @@ class HamburgerMenuSheet extends ConsumerWidget {
           // Menu Items
           ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 24),
-            leading: Icon(Icons.dark_mode_rounded, color: context.colors.textPrimary),
+            leading: Icon(AppIcons.darkMode, color: context.colors.textPrimary),
             title: Text('Dark Mode', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
-            trailing: Switch(
+            trailing: AdaptiveSwitch(
               value: isDark,
               onChanged: (val) {
                 ref.read(themeProvider.notifier).setTheme(val ? ThemeMode.dark : ThemeMode.light);
@@ -122,13 +123,13 @@ class HamburgerMenuSheet extends ConsumerWidget {
               context.push('/brand-saved');
             }),
           ],
-          _buildMenuItem(context, Icons.help_outline_rounded, 'Help & Support', () {
+          _buildMenuItem(context, AppIcons.help, 'Help & Support', () {
             context.push('/help');
           }),
-          _buildMenuItem(context, Icons.question_answer_rounded, 'FAQ', () {
+          _buildMenuItem(context, AppIcons.faq, 'FAQ', () {
             context.push('/help/faq');
           }),
-          _buildMenuItem(context, Icons.confirmation_number_outlined, 'My Tickets', () {
+          _buildMenuItem(context, AppIcons.tickets, 'My Tickets', () {
             context.push('/help?tab=tickets');
           }),
           
@@ -139,7 +140,7 @@ class HamburgerMenuSheet extends ConsumerWidget {
           // Logout
           _buildMenuItem(
             context, 
-            Icons.logout_rounded, 
+            AppIcons.logout, 
             'Log out', 
             () async {
               // Call logout

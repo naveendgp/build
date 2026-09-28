@@ -247,9 +247,8 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         children: [
           _buildPlaceholder(),
           Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
-            ),
+            child: CircularProgressIndicator.adaptive(
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
           ),
         ],
       );
@@ -307,7 +306,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             ),
             child: const SizedBox(
               width: 24, height: 24,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+              child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
             ),
           ),
         if (widget.allowInteraction)

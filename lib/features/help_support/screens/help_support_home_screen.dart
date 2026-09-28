@@ -218,7 +218,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
     final chatsAsync = ref.watch(myChatsProvider);
 
     return chatsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator.adaptive()),
       error: (err, stack) => Center(
         child: Text('Failed to load live chats', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
       ),
@@ -262,7 +262,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
     final ticketsAsync = ref.watch(myTicketsProvider);
 
     return ticketsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const Center(child: CircularProgressIndicator.adaptive()),
       error: (err, stack) => Center(
         child: Text('Failed to load tickets', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
       ),

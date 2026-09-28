@@ -5,6 +5,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class LeadFormViewerSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -113,7 +114,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       });
       Haptics.heavy();
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to submit the form. Please try again.')),
       );
     }
@@ -170,7 +171,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     if (_isLoading) {
       return Padding(
         padding: EdgeInsets.all(40),
-        child: Center(child: CircularProgressIndicator(color: context.colors.primaryAccent)),
+        child: Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent))),
       );
     }
 
@@ -268,7 +269,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
                 elevation: 0,
               ),
               child: _isSubmitting 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2))
                 : Text('Submit', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w600)),
             ),
           ),

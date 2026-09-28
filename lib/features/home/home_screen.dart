@@ -3,6 +3,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/adaptive/adaptive.dart';
 import '../../core/theme/app_typography.dart';
 import '../auth/providers/auth_provider.dart';
 import '../user_profile/providers/user_profile_provider.dart';
@@ -18,6 +19,7 @@ import 'widgets/bottom_nav_dock.dart';
 import '../notifications/providers/notifications_provider.dart';
 import '../sharing/services/share_service.dart';
 import '../../core/services/notification_service.dart';
+import '../../core/utils/app_messenger.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -129,21 +131,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
               onTap: () async {
                 Navigator.pop(sheetContext);
-                final date = await showDatePicker(
-                  context: parentContext,
+                final date = await showAdaptiveDatePicker(
+                  parentContext,
                   initialDate: DateTime.now().add(const Duration(days: 1)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (date != null && parentContext.mounted) {
-                  final time = await showTimePicker(
-                    context: parentContext,
+                  final time = await showAdaptiveTimePicker(
+                    parentContext,
                     initialTime: TimeOfDay.now(),
                   );
                   if (time != null && parentContext.mounted) {
                     final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
                     notifier.setReminder(postId, dateTime);
-                    ScaffoldMessenger.of(parentContext).showSnackBar(
+                    AppMessenger.of(parentContext).showSnackBar(
                       SnackBar(content: Text('Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}')),
                     );
                   }
@@ -171,7 +173,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Navigator.pop(context);
         final dateTime = DateTime.now().add(duration);
         notifier.setReminder(postId, dateTime);
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Reminder set for $label')),
         );
       },
@@ -311,8 +313,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ref.read(userProfileProvider.notifier).loadProfile();
                 
                 // Show toast for saving to specific collection
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
+                AppMessenger.of(context).clearSnackBars();
+                AppMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Saved', style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
                     backgroundColor: context.colors.surface,

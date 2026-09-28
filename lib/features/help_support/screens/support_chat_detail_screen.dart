@@ -76,7 +76,7 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
         children: [
           Expanded(
             child: state.isLoading
-                ? Center(child: CircularProgressIndicator(color: context.colors.primaryAccent))
+                ? Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)))
                 : state.error != null
                     ? Center(child: Text(state.error!, style: TextStyle(color: context.colors.error)))
                     : chat == null || chat.messages.isEmpty
@@ -158,7 +158,7 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
               child: isSending
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator.adaptive(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                     )
                   : const Icon(Icons.arrow_upward_rounded, color: Colors.white),
             ),

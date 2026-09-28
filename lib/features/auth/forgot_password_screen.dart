@@ -10,6 +10,7 @@ import '../../core/widgets/lyket_button.dart';
 import '../../core/widgets/lyket_text_field.dart';
 import '../../core/utils/validators.dart';
 import 'providers/auth_provider.dart';
+import '../../core/utils/app_messenger.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -182,7 +183,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         // shared/global in this app's MaterialApp setup, but grabbing the
         // reference up front means the snackbar doesn't depend on `context`
         // still resolving to a live Scaffold after the route changes.
-        final messenger = ScaffoldMessenger.of(context);
+        final messenger = AppMessenger.of(context);
         // go() instead of pop(): pop() only lands on login if this screen
         // was reached by pushing directly on top of it, which isn't
         // guaranteed for every path into forgot-password. Navigate first,

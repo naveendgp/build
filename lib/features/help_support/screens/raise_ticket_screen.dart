@@ -6,6 +6,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/utils/haptics.dart';
 import '../providers/support_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class RaiseTicketScreen extends ConsumerStatefulWidget {
   final String initialType;
@@ -56,10 +57,10 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
     ref.listen<CreateTicketState>(createTicketProvider, (prev, next) {
       if (next.status == TicketUploadState.success && next.result != null) {
         ref.invalidate(myTicketsProvider);
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
+        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
         context.pop();
       } else if (next.status == TicketUploadState.error) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next.errorMessage ?? 'Error')));
+        AppMessenger.of(context).showSnackBar(SnackBar(content: Text(next.errorMessage ?? 'Error')));
       }
     });
 
@@ -139,7 +140,7 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
                       : Text(
                           'Submit Ticket',
                           style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),

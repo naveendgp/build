@@ -174,7 +174,7 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: isSubmitting
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
                   : Text('Request Live Chat', style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
           ),
@@ -194,7 +194,7 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
             SizedBox(
               width: 64,
               height: 64,
-              child: CircularProgressIndicator(color: context.colors.primaryAccent, strokeWidth: 3),
+              child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent), strokeWidth: 3),
             ),
             const SizedBox(height: 24),
             Text(

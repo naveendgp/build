@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 /// Two-step "Change Password" flow: send a 6-digit code to the user's own
 /// registered email (derived server-side from the auth token, never from
@@ -117,7 +118,7 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
 
     if (success) {
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Password updated successfully')),
       );
     } else {
@@ -185,7 +186,7 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
                 )
               : Text(
                   'Send Verification Code',
@@ -279,7 +280,7 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
                 )
               : Text(
                   'Update Password',

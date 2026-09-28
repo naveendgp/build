@@ -31,7 +31,7 @@ class FaqScreen extends ConsumerWidget {
         ),
       ),
       body: faqAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, stack) => Center(
           child: Text('Failed to load FAQs', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
         ),

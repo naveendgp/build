@@ -4,11 +4,13 @@ import 'package:dio/dio.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
 import '../providers/reminders_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class RemindersSection extends ConsumerWidget {
   /// Which reminders list to show. Defaults to the upcoming-only list
@@ -47,7 +49,7 @@ class RemindersSection extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           if (state.isLoading)
-            const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            const Center(child: CircularProgressIndicator.adaptive(strokeWidth: 2))
           else if (state.error != null)
             Text(state.error!, style: AppTypography.bodyMedium.copyWith(color: context.colors.error))
           else if (state.reminders.isEmpty)
@@ -128,16 +130,16 @@ class RemindersSection extends ConsumerWidget {
 
   Future<void> _editReminder(BuildContext context, WidgetRef ref, UpcomingReminder reminder) async {
     Haptics.selection();
-    final date = await showDatePicker(
-      context: context,
+    final date = await showAdaptiveDatePicker(
+      context,
       initialDate: reminder.reminderTime,
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
     if (date == null || !context.mounted) return;
 
-    final time = await showTimePicker(
-      context: context,
+    final time = await showAdaptiveTimePicker(
+      context,
       initialTime: TimeOfDay.fromDateTime(reminder.reminderTime),
     );
     if (time == null || !context.mounted) return;
@@ -159,20 +161,20 @@ class RemindersSection extends ConsumerWidget {
       // old time even though the update succeeded.
       ref.read((provider ?? remindersProvider).notifier).loadReminders();
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Reminder updated successfully')),
         );
       }
     } on DioException catch (e) {
       final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update reminder: ${serverMsg ?? e.message}')),
         );
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to update reminder: $e')),
         );
       }

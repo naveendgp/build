@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -14,20 +15,44 @@ class NotificationService {
 
   NotificationService._internal();
 
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
+  // Resolved lazily — accessing FirebaseMessaging.instance throws if no
+  // Firebase app exists, so we must not touch it at construction time.
+  FirebaseMessaging? _fcm;
   final FlutterLocalNotificationsPlugin _localNotifications = FlutterLocalNotificationsPlugin();
 
   bool _channelInitialized = false;
   bool _listenerSetUp = false;
 
+  /// Sets up local notifications and FCM. Never throws — notification setup
+  /// is best-effort and must not be able to break callers such as login or
+  /// session restore.
   Future<void> initialize() async {
+    try {
+      await _initialize();
+    } catch (e, stack) {
+      debugPrint('[NotificationService] Initialization failed (non-fatal): $e\n$stack');
+    }
+  }
+
+  Future<void> _initialize() async {
     // --- One-time setup: local notification channel & foreground listener ---
     if (!_channelInitialized) {
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
-      
+
+      // iOS/macOS require their own settings object, otherwise initialize()
+      // throws "iOS settings must be set when targeting iOS platform".
+      const DarwinInitializationSettings initializationSettingsDarwin =
+          DarwinInitializationSettings(
+        requestAlertPermission: true,
+        requestBadgePermission: true,
+        requestSoundPermission: true,
+      );
+
       const InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
+        iOS: initializationSettingsDarwin,
+        macOS: initializationSettingsDarwin,
       );
 
       await _localNotifications.initialize(settings: initializationSettings);
@@ -50,8 +75,18 @@ class NotificationService {
       _channelInitialized = true;
     }
 
-    // --- Always attempt FCM token registration (even on re-calls) ---
-    NotificationSettings settings = await _fcm.requestPermission(
+    // --- FCM token registration ---
+    // FCM requires an initialized Firebase app. On platforms where Firebase
+    // config is absent (e.g. iOS without GoogleService-Info.plist) this is
+    // skipped so it can never break login / session restore.
+    if (Firebase.apps.isEmpty) {
+      debugPrint('[NotificationService] Firebase not initialized; skipping FCM setup.');
+      return;
+    }
+
+    final fcm = _fcm ??= FirebaseMessaging.instance;
+
+    NotificationSettings settings = await fcm.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -65,7 +100,7 @@ class NotificationService {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       // Always try to get and register the token
-      String? token = await _fcm.getToken();
+      String? token = await fcm.getToken();
       debugPrint('[NotificationService] FCM Token: $token');
       if (token != null) {
         await _registerTokenWithBackend(token);
@@ -73,7 +108,7 @@ class NotificationService {
 
       // Set up listeners only once
       if (!_listenerSetUp) {
-        _fcm.onTokenRefresh.listen((newToken) {
+        fcm.onTokenRefresh.listen((newToken) {
           debugPrint('[NotificationService] FCM Token refreshed: $newToken');
           _registerTokenWithBackend(newToken);
         });

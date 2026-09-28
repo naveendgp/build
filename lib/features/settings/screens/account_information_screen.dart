@@ -5,10 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
 import '../widgets/profile_image_picker.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class AccountInformationScreen extends ConsumerStatefulWidget {
   const AccountInformationScreen({super.key});
@@ -81,7 +83,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
       await apiClient.dio.put('/user/me', data: updateData);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
@@ -102,7 +104,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     } on DioException catch (e) {
       if (mounted) {
         final msg = e.response?.data['message'] ?? 'Failed to update account';
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(msg),
             backgroundColor: context.colors.error,
@@ -190,7 +192,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                           Navigator.pop(ctx);
                         }
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding $fieldName')));
+                        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding $fieldName')));
                       } finally {
                         if (mounted) setSheetState(() => sheetLoading = false);
                       }
@@ -201,7 +203,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: sheetLoading 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2))
                         : Text('Save $fieldName', style: AppTypography.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ],
@@ -402,7 +404,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     final profileState = ref.watch(userProfileProvider);
     final profile = profileState.profile;
 
-    if (profile == null) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (profile == null) return const Scaffold(body: Center(child: CircularProgressIndicator.adaptive()));
 
     final completion = profile.completionPercentage;
     final missing = profile.missingFields;
@@ -529,8 +531,8 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                               customAction: profile.dateOfBirth.isEmpty 
                                 ? TextButton(
                                     onPressed: () async {
-                                      final picked = await showDatePicker(
-                                        context: context,
+                                      final picked = await showAdaptiveDatePicker(
+                                        context,
                                         initialDate: DateTime(2000),
                                         firstDate: DateTime(1900),
                                         lastDate: DateTime.now(),
@@ -586,7 +588,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                     ),
                     child: Center(
                       child: _isLoading
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 3))
+                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 3))
                           : Text(
                               'Save Changes',
                               style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),

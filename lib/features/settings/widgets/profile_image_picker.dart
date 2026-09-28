@@ -1,13 +1,16 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart' as http_parser;
 import '../../../core/network/api_client.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class ProfileImagePicker extends ConsumerStatefulWidget {
   final String currentAvatarUrl;
@@ -31,7 +34,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
       await _uploadAvatar(File(pickedFile.path));
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to pick image: $e')),
         );
       }
@@ -68,7 +71,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
       if (response.statusCode == 200) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
+          AppMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Profile photo updated successfully'),
               backgroundColor: context.colors.success,
@@ -80,7 +83,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('Upload failed. Please try again.'),
             backgroundColor: context.colors.error,
@@ -97,7 +100,43 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
     }
   }
 
+  Future<void> _removePhoto() async {
+    try {
+      setState(() => _isUploading = true);
+      await ref.read(apiClientProvider).dio.put('/user/me', data: {'profilePic': null});
+      ref.read(userProfileProvider.notifier).loadProfile();
+    } finally {
+      if (mounted) setState(() => _isUploading = false);
+    }
+  }
+
   void _showImagePickerOptions() {
+    // iOS → native action sheet (blurred, capsule cancel). Android keeps the
+    // branded bottom sheet below.
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      showAdaptiveActionSheet(
+        context,
+        title: 'Change Profile Photo',
+        actions: [
+          AdaptiveSheetAction(
+            label: 'Take Photo',
+            onPressed: () => _pickImage(ImageSource.camera),
+          ),
+          AdaptiveSheetAction(
+            label: 'Choose from Gallery',
+            onPressed: () => _pickImage(ImageSource.gallery),
+          ),
+          if (widget.currentAvatarUrl.isNotEmpty)
+            AdaptiveSheetAction(
+              label: 'Remove Photo',
+              isDestructive: true,
+              onPressed: _removePhoto,
+            ),
+        ],
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -148,16 +187,9 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
                     child: Icon(Icons.delete_outline_rounded, color: context.colors.error),
                   ),
                   title: Text('Remove Photo', style: AppTypography.bodyLarge.copyWith(color: context.colors.error)),
-                  onTap: () async {
+                  onTap: () {
                     Navigator.pop(context);
-                    // Add logic to remove avatar. E.g., PUT /user/me with { profilePic: null }
-                    try {
-                      setState(() => _isUploading = true);
-                      await ref.read(apiClientProvider).dio.put('/user/me', data: {'profilePic': null});
-                      ref.read(userProfileProvider.notifier).loadProfile();
-                    } finally {
-                      if (mounted) setState(() => _isUploading = false);
-                    }
+                    _removePhoto();
                   },
                 ),
               const SizedBox(height: 16),
@@ -213,10 +245,9 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
                     color: Colors.black.withOpacity(0.5),
                   ),
                   child: Center(
-                    child: CircularProgressIndicator(
+                    child: CircularProgressIndicator.adaptive(
                       value: _uploadProgress,
-                      valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
-                    ),
+                      valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
                   ),
                 ),
               if (!_isUploading)

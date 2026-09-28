@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../providers/collections_provider.dart';
 import '../../home/models/feed_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class CreateCollectionModal extends ConsumerStatefulWidget {
   // When opened from "Save to Collection" with a "New" shortcut, the post the
@@ -98,7 +99,7 @@ class _CreateCollectionModalState extends ConsumerState<CreateCollectionModal> {
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      AppMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Failed to create collection: $e')),
                       );
                     }

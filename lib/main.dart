@@ -16,8 +16,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 void main() {
   runZonedGuarded(() async {
     WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp();
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    // Firebase is optional at startup (powers push notifications). If the
+    // platform config is missing — e.g. no GoogleService-Info.plist on iOS —
+    // initialization must not abort app launch.
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    } catch (e, stack) {
+      debugPrint('Firebase initialization failed; continuing without it: $e\n$stack');
+    }
 
     // Global error handlers
     FlutterError.onError = (details) {

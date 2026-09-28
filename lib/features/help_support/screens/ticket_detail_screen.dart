@@ -38,7 +38,7 @@ class TicketDetailScreen extends ConsumerWidget {
         ),
       ),
       body: ticketAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, stack) => Center(child: Text('Failed to load ticket', style: AppTypography.bodyMedium.copyWith(color: context.colors.error))),
         data: (ticket) => SingleChildScrollView(
           padding: const EdgeInsets.all(24),

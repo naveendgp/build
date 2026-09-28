@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
@@ -58,15 +59,15 @@ class ScheduleStep extends StatelessWidget {
             GestureDetector(
               onTap: () async {
                 Haptics.light();
-                final date = await showDatePicker(
-                  context: context,
+                final date = await showAdaptiveDatePicker(
+                  context,
                   initialDate: scheduledAt ?? DateTime.now().add(const Duration(days: 1)),
                   firstDate: DateTime.now(),
                   lastDate: DateTime.now().add(const Duration(days: 365)),
                 );
                 if (date != null && context.mounted) {
-                  final time = await showTimePicker(
-                    context: context,
+                  final time = await showAdaptiveTimePicker(
+                    context,
                     initialTime: TimeOfDay.fromDateTime(scheduledAt ?? DateTime.now()),
                   );
                   if (time != null) {

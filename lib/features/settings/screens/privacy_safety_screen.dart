@@ -60,7 +60,7 @@ class PrivacySafetyScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
               error: (e, st) => const Center(child: Text('Error loading settings')),
             ),
           ],

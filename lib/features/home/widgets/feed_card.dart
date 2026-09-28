@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/feed_models.dart';
@@ -18,6 +19,7 @@ import 'video_player_widget.dart';
 import 'media_carousel.dart';
 import '../../../core/network/api_client.dart';
 import '../../settings/providers/interests_provider.dart';
+import '../../../core/utils/app_messenger.dart';
 
 /// Premium immersive single-feed card — cinematic edge-to-edge design
 class FeedCard extends ConsumerWidget {
@@ -285,29 +287,17 @@ class FeedCard extends ConsumerWidget {
                   title: Text('Archive Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
                   onTap: () async {
                     Navigator.pop(context); // Close menu
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: context.colors.card,
-                        title: Text('Archive Post?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-                        content: Text('This post will be removed from public feeds and brand profiles.\n\nAnalytics, leads, comments, and engagement data will be preserved.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: Text('Cancel', style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary)),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: Text('Archive Post', style: TextStyle(color: context.colors.primaryAccent, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    );
+                    final confirm = await showAdaptiveConfirmDialog(
+                                            context,
+                                            title: 'Archive Post?',
+                                            message: 'This post will be removed from public feeds and brand profiles.\n\nAnalytics, leads, comments, and engagement data will be preserved.',
+                                            confirmLabel: 'Archive Post',
+                                          );
                     
                     if (confirm == true) {
                       await ref.read(feedProvider.notifier).archivePost(post.id);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post archived successfully')));
+                        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post archived successfully')));
                       }
                     }
                   },
@@ -317,28 +307,17 @@ class FeedCard extends ConsumerWidget {
                   title: Text('Delete Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error, fontWeight: FontWeight.w600)),
                   onTap: () async {
                     Navigator.pop(context); // Close menu
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        backgroundColor: context.colors.card,
-                        title: Text('Delete Post', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-                        content: Text('Are you sure you want to delete this post? This action cannot be undone.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: Text('Cancel', style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary)),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            child: Text('Delete', style: TextStyle(color: context.colors.error, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    );
+                    final confirm = await showAdaptiveConfirmDialog(
+                                            context,
+                                            title: 'Delete Post',
+                                            message: 'Are you sure you want to delete this post? This action cannot be undone.',
+                                            confirmLabel: 'Delete',
+                                            isDestructive: true,
+                                          );
                     if (confirm == true) {
                       await ref.read(feedProvider.notifier).deletePost(post.id);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+                        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
                       }
                     }
                   },
@@ -379,14 +358,14 @@ class FeedCard extends ConsumerWidget {
                               ref.read(interestsProvider.notifier);
                           if (isInterested) {
                             notifier.removeInterest(post.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            AppMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content:
                                       Text('Removed from interests')),
                             );
                           } else {
                             notifier.addInterest(post.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            AppMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text('Added to interests')),
                             );
@@ -402,7 +381,7 @@ class FeedCard extends ConsumerWidget {
                     onTap: () {
                       Navigator.pop(context);
                       ref.read(feedProvider.notifier).markNotInterested(post.id);
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('We will show fewer posts like this.')));
+                      AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('We will show fewer posts like this.')));
                     },
                   ),
                 ListTile(
@@ -474,12 +453,11 @@ class FeedCard extends ConsumerWidget {
                       child: SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator(
+                        child: CircularProgressIndicator.adaptive(
                           strokeWidth: 1.5,
                           valueColor: AlwaysStoppedAnimation(
                             context.colors.primaryAccent.withValues(alpha: 0.3),
-                          ),
-                        ),
+                          )),
                       ),
                     ),
                   ),
@@ -515,7 +493,7 @@ class FeedCard extends ConsumerWidget {
     } else if (post.ctaType == 'OPEN_CHAT') {
       final authState = ref.read(authProvider);
       if (authState.brandId == post.brandId) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Users will be taken to a chat with you when they tap this!')),
         );
         return;
@@ -536,7 +514,7 @@ class FeedCard extends ConsumerWidget {
         context.push(route);
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to start conversation. Please try again.')),
         );
       }
@@ -549,7 +527,7 @@ class FeedCard extends ConsumerWidget {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
           } else {
             if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              AppMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
                     'Could not open link: $url',
@@ -561,7 +539,7 @@ class FeedCard extends ConsumerWidget {
           }
         } catch (_) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            AppMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
                   'Invalid link format',
@@ -574,7 +552,7 @@ class FeedCard extends ConsumerWidget {
       }
     } else {
       // Fallback for other CTA types if needed
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             'Opening ${post.ctaLabel}...',

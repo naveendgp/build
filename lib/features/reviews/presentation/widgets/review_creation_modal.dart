@@ -199,7 +199,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
                   )
                 : const Text(
                     'Submit Review',

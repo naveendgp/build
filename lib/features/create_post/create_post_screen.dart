@@ -410,12 +410,11 @@ class _UploadOverlay extends StatelessWidget {
                 SizedBox(
                   width: 64,
                   height: 64,
-                  child: CircularProgressIndicator(
+                  child: CircularProgressIndicator.adaptive(
                     value: progress,
-                    color: context.colors.primaryAccent,
+                    valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
                     backgroundColor: context.colors.surface,
-                    strokeWidth: 4,
-                  ),
+                    strokeWidth: 4),
                 ),
               const SizedBox(height: AppSpacing.lg),
               Text(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../home/models/feed_models.dart';
@@ -41,7 +42,7 @@ class InterestsScreen extends ConsumerWidget {
   Widget _buildBody(
       BuildContext context, WidgetRef ref, InterestsState state) {
     if (state.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator.adaptive());
     }
 
     if (state.error != null) {
@@ -169,34 +170,13 @@ class _InterestItem extends ConsumerWidget {
           // Delete
           GestureDetector(
             onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (ctx) => AlertDialog(
-                  backgroundColor: context.colors.surface,
-                  title: Text('Remove Interest?',
-                      style: AppTypography.titleMedium
-                          .copyWith(color: context.colors.textPrimary)),
-                  content: Text(
-                    'This post will be removed from your interests.',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: context.colors.textSecondary),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, false),
-                      child: Text('Cancel',
-                          style: AppTypography.labelLarge
-                              .copyWith(color: context.colors.textSecondary)),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: Text('Remove',
-                          style: AppTypography.labelLarge
-                              .copyWith(color: context.colors.error)),
-                    ),
-                  ],
-                ),
-              );
+              final confirm = await showAdaptiveConfirmDialog(
+                                      context,
+                                      title: 'Remove Interest?',
+                                      message: 'This post will be removed from your interests.',
+                                      confirmLabel: 'Remove',
+                                      isDestructive: true,
+                                    );
               if (confirm == true) {
                 ref.read(interestsProvider.notifier).removeInterest(post.id);
               }

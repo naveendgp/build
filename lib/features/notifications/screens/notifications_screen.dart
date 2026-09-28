@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
@@ -13,6 +14,7 @@ import '../../user_profile/providers/reminders_provider.dart';
 import '../../../core/network/api_client.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import '../../../core/utils/app_messenger.dart';
 
 class NotificationsScreen extends ConsumerWidget {
   const NotificationsScreen({super.key});
@@ -258,15 +260,15 @@ class NotificationsScreen extends ConsumerWidget {
             icon: Icon(Icons.edit_rounded, color: context.colors.primaryAccent, size: 20),
             onPressed: () async {
               Haptics.selection();
-              final date = await showDatePicker(
-                context: context,
+              final date = await showAdaptiveDatePicker(
+                context,
                 initialDate: reminder.reminderTime,
                 firstDate: DateTime.now(),
                 lastDate: DateTime.now().add(const Duration(days: 365)),
               );
               if (date != null && context.mounted) {
-                final time = await showTimePicker(
-                  context: context,
+                final time = await showAdaptiveTimePicker(
+                  context,
                   initialTime: TimeOfDay.fromDateTime(reminder.reminderTime),
                 );
                 if (time != null && context.mounted) {
@@ -281,13 +283,13 @@ class NotificationsScreen extends ConsumerWidget {
                     });
                     ref.read(remindersProvider.notifier).loadReminders();
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      AppMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text('Reminder updated successfully')),
                       );
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      AppMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Failed to update reminder: $e')),
                       );
                     }

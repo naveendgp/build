@@ -106,7 +106,7 @@ class BrandDashboardScreen extends ConsumerWidget {
       return Drawer(
         backgroundColor: context.colors.surface,
         width: 340,
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Center(child: CircularProgressIndicator.adaptive()),
       );
     }
 
@@ -311,7 +311,7 @@ class _LoadingSkeleton extends StatelessWidget {
         color: context.colors.surfaceSecondary,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: const Center(child: CircularProgressIndicator()),
+      child: const Center(child: CircularProgressIndicator.adaptive()),
     );
   }
 }

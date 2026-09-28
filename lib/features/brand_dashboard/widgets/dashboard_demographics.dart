@@ -41,7 +41,7 @@ class DashboardDemographics extends ConsumerWidget {
               color: context.colors.surfaceSecondary,
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: CircularProgressIndicator.adaptive()),
           ),
           error: (err, _) => Container(
             padding: const EdgeInsets.all(16),

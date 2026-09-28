@@ -21,6 +21,7 @@ import '../../core/widgets/location_picker.dart';
 import 'widgets/upload_area.dart';
 import 'screens/terms_screen.dart';
 import 'widgets/terms_checkbox.dart';
+import '../../core/utils/app_messenger.dart';
 
 class BrandSignupScreen extends ConsumerStatefulWidget {
   const BrandSignupScreen({super.key});
@@ -92,7 +93,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
     final step = state.currentStep;
     if (!(_formKeys[step].currentState?.validate() ?? false)) return;
     if (step == 0 && state.businessCategory == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please select a business category'),
           backgroundColor: context.colors.error,
@@ -101,7 +102,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
       return;
     }
     if (step == 1 && !state.isEmailVerified) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      AppMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('Please verify your email first'),
           backgroundColor: context.colors.error,
@@ -113,7 +114,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
   }
 
   void _showTermsRequiredSnackbar() {
-    ScaffoldMessenger.of(context).showSnackBar(
+    AppMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Please accept the Terms & Conditions to continue'),
         backgroundColor: context.colors.error,
@@ -136,7 +137,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
 
     ref.listen<SignupState>(brandSignupProvider, (prev, next) {
       if (prev?.errorMessage != next.errorMessage && next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        AppMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
             backgroundColor: context.colors.error,
@@ -332,7 +333,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                     padding: EdgeInsets.zero,
                   ),
                   child: state.isOtpSending
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator.adaptive(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
                       : const Text('Verify Email'),
                 ),
               )
@@ -411,7 +412,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                   ],
                   if (state.isOtpVerifying) ...[
                     const SizedBox(height: AppSpacing.sm),
-                    const Center(child: CircularProgressIndicator()),
+                    const Center(child: CircularProgressIndicator.adaptive()),
                   ],
                   const SizedBox(height: AppSpacing.sm),
                   Row(

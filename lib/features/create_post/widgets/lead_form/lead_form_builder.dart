@@ -6,6 +6,7 @@ import 'form_intro_step.dart';
 import 'form_fields_step.dart';
 import 'form_privacy_step.dart';
 import 'form_preview.dart';
+import '../../../../core/utils/app_messenger.dart';
 
 class LeadFormBuilder extends StatefulWidget {
   final LeadFormData? leadForm;
@@ -127,7 +128,7 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
               if (ctrl.text.isNotEmpty) {
                 widget.onSaveTemplate(ctrl.text.trim(), Icons.star_border_rounded);
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
+                AppMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Template "${ctrl.text.trim()}" saved!', style: TextStyle(color: context.colors.textPrimary)),
                     behavior: SnackBarBehavior.floating,

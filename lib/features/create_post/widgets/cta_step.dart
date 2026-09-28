@@ -5,6 +5,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/create_post_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class CtaStep extends StatelessWidget {
   final PostObjective objective;
@@ -217,7 +218,7 @@ class CtaStep extends StatelessWidget {
                 onPressed: () {
                   Haptics.selection();
                   Clipboard.setData(ClipboardData(text: generatedUrl));
-                  ScaffoldMessenger.of(context).showSnackBar(
+                  AppMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('URL copied to clipboard!')),
                   );
                 },

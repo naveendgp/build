@@ -135,14 +135,13 @@ class _LyketButtonState extends State<LyketButton>
                   ? SizedBox(
                       width: 22,
                       height: 22,
-                      child: CircularProgressIndicator(
+                      child: CircularProgressIndicator.adaptive(
                         strokeWidth: 2.5,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           widget.isOutlined
                               ? context.colors.primaryAccent
                               : Colors.white,
-                        ),
-                      ),
+                        )),
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,

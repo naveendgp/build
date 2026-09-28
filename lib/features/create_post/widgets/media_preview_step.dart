@@ -653,7 +653,7 @@ class _VideoPreviewWidgetState extends State<_VideoPreviewWidget> {
       return Container(
         color: Colors.black26,
         child: const Center(
-          child: CircularProgressIndicator(color: Colors.white54),
+          child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white54)),
         ),
       );
     }

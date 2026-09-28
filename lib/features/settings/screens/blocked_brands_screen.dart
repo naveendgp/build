@@ -115,7 +115,7 @@ class BlockedBrandsScreen extends ConsumerWidget {
             },
           );
         },
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, st) => Center(
           child: Text('Failed to load blocked brands.', style: TextStyle(color: context.colors.error)),
         ),

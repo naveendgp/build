@@ -312,7 +312,7 @@ class PreferencesScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
               error: (e, st) => const Center(child: Text('Error loading settings')),
             )
           else
@@ -355,7 +355,7 @@ class PreferencesScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
               error: (e, st) => const Center(child: Text('Error loading settings')),
             ),
         ],

@@ -41,7 +41,7 @@ class BrandReviewsTab extends ConsumerWidget {
           },
           loading: () => const SizedBox(
             height: 150,
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: CircularProgressIndicator.adaptive()),
           ),
           error: (_, __) => const SizedBox.shrink(),
         ),
@@ -109,7 +109,7 @@ class BrandReviewsTab extends ConsumerWidget {
           },
           loading: () => const Padding(
             padding: EdgeInsets.only(top: 40),
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(child: CircularProgressIndicator.adaptive()),
           ),
           error: (error, _) => Center(
             child: Text('Failed to load reviews\n$error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),

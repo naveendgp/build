@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/user_profile_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   final UserProfileData profile;
@@ -41,7 +42,7 @@ class ProfileActionButtons extends StatelessWidget {
                 Clipboard.setData(
                   ClipboardData(text: '@${profile.username}'),
                 );
-                ScaffoldMessenger.of(context).showSnackBar(
+                AppMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Profile link copied!')),
                 );
               },

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../brand_dashboard/providers/dashboard_providers.dart';
 import '../../brand_dashboard/models/dashboard_models.dart';
+import '../../../core/utils/app_messenger.dart';
 
 final archivedPostsProvider = FutureProvider.autoDispose<List<PostAnalytics>>((ref) async {
   final service = ref.watch(dashboardServiceProvider);
@@ -39,7 +41,7 @@ class ArchivedPostsScreen extends ConsumerWidget {
         ),
       ),
       body: archivedAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, stack) => Center(
           child: Text('Failed to load archived posts', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
         ),
@@ -135,31 +137,19 @@ class _ArchivedPostItem extends ConsumerWidget {
           const SizedBox(width: AppSpacing.sm),
           GestureDetector(
             onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: context.colors.surface,
-                  title: Text('Repost?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-                  content: Text('This post will be restored to your public feed.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text('Cancel', style: AppTypography.buttonSmall.copyWith(color: context.colors.textSecondary)),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: Text('Repost', style: AppTypography.buttonSmall.copyWith(color: context.colors.primaryAccent)),
-                    ),
-                  ],
-                ),
-              );
+              final confirm = await showAdaptiveConfirmDialog(
+                                      context,
+                                      title: 'Repost?',
+                                      message: 'This post will be restored to your public feed.',
+                                      confirmLabel: 'Repost',
+                                    );
 
               if (confirm == true) {
                 await ref.read(dashboardServiceProvider).unarchivePost(post.id);
                 ref.invalidate(archivedPostsProvider);
                 // Invalidate home feed and dashboard
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post restored successfully')));
+                  AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post restored successfully')));
                 }
               }
             },
@@ -182,35 +172,24 @@ class _ArchivedPostItem extends ConsumerWidget {
           const SizedBox(width: 8),
           GestureDetector(
             onTap: () async {
-              final confirm = await showDialog<bool>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  backgroundColor: context.colors.surface,
-                  title: Text('Delete Post?', style: AppTypography.titleMedium.copyWith(color: context.colors.error)),
-                  content: Text('This will permanently delete the post. This action cannot be undone.', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text('Cancel', style: AppTypography.buttonSmall.copyWith(color: context.colors.textSecondary)),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      child: Text('Delete', style: AppTypography.buttonSmall.copyWith(color: context.colors.error)),
-                    ),
-                  ],
-                ),
-              );
+              final confirm = await showAdaptiveConfirmDialog(
+                                      context,
+                                      title: 'Delete Post?',
+                                      message: 'This will permanently delete the post. This action cannot be undone.',
+                                      confirmLabel: 'Delete',
+                                      isDestructive: true,
+                                    );
 
               if (confirm == true) {
                 try {
                   await ref.read(dashboardServiceProvider).deletePost(post.id);
                   ref.invalidate(archivedPostsProvider);
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted permanently')));
+                    AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted permanently')));
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete post: $e')));
+                    AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete post: $e')));
                   }
                 }
               }

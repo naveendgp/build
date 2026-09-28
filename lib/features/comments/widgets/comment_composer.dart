@@ -231,10 +231,9 @@ class _CommentComposerState extends State<CommentComposer> {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(
+                      child: CircularProgressIndicator.adaptive(
                         strokeWidth: 2,
-                        color: Colors.white,
-                      ),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                     )
                   : AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),

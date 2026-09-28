@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/create_post_models.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/adaptive/adaptive.dart';
 import '../../../../core/theme/app_spacing.dart';
 
 class FormQuestionCard extends StatelessWidget {
@@ -163,9 +164,9 @@ class FormQuestionCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Text('Required', style: TextStyle(fontSize: 12, color: context.colors.textSecondary)),
-                Switch(
+                AdaptiveSwitch(
                   value: field.isRequired,
-                  activeThumbColor: context.colors.primaryAccent,
+                  activeColor: context.colors.primaryAccent,
                   onChanged: (val) {
                     onUpdate(field.copyWith(isRequired: val));
                   },

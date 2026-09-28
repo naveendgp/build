@@ -102,12 +102,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           child: SizedBox(
             width: 32,
             height: 32,
-            child: CircularProgressIndicator(
+            child: CircularProgressIndicator.adaptive(
               strokeWidth: 1.5,
               valueColor: AlwaysStoppedAnimation<Color>(
                 context.colors.primaryAccent.withValues(alpha: 0.4),
-              ),
-            ),
+              )),
           ),
         );
       },

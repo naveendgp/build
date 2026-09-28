@@ -116,10 +116,9 @@ class _PremiumPostCTAButtonState extends State<PremiumPostCTAButton>
                       ? const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator.adaptive(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            strokeWidth: 2),
                         )
                       : const Icon(
                           Icons.chevron_right_rounded,
