@@ -9,11 +9,12 @@ import '../../../core/network/api_client.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/router/app_router.dart';
 import '../../auth/providers/auth_provider.dart';
+
 final userProfileProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final apiClient = ref.watch(apiClientProvider);
   final meRes = await apiClient.dio.get('/auth/me');
   final role = meRes.data['role'];
-  
+
   if (role == 'BRAND') {
     final res = await apiClient.dio.get('/brand/profile');
     return {...res.data, 'role': 'BRAND'};
@@ -51,7 +52,7 @@ class HamburgerMenuSheet extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 24),
-          
+
           // Profile Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -61,8 +62,15 @@ class HamburgerMenuSheet extends ConsumerWidget {
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
-                    backgroundImage: (data['profilePic'] != null && data['profilePic'].toString().trim().isNotEmpty) ? NetworkImage(ApiClient.resolveMediaUrl(data['profilePic'].toString())) : null,
-                    child: (data['profilePic'] == null || data['profilePic'].toString().trim().isEmpty) ? Icon(Icons.person, color: context.colors.primaryAccent) : null,
+                    backgroundImage:
+                        (data['profilePic'] != null &&
+                            data['profilePic'].toString().trim().isNotEmpty)
+                        ? NetworkImage(ApiClient.resolveMediaUrl(data['profilePic'].toString()))
+                        : null,
+                    child:
+                        (data['profilePic'] == null || data['profilePic'].toString().trim().isEmpty)
+                        ? Icon(Icons.person, color: context.colors.primaryAccent)
+                        : null,
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -71,11 +79,16 @@ class HamburgerMenuSheet extends ConsumerWidget {
                       children: [
                         Text(
                           data['name'] ?? 'User Name',
-                          style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                          style: AppTypography.titleMedium.copyWith(
+                            color: context.colors.textPrimary,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         Text(
                           data['email'] ?? 'user@example.com',
-                          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
                         ),
                       ],
                     ),
@@ -90,15 +103,26 @@ class HamburgerMenuSheet extends ConsumerWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Account', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold)),
-                      Text('Error loading profile', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                      Text(
+                        'Account',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: context.colors.textPrimary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Error loading profile',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-          
+
           SizedBox(height: 24),
           Divider(color: context.colors.border),
           const SizedBox(height: 8),
@@ -107,7 +131,10 @@ class HamburgerMenuSheet extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 24),
             leading: Icon(AppIcons.darkMode, color: context.colors.textPrimary),
-            title: Text('Dark Mode', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+            title: Text(
+              'Dark Mode',
+              style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+            ),
             trailing: AdaptiveSwitch(
               value: isDark,
               onChanged: (val) {
@@ -132,37 +159,40 @@ class HamburgerMenuSheet extends ConsumerWidget {
           _buildMenuItem(context, AppIcons.tickets, 'My Tickets', () {
             context.push('/help?tab=tickets');
           }),
-          
+
           SizedBox(height: 8),
           Divider(color: context.colors.border),
           const SizedBox(height: 8),
 
           // Logout
-          _buildMenuItem(
-            context, 
-            AppIcons.logout, 
-            'Log out', 
-            () async {
-              // Call logout
-              await ref.read(authProvider.notifier).logout();
-              
-              AppRouter.router.go('/login');
-            },
-            isDestructive: true,
-          ),
+          _buildMenuItem(context, AppIcons.logout, 'Log out', () async {
+            // Call logout
+            await ref.read(authProvider.notifier).logout();
+
+            AppRouter.router.go('/login');
+          }, isDestructive: true),
         ],
       ),
     );
   }
 
-  Widget _buildMenuItem(BuildContext context, IconData icon, String title, VoidCallback onTap, {bool isDestructive = false}) {
+  Widget _buildMenuItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    VoidCallback onTap, {
+    bool isDestructive = false,
+  }) {
     final color = isDestructive ? context.colors.error : context.colors.textPrimary;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24),
       leading: Icon(icon, color: color),
       title: Text(
         title,
-        style: AppTypography.bodyLarge.copyWith(color: color, fontWeight: isDestructive ? FontWeight.w600 : FontWeight.normal),
+        style: AppTypography.bodyLarge.copyWith(
+          color: color,
+          fontWeight: isDestructive ? FontWeight.w600 : FontWeight.normal,
+        ),
       ),
       onTap: () {
         Navigator.pop(context);

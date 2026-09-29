@@ -11,18 +11,13 @@ class MediaSelectionStep extends StatefulWidget {
   final VoidCallback onPickImages;
   final VoidCallback onPickVideo;
 
-  const MediaSelectionStep({
-    super.key,
-    required this.onPickImages,
-    required this.onPickVideo,
-  });
+  const MediaSelectionStep({super.key, required this.onPickImages, required this.onPickVideo});
 
   @override
   State<MediaSelectionStep> createState() => _MediaSelectionStepState();
 }
 
-class _MediaSelectionStepState extends State<MediaSelectionStep>
-    with TickerProviderStateMixin {
+class _MediaSelectionStepState extends State<MediaSelectionStep> with TickerProviderStateMixin {
   late final AnimationController _entryController;
   late final AnimationController _dashController;
   late final Animation<double> _scaleAnim;
@@ -37,20 +32,12 @@ class _MediaSelectionStepState extends State<MediaSelectionStep>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _scaleAnim = CurvedAnimation(
-      parent: _entryController,
-      curve: Curves.easeOutBack,
-    );
-    _fadeAnim = CurvedAnimation(
-      parent: _entryController,
-      curve: Curves.easeOut,
-    );
+    _scaleAnim = CurvedAnimation(parent: _entryController, curve: Curves.easeOutBack);
+    _fadeAnim = CurvedAnimation(parent: _entryController, curve: Curves.easeOut);
 
     // â”€â”€ Animated dashed border rotation â”€â”€
-    _dashController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 12),
-    )..repeat();
+    _dashController = AnimationController(vsync: this, duration: const Duration(seconds: 12))
+      ..repeat();
 
     _entryController.forward();
   }
@@ -136,10 +123,7 @@ class _MediaSelectionStepState extends State<MediaSelectionStep>
               decoration: BoxDecoration(
                 color: context.colors.card,
                 borderRadius: AppSpacing.borderRadiusXxl,
-                border: Border.all(
-                  color: context.colors.border,
-                  width: 1,
-                ),
+                border: Border.all(color: context.colors.border, width: 1),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -182,9 +166,7 @@ class _MediaSelectionStepState extends State<MediaSelectionStep>
                   // Subtitle
                   Text(
                     'Tap to select media',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: context.colors.textTertiary,
-                    ),
+                    style: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -229,11 +211,7 @@ class _GlassActionButton extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _GlassActionButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _GlassActionButton({required this.icon, required this.label, required this.onTap});
 
   @override
   State<_GlassActionButton> createState() => _GlassActionButtonState();
@@ -267,24 +245,14 @@ class _GlassActionButtonState extends State<_GlassActionButton> {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.06),
                 borderRadius: AppSpacing.borderRadiusLg,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    widget.icon,
-                    color: context.colors.textPrimary,
-                    size: AppSpacing.iconMd,
-                  ),
+                  Icon(widget.icon, color: context.colors.textPrimary, size: AppSpacing.iconMd),
                   const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    widget.label,
-                    style: AppTypography.labelLarge,
-                  ),
+                  Text(widget.label, style: AppTypography.labelLarge),
                 ],
               ),
             ),
@@ -321,10 +289,7 @@ class _AnimatedDashBorderPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    final rrect = RRect.fromRectAndRadius(
-      Offset.zero & size,
-      Radius.circular(borderRadius),
-    );
+    final rrect = RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(borderRadius));
 
     final path = Path()..addRRect(rrect);
     final metrics = path.computeMetrics().first;

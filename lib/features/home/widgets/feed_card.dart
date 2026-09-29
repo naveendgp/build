@@ -88,10 +88,7 @@ class FeedCard extends ConsumerWidget {
                 post.ctaLabel!.trim().toLowerCase() != 'none' &&
                 post.ctaType != 'NONE') ...[
               const SizedBox(height: 8),
-              PremiumPostCTAButton(
-                label: post.ctaLabel!,
-                onTap: () => _handleCtaTap(context, ref),
-              ),
+              PremiumPostCTAButton(label: post.ctaLabel!, onTap: () => _handleCtaTap(context, ref)),
             ],
             // Bottom info
             _buildFooter(context, ref),
@@ -103,9 +100,7 @@ class FeedCard extends ConsumerWidget {
 
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-    final isOwner =
-        authState.loggedInRole == UserRole.brand &&
-        authState.brandId == post.brandId;
+    final isOwner = authState.loggedInRole == UserRole.brand && authState.brandId == post.brandId;
     final isBrand = authState.loggedInRole == UserRole.brand;
 
     return Padding(
@@ -128,10 +123,7 @@ class FeedCard extends ConsumerWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: context.colors.surface,
-                      border: Border.all(
-                        color: context.colors.border,
-                        width: 0.5,
-                      ),
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: CachedNetworkImage(
@@ -179,11 +171,7 @@ class FeedCard extends ConsumerWidget {
                             ),
                             if (post.isVerified) ...[
                               const SizedBox(width: 4),
-                              Icon(
-                                Icons.verified_rounded,
-                                size: 14,
-                                color: Colors.red,
-                              ),
+                              Icon(Icons.verified_rounded, size: 14, color: Colors.red),
                             ],
                           ],
                         ),
@@ -208,25 +196,16 @@ class FeedCard extends ConsumerWidget {
               onTap: onFollow,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 decoration: BoxDecoration(
-                  color: post.isFollowing
-                      ? Colors.transparent
-                      : context.colors.primaryAccent,
+                  color: post.isFollowing ? Colors.transparent : context.colors.primaryAccent,
                   borderRadius: AppSpacing.borderRadiusFull,
-                  border: post.isFollowing
-                      ? Border.all(color: context.colors.border)
-                      : null,
+                  border: post.isFollowing ? Border.all(color: context.colors.border) : null,
                 ),
                 child: Text(
                   post.isFollowing ? 'Following' : 'Follow',
                   style: AppTypography.labelSmall.copyWith(
-                    color: post.isFollowing
-                        ? context.colors.textSecondary
-                        : Colors.white,
+                    color: post.isFollowing ? context.colors.textSecondary : Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 11,
                   ),
@@ -240,11 +219,7 @@ class FeedCard extends ConsumerWidget {
               onTap: () => _showPostMenu(context, ref, isOwner: isOwner),
               child: Padding(
                 padding: EdgeInsets.all(6),
-                child: Icon(
-                  Icons.more_vert_rounded,
-                  size: 20,
-                  color: context.colors.textTertiary,
-                ),
+                child: Icon(Icons.more_vert_rounded, size: 20, color: context.colors.textTertiary),
               ),
             ),
         ],
@@ -274,11 +249,17 @@ class FeedCard extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               if (isOwner) ...[
                 ListTile(
                   leading: Icon(Icons.bar_chart_rounded, color: context.colors.textPrimary),
-                  title: Text('View Analytics', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  title: Text(
+                    'View Analytics',
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     context.push('/brand-dashboard');
@@ -286,62 +267,85 @@ class FeedCard extends ConsumerWidget {
                 ),
                 ListTile(
                   leading: Icon(Icons.archive_outlined, color: context.colors.textPrimary),
-                  title: Text('Archive Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                  title: Text(
+                    'Archive Post',
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   onTap: () async {
                     Navigator.pop(context); // Close menu
                     final confirm = await showAdaptiveConfirmDialog(
-                                            context,
-                                            title: 'Archive Post?',
-                                            message: 'This post will be removed from public feeds and brand profiles.\n\nAnalytics, leads, comments, and engagement data will be preserved.',
-                                            confirmLabel: 'Archive Post',
-                                          );
-                    
+                      context,
+                      title: 'Archive Post?',
+                      message:
+                          'This post will be removed from public feeds and brand profiles.\n\nAnalytics, leads, comments, and engagement data will be preserved.',
+                      confirmLabel: 'Archive Post',
+                    );
+
                     if (confirm == true) {
                       await ref.read(feedProvider.notifier).archivePost(post.id);
                       if (context.mounted) {
-                        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post archived successfully')));
+                        AppMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('Post archived successfully')));
                       }
                     }
                   },
                 ),
                 ListTile(
                   leading: Icon(Icons.delete_outline, color: context.colors.error),
-                  title: Text('Delete Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error, fontWeight: FontWeight.w600)),
+                  title: Text(
+                    'Delete Post',
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: context.colors.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   onTap: () async {
                     Navigator.pop(context); // Close menu
                     final confirm = await showAdaptiveConfirmDialog(
-                                            context,
-                                            title: 'Delete Post',
-                                            message: 'Are you sure you want to delete this post? This action cannot be undone.',
-                                            confirmLabel: 'Delete',
-                                            isDestructive: true,
-                                          );
+                      context,
+                      title: 'Delete Post',
+                      message:
+                          'Are you sure you want to delete this post? This action cannot be undone.',
+                      confirmLabel: 'Delete',
+                      isDestructive: true,
+                    );
                     if (confirm == true) {
                       await ref.read(feedProvider.notifier).deletePost(post.id);
                       if (context.mounted) {
-                        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+                        AppMessenger.of(
+                          context,
+                        ).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
                       }
                     }
                   },
                 ),
               ],
-              
+
               if (!isOwner) ...[
                 ListTile(
                   leading: Icon(Icons.share_outlined, color: context.colors.textPrimary),
-                  title: Text('Share Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
-                  onTap: () { Navigator.pop(context); onShare(); },
+                  title: Text(
+                    'Share Post',
+                    style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    onShare();
+                  },
                 ),
                 if (ref.read(authProvider).loggedInRole == UserRole.user)
                   Consumer(
                     builder: (context, ref, _) {
-                      final isInterested = ref.watch(interestsProvider
-                          .select((s) => s.interestedIds.contains(post.id)));
+                      final isInterested = ref.watch(
+                        interestsProvider.select((s) => s.interestedIds.contains(post.id)),
+                      );
                       return ListTile(
                         leading: Icon(
-                          isInterested
-                              ? Icons.favorite_rounded
-                              : Icons.favorite_border_rounded,
+                          isInterested ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                           color: isInterested
                               ? context.colors.primaryAccent
                               : context.colors.textPrimary,
@@ -356,21 +360,17 @@ class FeedCard extends ConsumerWidget {
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          final notifier =
-                              ref.read(interestsProvider.notifier);
+                          final notifier = ref.read(interestsProvider.notifier);
                           if (isInterested) {
                             notifier.removeInterest(post.id);
-                            AppMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text('Removed from interests')),
-                            );
+                            AppMessenger.of(
+                              context,
+                            ).showSnackBar(const SnackBar(content: Text('Removed from interests')));
                           } else {
                             notifier.addInterest(post.id);
-                            AppMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text('Added to interests')),
-                            );
+                            AppMessenger.of(
+                              context,
+                            ).showSnackBar(const SnackBar(content: Text('Added to interests')));
                           }
                         },
                       );
@@ -379,16 +379,24 @@ class FeedCard extends ConsumerWidget {
                 if (!isDetailMode)
                   ListTile(
                     leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),
-                    title: Text('Not Interested', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                    title: Text(
+                      'Not Interested',
+                      style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                    ),
                     onTap: () {
                       Navigator.pop(context);
                       ref.read(feedProvider.notifier).markNotInterested(post.id);
-                      AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('We will show fewer posts like this.')));
+                      AppMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('We will show fewer posts like this.')),
+                      );
                     },
                   ),
                 ListTile(
                   leading: Icon(Icons.report_outlined, color: context.colors.error),
-                  title: Text('Report Post', style: AppTypography.bodyLarge.copyWith(color: context.colors.error)),
+                  title: Text(
+                    'Report Post',
+                    style: AppTypography.bodyLarge.copyWith(color: context.colors.error),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     context.push('/help/live-chat?category=SPAM');
@@ -439,79 +447,70 @@ class FeedCard extends ConsumerWidget {
             initialPosition: post.bestFrameTimestamp,
           )
         : (post.carouselUrls != null && post.carouselUrls!.length > 1)
-            ? MediaCarousel(
-                imageUrls: post.carouselUrls!,
-                aspectRatio: 1.0,
-              )
-            : AspectRatio(
-                aspectRatio: 1.0,
-                child: CachedNetworkImage(
-                  imageUrl: post.mediaUrl,
-                  fit: BoxFit.cover,
-                  memCacheWidth: 800,
-                  placeholder: (context, url) => Container(
-                    color: context.colors.surface,
-                    child: Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator.adaptive(
-                          strokeWidth: 1.5,
-                          valueColor: AlwaysStoppedAnimation(
-                            context.colors.primaryAccent.withValues(alpha: 0.3),
-                          )),
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: context.colors.surface,
-                    child: Center(
-                      child: Text(
-                        'Err: $url\n\n${error.toString()}',
-                        style: TextStyle(
-                          color: context.colors.error,
-                          fontSize: 10,
-                        ),
-                        textAlign: TextAlign.center,
+        ? MediaCarousel(imageUrls: post.carouselUrls!, aspectRatio: 1.0)
+        : AspectRatio(
+            aspectRatio: 1.0,
+            child: CachedNetworkImage(
+              imageUrl: post.mediaUrl,
+              fit: BoxFit.cover,
+              memCacheWidth: 800,
+              placeholder: (context, url) => Container(
+                color: context.colors.surface,
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator.adaptive(
+                      strokeWidth: 1.5,
+                      valueColor: AlwaysStoppedAnimation(
+                        context.colors.primaryAccent.withValues(alpha: 0.3),
                       ),
                     ),
                   ),
                 ),
-              );
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: context.colors.surface,
+                child: Center(
+                  child: Text(
+                    'Err: $url\n\n${error.toString()}',
+                    style: TextStyle(color: context.colors.error, fontSize: 10),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          );
   }
 
   void _handleCtaTap(BuildContext context, WidgetRef ref) async {
     if (post.ctaType == 'OPEN_LEAD_FORM') {
       final formId = post.ctaPayload?['leadFormId'];
       if (formId != null) {
-        LeadFormViewerSheet.show(
-          context,
-          post.id,
-          formId,
-          post.brandAvatar,
-          post.brandName,
-        );
+        LeadFormViewerSheet.show(context, post.id, formId, post.brandAvatar, post.brandName);
       }
     } else if (post.ctaType == 'OPEN_CHAT') {
       final authState = ref.read(authProvider);
       if (authState.brandId == post.brandId) {
         AppMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Users will be taken to a chat with you when they tap this!')),
+          const SnackBar(
+            content: Text('Users will be taken to a chat with you when they tap this!'),
+          ),
         );
         return;
       }
-      
+
       try {
         final api = ref.read(apiClientProvider);
         final res = await api.dio.post('/conversations/start', data: {'brandId': post.brandId});
         final conversationId = res.data['id'];
-        
+
         final prefilledMessage = post.ctaPayload?['prefilledMessage'];
         String route = '/messages/$conversationId';
         if (prefilledMessage != null && prefilledMessage.toString().isNotEmpty) {
           route += '?prefilled=${Uri.encodeComponent(prefilledMessage.toString())}';
         }
-        
+
         if (!context.mounted) return;
         context.push(route);
       } catch (e) {
@@ -584,8 +583,7 @@ class FeedCard extends ConsumerWidget {
             commentCount: post.commentCount,
             shareCount: post.shareCount,
             onLike: onLike,
-            onComment: () =>
-                CommentSheet.show(context, post.id, post.commentCount),
+            onComment: () => CommentSheet.show(context, post.id, post.commentCount),
             onBookmark: onBookmark,
             onShare: onShare,
             onReminder: onReminder,
@@ -669,17 +667,11 @@ class _ExpandablePostDescriptionState extends State<ExpandablePostDescription> {
             children: widget.post.tags
                 .map(
                   (tag) => Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 3,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: context.colors.surface,
                       borderRadius: AppSpacing.borderRadiusFull,
-                      border: Border.all(
-                        color: context.colors.border,
-                        width: 0.5,
-                      ),
+                      border: Border.all(color: context.colors.border, width: 0.5),
                     ),
                     child: Text(
                       '#$tag',

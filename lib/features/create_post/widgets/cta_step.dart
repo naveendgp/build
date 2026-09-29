@@ -35,14 +35,17 @@ class CtaStep extends StatelessWidget {
   String _generateUtmUrl() {
     String base = ctaData.destinationUrl?.trim() ?? '';
     if (base.isEmpty) return '';
-    
+
     final uri = Uri.tryParse(base);
     if (uri == null) return base;
 
     final Map<String, String> params = Map.from(uri.queryParameters);
-    if (ctaData.utmSource != null && ctaData.utmSource!.isNotEmpty) params['utm_source'] = ctaData.utmSource!;
-    if (ctaData.utmMedium != null && ctaData.utmMedium!.isNotEmpty) params['utm_medium'] = ctaData.utmMedium!;
-    if (ctaData.utmCampaign != null && ctaData.utmCampaign!.isNotEmpty) params['utm_campaign'] = ctaData.utmCampaign!;
+    if (ctaData.utmSource != null && ctaData.utmSource!.isNotEmpty)
+      params['utm_source'] = ctaData.utmSource!;
+    if (ctaData.utmMedium != null && ctaData.utmMedium!.isNotEmpty)
+      params['utm_medium'] = ctaData.utmMedium!;
+    if (ctaData.utmCampaign != null && ctaData.utmCampaign!.isNotEmpty)
+      params['utm_campaign'] = ctaData.utmCampaign!;
 
     if (params.isEmpty) return base;
     return uri.replace(queryParameters: params).toString();
@@ -58,15 +61,9 @@ class CtaStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Call to Action',
-            style: AppTypography.headlineMedium,
-          ),
+          Text('Call to Action', style: AppTypography.headlineMedium),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            'Choose a button for your campaign',
-            style: AppTypography.bodyMedium,
-          ),
+          Text('Choose a button for your campaign', style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.xl),
           Wrap(
             spacing: AppSpacing.md,
@@ -81,9 +78,14 @@ class CtaStep extends StatelessWidget {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.lg,
+                    vertical: AppSpacing.md,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected ? meta.accentColor.withValues(alpha: 0.15) : context.colors.card,
+                    color: isSelected
+                        ? meta.accentColor.withValues(alpha: 0.15)
+                        : context.colors.card,
                     borderRadius: AppSpacing.borderRadiusMd,
                     border: Border.all(
                       color: isSelected ? meta.accentColor : context.colors.border,
@@ -101,20 +103,22 @@ class CtaStep extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: AppSpacing.xxl),
-          if (ctaData.type != CtaType.noButton && objective != PostObjective.leadGeneration && objective != PostObjective.messaging) ...[
-            Text(
-              'Destination URL',
-              style: AppTypography.labelLarge,
-            ),
+          if (ctaData.type != CtaType.noButton &&
+              objective != PostObjective.leadGeneration &&
+              objective != PostObjective.messaging) ...[
+            Text('Destination URL', style: AppTypography.labelLarge),
             const SizedBox(height: AppSpacing.sm),
             Container(
               decoration: BoxDecoration(
                 color: context.colors.card,
                 borderRadius: AppSpacing.borderRadiusLg,
                 border: Border.all(
-                  color: (ctaData.destinationUrl == null || ctaData.destinationUrl!.isEmpty || _isUrlValid(ctaData.destinationUrl)) 
-                      ? context.colors.border 
-                      : context.colors.error
+                  color:
+                      (ctaData.destinationUrl == null ||
+                          ctaData.destinationUrl!.isEmpty ||
+                          _isUrlValid(ctaData.destinationUrl))
+                      ? context.colors.border
+                      : context.colors.error,
                 ),
               ),
               child: TextFormField(
@@ -124,30 +128,62 @@ class CtaStep extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'https://example.com',
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.md,
+                  ),
                   prefixIcon: Icon(Icons.link, color: context.colors.textSecondary),
                 ),
               ),
             ),
-            if (ctaData.destinationUrl != null && ctaData.destinationUrl!.isNotEmpty && !_isUrlValid(ctaData.destinationUrl))
+            if (ctaData.destinationUrl != null &&
+                ctaData.destinationUrl!.isNotEmpty &&
+                !_isUrlValid(ctaData.destinationUrl))
               Padding(
                 padding: const EdgeInsets.only(top: AppSpacing.xs, left: AppSpacing.md),
-                child: Text('Please enter a valid URL (e.g., https://example.com)', style: AppTypography.labelSmall.copyWith(color: context.colors.error)),
+                child: Text(
+                  'Please enter a valid URL (e.g., https://example.com)',
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.error),
+                ),
               ),
             const SizedBox(height: AppSpacing.lg),
             Theme(
               data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
               child: ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('UTM Builder (Optional)', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-                subtitle: Text('Add tracking parameters to your link', style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary)),
+                title: Text(
+                  'UTM Builder (Optional)',
+                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+                ),
+                subtitle: Text(
+                  'Add tracking parameters to your link',
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+                ),
                 children: [
                   const SizedBox(height: AppSpacing.md),
-                  _buildUtmField(context, 'Campaign Source (utm_source)', 'e.g., lyket, facebook', ctaData.utmSource, onUtmSourceChanged),
+                  _buildUtmField(
+                    context,
+                    'Campaign Source (utm_source)',
+                    'e.g., lyket, facebook',
+                    ctaData.utmSource,
+                    onUtmSourceChanged,
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  _buildUtmField(context, 'Campaign Medium (utm_medium)', 'e.g., social, cpc', ctaData.utmMedium, onUtmMediumChanged),
+                  _buildUtmField(
+                    context,
+                    'Campaign Medium (utm_medium)',
+                    'e.g., social, cpc',
+                    ctaData.utmMedium,
+                    onUtmMediumChanged,
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  _buildUtmField(context, 'Campaign Name (utm_campaign)', 'e.g., summer_sale', ctaData.utmCampaign, onUtmCampaignChanged),
+                  _buildUtmField(
+                    context,
+                    'Campaign Name (utm_campaign)',
+                    'e.g., summer_sale',
+                    ctaData.utmCampaign,
+                    onUtmCampaignChanged,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
                   _buildGeneratedUrl(context),
                   const SizedBox(height: AppSpacing.sm),
@@ -160,7 +196,13 @@ class CtaStep extends StatelessWidget {
     );
   }
 
-  Widget _buildUtmField(BuildContext context, String label, String hint, String? value, ValueChanged<String> onChanged) {
+  Widget _buildUtmField(
+    BuildContext context,
+    String label,
+    String hint,
+    String? value,
+    ValueChanged<String> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -179,7 +221,10 @@ class CtaStep extends StatelessWidget {
             decoration: InputDecoration(
               hintText: hint,
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
             ),
           ),
         ),
@@ -197,7 +242,12 @@ class CtaStep extends StatelessWidget {
         Text('Generated URL', style: AppTypography.labelMedium),
         const SizedBox(height: AppSpacing.xs),
         Container(
-          padding: const EdgeInsets.only(left: AppSpacing.md, right: AppSpacing.xs, top: AppSpacing.xs, bottom: AppSpacing.xs),
+          padding: const EdgeInsets.only(
+            left: AppSpacing.md,
+            right: AppSpacing.xs,
+            top: AppSpacing.xs,
+            bottom: AppSpacing.xs,
+          ),
           decoration: BoxDecoration(
             color: context.colors.surface,
             borderRadius: AppSpacing.borderRadiusMd,
@@ -218,9 +268,9 @@ class CtaStep extends StatelessWidget {
                 onPressed: () {
                   Haptics.selection();
                   Clipboard.setData(ClipboardData(text: generatedUrl));
-                  AppMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('URL copied to clipboard!')),
-                  );
+                  AppMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('URL copied to clipboard!')));
                 },
               ),
             ],

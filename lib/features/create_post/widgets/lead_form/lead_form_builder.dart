@@ -34,7 +34,7 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
   @override
   void initState() {
     super.initState();
-    _currentForm = widget.leadForm ?? const LeadFormData(fields: []); 
+    _currentForm = widget.leadForm ?? const LeadFormData(fields: []);
   }
 
   void _handleUpdate(LeadFormData Function(LeadFormData) updater) {
@@ -70,7 +70,11 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
                 color: context.colors.primaryAccent.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(Icons.bookmark_added_rounded, color: context.colors.primaryAccent, size: 22),
+              child: Icon(
+                Icons.bookmark_added_rounded,
+                color: context.colors.primaryAccent,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -121,7 +125,10 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            child: Text('Cancel', style: TextStyle(color: Colors.white60, fontWeight: FontWeight.w600)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.white60, fontWeight: FontWeight.w600),
+            ),
           ),
           ElevatedButton(
             onPressed: () {
@@ -130,7 +137,10 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
                 Navigator.pop(context);
                 AppMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Template "${ctrl.text.trim()}" saved!', style: TextStyle(color: context.colors.textPrimary)),
+                    content: Text(
+                      'Template "${ctrl.text.trim()}" saved!',
+                      style: TextStyle(color: context.colors.textPrimary),
+                    ),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     backgroundColor: context.colors.surface,
@@ -162,7 +172,10 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Lead Form Builder', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(
+                'Lead Form Builder',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
               Row(
                 children: [
                   IconButton(
@@ -176,7 +189,7 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
                     label: const Text('Preview'),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -193,7 +206,9 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
               children: [
                 const Text('Saved Templates', style: TextStyle(fontWeight: FontWeight.bold)),
                 Icon(
-                  _isTemplatesExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                  _isTemplatesExpanded
+                      ? Icons.keyboard_arrow_up_rounded
+                      : Icons.keyboard_arrow_down_rounded,
                   color: Colors.grey,
                 ),
               ],
@@ -214,7 +229,9 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
             ],
           ),
           secondChild: const SizedBox(width: double.infinity, height: 8),
-          crossFadeState: _isTemplatesExpanded ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+          crossFadeState: _isTemplatesExpanded
+              ? CrossFadeState.showFirst
+              : CrossFadeState.showSecond,
           duration: const Duration(milliseconds: 300),
         ),
         Expanded(
@@ -236,30 +253,21 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
                   child: TabBarView(
                     children: [
                       SingleChildScrollView(
-                        child: FormIntroStep(
-                          leadForm: _currentForm,
-                          onUpdate: _handleUpdate,
-                        ),
+                        child: FormIntroStep(leadForm: _currentForm, onUpdate: _handleUpdate),
                       ),
                       SingleChildScrollView(
-                        child: FormFieldsStep(
-                          leadForm: _currentForm,
-                          onUpdate: _handleUpdate,
-                        ),
+                        child: FormFieldsStep(leadForm: _currentForm, onUpdate: _handleUpdate),
                       ),
                       SingleChildScrollView(
-                        child: FormPrivacyStep(
-                          leadForm: _currentForm,
-                          onUpdate: _handleUpdate,
-                        ),
+                        child: FormPrivacyStep(leadForm: _currentForm, onUpdate: _handleUpdate),
                       ),
                     ],
                   ),
-                )
+                ),
               ],
             ),
           ),
-        )
+        ),
       ],
     );
   }

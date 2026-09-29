@@ -34,7 +34,10 @@ class FormTemplatePicker extends StatelessWidget {
             children: [
               Icon(Icons.style_rounded, color: context.colors.textTertiary, size: 32),
               SizedBox(height: AppSpacing.sm),
-              Text('No custom templates saved.', style: TextStyle(color: context.colors.textSecondary)),
+              Text(
+                'No custom templates saved.',
+                style: TextStyle(color: context.colors.textSecondary),
+              ),
             ],
           ),
         ),
@@ -50,7 +53,7 @@ class FormTemplatePicker extends StatelessWidget {
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.md),
         itemBuilder: (context, index) {
           final template = customTemplates[index];
-          
+
           return GestureDetector(
             onTap: () {
               Haptics.selection();

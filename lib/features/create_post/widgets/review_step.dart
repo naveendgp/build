@@ -7,10 +7,7 @@ import '../models/create_post_models.dart';
 class ReviewStep extends StatelessWidget {
   final CreatePostState state;
 
-  const ReviewStep({
-    super.key,
-    required this.state,
-  });
+  const ReviewStep({super.key, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +20,7 @@ class ReviewStep extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text('Almost there! Review your post details.', style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.xl),
-          
+
           _Section(
             title: 'Media',
             child: SizedBox(
@@ -54,7 +51,10 @@ class ReviewStep extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(state.title.isNotEmpty ? state.title : 'No Title', style: AppTypography.labelLarge),
+                Text(
+                  state.title.isNotEmpty ? state.title : 'No Title',
+                  style: AppTypography.labelLarge,
+                ),
                 if (state.description.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.xs),
                   Text(state.description, style: AppTypography.bodyMedium),
@@ -86,8 +86,8 @@ class ReviewStep extends StatelessWidget {
           _Section(
             title: 'Schedule',
             child: Text(
-              state.publishMode == PublishMode.now 
-                  ? 'Publish Now' 
+              state.publishMode == PublishMode.now
+                  ? 'Publish Now'
                   : 'Scheduled: ${state.scheduledAt?.toString() ?? ''}',
               style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
             ),

@@ -58,16 +58,14 @@ class ContentDetailsStep extends StatelessWidget {
           // Title Section
           _SectionLabel(
             label: 'Title',
-            infoMessage: 'Add a short, clear headline to let people know what your '
+            infoMessage:
+                'Add a short, clear headline to let people know what your '
                 'post is about. Keep it concise — it may not appear in every placement.',
           ),
           const SizedBox(height: AppSpacing.sm),
-          _TitleInput(
-            title: title,
-            onChanged: onTitleChanged,
-          ),
+          _TitleInput(title: title, onChanged: onTitleChanged),
           const SizedBox(height: AppSpacing.lg),
-          
+
           // Highlight Banner Configuration
           Container(
             decoration: BoxDecoration(
@@ -76,8 +74,14 @@ class ContentDetailsStep extends StatelessWidget {
               border: Border.all(color: context.colors.border),
             ),
             child: SwitchListTile(
-              title: Text('Highlight Post', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-              subtitle: Text('Pin a scrolling marquee above your post', style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary)),
+              title: Text(
+                'Highlight Post',
+                style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+              ),
+              subtitle: Text(
+                'Pin a scrolling marquee above your post',
+                style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+              ),
               value: isHighlightTitle,
               onChanged: (val) {
                 Haptics.selection();
@@ -88,7 +92,7 @@ class ContentDetailsStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          
+
           if (isHighlightTitle) ...[
             _HighlightBannerConfig(
               message: highlightMessage,
@@ -96,29 +100,22 @@ class ContentDetailsStep extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.lg),
           ],
-          
+
           // Description Section
           _SectionLabel(
             label: 'Description',
-            infoMessage: 'Tell people more about your post — the story, offer, or details '
+            infoMessage:
+                'Tell people more about your post — the story, offer, or details '
                 'behind it. This appears alongside your title to give context.',
           ),
           const SizedBox(height: AppSpacing.sm),
-          _DescriptionInput(
-            description: description,
-            onChanged: onDescriptionChanged,
-          ),
+          _DescriptionInput(description: description, onChanged: onDescriptionChanged),
           const SizedBox(height: AppSpacing.lg),
-          
+
           // Tags Section
           _SectionLabel(label: 'Tags'),
           const SizedBox(height: AppSpacing.sm),
-          TagInput(
-            tags: tags,
-            onAdd: onAddTag,
-            onRemove: onRemoveTag,
-            categoryId: categoryId,
-          ),
+          TagInput(tags: tags, onAdd: onAddTag, onRemove: onRemoveTag, categoryId: categoryId),
         ],
       ),
     );
@@ -135,10 +132,7 @@ class _SectionLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          label,
-          style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
-        ),
+        Text(label, style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary)),
         if (infoMessage != null) ...[
           const SizedBox(width: AppSpacing.xs),
           GestureDetector(
@@ -148,12 +142,23 @@ class _SectionLabel extends StatelessWidget {
                 context: context,
                 builder: (ctx) => AlertDialog(
                   backgroundColor: context.colors.card,
-                  title: Text(label, style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
-                  content: Text(infoMessage!, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                  title: Text(
+                    label,
+                    style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+                  ),
+                  content: Text(
+                    infoMessage!,
+                    style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                  ),
                   actions: [
                     TextButton(
                       onPressed: () => Navigator.pop(ctx),
-                      child: Text('Got it', style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
+                      child: Text(
+                        'Got it',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: context.colors.primaryAccent,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -171,10 +176,7 @@ class _TitleInput extends StatefulWidget {
   final String title;
   final ValueChanged<String> onChanged;
 
-  const _TitleInput({
-    required this.title,
-    required this.onChanged,
-  });
+  const _TitleInput({required this.title, required this.onChanged});
 
   @override
   State<_TitleInput> createState() => _TitleInputState();
@@ -226,7 +228,10 @@ class _TitleInputState extends State<_TitleInput> {
           focusedErrorBorder: InputBorder.none,
           disabledBorder: InputBorder.none,
           filled: false,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
           counterStyle: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
         ),
       ),
@@ -292,7 +297,10 @@ class _DescriptionInputState extends State<_DescriptionInput> {
           focusedErrorBorder: InputBorder.none,
           disabledBorder: InputBorder.none,
           filled: false,
-          contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.md,
+          ),
           counterStyle: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
         ),
       ),
@@ -304,10 +312,7 @@ class _HighlightBannerConfig extends StatelessWidget {
   final String message;
   final ValueChanged<String> onMessageChanged;
 
-  const _HighlightBannerConfig({
-    required this.message,
-    required this.onMessageChanged,
-  });
+  const _HighlightBannerConfig({required this.message, required this.onMessageChanged});
 
   @override
   Widget build(BuildContext context) {

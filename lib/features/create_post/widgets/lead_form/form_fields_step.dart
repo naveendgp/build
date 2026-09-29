@@ -8,11 +8,7 @@ class FormFieldsStep extends StatelessWidget {
   final LeadFormData leadForm;
   final ValueChanged<LeadFormData Function(LeadFormData)> onUpdate;
 
-  const FormFieldsStep({
-    super.key,
-    required this.leadForm,
-    required this.onUpdate,
-  });
+  const FormFieldsStep({super.key, required this.leadForm, required this.onUpdate});
 
   void _addQuestion(BuildContext context) {
     showModalBottomSheet(
@@ -24,9 +20,7 @@ class FormFieldsStep extends StatelessWidget {
           final newFields = [...leadForm.fields, field];
           final customFields = newFields.where((f) => !f.isPrebuilt).toList();
           final prebuiltFields = newFields.where((f) => f.isPrebuilt).toList();
-          onUpdate((current) => current.copyWith(
-            fields: [...customFields, ...prebuiltFields],
-          ));
+          onUpdate((current) => current.copyWith(fields: [...customFields, ...prebuiltFields]));
           Navigator.pop(ctx);
         },
       ),
@@ -54,9 +48,9 @@ class FormFieldsStep extends StatelessWidget {
                 border: Border.all(color: context.colors.borderLight),
               ),
               child: Text(
-                'No questions added yet. Add some questions to capture lead information.', 
-                textAlign: TextAlign.center, 
-                style: TextStyle(color: Colors.grey)
+                'No questions added yet. Add some questions to capture lead information.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
               ),
             )
           else
@@ -72,12 +66,14 @@ class FormFieldsStep extends StatelessWidget {
                 final newFields = List<FormFieldData>.from(fields);
                 newFields.removeAt(oldIndex);
                 newFields.insert(newIndex, item);
-                
+
                 // Enforce custom questions on top, prebuilt questions on bottom
                 final customFields = newFields.where((f) => !f.isPrebuilt).toList();
                 final prebuiltFields = newFields.where((f) => f.isPrebuilt).toList();
-                
-                onUpdate((current) => current.copyWith(fields: [...customFields, ...prebuiltFields]));
+
+                onUpdate(
+                  (current) => current.copyWith(fields: [...customFields, ...prebuiltFields]),
+                );
               },
               itemBuilder: (context, index) {
                 return Padding(
@@ -109,7 +105,10 @@ class FormFieldsStep extends StatelessWidget {
               ),
               onPressed: () => _addQuestion(context),
               icon: Icon(Icons.add_rounded, color: context.colors.primaryAccent),
-              label: Text('Add Question', style: TextStyle(color: context.colors.primaryAccent, fontWeight: FontWeight.bold)),
+              label: Text(
+                'Add Question',
+                style: TextStyle(color: context.colors.primaryAccent, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
@@ -138,31 +137,96 @@ class _AddQuestionSheet extends StatelessWidget {
           children: [
             Text('Add Question', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: AppSpacing.lg),
-            Text('Custom', style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold)),
+            Text(
+              'Custom',
+              style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildTypeBtn(context, 'Short Text', Icons.short_text_rounded, FormFieldType.shortText),
+                _buildTypeBtn(
+                  context,
+                  'Short Text',
+                  Icons.short_text_rounded,
+                  FormFieldType.shortText,
+                ),
                 _buildTypeBtn(context, 'Paragraph', Icons.notes_rounded, FormFieldType.longText),
-                _buildTypeBtn(context, 'Single Choice', Icons.radio_button_checked_rounded, FormFieldType.singleChoice),
-                _buildTypeBtn(context, 'Multiple Choice', Icons.check_box_rounded, FormFieldType.multipleChoice),
-                _buildTypeBtn(context, 'Dropdown', Icons.arrow_drop_down_circle_rounded, FormFieldType.dropDown),
+                _buildTypeBtn(
+                  context,
+                  'Single Choice',
+                  Icons.radio_button_checked_rounded,
+                  FormFieldType.singleChoice,
+                ),
+                _buildTypeBtn(
+                  context,
+                  'Multiple Choice',
+                  Icons.check_box_rounded,
+                  FormFieldType.multipleChoice,
+                ),
+                _buildTypeBtn(
+                  context,
+                  'Dropdown',
+                  Icons.arrow_drop_down_circle_rounded,
+                  FormFieldType.dropDown,
+                ),
+                // Books something: the person picks a date and a time, stored
+                // as an ISO 8601 string.
+                _buildTypeBtn(
+                  context,
+                  'Appointment',
+                  Icons.event_available_rounded,
+                  FormFieldType.appointment,
+                ),
               ],
             ),
             SizedBox(height: AppSpacing.xl),
-            Text('Pre-built', style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold)),
+            Text(
+              'Pre-built',
+              style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildPrebuiltBtn(context, 'Email', Icons.email_rounded, FormFieldType.email, 'email'),
-                _buildPrebuiltBtn(context, 'Phone', Icons.phone_rounded, FormFieldType.phone, 'phone'),
-                _buildPrebuiltBtn(context, 'Gender', Icons.wc_rounded, FormFieldType.singleChoice, 'What is your gender?', ['Male', 'Female', 'Other', 'Prefer not to say']),
-                _buildPrebuiltBtn(context, 'Job Title', Icons.work_rounded, FormFieldType.shortText, 'What is your job title?'),
-                _buildPrebuiltBtn(context, 'Company', Icons.business_rounded, FormFieldType.shortText, 'Company Name'),
+                _buildPrebuiltBtn(
+                  context,
+                  'Email',
+                  Icons.email_rounded,
+                  FormFieldType.email,
+                  'email',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Phone',
+                  Icons.phone_rounded,
+                  FormFieldType.phone,
+                  'phone',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Gender',
+                  Icons.wc_rounded,
+                  FormFieldType.singleChoice,
+                  'What is your gender?',
+                  ['Male', 'Female', 'Other', 'Prefer not to say'],
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Job Title',
+                  Icons.work_rounded,
+                  FormFieldType.shortText,
+                  'What is your job title?',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Company',
+                  Icons.business_rounded,
+                  FormFieldType.shortText,
+                  'Company Name',
+                ),
               ],
             ),
           ],
@@ -178,30 +242,46 @@ class _AddQuestionSheet extends StatelessWidget {
       avatar: Icon(icon, size: 16, color: const Color(0xFF7C5CFF)),
       label: Text(label, style: TextStyle(color: context.colors.textPrimary)),
       onPressed: () {
-        onAdd(FormFieldData(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: type,
-          question: '',
-          options: (type == FormFieldType.singleChoice || type == FormFieldType.multipleChoice || type == FormFieldType.dropDown) ? ['Option 1'] : [],
-        ));
+        onAdd(
+          FormFieldData(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: type,
+            question: '',
+            options:
+                (type == FormFieldType.singleChoice ||
+                    type == FormFieldType.multipleChoice ||
+                    type == FormFieldType.dropDown)
+                ? ['Option 1']
+                : [],
+          ),
+        );
       },
     );
   }
 
-  Widget _buildPrebuiltBtn(BuildContext context, String label, IconData icon, FormFieldType type, String question, [List<String> options = const []]) {
+  Widget _buildPrebuiltBtn(
+    BuildContext context,
+    String label,
+    IconData icon,
+    FormFieldType type,
+    String question, [
+    List<String> options = const [],
+  ]) {
     return ActionChip(
       backgroundColor: context.colors.card,
       side: BorderSide(color: context.colors.borderLight),
       avatar: Icon(icon, size: 16, color: Colors.greenAccent),
       label: Text(label, style: TextStyle(color: context.colors.textPrimary)),
       onPressed: () {
-        onAdd(FormFieldData(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          type: type,
-          question: question,
-          options: options,
-          isPrebuilt: true,
-        ));
+        onAdd(
+          FormFieldData(
+            id: DateTime.now().millisecondsSinceEpoch.toString(),
+            type: type,
+            question: question,
+            options: options,
+            isPrebuilt: true,
+          ),
+        );
       },
     );
   }

@@ -9,14 +9,16 @@ import 'package:image_picker/image_picker.dart';
 import '../models/create_post_models.dart';
 import '../../../core/network/api_client.dart';
 
-final createPostProvider = StateNotifierProvider.autoDispose<CreatePostNotifier, CreatePostState>((ref) {
+final createPostProvider = StateNotifierProvider.autoDispose<CreatePostNotifier, CreatePostState>((
+  ref,
+) {
   final apiClient = ref.watch(apiClientProvider);
   return CreatePostNotifier(apiClient);
 });
 
 class CreatePostNotifier extends StateNotifier<CreatePostState> {
   final ApiClient _apiClient;
-  
+
   CreatePostNotifier(this._apiClient) : super(const CreatePostState()) {
     fetchTemplates();
     _fetchBrandCategory();
@@ -91,11 +93,13 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     }
     final picked = await _picker.pickMultiImage(imageQuality: 70, maxWidth: 1080);
     if (picked.isNotEmpty) {
-      final items = picked.map((file) => MediaItem(
-        id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
-        file: File(file.path),
-        type: MediaType.image,
-      ));
+      final items = picked.map(
+        (file) => MediaItem(
+          id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
+          file: File(file.path),
+          type: MediaType.image,
+        ),
+      );
       state = state.copyWith(media: [...state.media, ...items]);
       return true;
     }
@@ -103,7 +107,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   }
 
   Future<bool> pickVideo({ImageSource source = ImageSource.gallery, int? replaceIndex}) async {
-    final picked = await _picker.pickVideo(source: source, maxDuration: const Duration(minutes: 10));
+    final picked = await _picker.pickVideo(
+      source: source,
+      maxDuration: const Duration(minutes: 10),
+    );
     if (picked != null) {
       final item = MediaItem(
         id: 'media_${DateTime.now().millisecondsSinceEpoch}',
@@ -209,20 +216,26 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   }
 
   void updateCtaType(CtaType type) {
-    state = state.copyWith(cta: (state.cta ?? const CtaData(type: CtaType.learnMore)).copyWith(type: type));
+    state = state.copyWith(
+      cta: (state.cta ?? const CtaData(type: CtaType.learnMore)).copyWith(type: type),
+    );
   }
 
   void updateCtaUrl(String url) {
-    state = state.copyWith(cta: (state.cta ?? const CtaData(type: CtaType.learnMore)).copyWith(destinationUrl: url));
+    state = state.copyWith(
+      cta: (state.cta ?? const CtaData(type: CtaType.learnMore)).copyWith(destinationUrl: url),
+    );
   }
 
   void updateUtm({String? source, String? medium, String? campaign}) {
     final current = state.cta ?? const CtaData(type: CtaType.learnMore);
-    state = state.copyWith(cta: current.copyWith(
-      utmSource: source ?? current.utmSource,
-      utmMedium: medium ?? current.utmMedium,
-      utmCampaign: campaign ?? current.utmCampaign,
-    ));
+    state = state.copyWith(
+      cta: current.copyWith(
+        utmSource: source ?? current.utmSource,
+        utmMedium: medium ?? current.utmMedium,
+        utmCampaign: campaign ?? current.utmCampaign,
+      ),
+    );
   }
 
   // â”€â”€â”€ Lead Form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -242,13 +255,30 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
           final fields = fieldsJson.map((f) {
             FormFieldType mappedType = FormFieldType.shortText;
             switch (f['type']) {
-              case 'SHORT_TEXT': mappedType = FormFieldType.shortText; break;
-              case 'LONG_TEXT': mappedType = FormFieldType.longText; break;
-              case 'EMAIL': mappedType = FormFieldType.email; break;
-              case 'PHONE': mappedType = FormFieldType.phone; break;
-              case 'RADIO': mappedType = FormFieldType.singleChoice; break;
-              case 'CHECKBOX': mappedType = FormFieldType.multipleChoice; break;
-              case 'DROPDOWN': mappedType = FormFieldType.dropDown; break;
+              case 'SHORT_TEXT':
+                mappedType = FormFieldType.shortText;
+                break;
+              case 'LONG_TEXT':
+                mappedType = FormFieldType.longText;
+                break;
+              case 'EMAIL':
+                mappedType = FormFieldType.email;
+                break;
+              case 'PHONE':
+                mappedType = FormFieldType.phone;
+                break;
+              case 'RADIO':
+                mappedType = FormFieldType.singleChoice;
+                break;
+              case 'CHECKBOX':
+                mappedType = FormFieldType.multipleChoice;
+                break;
+              case 'DROPDOWN':
+                mappedType = FormFieldType.dropDown;
+                break;
+              case 'APPOINTMENT':
+                mappedType = FormFieldType.appointment;
+                break;
             }
             return FormFieldData(
               id: f['id'],
@@ -282,44 +312,67 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
 
   Future<void> saveLeadFormTemplate(String name, IconData icon) async {
     if (state.leadForm == null) return;
-    
+
     try {
       // 1. Create the template in the backend (no postId)
-      final formRes = await _apiClient.dio.post('/lead-form', data: {
-        'name': name, // The name chosen by user in the Save Template popup
-        'title': state.leadForm!.headline,
-        'intro': state.leadForm!.description,
-        'thankYouMsg': state.leadForm!.thankYouMessage,
-      });
+      final formRes = await _apiClient.dio.post(
+        '/lead-form',
+        data: {
+          'name': name, // The name chosen by user in the Save Template popup
+          'title': state.leadForm!.headline,
+          'intro': state.leadForm!.description,
+          'thankYouMsg': state.leadForm!.thankYouMessage,
+        },
+      );
 
       if (formRes.statusCode == 200 || formRes.statusCode == 201) {
         final leadFormId = formRes.data['id'];
-        
+
         // 2. Save the fields
         for (int i = 0; i < state.leadForm!.fields.length; i++) {
-           final field = state.leadForm!.fields[i];
-           
-           String backendType = 'SHORT_TEXT';
-           switch(field.type) {
-              case FormFieldType.shortText: backendType = 'SHORT_TEXT'; break;
-              case FormFieldType.longText: backendType = 'LONG_TEXT'; break;
-              case FormFieldType.email: backendType = 'EMAIL'; break;
-              case FormFieldType.phone: backendType = 'PHONE'; break;
-              case FormFieldType.singleChoice: backendType = 'RADIO'; break;
-              case FormFieldType.multipleChoice: backendType = 'CHECKBOX'; break;
-              case FormFieldType.dropDown: backendType = 'DROPDOWN'; break;
-           }
-           
-           await _apiClient.dio.post('/lead-form/field', data: {
+          final field = state.leadForm!.fields[i];
+
+          String backendType = 'SHORT_TEXT';
+          switch (field.type) {
+            case FormFieldType.shortText:
+              backendType = 'SHORT_TEXT';
+              break;
+            case FormFieldType.longText:
+              backendType = 'LONG_TEXT';
+              break;
+            case FormFieldType.email:
+              backendType = 'EMAIL';
+              break;
+            case FormFieldType.phone:
+              backendType = 'PHONE';
+              break;
+            case FormFieldType.singleChoice:
+              backendType = 'RADIO';
+              break;
+            case FormFieldType.multipleChoice:
+              backendType = 'CHECKBOX';
+              break;
+            case FormFieldType.dropDown:
+              backendType = 'DROPDOWN';
+              break;
+            case FormFieldType.appointment:
+              backendType = 'APPOINTMENT';
+              break;
+          }
+
+          await _apiClient.dio.post(
+            '/lead-form/field',
+            data: {
               'formId': leadFormId,
               'label': field.question,
               'type': backendType,
               'isRequired': field.isRequired,
               'options': field.options,
               'order': i,
-           });
+            },
+          );
         }
-        
+
         // Refresh local templates after saving
         await fetchTemplates();
       }
@@ -332,9 +385,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         icon: icon,
         data: state.leadForm!,
       );
-      state = state.copyWith(
-        customTemplates: [...state.customTemplates, newTemplate],
-      );
+      state = state.copyWith(customTemplates: [...state.customTemplates, newTemplate]);
     }
   }
 
@@ -360,21 +411,29 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   Future<void> publish() async {
     if (state.objective == PostObjective.leadGeneration) {
       if (state.leadForm == null || state.leadForm!.fields.isEmpty) {
-        state = state.copyWith(errorMessage: 'A lead form with at least one question is required for the Lead Generation objective.');
+        state = state.copyWith(
+          errorMessage:
+              'A lead form with at least one question is required for the Lead Generation objective.',
+        );
         return;
       }
     }
-    
-    state = state.copyWith(uploadStage: UploadStage.uploading, uploadProgress: 0.0, errorMessage: null);
-    
+
+    state = state.copyWith(
+      uploadStage: UploadStage.uploading,
+      uploadProgress: 0.0,
+      errorMessage: null,
+    );
+
     try {
       final List<Map<String, dynamic>> uploadedMedia = [];
-      
+
       for (int i = 0; i < state.media.length; i++) {
         final item = state.media[i];
         final isVideo = item.type == MediaType.video;
-        
-        final fileToUpload = (item.type == MediaType.image &&
+
+        final fileToUpload =
+            (item.type == MediaType.image &&
                 item.transform != null &&
                 item.previewSize != null &&
                 !_isIdentity(item.transform!))
@@ -385,8 +444,8 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
           'file': await MultipartFile.fromFile(
             fileToUpload.path,
             contentType: isVideo
-              ? http_parser.MediaType('video', 'mp4')
-              : http_parser.MediaType('image', 'jpeg'),
+                ? http_parser.MediaType('video', 'mp4')
+                : http_parser.MediaType('image', 'jpeg'),
           ),
         });
 
@@ -399,22 +458,24 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
           ),
           queryParameters: {'type': 'post'},
           onSendProgress: (count, total) {
-             final baseProgress = i / state.media.length;
-             final currentProgress = (count / total) / state.media.length;
-             state = state.copyWith(uploadProgress: baseProgress + currentProgress);
+            final baseProgress = i / state.media.length;
+            final currentProgress = (count / total) / state.media.length;
+            state = state.copyWith(uploadProgress: baseProgress + currentProgress);
           },
         );
-        
+
         // Clean up temp file if we created one
         if (fileToUpload.path != item.file.path) {
-          try { fileToUpload.deleteSync(); } catch (_) {}
+          try {
+            fileToUpload.deleteSync();
+          } catch (_) {}
         }
-        
+
         if (res.statusCode == 200) {
           uploadedMedia.add({
-             'url': res.data['url'],
-             'type': isVideo ? 'VIDEO' : 'IMAGE',
-             'order': i,
+            'url': res.data['url'],
+            'type': isVideo ? 'VIDEO' : 'IMAGE',
+            'order': i,
           });
         } else {
           throw Exception('Failed to upload media item $i');
@@ -427,12 +488,24 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       String? backendObjective;
       if (state.objective != null) {
         switch (state.objective!) {
-           case PostObjective.awareness: backendObjective = 'AWARENESS'; break;
-           case PostObjective.traffic: backendObjective = 'TRAFFIC'; break;
-           case PostObjective.conversions: backendObjective = 'CONVERSIONS'; break;
-           case PostObjective.leadGeneration: backendObjective = 'LEAD_GENERATION'; break;
-           case PostObjective.messaging: backendObjective = 'MESSAGING'; break;
-           case PostObjective.getDirections: backendObjective = 'GET_DIRECTIONS'; break;
+          case PostObjective.awareness:
+            backendObjective = 'AWARENESS';
+            break;
+          case PostObjective.traffic:
+            backendObjective = 'TRAFFIC';
+            break;
+          case PostObjective.conversions:
+            backendObjective = 'CONVERSIONS';
+            break;
+          case PostObjective.leadGeneration:
+            backendObjective = 'LEAD_GENERATION';
+            break;
+          case PostObjective.messaging:
+            backendObjective = 'MESSAGING';
+            break;
+          case PostObjective.getDirections:
+            backendObjective = 'GET_DIRECTIONS';
+            break;
         }
       }
 
@@ -440,68 +513,136 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       String? backendCtaType;
       if (state.cta != null) {
         switch (state.cta!.type) {
-           case CtaType.visitProfile: backendCtaType = 'VISIT_PROFILE'; break;
-           case CtaType.followUs: backendCtaType = 'FOLLOW_US'; break;
-           case CtaType.noButton: backendCtaType = 'NO_BUTTON'; break;
-           case CtaType.seeMore: backendCtaType = 'SEE_MORE'; break;
-           case CtaType.discover: backendCtaType = 'DISCOVER'; break;
-           case CtaType.visitWebsite: backendCtaType = 'VISIT_WEBSITE'; break;
-           case CtaType.learnMore: backendCtaType = 'LEARN_MORE'; break;
-           case CtaType.shopNow: backendCtaType = 'SHOP_NOW'; break;
-           case CtaType.getOffer: backendCtaType = 'GET_OFFER'; break;
-           case CtaType.viewDetails: backendCtaType = 'VIEW_DETAILS'; break;
-           case CtaType.explore: backendCtaType = 'EXPLORE'; break;
-           case CtaType.bookNow: backendCtaType = 'BOOK_NOW'; break;
-           case CtaType.signUp: backendCtaType = 'SIGN_UP'; break;
-           case CtaType.getQuote: backendCtaType = 'GET_QUOTE'; break;
-           case CtaType.enquireNow: backendCtaType = 'ENQUIRE_NOW'; break;
-           case CtaType.buyNow: backendCtaType = 'BUY_NOW'; break;
-           case CtaType.getStarted: backendCtaType = 'GET_STARTED'; break;
-           case CtaType.getDirections: backendCtaType = 'GET_DIRECTIONS'; break;
-           case CtaType.visitUs: backendCtaType = 'VISIT_US'; break;
-           case CtaType.locateUs: backendCtaType = 'LOCATE_US'; break;
-           case CtaType.sendMessage: backendCtaType = 'SEND_MESSAGE'; break;
-           case CtaType.chatNow: backendCtaType = 'CHAT_NOW'; break;
-           case CtaType.askQuestion: backendCtaType = 'ASK_QUESTION'; break;
-           case CtaType.contactUs: backendCtaType = 'CONTACT_US'; break;
+          case CtaType.visitProfile:
+            backendCtaType = 'VISIT_PROFILE';
+            break;
+          case CtaType.followUs:
+            backendCtaType = 'FOLLOW_US';
+            break;
+          case CtaType.noButton:
+            backendCtaType = 'NO_BUTTON';
+            break;
+          case CtaType.seeMore:
+            backendCtaType = 'SEE_MORE';
+            break;
+          case CtaType.discover:
+            backendCtaType = 'DISCOVER';
+            break;
+          case CtaType.visitWebsite:
+            backendCtaType = 'VISIT_WEBSITE';
+            break;
+          case CtaType.learnMore:
+            backendCtaType = 'LEARN_MORE';
+            break;
+          case CtaType.shopNow:
+            backendCtaType = 'SHOP_NOW';
+            break;
+          case CtaType.getOffer:
+            backendCtaType = 'GET_OFFER';
+            break;
+          case CtaType.viewDetails:
+            backendCtaType = 'VIEW_DETAILS';
+            break;
+          case CtaType.explore:
+            backendCtaType = 'EXPLORE';
+            break;
+          case CtaType.bookNow:
+            backendCtaType = 'BOOK_NOW';
+            break;
+          case CtaType.signUp:
+            backendCtaType = 'SIGN_UP';
+            break;
+          case CtaType.getQuote:
+            backendCtaType = 'GET_QUOTE';
+            break;
+          case CtaType.enquireNow:
+            backendCtaType = 'ENQUIRE_NOW';
+            break;
+          case CtaType.buyNow:
+            backendCtaType = 'BUY_NOW';
+            break;
+          case CtaType.getStarted:
+            backendCtaType = 'GET_STARTED';
+            break;
+          case CtaType.getDirections:
+            backendCtaType = 'GET_DIRECTIONS';
+            break;
+          case CtaType.visitUs:
+            backendCtaType = 'VISIT_US';
+            break;
+          case CtaType.locateUs:
+            backendCtaType = 'LOCATE_US';
+            break;
+          case CtaType.sendMessage:
+            backendCtaType = 'SEND_MESSAGE';
+            break;
+          case CtaType.chatNow:
+            backendCtaType = 'CHAT_NOW';
+            break;
+          case CtaType.askQuestion:
+            backendCtaType = 'ASK_QUESTION';
+            break;
+          case CtaType.contactUs:
+            backendCtaType = 'CONTACT_US';
+            break;
         }
       }
 
       // If Lead Generation objective, create the Lead Form and fields BEFORE creating the post
       String? leadFormId;
       if (state.objective == PostObjective.leadGeneration && state.leadForm != null) {
-         final formRes = await _apiClient.dio.post('/lead-form', data: {
-            'title': state.leadForm!.headline,
-            'intro': state.leadForm!.description,
-         });
-         
-         if (formRes.statusCode == 200 || formRes.statusCode == 201) {
-            leadFormId = formRes.data['id'];
-            
-            for (int i = 0; i < state.leadForm!.fields.length; i++) {
-               final field = state.leadForm!.fields[i];
-               
-               String backendType = 'SHORT_TEXT';
-               switch(field.type) {
-                  case FormFieldType.shortText: backendType = 'SHORT_TEXT'; break;
-                  case FormFieldType.longText: backendType = 'LONG_TEXT'; break;
-                  case FormFieldType.email: backendType = 'EMAIL'; break;
-                  case FormFieldType.phone: backendType = 'PHONE'; break;
-                  case FormFieldType.singleChoice: backendType = 'RADIO'; break;
-                  case FormFieldType.multipleChoice: backendType = 'CHECKBOX'; break;
-                  case FormFieldType.dropDown: backendType = 'DROPDOWN'; break;
-               }
-               
-               await _apiClient.dio.post('/lead-form/field', data: {
-                  'formId': leadFormId,
-                  'label': field.question,
-                  'type': backendType,
-                  'isRequired': field.isRequired,
-                  'options': field.options,
-                  'order': i,
-               });
+        final formRes = await _apiClient.dio.post(
+          '/lead-form',
+          data: {'title': state.leadForm!.headline, 'intro': state.leadForm!.description},
+        );
+
+        if (formRes.statusCode == 200 || formRes.statusCode == 201) {
+          leadFormId = formRes.data['id'];
+
+          for (int i = 0; i < state.leadForm!.fields.length; i++) {
+            final field = state.leadForm!.fields[i];
+
+            String backendType = 'SHORT_TEXT';
+            switch (field.type) {
+              case FormFieldType.shortText:
+                backendType = 'SHORT_TEXT';
+                break;
+              case FormFieldType.longText:
+                backendType = 'LONG_TEXT';
+                break;
+              case FormFieldType.email:
+                backendType = 'EMAIL';
+                break;
+              case FormFieldType.phone:
+                backendType = 'PHONE';
+                break;
+              case FormFieldType.singleChoice:
+                backendType = 'RADIO';
+                break;
+              case FormFieldType.multipleChoice:
+                backendType = 'CHECKBOX';
+                break;
+              case FormFieldType.dropDown:
+                backendType = 'DROPDOWN';
+                break;
+              case FormFieldType.appointment:
+                backendType = 'APPOINTMENT';
+                break;
             }
-         }
+
+            await _apiClient.dio.post(
+              '/lead-form/field',
+              data: {
+                'formId': leadFormId,
+                'label': field.question,
+                'type': backendType,
+                'isRequired': field.isRequired,
+                'options': field.options,
+                'order': i,
+              },
+            );
+          }
+        }
       }
 
       final postData = {
@@ -521,7 +662,8 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         if (state.isHighlightTitle) 'highlightMessage': state.highlightMessage,
         if (state.isHighlightTitle) 'highlightTheme': state.highlightTheme,
         if (state.isHighlightTitle) 'highlightAnimation': state.highlightAnimation,
-        if (state.isHighlightTitle && state.highlightIcon != null) 'highlightIcon': state.highlightIcon,
+        if (state.isHighlightTitle && state.highlightIcon != null)
+          'highlightIcon': state.highlightIcon,
         'publishNow': state.publishMode == PublishMode.now,
         'publishAt': state.scheduledAt?.toUtc().toIso8601String(),
         'timezone': state.publishMode == PublishMode.now ? null : state.timezone,
@@ -530,13 +672,12 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       };
 
       final postRes = await _apiClient.dio.post('/posts', data: postData);
-      
-      if (postRes.statusCode == 201) {
-         state = state.copyWith(uploadStage: UploadStage.complete, uploadProgress: 1.0);
-      } else {
-         throw Exception('Failed to create post');
-      }
 
+      if (postRes.statusCode == 201) {
+        state = state.copyWith(uploadStage: UploadStage.complete, uploadProgress: 1.0);
+      } else {
+        throw Exception('Failed to create post');
+      }
     } on DioException catch (e) {
       debugPrint('Publish error: ${e.response?.data}');
       String msg = e.message ?? 'Unknown error';
@@ -546,16 +687,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       } else if (data is String) {
         msg = '${e.response?.statusCode ?? 'Unknown'} Error (Might be too large)';
       }
-      state = state.copyWith(
-        uploadStage: UploadStage.failed, 
-        errorMessage: 'Server Error: $msg'
-      );
+      state = state.copyWith(uploadStage: UploadStage.failed, errorMessage: 'Server Error: $msg');
     } catch (e) {
       debugPrint('Publish error: $e');
-      state = state.copyWith(
-        uploadStage: UploadStage.failed, 
-        errorMessage: e.toString()
-      );
+      state = state.copyWith(uploadStage: UploadStage.failed, errorMessage: e.toString());
     }
   }
 
@@ -606,9 +741,7 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     // Calculate how to fit the source image into the preview square (BoxFit.cover)
     final srcW = srcImage.width.toDouble();
     final srcH = srcImage.height.toDouble();
-    final scale = srcW / srcH > 1.0
-        ? previewSize.height / srcH
-        : previewSize.width / srcW;
+    final scale = srcW / srcH > 1.0 ? previewSize.height / srcH : previewSize.width / srcW;
     final drawW = srcW * scale;
     final drawH = srcH * scale;
     final drawX = (previewSize.width - drawW) / 2;
@@ -616,7 +749,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
 
     // Render with the user's transform applied
     final recorder = ui.PictureRecorder();
-    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, outputSize.toDouble(), outputSize.toDouble()));
+    final canvas = Canvas(
+      recorder,
+      Rect.fromLTWH(0, 0, outputSize.toDouble(), outputSize.toDouble()),
+    );
     canvas.transform(transform.storage);
     canvas.drawImageRect(
       srcImage,
@@ -642,4 +778,3 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
     return tempFile;
   }
 }
-

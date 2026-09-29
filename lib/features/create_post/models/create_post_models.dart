@@ -4,34 +4,15 @@ import '../../../core/theme/theme_tokens.dart';
 
 // â”€â”€â”€ Enums â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-enum CreateStep {
-  media,
-  preview,
-  details,
-  objective,
-  cta,
-  leadForm,
-  schedule,
-  review,
-}
+enum CreateStep { media, preview, details, objective, cta, leadForm, schedule, review }
 
 enum MediaDimension {
   square, // 1:1
 }
 
-enum MediaType {
-  image,
-  video,
-}
+enum MediaType { image, video }
 
-enum PostObjective {
-  awareness,
-  traffic,
-  leadGeneration,
-  conversions,
-  getDirections,
-  messaging,
-}
+enum PostObjective { awareness, traffic, leadGeneration, conversions, getDirections, messaging }
 
 enum CtaType {
   // Awareness
@@ -71,19 +52,9 @@ enum CtaType {
   contactUs,
 }
 
-enum PublishMode {
-  now,
-  scheduled,
-}
+enum PublishMode { now, scheduled }
 
-enum UploadStage {
-  idle,
-  compressing,
-  uploading,
-  processing,
-  complete,
-  failed,
-}
+enum UploadStage { idle, compressing, uploading, processing, complete, failed }
 
 // â”€â”€â”€ Objective Metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -116,7 +87,14 @@ class ObjectiveMeta {
       // Unified to the app's single red brand color across every objective
       // instead of a distinct hue each — was previously indigo here.
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.visitProfile, CtaType.followUs, CtaType.noButton, CtaType.seeMore, CtaType.learnMore, CtaType.discover],
+      availableCtas: [
+        CtaType.visitProfile,
+        CtaType.followUs,
+        CtaType.noButton,
+        CtaType.seeMore,
+        CtaType.learnMore,
+        CtaType.discover,
+      ],
     ),
     ObjectiveMeta(
       objective: PostObjective.traffic,
@@ -125,7 +103,15 @@ class ObjectiveMeta {
       outcome: 'More website clicks & visits',
       icon: Icons.trending_up_rounded,
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.visitWebsite, CtaType.learnMore, CtaType.shopNow, CtaType.getOffer, CtaType.viewDetails, CtaType.visitProfile, CtaType.explore],
+      availableCtas: [
+        CtaType.visitWebsite,
+        CtaType.learnMore,
+        CtaType.shopNow,
+        CtaType.getOffer,
+        CtaType.viewDetails,
+        CtaType.visitProfile,
+        CtaType.explore,
+      ],
     ),
     ObjectiveMeta(
       objective: PostObjective.leadGeneration,
@@ -134,7 +120,13 @@ class ObjectiveMeta {
       outcome: 'More form submissions & inquiries',
       icon: Icons.person_add_rounded,
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.bookNow, CtaType.signUp, CtaType.getQuote, CtaType.enquireNow, CtaType.learnMore],
+      availableCtas: [
+        CtaType.bookNow,
+        CtaType.signUp,
+        CtaType.getQuote,
+        CtaType.enquireNow,
+        CtaType.learnMore,
+      ],
     ),
     ObjectiveMeta(
       objective: PostObjective.conversions,
@@ -143,7 +135,14 @@ class ObjectiveMeta {
       outcome: 'More sales & sign-ups',
       icon: Icons.shopping_bag_rounded,
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.buyNow, CtaType.shopNow, CtaType.bookNow, CtaType.signUp, CtaType.getOffer, CtaType.getStarted],
+      availableCtas: [
+        CtaType.buyNow,
+        CtaType.shopNow,
+        CtaType.bookNow,
+        CtaType.signUp,
+        CtaType.getOffer,
+        CtaType.getStarted,
+      ],
     ),
     ObjectiveMeta(
       objective: PostObjective.getDirections,
@@ -161,7 +160,14 @@ class ObjectiveMeta {
       outcome: 'More direct messages & inquiries',
       icon: Icons.chat_rounded,
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.sendMessage, CtaType.enquireNow, CtaType.chatNow, CtaType.askQuestion, CtaType.contactUs, CtaType.getQuote],
+      availableCtas: [
+        CtaType.sendMessage,
+        CtaType.enquireNow,
+        CtaType.chatNow,
+        CtaType.askQuestion,
+        CtaType.contactUs,
+        CtaType.getQuote,
+      ],
     ),
   ];
 }
@@ -173,8 +179,10 @@ class MediaItem {
   final File file;
   final MediaType type;
   final double? uploadProgress;
+
   /// The zoom/pan transform the user applied in the preview. If null, no transform.
   final Matrix4? transform;
+
   /// The size of the preview container, used to compute the crop.
   final Size? previewSize;
 
@@ -187,11 +195,7 @@ class MediaItem {
     this.previewSize,
   });
 
-  MediaItem copyWith({
-    double? uploadProgress,
-    Matrix4? transform,
-    Size? previewSize,
-  }) {
+  MediaItem copyWith({double? uploadProgress, Matrix4? transform, Size? previewSize}) {
     return MediaItem(
       id: id,
       file: file,
@@ -238,30 +242,54 @@ class CtaData {
 
   String get displayLabel {
     switch (type) {
-      case CtaType.visitProfile: return 'Visit Profile';
-      case CtaType.followUs: return 'Follow Us';
-      case CtaType.noButton: return 'No Button';
-      case CtaType.seeMore: return 'See More';
-      case CtaType.discover: return 'Discover';
-      case CtaType.visitWebsite: return 'Visit Website';
-      case CtaType.learnMore: return 'Learn More';
-      case CtaType.shopNow: return 'Shop Now';
-      case CtaType.getOffer: return 'Get Offer';
-      case CtaType.viewDetails: return 'View Details';
-      case CtaType.explore: return 'Explore';
-      case CtaType.bookNow: return 'Book Now';
-      case CtaType.signUp: return 'Sign Up';
-      case CtaType.getQuote: return 'Get Quote';
-      case CtaType.enquireNow: return 'Enquire Now';
-      case CtaType.buyNow: return 'Buy Now';
-      case CtaType.getStarted: return 'Get Started';
-      case CtaType.getDirections: return 'Get Directions';
-      case CtaType.visitUs: return 'Visit Us';
-      case CtaType.locateUs: return 'Locate Us';
-      case CtaType.sendMessage: return 'Send Message';
-      case CtaType.chatNow: return 'Chat Now';
-      case CtaType.askQuestion: return 'Ask a Question';
-      case CtaType.contactUs: return 'Contact Us';
+      case CtaType.visitProfile:
+        return 'Visit Profile';
+      case CtaType.followUs:
+        return 'Follow Us';
+      case CtaType.noButton:
+        return 'No Button';
+      case CtaType.seeMore:
+        return 'See More';
+      case CtaType.discover:
+        return 'Discover';
+      case CtaType.visitWebsite:
+        return 'Visit Website';
+      case CtaType.learnMore:
+        return 'Learn More';
+      case CtaType.shopNow:
+        return 'Shop Now';
+      case CtaType.getOffer:
+        return 'Get Offer';
+      case CtaType.viewDetails:
+        return 'View Details';
+      case CtaType.explore:
+        return 'Explore';
+      case CtaType.bookNow:
+        return 'Book Now';
+      case CtaType.signUp:
+        return 'Sign Up';
+      case CtaType.getQuote:
+        return 'Get Quote';
+      case CtaType.enquireNow:
+        return 'Enquire Now';
+      case CtaType.buyNow:
+        return 'Buy Now';
+      case CtaType.getStarted:
+        return 'Get Started';
+      case CtaType.getDirections:
+        return 'Get Directions';
+      case CtaType.visitUs:
+        return 'Visit Us';
+      case CtaType.locateUs:
+        return 'Locate Us';
+      case CtaType.sendMessage:
+        return 'Send Message';
+      case CtaType.chatNow:
+        return 'Chat Now';
+      case CtaType.askQuestion:
+        return 'Ask a Question';
+      case CtaType.contactUs:
+        return 'Contact Us';
     }
   }
 
@@ -287,6 +315,10 @@ enum FormFieldType {
   singleChoice,
   multipleChoice,
   dropDown,
+
+  /// A date and time the person picks, for forms that book something. The
+  /// answer is stored as an ISO 8601 string.
+  appointment,
 }
 
 class FormFieldData {

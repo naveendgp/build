@@ -5,11 +5,7 @@ class FormPrivacyStep extends StatelessWidget {
   final LeadFormData leadForm;
   final ValueChanged<LeadFormData Function(LeadFormData)> onUpdate;
 
-  const FormPrivacyStep({
-    super.key,
-    required this.leadForm,
-    required this.onUpdate,
-  });
+  const FormPrivacyStep({super.key, required this.leadForm, required this.onUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +28,10 @@ class FormPrivacyStep extends StatelessWidget {
             },
           ),
           const SizedBox(height: 24),
-          const Text('Custom Consent Text (Optional)', style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text(
+            'Custom Consent Text (Optional)',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.consentText,

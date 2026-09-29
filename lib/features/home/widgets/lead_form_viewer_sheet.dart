@@ -7,6 +7,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
 import '../../../core/utils/app_messenger.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/adaptive/adaptive_pickers.dart';
 
 class LeadFormViewerSheet extends ConsumerStatefulWidget {
   final String postId;
@@ -84,7 +85,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
 
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     setState(() => _isSubmitting = true);
     Haptics.light();
 
@@ -101,7 +102,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
           _isSubmitting = false;
         });
         Haptics.medium();
-        
+
         Future.delayed(const Duration(seconds: 2), () {
           if (!mounted) return;
           Navigator.pop(context);
@@ -115,26 +116,29 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       });
       Haptics.heavy();
       if (!mounted) return;
-      AppMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to submit the form. Please try again.')),
-      );
+      AppMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to submit the form. Please try again.')));
     }
   }
 
   bool _isPrebuiltField(dynamic field) {
     final type = field['type']?.toString().toUpperCase();
     final label = field['label']?.toString();
-    
+
     if (type == 'EMAIL' || type == 'PHONE') return true;
-    if (label == 'What is your gender?' || label == 'What is your job title?' || label == 'Company Name') return true;
-    
+    if (label == 'What is your gender?' ||
+        label == 'What is your job title?' ||
+        label == 'Company Name')
+      return true;
+
     return false;
   }
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
-    
+
     return Container(
       margin: EdgeInsets.only(top: MediaQuery.of(context).padding.top + 40),
       decoration: BoxDecoration(
@@ -172,7 +176,11 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     if (_isLoading) {
       return Padding(
         padding: EdgeInsets.all(40),
-        child: Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent))),
+        child: Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+          ),
+        ),
       );
     }
 
@@ -180,7 +188,10 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       return Padding(
         padding: const EdgeInsets.all(40),
         child: Center(
-          child: Text(_error!, style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+          child: Text(
+            _error!,
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+          ),
         ),
       );
     }
@@ -195,7 +206,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   Widget _buildForm(double bottomInset) {
     final title = _formData?['title'] ?? 'Contact Us';
     final intro = _formData?['intro'] ?? '';
-    
+
     final rawFields = _formData?['fields'] as List<dynamic>? ?? [];
     final customFields = rawFields.where((f) => !_isPrebuiltField(f)).toList();
     final prebuiltFields = rawFields.where((f) => _isPrebuiltField(f)).toList();
@@ -212,32 +223,40 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(widget.brandAvatar),
-                ),
+                CircleAvatar(radius: 20, backgroundImage: NetworkImage(widget.brandAvatar)),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(widget.brandName, style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary)),
-                      Text(title, style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w600)),
+                      Text(
+                        widget.brandName,
+                        style: AppTypography.labelSmall.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
+                      ),
+                      Text(
+                        title,
+                        style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ],
                   ),
                 ),
               ],
             ),
           ),
-          
+
           if (intro.isNotEmpty) ...[
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(intro, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+              child: Text(
+                intro,
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+              ),
             ),
           ],
-          
+
           const SizedBox(height: 24),
 
           // Fields
@@ -317,9 +336,19 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
                 shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
                 elevation: 0,
               ),
-              child: _isSubmitting 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2))
-                : Text('Submit', style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w600)),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator.adaptive(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      'Submit',
+                      style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w600),
+                    ),
             ),
           ),
         ],
@@ -333,6 +362,16 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     final label = (field['label'] ?? '').toString();
     final isRequired = field['isRequired'] == true || field['isRequired'] == 'true';
     final options = (field['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+
+    // Books something: a date and a time, kept as an ISO 8601 string so the
+    // brand reads one value rather than two.
+    if (type == 'APPOINTMENT') {
+      return _AppointmentField(
+        label: label,
+        isRequired: isRequired,
+        onChanged: (value) => _answers[fieldId] = value,
+      );
+    }
 
     if (type == 'SELECT' || type == 'RADIO') {
       return DropdownButtonFormField<String>(
@@ -353,7 +392,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       );
     } else if (type == 'CHECKBOX') {
       // For simplicity, render multiple choice as a multi-select dialog or just a list of checkboxes.
-      // Since building a full multi-select widget inline might be long, let's treat it as a single select 
+      // Since building a full multi-select widget inline might be long, let's treat it as a single select
       // or build a simplified one. I will use Dropdown for now as a fallback if options are provided.
       if (options.isNotEmpty) {
         return DropdownButtonFormField<String>(
@@ -378,9 +417,11 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     // Default text input (TEXT, TEXTAREA, EMAIL, PHONE)
     return TextFormField(
       maxLines: type == 'TEXTAREA' ? 3 : 1,
-      keyboardType: type == 'EMAIL' ? TextInputType.emailAddress 
-                 : type == 'PHONE' ? TextInputType.phone 
-                 : TextInputType.text,
+      keyboardType: type == 'EMAIL'
+          ? TextInputType.emailAddress
+          : type == 'PHONE'
+          ? TextInputType.phone
+          : TextInputType.text,
       decoration: InputDecoration(
         labelText: '$label${isRequired ? ' *' : ''}',
         border: OutlineInputBorder(borderRadius: AppSpacing.borderRadiusMd),
@@ -390,7 +431,8 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       onChanged: (val) => _answers[fieldId] = val,
       validator: (val) {
         if (isRequired && (val == null || val.isEmpty)) return 'This field is required';
-        if (type == 'EMAIL' && val != null && val.isNotEmpty && !val.contains('@')) return 'Enter a valid email';
+        if (type == 'EMAIL' && val != null && val.isNotEmpty && !val.contains('@'))
+          return 'Enter a valid email';
         return null;
       },
     );
@@ -414,6 +456,117 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
             'Thank you for your interest! ${widget.brandName} will be in touch shortly.',
             style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A date and a time for forms that book something. Uses the platform's own
+/// pickers, so it follows the app's theme like every other picker.
+class _AppointmentField extends StatefulWidget {
+  final String label;
+  final bool isRequired;
+  final ValueChanged<String> onChanged;
+
+  const _AppointmentField({required this.label, required this.isRequired, required this.onChanged});
+
+  @override
+  State<_AppointmentField> createState() => _AppointmentFieldState();
+}
+
+class _AppointmentFieldState extends State<_AppointmentField> {
+  DateTime? _picked;
+
+  String _format(DateTime value) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    final hour = value.hour % 12 == 0 ? 12 : value.hour % 12;
+    final minute = value.minute.toString().padLeft(2, '0');
+    final period = value.hour < 12 ? 'AM' : 'PM';
+    return '${value.day} ${months[value.month - 1]} ${value.year} · $hour:$minute $period';
+  }
+
+  Future<void> _pick() async {
+    final now = DateTime.now();
+    final date = await showAdaptiveDatePicker(
+      context,
+      initialDate: _picked ?? now.add(const Duration(days: 1)),
+      // Nothing is booked in the past.
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+    if (date == null || !mounted) return;
+
+    final time = await showAdaptiveTimePicker(
+      context,
+      initialTime: TimeOfDay.fromDateTime(_picked ?? now),
+    );
+    if (time == null || !mounted) return;
+
+    final value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    setState(() => _picked = value);
+    widget.onChanged(value.toIso8601String());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<DateTime>(
+      validator: (_) {
+        if (widget.isRequired && _picked == null) return 'Pick a date and time';
+        return null;
+      },
+      builder: (state) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InkWell(
+            onTap: () async {
+              await _pick();
+              state.didChange(_picked);
+            },
+            borderRadius: AppSpacing.borderRadiusMd,
+            child: InputDecorator(
+              decoration: InputDecoration(
+                labelText: '${widget.label}${widget.isRequired ? ' *' : ''}',
+                border: OutlineInputBorder(borderRadius: AppSpacing.borderRadiusMd),
+                filled: true,
+                fillColor: context.colors.surface,
+                errorText: state.errorText,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 20,
+                    color: context.colors.textSecondary,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      _picked == null ? 'Choose a date and time' : _format(_picked!),
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: _picked == null
+                            ? context.colors.textTertiary
+                            : context.colors.textPrimary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

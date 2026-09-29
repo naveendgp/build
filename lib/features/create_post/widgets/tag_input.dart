@@ -76,7 +76,10 @@ class _TagInputState extends State<TagInput> {
               focusedErrorBorder: InputBorder.none,
               disabledBorder: InputBorder.none,
               filled: false,
-              contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.sm,
+              ),
               suffixIcon: IconButton(
                 icon: Icon(Icons.add_circle_outline, color: context.colors.textSecondary),
                 onPressed: _submit,
@@ -95,7 +98,10 @@ class _TagInputState extends State<TagInput> {
             runSpacing: AppSpacing.sm,
             children: widget.tags.map((tag) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.xs,
+                ),
                 decoration: BoxDecoration(
                   color: context.colors.surface,
                   borderRadius: AppSpacing.borderRadiusFull,

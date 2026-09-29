@@ -8,13 +8,7 @@ class HighlightBanner extends StatefulWidget {
   final String? animation;
   final String? icon;
 
-  const HighlightBanner({
-    super.key,
-    required this.text,
-    this.theme,
-    this.animation,
-    this.icon,
-  });
+  const HighlightBanner({super.key, required this.text, this.theme, this.animation, this.icon});
 
   @override
   State<HighlightBanner> createState() => _HighlightBannerState();
@@ -35,7 +29,7 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
 
   void _onTick() {
     if (!_isVisible || widget.animation == 'Static Text') return;
-    
+
     if (_scrollController.hasClients) {
       final maxExtent = _scrollController.position.maxScrollExtent;
       if (maxExtent <= 0) return; // Doesn't need scrolling
@@ -65,14 +59,22 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
 
   IconData? _getIconData() {
     switch (widget.icon) {
-      case 'Announcement': return Icons.campaign_rounded;
-      case 'Trending': return Icons.local_fire_department_rounded;
-      case 'Featured': return Icons.star_rounded;
-      case 'Event': return Icons.event_rounded;
-      case 'Limited Time': return Icons.bolt_rounded;
-      case 'Offer': return Icons.card_giftcard_rounded;
-      case 'Location': return Icons.location_on_rounded;
-      default: return null;
+      case 'Announcement':
+        return Icons.campaign_rounded;
+      case 'Trending':
+        return Icons.local_fire_department_rounded;
+      case 'Featured':
+        return Icons.star_rounded;
+      case 'Event':
+        return Icons.event_rounded;
+      case 'Limited Time':
+        return Icons.bolt_rounded;
+      case 'Offer':
+        return Icons.card_giftcard_rounded;
+      case 'Location':
+        return Icons.location_on_rounded;
+      default:
+        return null;
     }
   }
 
@@ -133,9 +135,7 @@ class _HighlightBannerState extends State<HighlightBanner> with SingleTickerProv
                   );
                 },
               )
-            : Center(
-                child: _buildContentRow(textColor, iconData),
-              ),
+            : Center(child: _buildContentRow(textColor, iconData)),
       ),
     );
   }

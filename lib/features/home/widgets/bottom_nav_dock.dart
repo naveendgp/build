@@ -14,17 +14,13 @@ class BottomNavDock extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const BottomNavDock({
-    super.key,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const BottomNavDock({super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final role = ref.watch(authProvider).loggedInRole;
     final isBrand = role == UserRole.brand;
-    
+
     final inboxState = ref.watch(inboxProvider);
     final unreadCount = inboxState.conversations.fold<int>(
       0,
@@ -32,12 +28,7 @@ class BottomNavDock extends ConsumerWidget {
     );
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(
-        24,
-        0,
-        24,
-        MediaQuery.of(context).padding.bottom + 12,
-      ),
+      padding: EdgeInsets.fromLTRB(24, 0, 24, MediaQuery.of(context).padding.bottom + 12),
       child: ClipRRect(
         borderRadius: AppSpacing.borderRadiusFull,
         child: BackdropFilter(
@@ -78,9 +69,7 @@ class BottomNavDock extends ConsumerWidget {
                   icon: currentIndex == 4 ? AppIcons.profileFilled : AppIcons.profile,
                   label: 'Profile',
                   isSelected: currentIndex == 4,
-                  onTap: () => onTap(
-                    4,
-                  ), // This onTap maps to home_screen.dart which routes it
+                  onTap: () => onTap(4), // This onTap maps to home_screen.dart which routes it
                 ),
               ],
             ),
@@ -132,9 +121,7 @@ class _NavItem extends StatelessWidget {
                 child: Icon(
                   icon,
                   size: 24,
-                  color: isSelected
-                      ? context.colors.textPrimary
-                      : context.colors.textTertiary,
+                  color: isSelected ? context.colors.textPrimary : context.colors.textTertiary,
                 ),
               ),
             ),
@@ -168,18 +155,14 @@ class _UploadButton extends StatefulWidget {
   State<_UploadButton> createState() => _UploadButtonState();
 }
 
-class _UploadButtonState extends State<_UploadButton>
-    with SingleTickerProviderStateMixin {
+class _UploadButtonState extends State<_UploadButton> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _scale;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
+    _ctrl = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
     _scale = Tween(
       begin: 1.0,
       end: 0.95,
@@ -204,8 +187,7 @@ class _UploadButtonState extends State<_UploadButton>
       onTapCancel: () => _ctrl.reverse(),
       child: AnimatedBuilder(
         animation: _scale,
-        builder: (_, child) =>
-            Transform.scale(scale: _scale.value, child: child),
+        builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
         child: Container(
           width: 44,
           height: 44,

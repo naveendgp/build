@@ -71,7 +71,9 @@ class ScheduleStep extends StatelessWidget {
                     initialTime: TimeOfDay.fromDateTime(scheduledAt ?? DateTime.now()),
                   );
                   if (time != null) {
-                    onDateChanged(DateTime(date.year, date.month, date.day, time.hour, time.minute));
+                    onDateChanged(
+                      DateTime(date.year, date.month, date.day, time.hour, time.minute),
+                    );
                   }
                 }
               },
@@ -89,7 +91,9 @@ class ScheduleStep extends StatelessWidget {
                     Text(
                       scheduledAt?.toString() ?? 'Select date and time',
                       style: AppTypography.bodyMedium.copyWith(
-                        color: scheduledAt != null ? context.colors.textPrimary : context.colors.textSecondary,
+                        color: scheduledAt != null
+                            ? context.colors.textPrimary
+                            : context.colors.textSecondary,
                       ),
                     ),
                   ],
@@ -126,7 +130,9 @@ class _RadioOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: isSelected ? context.colors.primaryAccent.withValues(alpha: 0.1) : context.colors.card,
+          color: isSelected
+              ? context.colors.primaryAccent.withValues(alpha: 0.1)
+              : context.colors.card,
           borderRadius: AppSpacing.borderRadiusLg,
           border: Border.all(
             color: isSelected ? context.colors.primaryAccent : context.colors.border,
@@ -159,15 +165,11 @@ class _RadioOption extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: AppTypography.bodySmall,
-                  ),
+                  Text(subtitle, style: AppTypography.bodySmall),
                 ],
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent),
+            if (isSelected) Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent),
           ],
         ),
       ),

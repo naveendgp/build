@@ -8,7 +8,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 class _VideoPlaybackManager {
   static final _VideoPlaybackManager instance = _VideoPlaybackManager._();
   _VideoPlaybackManager._();
-  
+
   _VideoPlayerWidgetState? _activePlayer;
 
   void register(_VideoPlayerWidgetState player) {
@@ -17,7 +17,7 @@ class _VideoPlaybackManager {
     }
     _activePlayer = player;
   }
-  
+
   void unregister(_VideoPlayerWidgetState player) {
     if (_activePlayer == player) {
       _activePlayer = null;
@@ -83,7 +83,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     if (_controller == null || !mounted) return;
     final isPlaying = _controller!.value.isPlaying;
     final isBuffering = _controller!.value.isBuffering;
-    
+
     if (isPlaying != _isPlaying || isBuffering != _isBuffering) {
       setState(() {
         _isPlaying = isPlaying;
@@ -105,21 +105,21 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     final url = ApiClient.resolveMediaUrl(widget.videoUrl);
     _controller = VideoPlayerController.networkUrl(Uri.parse(url));
     _controller!.addListener(_onControllerUpdate);
-    
+
     try {
       await _controller!.initialize();
       _controller!.setLooping(true);
       _controller!.setVolume(_isMuted ? 0.0 : 1.0);
-      
+
       if (widget.initialPosition != null) {
         await _controller!.seekTo(Duration(milliseconds: (widget.initialPosition! * 1000).toInt()));
       }
-      
+
       if (mounted) {
         setState(() {
           _isInitialized = true;
         });
-        
+
         if (_visibleFraction > 0.5) {
           if (widget.allowInteraction && !_isMuted) {
             _VideoPlaybackManager.instance.register(this);
@@ -235,7 +235,10 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               children: [
                 Icon(Icons.error_outline, color: context.colors.error, size: 32),
                 const SizedBox(height: 8),
-                Text('Unplayable', style: TextStyle(color: context.colors.textTertiary, fontSize: 10)),
+                Text(
+                  'Unplayable',
+                  style: TextStyle(color: context.colors.textTertiary, fontSize: 10),
+                ),
               ],
             ),
           ),
@@ -248,35 +251,31 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
           _buildPlaceholder(),
           Center(
             child: CircularProgressIndicator.adaptive(
-              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
+              valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+            ),
           ),
         ],
       );
     } else {
-      content = widget.allowInteraction 
-        ? GestureDetector(
-            onTap: () {
-              if (_controller!.value.isPlaying) {
-                _controller!.pause();
-              } else {
-                _controller!.play();
-              }
-            },
-            behavior: HitTestBehavior.opaque,
-            child: _buildVideoStack(),
-          )
-        : IgnorePointer(
-            child: _buildVideoStack(),
-          );
+      content = widget.allowInteraction
+          ? GestureDetector(
+              onTap: () {
+                if (_controller!.value.isPlaying) {
+                  _controller!.pause();
+                } else {
+                  _controller!.play();
+                }
+              },
+              behavior: HitTestBehavior.opaque,
+              child: _buildVideoStack(),
+            )
+          : IgnorePointer(child: _buildVideoStack());
     }
 
     return VisibilityDetector(
       key: Key('video_${widget.videoUrl}_$hashCode'),
       onVisibilityChanged: _handleVisibilityChanged,
-      child: AspectRatio(
-        aspectRatio: widget.aspectRatio,
-        child: content,
-      ),
+      child: AspectRatio(aspectRatio: widget.aspectRatio, child: content),
     );
   }
 
@@ -284,10 +283,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     return Stack(
       alignment: Alignment.center,
       children: [
-        AspectRatio(
-          aspectRatio: widget.aspectRatio,
-          child: VideoPlayer(_controller!),
-        ),
+        AspectRatio(aspectRatio: widget.aspectRatio, child: VideoPlayer(_controller!)),
         if (widget.showControls && !_isPlaying && !_isBuffering)
           Container(
             padding: const EdgeInsets.all(12),
@@ -305,8 +301,12 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget> {
               shape: BoxShape.circle,
             ),
             child: const SizedBox(
-              width: 24, height: 24,
-              child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                strokeWidth: 2,
+              ),
             ),
           ),
         if (widget.allowInteraction)

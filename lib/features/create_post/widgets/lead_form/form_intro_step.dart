@@ -6,11 +6,7 @@ class FormIntroStep extends StatelessWidget {
   final LeadFormData leadForm;
   final ValueChanged<LeadFormData Function(LeadFormData)> onUpdate;
 
-  const FormIntroStep({
-    super.key,
-    required this.leadForm,
-    required this.onUpdate,
-  });
+  const FormIntroStep({super.key, required this.leadForm, required this.onUpdate});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +15,10 @@ class FormIntroStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Form Name (Internal)', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          Text(
+            'Form Name (Internal)',
+            style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.name,
@@ -28,14 +27,19 @@ class FormIntroStep extends StatelessWidget {
               hintText: 'E.g., Summer Campaign Lead Form',
               hintStyle: TextStyle(color: context.colors.textSecondary),
               border: OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
             ),
             onChanged: (val) {
               onUpdate((prev) => prev.copyWith(name: val));
             },
           ),
           const SizedBox(height: 16),
-          Text('Headline (Public)', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          Text(
+            'Headline (Public)',
+            style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.headline,
@@ -44,14 +48,19 @@ class FormIntroStep extends StatelessWidget {
               hintText: 'E.g., Sign up for our newsletter',
               hintStyle: TextStyle(color: context.colors.textSecondary),
               border: OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
             ),
             onChanged: (val) {
               onUpdate((prev) => prev.copyWith(headline: val));
             },
           ),
           const SizedBox(height: 16),
-          Text('Description', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          Text(
+            'Description',
+            style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.description,
@@ -61,14 +70,19 @@ class FormIntroStep extends StatelessWidget {
               hintText: 'Tell users what they get by filling out this form',
               hintStyle: TextStyle(color: context.colors.textSecondary),
               border: OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
             ),
             onChanged: (val) {
               onUpdate((prev) => prev.copyWith(description: val));
             },
           ),
           const SizedBox(height: 16),
-          Text('Thank You Message', style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+          Text(
+            'Thank You Message',
+            style: TextStyle(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+          ),
           const SizedBox(height: 8),
           TextFormField(
             initialValue: leadForm.thankYouMessage,
@@ -78,7 +92,9 @@ class FormIntroStep extends StatelessWidget {
               hintText: 'Message shown after form submission',
               hintStyle: TextStyle(color: context.colors.textSecondary),
               border: OutlineInputBorder(),
-              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: context.colors.borderLight)),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
             ),
             onChanged: (val) {
               onUpdate((prev) => prev.copyWith(thankYouMessage: val));

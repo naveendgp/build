@@ -72,7 +72,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
     final currentIdx = steps.indexOf(state.currentStep);
     if (currentIdx < steps.length - 1) {
       notifier.nextStep();
-      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       // Publish
       notifier.publish().then((_) {
@@ -91,7 +94,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
     final currentIdx = steps.indexOf(state.currentStep);
     if (currentIdx > 0) {
       notifier.previousStep();
-      _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       Navigator.of(context).pop();
     }
@@ -122,78 +128,88 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
               // Disabled entirely while the user's finger is on the image so
               // InteractiveViewer's pan gesture isn't stolen by this
               // ancestor Scrollable — see the bool's doc comment above.
-              physics: _isInteractingWithImage
-                  ? const NeverScrollableScrollPhysics()
-                  : null,
+              physics: _isInteractingWithImage ? const NeverScrollableScrollPhysics() : null,
               child: MediaPreviewStep(
                 media: state.media,
-              onImageInteractionStart: () => setState(() => _isInteractingWithImage = true),
-              onImageInteractionEnd: () => setState(() => _isInteractingWithImage = false),
-              onChangeMedia: (index) {
-                showModalBottomSheet(
-                  context: context,
-                  backgroundColor: context.colors.card,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-                  ),
-                  builder: (ctx) => SafeArea(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: AppSpacing.md),
-                        Text('Replace Media', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold)),
-                        SizedBox(height: AppSpacing.sm),
-                        ListTile(
-                          leading: Icon(Icons.photo_rounded, color: context.colors.primaryAccent),
-                          title: Text('Replace with Photo', style: TextStyle(color: context.colors.textPrimary)),
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            notifier.pickImage(replaceIndex: index);
-                          },
-                        ),
-                        ListTile(
-                          leading: Icon(Icons.videocam_rounded, color: context.colors.primaryAccent),
-                          title: Text('Replace with Video', style: TextStyle(color: context.colors.textPrimary)),
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            notifier.pickVideo(replaceIndex: index);
-                          },
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                      ],
+                onImageInteractionStart: () => setState(() => _isInteractingWithImage = true),
+                onImageInteractionEnd: () => setState(() => _isInteractingWithImage = false),
+                onChangeMedia: (index) {
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: context.colors.card,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
                     ),
-                  ),
-                );
-              },
-              onRemoveMedia: (index) {
-                if (index < state.media.length) {
-                  notifier.removeMedia(state.media[index].id);
-                }
-              },
-              onAddMore: () => notifier.pickImages(),
+                    builder: (ctx) => SafeArea(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'Replace Media',
+                            style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: AppSpacing.sm),
+                          ListTile(
+                            leading: Icon(Icons.photo_rounded, color: context.colors.primaryAccent),
+                            title: Text(
+                              'Replace with Photo',
+                              style: TextStyle(color: context.colors.textPrimary),
+                            ),
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              notifier.pickImage(replaceIndex: index);
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Icons.videocam_rounded,
+                              color: context.colors.primaryAccent,
+                            ),
+                            title: Text(
+                              'Replace with Video',
+                              style: TextStyle(color: context.colors.textPrimary),
+                            ),
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              notifier.pickVideo(replaceIndex: index);
+                            },
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                onRemoveMedia: (index) {
+                  if (index < state.media.length) {
+                    notifier.removeMedia(state.media[index].id);
+                  }
+                },
+                onAddMore: () => notifier.pickImages(),
               ),
             );
           case CreateStep.details:
-              return ContentDetailsStep(
-                title: state.title,
-                isHighlightTitle: state.isHighlightTitle,
-                highlightMessage: state.highlightMessage,
-                highlightTheme: state.highlightTheme,
-                highlightAnimation: state.highlightAnimation,
-                highlightIcon: state.highlightIcon,
-                description: state.description,
-                tags: state.tags,
-                categoryId: state.categoryId,
-                onTitleChanged: notifier.setTitle,
-                onToggleHighlight: notifier.toggleHighlightTitle,
-                onHighlightMessageChanged: notifier.setHighlightMessage,
-                onHighlightThemeChanged: notifier.setHighlightTheme,
-                onHighlightAnimationChanged: notifier.setHighlightAnimation,
-                onHighlightIconChanged: notifier.setHighlightIcon,
-                onDescriptionChanged: notifier.setDescription,
-                onAddTag: notifier.addTag,
-                onRemoveTag: notifier.removeTag,
-              );
+            return ContentDetailsStep(
+              title: state.title,
+              isHighlightTitle: state.isHighlightTitle,
+              highlightMessage: state.highlightMessage,
+              highlightTheme: state.highlightTheme,
+              highlightAnimation: state.highlightAnimation,
+              highlightIcon: state.highlightIcon,
+              description: state.description,
+              tags: state.tags,
+              categoryId: state.categoryId,
+              onTitleChanged: notifier.setTitle,
+              onToggleHighlight: notifier.toggleHighlightTitle,
+              onHighlightMessageChanged: notifier.setHighlightMessage,
+              onHighlightThemeChanged: notifier.setHighlightTheme,
+              onHighlightAnimationChanged: notifier.setHighlightAnimation,
+              onHighlightIconChanged: notifier.setHighlightIcon,
+              onDescriptionChanged: notifier.setDescription,
+              onAddTag: notifier.addTag,
+              onRemoveTag: notifier.removeTag,
+            );
           case CreateStep.objective:
             return ObjectiveStep(
               selectedObjective: state.objective,
@@ -201,18 +217,21 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
             );
           case CreateStep.cta:
             return state.objective != null
-              ? CtaStep(
-                  objective: state.objective!,
-                  ctaData: state.cta ?? const CtaData(type: CtaType.noButton),
-                  onCtaTypeChanged: notifier.updateCtaType,
-                  onUrlChanged: notifier.updateCtaUrl,
-                  onUtmSourceChanged: (val) => notifier.updateUtm(source: val),
-                  onUtmMediumChanged: (val) => notifier.updateUtm(medium: val),
-                  onUtmCampaignChanged: (val) => notifier.updateUtm(campaign: val),
-                )
-              : Center(
-                  child: Text('Please select an objective first.', style: AppTypography.bodyMedium),
-                );
+                ? CtaStep(
+                    objective: state.objective!,
+                    ctaData: state.cta ?? const CtaData(type: CtaType.noButton),
+                    onCtaTypeChanged: notifier.updateCtaType,
+                    onUrlChanged: notifier.updateCtaUrl,
+                    onUtmSourceChanged: (val) => notifier.updateUtm(source: val),
+                    onUtmMediumChanged: (val) => notifier.updateUtm(medium: val),
+                    onUtmCampaignChanged: (val) => notifier.updateUtm(campaign: val),
+                  )
+                : Center(
+                    child: Text(
+                      'Please select an objective first.',
+                      style: AppTypography.bodyMedium,
+                    ),
+                  );
           case CreateStep.leadForm:
             return LeadFormBuilder(
               leadForm: state.leadForm,
@@ -238,7 +257,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
   Widget build(BuildContext context) {
     final state = ref.watch(createPostProvider);
     final notifier = ref.read(createPostProvider.notifier);
-    
+
     final steps = state.activeSteps;
     final currentIdx = steps.indexOf(state.currentStep);
     final isFirstStep = currentIdx == 0;
@@ -249,7 +268,10 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
     if (state.currentStep == CreateStep.media && !state.hasMedia) canProceed = false;
     if (state.currentStep == CreateStep.details && !state.hasContent) canProceed = false;
     if (state.currentStep == CreateStep.objective && state.objective == null) canProceed = false;
-    if (state.currentStep == CreateStep.schedule && state.publishMode == PublishMode.scheduled && state.scheduledAt == null) canProceed = false;
+    if (state.currentStep == CreateStep.schedule &&
+        state.publishMode == PublishMode.scheduled &&
+        state.scheduledAt == null)
+      canProceed = false;
     if (state.currentStep.index >= CreateStep.cta.index) {
       if (state.objective == PostObjective.leadGeneration) {
         if (state.currentStep.index >= CreateStep.leadForm.index && state.leadForm == null) {
@@ -288,25 +310,32 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
         centerTitle: true,
         // Actions moved to bottom
       ),
-      bottomNavigationBar: state.uploadStage == UploadStage.idle && state.currentStep != CreateStep.media
+      bottomNavigationBar:
+          state.uploadStage == UploadStage.idle && state.currentStep != CreateStep.media
           ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 child: ElevatedButton(
-                  onPressed: canProceed ? () {
-                    Haptics.light();
-                    _onNextStep(state, notifier);
-                  } : null,
+                  onPressed: canProceed
+                      ? () {
+                          Haptics.light();
+                          _onNextStep(state, notifier);
+                        }
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: canProceed ? context.colors.primaryAccent : context.colors.surfaceSecondary,
+                    backgroundColor: canProceed
+                        ? context.colors.primaryAccent
+                        : context.colors.surfaceSecondary,
                     foregroundColor: canProceed ? Colors.white : context.colors.textDisabled,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     elevation: 0,
                   ),
                   child: Text(
-                    isLastStep 
-                        ? (state.publishMode == PublishMode.scheduled ? 'Schedule Post' : 'Publish Post') 
+                    isLastStep
+                        ? (state.publishMode == PublishMode.scheduled
+                              ? 'Schedule Post'
+                              : 'Publish Post')
                         : 'Next',
                     style: AppTypography.button,
                   ),
@@ -317,7 +346,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
       body: Stack(
         children: [
           _buildStepContent(state, notifier),
-          
+
           if (state.uploadStage != UploadStage.idle)
             _UploadOverlay(
               stage: state.uploadStage,
@@ -366,20 +395,35 @@ class _UploadOverlay extends StatelessWidget {
   final bool isScheduled;
   final VoidCallback? onDismiss;
 
-  const _UploadOverlay({required this.stage, required this.progress, this.errorMessage, this.isScheduled = false, this.onDismiss});
+  const _UploadOverlay({
+    required this.stage,
+    required this.progress,
+    this.errorMessage,
+    this.isScheduled = false,
+    this.onDismiss,
+  });
 
   @override
   Widget build(BuildContext context) {
     String message = '';
     switch (stage) {
-      case UploadStage.compressing: message = 'Optimizing media...'; break;
-      case UploadStage.uploading: message = 'Uploading content...'; break;
-      case UploadStage.processing: message = 'Finalizing post...'; break;
-      case UploadStage.complete: 
-        message = isScheduled ? 'Scheduled Successfully!' : 'Published Successfully!'; 
+      case UploadStage.compressing:
+        message = 'Optimizing media...';
         break;
-      case UploadStage.failed: message = 'Upload Failed'; break;
-      case UploadStage.idle: break;
+      case UploadStage.uploading:
+        message = 'Uploading content...';
+        break;
+      case UploadStage.processing:
+        message = 'Finalizing post...';
+        break;
+      case UploadStage.complete:
+        message = isScheduled ? 'Scheduled Successfully!' : 'Published Successfully!';
+        break;
+      case UploadStage.failed:
+        message = 'Upload Failed';
+        break;
+      case UploadStage.idle:
+        break;
     }
 
     return Container(
@@ -414,14 +458,11 @@ class _UploadOverlay extends StatelessWidget {
                     value: progress,
                     valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
                     backgroundColor: context.colors.surface,
-                    strokeWidth: 4),
+                    strokeWidth: 4,
+                  ),
                 ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                message,
-                style: AppTypography.titleMedium,
-                textAlign: TextAlign.center,
-              ),
+              Text(message, style: AppTypography.titleMedium, textAlign: TextAlign.center),
               if (stage == UploadStage.failed && errorMessage != null) ...[
                 const SizedBox(height: AppSpacing.md),
                 Text(

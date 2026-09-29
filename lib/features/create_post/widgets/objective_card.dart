@@ -39,7 +39,7 @@ class ObjectiveCard extends StatelessWidget {
                     color: meta.accentColor.withValues(alpha: 0.2),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -58,8 +58,7 @@ class ObjectiveCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.titleMedium
-                      .copyWith(color: context.colors.textPrimary),
+                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -67,8 +66,7 @@ class ObjectiveCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodySmall
-                      .copyWith(color: context.colors.textSecondary),
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -76,8 +74,7 @@ class ObjectiveCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTypography.labelSmall
-                      .copyWith(color: context.colors.textTertiary),
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
                 ),
               ],
             ),

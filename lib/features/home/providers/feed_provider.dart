@@ -8,6 +8,7 @@ import '../../brand_profile/screens/brand_saved_posts_screen.dart';
 import '../models/feed_models.dart';
 
 enum FeedViewMode { single, grid }
+
 enum FeedLoadState { initial, loading, loaded, error, empty }
 
 class FeedState {
@@ -126,9 +127,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   void toggleViewMode() {
     state = state.copyWith(
-      viewMode: state.viewMode == FeedViewMode.single
-          ? FeedViewMode.grid
-          : FeedViewMode.single,
+      viewMode: state.viewMode == FeedViewMode.single ? FeedViewMode.grid : FeedViewMode.single,
     );
   }
 
@@ -164,7 +163,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
       return p;
     }).toList();
     state = state.copyWith(posts: updated);
-    
+
     // API request
     try {
       if (isLiking) {
@@ -180,7 +179,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
   Future<void> toggleBookmark(String postId) async {
     bool isSaving = false;
     FeedPost? targetPost;
-    
+
     final updated = state.posts.map((p) {
       if (p.id == postId) {
         isSaving = !p.isBookmarked;
@@ -190,14 +189,14 @@ class FeedNotifier extends StateNotifier<FeedState> {
       return p;
     }).toList();
     state = state.copyWith(posts: updated);
-    
+
     if (targetPost != null) {
       // Sync user profile saved posts (for regular users)
       ref.read(userProfileProvider.notifier).syncSavedPost(postId, isSaving, targetPost);
       // Invalidate brand saved posts provider so the brand saved page refreshes
       ref.invalidate(brandSavedPostsProvider);
     }
-    
+
     // API request
     try {
       if (isSaving) {
@@ -213,7 +212,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
   Future<void> toggleFollow(String postId) async {
     String? targetBrandId;
     bool isFollowing = false;
-    
+
     final updated = state.posts.map((p) {
       if (p.id == postId) {
         targetBrandId = p.brandId;
@@ -222,9 +221,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
       }
       return p;
     }).toList();
-    
+
     state = state.copyWith(posts: updated);
-    
+
     if (targetBrandId != null) {
       // Update other posts by the same brand so UI stays consistent
       final allUpdated = state.posts.map((p) {
@@ -249,11 +248,14 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   Future<void> setReminder(String postId, DateTime reminderTime) async {
     try {
-      await _apiClient.dio.post('/reminders', data: {
-        'postId': postId,
-        'title': 'Saved Post Reminder',
-        'reminderTime': reminderTime.toUtc().toIso8601String(),
-      });
+      await _apiClient.dio.post(
+        '/reminders',
+        data: {
+          'postId': postId,
+          'title': 'Saved Post Reminder',
+          'reminderTime': reminderTime.toUtc().toIso8601String(),
+        },
+      );
       // Refresh the upcoming reminders list so it shows up in the Profile tab
       ref.read(remindersProvider.notifier).loadReminders();
     } catch (e) {
@@ -262,9 +264,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   Future<void> markNotInterested(String postId) async {
-    state = state.copyWith(
-      posts: state.posts.where((p) => p.id != postId).toList(),
-    );
+    state = state.copyWith(posts: state.posts.where((p) => p.id != postId).toList());
     try {
       await _apiClient.dio.post('/posts/$postId/not-interested');
     } catch (e) {
@@ -274,9 +274,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   Future<void> archivePost(String postId) async {
     // Optimistic UI update: Remove the post from the feed
-    state = state.copyWith(
-      posts: state.posts.where((p) => p.id != postId).toList(),
-    );
+    state = state.copyWith(posts: state.posts.where((p) => p.id != postId).toList());
     try {
       await _apiClient.dio.post('/posts/$postId/archive');
     } catch (e) {
@@ -287,13 +285,13 @@ class FeedNotifier extends StateNotifier<FeedState> {
   Future<void> deletePost(String postId) async {
     try {
       await _apiClient.dio.delete('/posts/$postId');
-      
+
       // Remove from current feed state
       final currentPosts = List<FeedPost>.from(state.posts);
       currentPosts.removeWhere((p) => p.id == postId);
-      
+
       state = state.copyWith(posts: currentPosts);
-      
+
       // Also remove from brand profile state instantly
       try {
         ref.read(brandProfileProvider('me').notifier).removePost(postId);

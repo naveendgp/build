@@ -22,15 +22,9 @@ class ObjectiveStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Marketing Objective',
-            style: AppTypography.headlineMedium,
-          ),
+          Text('Marketing Objective', style: AppTypography.headlineMedium),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            'What is the primary goal of this campaign?',
-            style: AppTypography.bodyMedium,
-          ),
+          Text('What is the primary goal of this campaign?', style: AppTypography.bodyMedium),
           const SizedBox(height: AppSpacing.xl),
           GridView.builder(
             shrinkWrap: true,

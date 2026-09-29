@@ -106,8 +106,7 @@ class _ActionButton extends StatefulWidget {
   State<_ActionButton> createState() => _ActionButtonState();
 }
 
-class _ActionButtonState extends State<_ActionButton>
-    with SingleTickerProviderStateMixin {
+class _ActionButtonState extends State<_ActionButton> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _scale;
 
@@ -128,12 +127,18 @@ class _ActionButtonState extends State<_ActionButton>
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () { Haptics.light(); widget.onTap(); },
+      onTap: () {
+        Haptics.light();
+        widget.onTap();
+      },
       behavior: HitTestBehavior.opaque,
       child: Row(
         mainAxisSize: MainAxisSize.min,

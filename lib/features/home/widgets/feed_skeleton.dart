@@ -50,7 +50,8 @@ class FeedSkeleton extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    width: 36, height: 36,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
@@ -108,10 +109,7 @@ class FeedSkeleton extends StatelessWidget {
         highlightColor: context.colors.surface.withValues(alpha: 0.5),
         child: Column(
           children: [
-            Expanded(
-              flex: 3,
-              child: Container(color: Colors.white),
-            ),
+            Expanded(flex: 3, child: Container(color: Colors.white)),
             Expanded(
               flex: 1,
               child: Padding(
@@ -124,7 +122,8 @@ class FeedSkeleton extends StatelessWidget {
                     Row(
                       children: [
                         Container(
-                          width: 18, height: 18,
+                          width: 18,
+                          height: 18,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(6),

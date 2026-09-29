@@ -13,10 +13,7 @@ import '../../../core/utils/app_messenger.dart';
 class SaveToCollectionSheet extends ConsumerWidget {
   final FeedPost post;
 
-  const SaveToCollectionSheet({
-    super.key,
-    required this.post,
-  });
+  const SaveToCollectionSheet({super.key, required this.post});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,10 +24,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
         color: context.colors.background,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      padding: EdgeInsets.only(
-        top: 12,
-        bottom: MediaQuery.of(context).padding.bottom + 16,
-      ),
+      padding: EdgeInsets.only(top: 12, bottom: MediaQuery.of(context).padding.bottom + 16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -54,7 +48,10 @@ class SaveToCollectionSheet extends ConsumerWidget {
               children: [
                 Text(
                   'Save to Collection',
-                  style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                  style: AppTypography.titleMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: context.colors.textPrimary,
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () {
@@ -80,7 +77,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
           ),
           SizedBox(height: AppSpacing.md),
           Divider(color: context.colors.borderLight, height: 1),
-          
+
           collectionsAsync.when(
             data: (collections) {
               if (collections.isEmpty) {
@@ -94,7 +91,7 @@ class SaveToCollectionSheet extends ConsumerWidget {
                   ),
                 );
               }
-              
+
               return Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -102,27 +99,29 @@ class SaveToCollectionSheet extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final collection = collections[index];
                     final isSavedInCollection = collection.posts.any((p) => p.id == post.id);
-                    
+
                     return InkWell(
                       onTap: () async {
                         Haptics.selection();
                         final notifier = ref.read(collectionsProvider.notifier);
-                        
-                        // We do not wait for togglePostInCollection to finish before popping 
+
+                        // We do not wait for togglePostInCollection to finish before popping
                         // to keep the UI snappy, but we catch errors and show a snackbar.
-                        notifier.togglePostInCollection(
-                          collection.id,
-                          post,
-                          isCurrentlyInCollection: isSavedInCollection,
-                        ).catchError((e) {
-                          if (!context.mounted) return;
-                          AppMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: Could not save post to collection.'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
-                        });
+                        notifier
+                            .togglePostInCollection(
+                              collection.id,
+                              post,
+                              isCurrentlyInCollection: isSavedInCollection,
+                            )
+                            .catchError((e) {
+                              if (!context.mounted) return;
+                              AppMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Error: Could not save post to collection.'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            });
 
                         if (!isSavedInCollection) {
                           AppMessenger.of(context).showSnackBar(
@@ -166,12 +165,17 @@ class SaveToCollectionSheet extends ConsumerWidget {
                                 children: [
                                   Text(
                                     collection.title,
-                                    style: AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600, color: context.colors.textPrimary),
+                                    style: AppTypography.bodyLarge.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: context.colors.textPrimary,
+                                    ),
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
                                     '${collection.postCount} posts',
-                                    style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+                                    style: AppTypography.labelMedium.copyWith(
+                                      color: context.colors.textSecondary,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -192,11 +196,20 @@ class SaveToCollectionSheet extends ConsumerWidget {
             },
             loading: () => Padding(
               padding: EdgeInsets.all(AppSpacing.xl),
-              child: Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent))),
+              child: Center(
+                child: CircularProgressIndicator.adaptive(
+                  valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                ),
+              ),
             ),
             error: (e, st) => Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
-              child: Center(child: Text('Error loading collections', style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary))),
+              child: Center(
+                child: Text(
+                  'Error loading collections',
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                ),
+              ),
             ),
           ),
         ],

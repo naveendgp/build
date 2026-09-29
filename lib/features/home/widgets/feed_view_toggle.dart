@@ -11,11 +11,7 @@ class FeedViewToggle extends StatelessWidget {
   final FeedViewMode currentMode;
   final ValueChanged<FeedViewMode> onChanged;
 
-  const FeedViewToggle({
-    super.key,
-    required this.currentMode,
-    required this.onChanged,
-  });
+  const FeedViewToggle({super.key, required this.currentMode, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -83,14 +79,17 @@ class _ToggleTab extends StatelessWidget {
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? context.colors.primaryAccent.withValues(alpha: 0.15) : Colors.transparent,
+          color: isActive
+              ? context.colors.primaryAccent.withValues(alpha: 0.15)
+              : Colors.transparent,
           borderRadius: AppSpacing.borderRadiusFull,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              icon, size: 16,
+              icon,
+              size: 16,
               color: isActive ? context.colors.primaryAccent : context.colors.textTertiary,
             ),
             const SizedBox(width: 6),

@@ -62,7 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       socketClient.socket?.on('reminder_triggered', (data) {
         if (!mounted) return;
         debugPrint('=== RECEIVED REMINDER TRIGGERED: $data ===');
-        
+
         String title = 'Reminder';
         String catchword = 'It is time!';
 
@@ -116,56 +116,109 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: SingleChildScrollView(
           padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).padding.bottom),
           child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Container(width: 40, height: 4, decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(10))),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text('Set Reminder', style: AppTypography.titleLarge),
-            ),
-            ListTile(
-              title: Text('Custom date & time', style: AppTypography.bodyLarge),
-              trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
-              onTap: () async {
-                Navigator.pop(sheetContext);
-                final date = await showAdaptiveDatePicker(
-                  parentContext,
-                  initialDate: DateTime.now().add(const Duration(days: 1)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null && parentContext.mounted) {
-                  final time = await showAdaptiveTimePicker(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: context.colors.border,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text('Set Reminder', style: AppTypography.titleLarge),
+              ),
+              ListTile(
+                title: Text('Custom date & time', style: AppTypography.bodyLarge),
+                trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
+                onTap: () async {
+                  Navigator.pop(sheetContext);
+                  final date = await showAdaptiveDatePicker(
                     parentContext,
-                    initialTime: TimeOfDay.now(),
+                    initialDate: DateTime.now().add(const Duration(days: 1)),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime.now().add(const Duration(days: 365)),
                   );
-                  if (time != null && parentContext.mounted) {
-                    final dateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                    notifier.setReminder(postId, dateTime);
-                    AppMessenger.of(parentContext).showSnackBar(
-                      SnackBar(content: Text('Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}')),
+                  if (date != null && parentContext.mounted) {
+                    final time = await showAdaptiveTimePicker(
+                      parentContext,
+                      initialTime: TimeOfDay.now(),
                     );
+                    if (time != null && parentContext.mounted) {
+                      final dateTime = DateTime(
+                        date.year,
+                        date.month,
+                        date.day,
+                        time.hour,
+                        time.minute,
+                      );
+                      notifier.setReminder(postId, dateTime);
+                      AppMessenger.of(parentContext).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
+                          ),
+                        ),
+                      );
+                    }
                   }
-                }
-              },
-            ),
-            _buildReminderOption(sheetContext, 'Tomorrow', postId, notifier, const Duration(days: 1)),
-            _buildReminderOption(sheetContext, '3 days after', postId, notifier, const Duration(days: 3)),
-            _buildReminderOption(sheetContext, '7 days after', postId, notifier, const Duration(days: 7)),
-            _buildReminderOption(sheetContext, '14 days after', postId, notifier, const Duration(days: 14)),
-            _buildReminderOption(sheetContext, '30 days after', postId, notifier, const Duration(days: 30)),
-            const SizedBox(height: 32),
-          ],
+                },
+              ),
+              _buildReminderOption(
+                sheetContext,
+                'Tomorrow',
+                postId,
+                notifier,
+                const Duration(days: 1),
+              ),
+              _buildReminderOption(
+                sheetContext,
+                '3 days after',
+                postId,
+                notifier,
+                const Duration(days: 3),
+              ),
+              _buildReminderOption(
+                sheetContext,
+                '7 days after',
+                postId,
+                notifier,
+                const Duration(days: 7),
+              ),
+              _buildReminderOption(
+                sheetContext,
+                '14 days after',
+                postId,
+                notifier,
+                const Duration(days: 14),
+              ),
+              _buildReminderOption(
+                sheetContext,
+                '30 days after',
+                postId,
+                notifier,
+                const Duration(days: 30),
+              ),
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildReminderOption(BuildContext context, String label, String postId, FeedNotifier notifier, Duration duration) {
+  Widget _buildReminderOption(
+    BuildContext context,
+    String label,
+    String postId,
+    FeedNotifier notifier,
+    Duration duration,
+  ) {
     return ListTile(
       title: Text(label, style: AppTypography.bodyLarge),
       trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
@@ -173,9 +226,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Navigator.pop(context);
         final dateTime = DateTime.now().add(duration);
         notifier.setReminder(postId, dateTime);
-        AppMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Reminder set for $label')),
-        );
+        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
       },
     );
   }
@@ -203,7 +254,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // Top Header — listens to the scroll controller directly so the
           // rest of the screen (heavy feed list) doesn't rebuild every frame.
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             child: AnimatedBuilder(
               animation: activeCtrl,
               builder: (ctx, child) => FeedHeader(
@@ -221,12 +274,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // being reachable by scrolling all the way back to the top.
           // Bottom Nav Dock
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: AnimatedBuilder(
               animation: activeCtrl,
               builder: (_, child) {
                 final offset = activeCtrl.hasClients ? activeCtrl.offset : 0.0;
-                final scrollingDown = activeCtrl.hasClients &&
+                final scrollingDown =
+                    activeCtrl.hasClients &&
                     activeCtrl.position.userScrollDirection.name == 'reverse';
                 final hide = offset > 100 && scrollingDown;
                 return AnimatedSlide(
@@ -273,8 +329,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         controller: _listScrollCtrl,
         padding: EdgeInsets.only(
           // Clears the bar; the list/grid switch sits inside it now rather than
-      // floating below it.
-      top: MediaQuery.of(context).padding.top + 76,
+          // floating below it.
+          top: MediaQuery.of(context).padding.top + 76,
           bottom: 120,
         ),
         physics: const BouncingScrollPhysics(),
@@ -288,16 +344,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             onBookmark: () {
               final isBookmarked = !post.isBookmarked;
               notifier.toggleBookmark(post.id);
-              
+
               if (isBookmarked) {
                 // Refresh profile so the saved tab shows the new post
                 ref.read(userProfileProvider.notifier).loadProfile();
-                
+
                 // Show toast for saving to specific collection
                 AppMessenger.of(context).clearSnackBars();
                 AppMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Saved', style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600)),
+                    content: Text(
+                      'Saved',
+                      style: TextStyle(
+                        color: context.colors.textPrimary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     backgroundColor: context.colors.surface,
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
@@ -338,9 +400,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       crossAxisSpacing: 12,
       padding: EdgeInsets.only(
         // Clears the bar; the list/grid switch sits inside it now rather than
-      // floating below it.
-      top: MediaQuery.of(context).padding.top + 76,
-        left: 16, right: 16, bottom: 120,
+        // floating below it.
+        top: MediaQuery.of(context).padding.top + 76,
+        left: 16,
+        right: 16,
+        bottom: 120,
       ),
       physics: const BouncingScrollPhysics(),
       cacheExtent: 2500,
@@ -366,8 +430,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(height: 16),
           Text('No posts found', style: AppTypography.titleLarge),
           const SizedBox(height: 8),
-          Text('Try following more brands to populate your feed',
-            style: AppTypography.bodyMedium, textAlign: TextAlign.center),
+          Text(
+            'Try following more brands to populate your feed',
+            style: AppTypography.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );

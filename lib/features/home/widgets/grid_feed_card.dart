@@ -17,8 +17,7 @@ class GridFeedCard extends StatefulWidget {
   State<GridFeedCard> createState() => _GridFeedCardState();
 }
 
-class _GridFeedCardState extends State<GridFeedCard>
-    with SingleTickerProviderStateMixin {
+class _GridFeedCardState extends State<GridFeedCard> with SingleTickerProviderStateMixin {
   late AnimationController _ctrl;
   late Animation<double> _scale;
 
@@ -26,18 +25,26 @@ class _GridFeedCardState extends State<GridFeedCard>
   void initState() {
     super.initState();
     _ctrl = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
-    _scale = Tween(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
+    _scale = Tween(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
-  void dispose() { _ctrl.dispose(); super.dispose(); }
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => _ctrl.forward(),
-      onTapUp: (_) { _ctrl.reverse(); widget.onTap(); },
+      onTapUp: (_) {
+        _ctrl.reverse();
+        widget.onTap();
+      },
       onTapCancel: () => _ctrl.reverse(),
       child: AnimatedBuilder(
         animation: _scale,
@@ -50,7 +57,9 @@ class _GridFeedCardState extends State<GridFeedCard>
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.15),
-                blurRadius: 12, offset: const Offset(0, 4), spreadRadius: -4,
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: -4,
               ),
             ],
           ),
@@ -88,16 +97,19 @@ class _GridFeedCardState extends State<GridFeedCard>
                     children: [
                       // Avatar
                       Container(
-                        width: 18, height: 18,
+                        width: 18,
+                        height: 18,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(color: context.colors.border, width: 0.5),
                         ),
                         clipBehavior: Clip.antiAlias,
                         child: CachedNetworkImage(
-                          imageUrl: widget.post.brandAvatar, fit: BoxFit.cover,
+                          imageUrl: widget.post.brandAvatar,
+                          fit: BoxFit.cover,
                           memCacheWidth: 100,
-                          errorWidget: (context, url, error) => Container(color: context.colors.surface),
+                          errorWidget: (context, url, error) =>
+                              Container(color: context.colors.surface),
                         ),
                       ),
                       const SizedBox(width: 6),

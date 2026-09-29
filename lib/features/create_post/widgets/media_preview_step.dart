@@ -39,8 +39,7 @@ class MediaPreviewStep extends StatefulWidget {
   State<MediaPreviewStep> createState() => _MediaPreviewStepState();
 }
 
-class _MediaPreviewStepState extends State<MediaPreviewStep>
-    with SingleTickerProviderStateMixin {
+class _MediaPreviewStepState extends State<MediaPreviewStep> with SingleTickerProviderStateMixin {
   late final PageController _pageController;
   late final AnimationController _fadeController;
   int _currentPage = 0;
@@ -60,16 +59,13 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
     if (item.type != MediaType.image || _aspectCache.containsKey(item.id)) return;
     final stream = FileImage(item.file).resolve(const ImageConfiguration());
     late final ImageStreamListener listener;
-    listener = ImageStreamListener(
-      (info, _) {
-        stream.removeListener(listener);
-        if (!mounted) return;
-        setState(() {
-          _aspectCache[item.id] = info.image.width / info.image.height;
-        });
-      },
-      onError: (_, _) => stream.removeListener(listener),
-    );
+    listener = ImageStreamListener((info, _) {
+      stream.removeListener(listener);
+      if (!mounted) return;
+      setState(() {
+        _aspectCache[item.id] = info.image.width / info.image.height;
+      });
+    }, onError: (_, _) => stream.removeListener(listener));
     stream.addListener(listener);
   }
 
@@ -77,10 +73,8 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
   void initState() {
     super.initState();
     _pageController = PageController();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 400),
-    )..forward();
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 400))
+      ..forward();
   }
 
   @override
@@ -93,10 +87,7 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
   @override
   Widget build(BuildContext context) {
     return FadeTransition(
-      opacity: CurvedAnimation(
-        parent: _fadeController,
-        curve: Curves.easeOut,
-      ),
+      opacity: CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
       child: Padding(
         padding: AppSpacing.paddingHorizontal,
         child: Column(
@@ -188,20 +179,22 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
   // ——— Single image preview ———————————————————————————————————————————————
   Widget _buildSinglePreview(MediaItem item) {
     _ensureAspect(item);
-    return LayoutBuilder(builder: (context, constraints) {
-      final size = Size(constraints.maxWidth, constraints.maxHeight);
-      return _ZoomableMedia(
-        key: ValueKey(item.id),
-        contentAspect: _aspectCache[item.id],
-        onTransformChanged: (matrix) {
-          final ref = ProviderScope.containerOf(context);
-          ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
-        },
-        onPanStart: widget.onImageInteractionStart,
-        onPanEnd: widget.onImageInteractionEnd,
-        child: _buildMediaContent(item),
-      );
-    });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = Size(constraints.maxWidth, constraints.maxHeight);
+        return _ZoomableMedia(
+          key: ValueKey(item.id),
+          contentAspect: _aspectCache[item.id],
+          onTransformChanged: (matrix) {
+            final ref = ProviderScope.containerOf(context);
+            ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
+          },
+          onPanStart: widget.onImageInteractionStart,
+          onPanEnd: widget.onImageInteractionEnd,
+          child: _buildMediaContent(item),
+        );
+      },
+    );
   }
 
   // ——— PageView for multiple media ————————————————————————————————————————
@@ -222,24 +215,26 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
       itemBuilder: (context, index) {
         final item = widget.media[index];
         _ensureAspect(item);
-        return LayoutBuilder(builder: (context, constraints) {
-          final size = Size(constraints.maxWidth, constraints.maxHeight);
-          return _ZoomableMedia(
-            key: ValueKey(item.id),
-            contentAspect: _aspectCache[item.id],
-            onTransformChanged: (matrix) {
-              final ref = ProviderScope.containerOf(context);
-              ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
-            },
-            onScaleChanged: (scale) {
-              final zoomed = scale > 1.01;
-              if (zoomed != _isZoomed) setState(() => _isZoomed = zoomed);
-            },
-            onPanStart: widget.onImageInteractionStart,
-            onPanEnd: widget.onImageInteractionEnd,
-            child: _buildMediaContent(item),
-          );
-        });
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final size = Size(constraints.maxWidth, constraints.maxHeight);
+            return _ZoomableMedia(
+              key: ValueKey(item.id),
+              contentAspect: _aspectCache[item.id],
+              onTransformChanged: (matrix) {
+                final ref = ProviderScope.containerOf(context);
+                ref.read(createPostProvider.notifier).updateMediaTransform(item.id, matrix, size);
+              },
+              onScaleChanged: (scale) {
+                final zoomed = scale > 1.01;
+                if (zoomed != _isZoomed) setState(() => _isZoomed = zoomed);
+              },
+              onPanStart: widget.onImageInteractionStart,
+              onPanEnd: widget.onImageInteractionEnd,
+              child: _buildMediaContent(item),
+            );
+          },
+        );
       },
     );
   }
@@ -303,9 +298,7 @@ class _MediaPreviewStepState extends State<MediaPreviewStep>
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Unable to load',
-              style: AppTypography.bodySmall.copyWith(
-                color: context.colors.textTertiary,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
             ),
           ],
         ),
@@ -320,11 +313,7 @@ class _GlassPillButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const _GlassPillButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-  });
+  const _GlassPillButton({required this.label, required this.icon, required this.onTap});
 
   @override
   State<_GlassPillButton> createState() => _GlassPillButtonState();
@@ -358,25 +347,16 @@ class _GlassPillButtonState extends State<_GlassPillButton> {
               decoration: BoxDecoration(
                 color: Colors.black.withValues(alpha: 0.4),
                 borderRadius: AppSpacing.borderRadiusFull,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    widget.icon,
-                    color: context.colors.textPrimary,
-                    size: AppSpacing.iconSm,
-                  ),
+                  Icon(widget.icon, color: context.colors.textPrimary, size: AppSpacing.iconSm),
                   const SizedBox(width: AppSpacing.xs),
                   Text(
                     widget.label,
-                    style: AppTypography.labelMedium.copyWith(
-                      color: context.colors.textPrimary,
-                    ),
+                    style: AppTypography.labelMedium.copyWith(color: context.colors.textPrimary),
                   ),
                 ],
               ),
@@ -463,61 +443,63 @@ class _ZoomableMediaState extends State<_ZoomableMedia> {
           onPointerDown: (_) => widget.onPanStart?.call(),
           onPointerUp: (_) => widget.onPanEnd?.call(),
           onPointerCancel: (_) => widget.onPanEnd?.call(),
-          child: LayoutBuilder(builder: (context, constraints) {
-            final vw = constraints.maxWidth;
-            final vh = constraints.maxHeight;
-            final aspect = widget.contentAspect;
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final vw = constraints.maxWidth;
+              final vh = constraints.maxHeight;
+              final aspect = widget.contentAspect;
 
-            var content = widget.child;
-            // Default zero margin clamps translation to exactly (0,0) when
-            // the child is the same size as the viewport — which is why
-            // repositioning did nothing before.
-            var boundary = EdgeInsets.zero;
+              var content = widget.child;
+              // Default zero margin clamps translation to exactly (0,0) when
+              // the child is the same size as the viewport — which is why
+              // repositioning did nothing before.
+              var boundary = EdgeInsets.zero;
 
-            if (aspect != null && aspect > 0 && vw.isFinite && vh.isFinite && vw > 0 && vh > 0) {
-              // Size the image to *cover* the frame, letting it overflow on
-              // the long axis, so there is real content off-frame to drag in.
-              final viewportAspect = vw / vh;
-              final double cw, ch;
-              if (aspect > viewportAspect) {
-                ch = vh;
-                cw = vh * aspect;
-              } else {
-                cw = vw;
-                ch = vw / aspect;
+              if (aspect != null && aspect > 0 && vw.isFinite && vh.isFinite && vw > 0 && vh > 0) {
+                // Size the image to *cover* the frame, letting it overflow on
+                // the long axis, so there is real content off-frame to drag in.
+                final viewportAspect = vw / vh;
+                final double cw, ch;
+                if (aspect > viewportAspect) {
+                  ch = vh;
+                  cw = vh * aspect;
+                } else {
+                  cw = vw;
+                  ch = vw / aspect;
+                }
+                content = OverflowBox(
+                  maxWidth: double.infinity,
+                  maxHeight: double.infinity,
+                  child: SizedBox(width: cw, height: ch, child: widget.child),
+                );
+                // Allow panning exactly as far as the overflow — reveals every
+                // part of the image, never drags blank space into frame.
+                boundary = EdgeInsets.symmetric(
+                  horizontal: ((cw - vw) / 2).clamp(0.0, double.infinity),
+                  vertical: ((ch - vh) / 2).clamp(0.0, double.infinity),
+                );
               }
-              content = OverflowBox(
-                maxWidth: double.infinity,
-                maxHeight: double.infinity,
-                child: SizedBox(width: cw, height: ch, child: widget.child),
-              );
-              // Allow panning exactly as far as the overflow — reveals every
-              // part of the image, never drags blank space into frame.
-              boundary = EdgeInsets.symmetric(
-                horizontal: ((cw - vw) / 2).clamp(0.0, double.infinity),
-                vertical: ((ch - vh) / 2).clamp(0.0, double.infinity),
-              );
-            }
 
-            return InteractiveViewer(
-              transformationController: _transformController,
-              minScale: _minScale,
-              maxScale: _maxScale,
-              boundaryMargin: boundary,
-              // Reported continuously (not just at gesture end) so a pinch
-              // that crosses back to scale 1.0 mid-gesture re-enables the
-              // carousel swipe in time for the very next drag.
-              onInteractionUpdate: (details) {
-                widget.onScaleChanged?.call(_currentScale);
-              },
-              onInteractionEnd: (details) {
-                setState(() {});
-                widget.onTransformChanged?.call(_transformController.value);
-                widget.onScaleChanged?.call(_currentScale);
-              },
-              child: content,
-            );
-          }),
+              return InteractiveViewer(
+                transformationController: _transformController,
+                minScale: _minScale,
+                maxScale: _maxScale,
+                boundaryMargin: boundary,
+                // Reported continuously (not just at gesture end) so a pinch
+                // that crosses back to scale 1.0 mid-gesture re-enables the
+                // carousel swipe in time for the very next drag.
+                onInteractionUpdate: (details) {
+                  widget.onScaleChanged?.call(_currentScale);
+                },
+                onInteractionEnd: (details) {
+                  setState(() {});
+                  widget.onTransformChanged?.call(_transformController.value);
+                  widget.onScaleChanged?.call(_currentScale);
+                },
+                child: content,
+              );
+            },
+          ),
         ),
         Positioned(
           bottom: AppSpacing.md,
@@ -615,12 +597,14 @@ class _VideoPreviewWidgetState extends State<_VideoPreviewWidget> {
     _controller = VideoPlayerController.file(widget.file)
       ..setLooping(true)
       ..setVolume(0.0)
-      ..initialize().then((_) {
-        if (mounted) {
-          setState(() => _isInitialized = true);
-          _controller.play();
-        }
-      }).catchError((_) {});
+      ..initialize()
+          .then((_) {
+            if (mounted) {
+              setState(() => _isInitialized = true);
+              _controller.play();
+            }
+          })
+          .catchError((_) {});
   }
 
   @override
@@ -632,12 +616,14 @@ class _VideoPreviewWidgetState extends State<_VideoPreviewWidget> {
       _controller = VideoPlayerController.file(widget.file)
         ..setLooping(true)
         ..setVolume(0.0)
-        ..initialize().then((_) {
-          if (mounted) {
-            setState(() => _isInitialized = true);
-            _controller.play();
-          }
-        }).catchError((_) {});
+        ..initialize()
+            .then((_) {
+              if (mounted) {
+                setState(() => _isInitialized = true);
+                _controller.play();
+              }
+            })
+            .catchError((_) {});
     }
   }
 
@@ -653,7 +639,9 @@ class _VideoPreviewWidgetState extends State<_VideoPreviewWidget> {
       return Container(
         color: Colors.black26,
         child: const Center(
-          child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white54)),
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
+          ),
         ),
       );
     }

@@ -13,11 +13,7 @@ class DimensionSelector extends StatelessWidget {
   final MediaDimension currentDimension;
   final ValueChanged<MediaDimension> onChanged;
 
-  const DimensionSelector({
-    super.key,
-    required this.currentDimension,
-    required this.onChanged,
-  });
+  const DimensionSelector({super.key, required this.currentDimension, required this.onChanged});
 
   static const _options = MediaDimension.values;
 
@@ -34,10 +30,7 @@ class DimensionSelector extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.45),
             borderRadius: AppSpacing.borderRadiusFull,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
           ),
           child: IntrinsicWidth(
             child: SizedBox(
@@ -46,9 +39,7 @@ class DimensionSelector extends StatelessWidget {
                 children: [
                   // â”€â”€ Animated sliding pill â”€â”€
                   AnimatedAlign(
-                    alignment: selectedIndex == 0
-                        ? Alignment.centerLeft
-                        : Alignment.centerRight,
+                    alignment: selectedIndex == 0 ? Alignment.centerLeft : Alignment.centerRight,
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
                     child: FractionallySizedBox(
@@ -100,11 +91,7 @@ class _DimensionOption extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _DimensionOption({
-    required this.dimension,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const _DimensionOption({required this.dimension, required this.isSelected, required this.onTap});
 
   String get _label {
     switch (dimension) {
@@ -121,25 +108,17 @@ class _DimensionOption extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + 1,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 1),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Aspect-ratio icon preview
-            _AspectRatioIcon(
-              dimension: dimension,
-              isSelected: isSelected,
-            ),
+            _AspectRatioIcon(dimension: dimension, isSelected: isSelected),
             const SizedBox(width: AppSpacing.xs + 2),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 250),
               style: AppTypography.labelMedium.copyWith(
-                color: isSelected
-                    ? context.colors.textPrimary
-                    : context.colors.textTertiary,
+                color: isSelected ? context.colors.textPrimary : context.colors.textTertiary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
               child: Text(_label),
@@ -156,10 +135,7 @@ class _AspectRatioIcon extends StatelessWidget {
   final MediaDimension dimension;
   final bool isSelected;
 
-  const _AspectRatioIcon({
-    required this.dimension,
-    required this.isSelected,
-  });
+  const _AspectRatioIcon({required this.dimension, required this.isSelected});
 
   @override
   Widget build(BuildContext context) {

@@ -21,6 +21,9 @@ import 'widgets/explore_masonry_feed.dart';
 import 'widgets/recommended_for_you_row.dart';
 import 'widgets/explore_section_header.dart';
 import '../home/models/feed_models.dart';
+import '../home/widgets/feed_card.dart';
+import '../home/providers/feed_provider.dart';
+import '../sharing/services/share_service.dart';
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key});
@@ -296,10 +299,30 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> with SingleTicker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SearchResultsGrid(
-            results: searchState.results,
-            isLoading: searchState.searchLoadState == SearchLoadState.loading,
-          ),
+          // The answer reads as posts, the same card the feed uses, rather
+          // than thumbnails: a result is a post, and everything a post
+          // carries - the brand, the copy, the button - is part of the
+          // answer.
+          if (searchState.searchLoadState == SearchLoadState.loading)
+            SearchResultsGrid(results: const [], isLoading: true)
+          else if (searchState.results.isEmpty)
+            SearchResultsGrid(results: const [], isLoading: false)
+          else
+            ...searchState.results.map(
+              (post) => FeedCard(
+                post: post,
+                onLike: () => ref.read(feedProvider.notifier).toggleLike(post.id),
+                onBookmark: () => ref.read(feedProvider.notifier).toggleBookmark(post.id),
+                onFollow: () => ref.read(feedProvider.notifier).toggleFollow(post.id),
+                onShare: () => ShareService.nativeShare(
+                  postId: post.id,
+                  title: post.title,
+                  brandName: post.brandName,
+                ),
+                onReminder: () {},
+                onTap: () => context.push('/explore/post', extra: post),
+              ),
+            ),
           // Near the answer rather than in it: shown under the results so a
           // thin search still leads somewhere.
           if (searchState.similarResults.isNotEmpty &&
