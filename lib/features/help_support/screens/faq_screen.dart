@@ -33,7 +33,10 @@ class FaqScreen extends ConsumerWidget {
       body: faqAsync.when(
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, stack) => Center(
-          child: Text('Failed to load FAQs', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+          child: Text(
+            'Failed to load FAQs',
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+          ),
         ),
         data: (faqs) {
           if (faqs.isEmpty) {
@@ -41,11 +44,18 @@ class FaqScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.question_answer_outlined, size: 64, color: context.colors.textTertiary),
+                  Icon(
+                    Icons.question_answer_outlined,
+                    size: 64,
+                    color: context.colors.textTertiary,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'No FAQs available',
-                    style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                    style: AppTypography.titleMedium.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),

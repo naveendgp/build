@@ -7,11 +7,7 @@ class AnimatedGradientBg extends StatefulWidget {
   final List<Color>? colors;
   final Widget? child;
 
-  const AnimatedGradientBg({
-    super.key,
-    this.colors,
-    this.child,
-  });
+  const AnimatedGradientBg({super.key, this.colors, this.child});
 
   @override
   State<AnimatedGradientBg> createState() => _AnimatedGradientBgState();
@@ -24,10 +20,7 @@ class _AnimatedGradientBgState extends State<AnimatedGradientBg>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(seconds: 8),
-      vsync: this,
-    )..repeat();
+    _controller = AnimationController(duration: const Duration(seconds: 8), vsync: this)..repeat();
   }
 
   @override
@@ -43,9 +36,7 @@ class _AnimatedGradientBgState extends State<AnimatedGradientBg>
       builder: (context, child) {
         final t = _controller.value;
         return Container(
-          decoration: BoxDecoration(
-            color: context.colors.background,
-          ),
+          decoration: BoxDecoration(color: context.colors.background),
           child: Stack(
             children: [
               // Primary ambient orb
@@ -89,8 +80,7 @@ class _AnimatedGradientBgState extends State<AnimatedGradientBg>
               // Tertiary subtle orb
               Positioned(
                 top: MediaQuery.of(context).size.height * 0.4,
-                left: MediaQuery.of(context).size.width * 0.3 +
-                    sin(t * 2 * pi + 1.5) * 20,
+                left: MediaQuery.of(context).size.width * 0.3 + sin(t * 2 * pi + 1.5) * 20,
                 child: Container(
                   width: 200,
                   height: 200,

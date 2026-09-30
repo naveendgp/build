@@ -44,10 +44,10 @@ class NotificationService {
       // throws "iOS settings must be set when targeting iOS platform".
       const DarwinInitializationSettings initializationSettingsDarwin =
           DarwinInitializationSettings(
-        requestAlertPermission: true,
-        requestBadgePermission: true,
-        requestSoundPermission: true,
-      );
+            requestAlertPermission: true,
+            requestBadgePermission: true,
+            requestSoundPermission: true,
+          );
 
       const InitializationSettings initializationSettings = InitializationSettings(
         android: initializationSettingsAndroid,
@@ -117,14 +117,16 @@ class NotificationService {
           debugPrint('[NotificationService] Foreground message received!');
           debugPrint('[NotificationService] Title: ${message.notification?.title}');
           debugPrint('[NotificationService] Body: ${message.notification?.body}');
-          
+
           final notification = message.notification;
 
           if (notification != null && !kIsWeb) {
             // Check if this is a message for the currently active chat screen
-            if (message.data['referenceType'] == 'CONVERSATION' && 
+            if (message.data['referenceType'] == 'CONVERSATION' &&
                 message.data['referenceId'] == ChatNotifier.activeConversationId) {
-              debugPrint('[NotificationService] Silencing notification because user is on the chat screen');
+              debugPrint(
+                '[NotificationService] Silencing notification because user is on the chat screen',
+              );
               return;
             }
 
@@ -178,9 +180,10 @@ class NotificationService {
   Future<void> _registerTokenWithBackend(String token) async {
     try {
       debugPrint('[NotificationService] Registering FCM token with backend...');
-      final response = await ApiClient().dio.post('/notifications/fcm-token', data: {
-        'fcmToken': token,
-      });
+      final response = await ApiClient().dio.post(
+        '/notifications/fcm-token',
+        data: {'fcmToken': token},
+      );
       debugPrint('[NotificationService] FCM token registered! Status: ${response.statusCode}');
     } catch (e) {
       debugPrint('[NotificationService] FAILED to register FCM token: $e');

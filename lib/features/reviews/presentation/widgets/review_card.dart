@@ -8,10 +8,7 @@ import '../../../brand_profile/models/brand_profile_models.dart';
 class ReviewCard extends StatelessWidget {
   final BrandReview review;
 
-  const ReviewCard({
-    super.key,
-    required this.review,
-  });
+  const ReviewCard({super.key, required this.review});
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +29,13 @@ class ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 20,
                 backgroundColor: context.colors.surfaceSecondary,
-                backgroundImage: (review.authorAvatarUrl != null && review.authorAvatarUrl!.isNotEmpty) ? NetworkImage(review.authorAvatarUrl!) : null,
-                child: (review.authorAvatarUrl == null || review.authorAvatarUrl!.isEmpty) ? Icon(Icons.person, size: 20, color: context.colors.textSecondary) : null,
+                backgroundImage:
+                    (review.authorAvatarUrl != null && review.authorAvatarUrl!.isNotEmpty)
+                    ? NetworkImage(review.authorAvatarUrl!)
+                    : null,
+                child: (review.authorAvatarUrl == null || review.authorAvatarUrl!.isEmpty)
+                    ? Icon(Icons.person, size: 20, color: context.colors.textSecondary)
+                    : null,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -53,7 +55,9 @@ class ReviewCard extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: const Color(0xFF22C55E).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: const Color(0xFF22C55E).withValues(alpha: 0.2)),
+                              border: Border.all(
+                                color: const Color(0xFF22C55E).withValues(alpha: 0.2),
+                              ),
                             ),
                             child: Row(
                               children: [
@@ -70,7 +74,7 @@ class ReviewCard extends StatelessWidget {
                               ],
                             ),
                           ),
-                        ]
+                        ],
                       ],
                     ),
                     const SizedBox(height: 2),
@@ -86,9 +90,9 @@ class ReviewCard extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Star Rating
           Row(
             children: List.generate(5, (index) {
@@ -99,9 +103,9 @@ class ReviewCard extends StatelessWidget {
               );
             }),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Title
           if (review.title != null && review.title!.isNotEmpty) ...[
             Text(
@@ -110,7 +114,7 @@ class ReviewCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
           ],
-          
+
           // Description
           Text(
             review.description,
@@ -119,7 +123,7 @@ class ReviewCard extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          
+
           // Brand Response
           if (review.brandResponse != null && review.brandResponse!.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -165,7 +169,7 @@ class ReviewCard extends StatelessWidget {
                 ],
               ),
             ),
-          ]
+          ],
         ],
       ),
     );

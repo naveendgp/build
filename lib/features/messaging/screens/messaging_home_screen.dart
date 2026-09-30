@@ -41,7 +41,12 @@ class MessagingHomeScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _buildHeader(context),
-                _buildTabs(context, inboxState.activeTab, notifier),
+                _buildTabs(
+                  context,
+                  inboxState.activeTab,
+                  notifier,
+                  isBrand: ref.watch(authProvider).loggedInRole == UserRole.brand,
+                ),
                 Expanded(
                   child: inboxState.isLoading
                       ? Center(
@@ -92,8 +97,15 @@ class MessagingHomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTabs(BuildContext context, String activeTab, InboxNotifier notifier) {
-    final tabs = ['Brands', 'Profiles', 'Requests'];
+  Widget _buildTabs(
+    BuildContext context,
+    String activeTab,
+    InboxNotifier notifier, {
+    required bool isBrand,
+  }) {
+    // A person only ever writes to brands, so the other two tabs were always
+    // empty for them. A brand hears from both, and takes requests.
+    final tabs = isBrand ? ['Brands', 'Profiles', 'Requests'] : ['Brands'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
@@ -151,6 +163,9 @@ class MessagingHomeScreen extends ConsumerWidget {
   Widget _buildList(BuildContext context, InboxState state, InboxNotifier notifier) {
     // Filter conversations based on tab for this demo
     final filtered = state.conversations.where((c) {
+      // Support threads are read in Help & Support; they were arriving here as
+      // a brand called "Lyket Support".
+      if (c.isSupportChat) return false;
       if (state.activeTab == 'Requests') return c.isRequest;
       if (state.activeTab == 'Brands') return c.otherParticipant.isBrand && !c.isRequest;
       return !c.otherParticipant.isBrand && !c.isRequest;

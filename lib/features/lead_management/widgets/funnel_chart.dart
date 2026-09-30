@@ -56,7 +56,7 @@ class FunnelChart extends StatelessWidget {
             width: 100,
             child: Text(
               label,
-              style: AppTypography.bodyMedium.copyWith(color: const Color(0xFFA1A1AA)),
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
             ),
           ),
           Expanded(

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum LeadDashboardTab { forms, leads, analytics, exports }
+/// Analytics lived here as well, duplicating the brand dashboard; leads are
+/// managed here and measured there.
+enum LeadDashboardTab { forms, leads, exports }
 
 class LeadDashboardState {
   final LeadDashboardTab activeTab;

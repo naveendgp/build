@@ -47,30 +47,6 @@ class SearchSuggestions extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (recentSearches.isNotEmpty) ...[
-                    _buildSectionHeader(
-                      context,
-                      title: 'Recent Searches',
-                      trailing: GestureDetector(
-                        onTap: onClear,
-                        behavior: HitTestBehavior.opaque,
-                        child: Text(
-                          'Clear all',
-                          style: AppTypography.labelSmall.copyWith(
-                            color: context.colors.primaryAccent,
-                          ),
-                        ),
-                      ),
-                    ),
-                    ...recentSearches.map(
-                      (query) => _RecentSearchItem(
-                        query: query,
-                        onTap: () => onSelect(query),
-                        onRemove: onRemoveRecent != null ? () => onRemoveRecent!(query) : null,
-                      ),
-                    ),
-                    _buildDivider(context),
-                  ],
                   if (suggestions.isNotEmpty) ...[
                     _buildSectionHeader(context, title: 'Suggestions'),
                     ...suggestions.map(

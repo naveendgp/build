@@ -365,6 +365,16 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
 
     // Books something: a date and a time, kept as an ISO 8601 string so the
     // brand reads one value rather than two.
+    // Date of birth is a short-text question by type, but nobody should have
+    // to type a date: it gets the date picker, and nothing later than today.
+    if (label.toLowerCase() == 'date of birth') {
+      return _DateOfBirthField(
+        label: label,
+        isRequired: isRequired,
+        onChanged: (value) => _answers[fieldId] = value,
+      );
+    }
+
     if (type == 'APPOINTMENT') {
       return _AppointmentField(
         label: label,
@@ -569,6 +579,99 @@ class _AppointmentFieldState extends State<_AppointmentField> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A date on its own, for date of birth. No time, and no future dates.
+class _DateOfBirthField extends StatefulWidget {
+  final String label;
+  final bool isRequired;
+  final ValueChanged<String> onChanged;
+
+  const _DateOfBirthField({required this.label, required this.isRequired, required this.onChanged});
+
+  @override
+  State<_DateOfBirthField> createState() => _DateOfBirthFieldState();
+}
+
+class _DateOfBirthFieldState extends State<_DateOfBirthField> {
+  DateTime? _picked;
+
+  String _format(DateTime value) {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${value.day} ${months[value.month - 1]} ${value.year}';
+  }
+
+  Future<void> _pick() async {
+    final now = DateTime.now();
+    final date = await showAdaptiveDatePicker(
+      context,
+      initialDate: _picked ?? DateTime(now.year - 25, now.month, now.day),
+      firstDate: DateTime(now.year - 120),
+      lastDate: now,
+    );
+    if (date == null || !mounted) return;
+    setState(() => _picked = date);
+    widget.onChanged(
+      '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}',
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FormField<DateTime>(
+      validator: (_) {
+        if (widget.isRequired && _picked == null) return 'Pick a date';
+        return null;
+      },
+      builder: (state) => InkWell(
+        onTap: () async {
+          await _pick();
+          state.didChange(_picked);
+        },
+        borderRadius: AppSpacing.borderRadiusMd,
+        child: InputDecorator(
+          decoration: InputDecoration(
+            labelText: '${widget.label}${widget.isRequired ? ' *' : ''}',
+            border: OutlineInputBorder(borderRadius: AppSpacing.borderRadiusMd),
+            filled: true,
+            fillColor: context.colors.surface,
+            errorText: state.errorText,
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.cake_rounded, size: 20, color: context.colors.textSecondary),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text(
+                  _picked == null ? 'Choose your date of birth' : _format(_picked!),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: _picked == null
+                        ? context.colors.textTertiary
+                        : context.colors.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

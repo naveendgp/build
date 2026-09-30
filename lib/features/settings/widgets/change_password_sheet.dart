@@ -118,9 +118,9 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
 
     if (success) {
       Navigator.pop(context);
-      AppMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Password updated successfully')),
-      );
+      AppMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Password updated successfully')));
     } else {
       setState(() {
         _isLoading = false;
@@ -186,11 +186,17 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2,
+                  ),
                 )
               : Text(
                   'Send Verification Code',
-                  style: AppTypography.bodyMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
         ),
       ),
@@ -220,7 +226,10 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
         maxLength: 6,
         textAlign: TextAlign.center,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, letterSpacing: 6),
+        style: AppTypography.titleMedium.copyWith(
+          color: context.colors.textPrimary,
+          letterSpacing: 6,
+        ),
         decoration: InputDecoration(
           counterText: '',
           labelText: 'Verification Code',
@@ -255,7 +264,10 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
               )
             : TextButton(
                 onPressed: _isLoading ? null : _sendCode,
-                child: Text('Resend Code', style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent)),
+                child: Text(
+                  'Resend Code',
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent),
+                ),
               ),
       ),
       if (_errorMsg != null) ...[
@@ -280,11 +292,17 @@ class _ChangePasswordSheetState extends ConsumerState<ChangePasswordSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2,
+                  ),
                 )
               : Text(
                   'Update Password',
-                  style: AppTypography.bodyMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
         ),
       ),

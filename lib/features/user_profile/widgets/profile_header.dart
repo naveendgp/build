@@ -31,8 +31,8 @@ class ProfileHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the local settings to show interests instantly without waiting for backend sync
     final settingsState = ref.watch(userSettingsProvider);
-    final List<String> displayInterests = settingsState.value?.categoryInterests 
-        ?? profile.aiIdentityTags;
+    final List<String> displayInterests =
+        settingsState.value?.categoryInterests ?? profile.aiIdentityTags;
     return Column(
       children: [
         const SizedBox(height: 8),
@@ -49,9 +49,7 @@ class ProfileHeader extends ConsumerWidget {
         const SizedBox(height: 2),
         Text(
           '@${profile.username}',
-          style: AppTypography.bodyMedium.copyWith(
-            color: context.colors.textSecondary,
-          ),
+          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
           textAlign: TextAlign.center,
         ),
         if (displayInterests.isNotEmpty) ...[
@@ -75,20 +73,14 @@ class ProfileHeader extends ConsumerWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: LinearGradient(
-          colors: [
-            context.colors.textSecondary.withOpacity(0.5), 
-            context.colors.borderLight
-          ],
+          colors: [context.colors.textSecondary.withOpacity(0.5), context.colors.borderLight],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
       child: Container(
         margin: const EdgeInsets.all(ringWidth),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: context.colors.background,
-        ),
+        decoration: BoxDecoration(shape: BoxShape.circle, color: context.colors.background),
         padding: const EdgeInsets.all(padding),
         child: ClipOval(
           child: profile.avatarUrl.isNotEmpty
@@ -171,12 +163,7 @@ class ProfileHeader extends ConsumerWidget {
             color: context.colors.textPrimary,
           ),
         ),
-        Text(
-          label,
-          style: AppTypography.labelSmall.copyWith(
-            color: context.colors.textSecondary,
-          ),
-        ),
+        Text(label, style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary)),
       ],
     );
   }
@@ -189,9 +176,7 @@ class ProfileHeader extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
       child: Text(
         '·',
-        style: AppTypography.titleMedium.copyWith(
-          color: context.colors.textTertiary,
-        ),
+        style: AppTypography.titleMedium.copyWith(color: context.colors.textTertiary),
       ),
     );
   }

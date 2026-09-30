@@ -18,7 +18,10 @@ class InterestsTab extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [context.colors.primaryAccent.withValues(alpha: 0.2), context.colors.surface],
+                colors: [
+                  context.colors.primaryAccent.withValues(alpha: 0.2),
+                  context.colors.surface,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -33,10 +36,17 @@ class InterestsTab extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('AI Taste Profile', style: AppTypography.titleMedium.copyWith(color: context.colors.primaryAccent)),
+                      Text(
+                        'AI Taste Profile',
+                        style: AppTypography.titleMedium.copyWith(
+                          color: context.colors.primaryAccent,
+                        ),
+                      ),
                       const SizedBox(height: 4),
-                      Text('Based on your activity, you love modern cafes and luxury fashion.',
-                          style: AppTypography.bodyMedium),
+                      Text(
+                        'Based on your activity, you love modern cafes and luxury fashion.',
+                        style: AppTypography.bodyMedium,
+                      ),
                     ],
                   ),
                 ),
@@ -56,13 +66,22 @@ class InterestsTab extends StatelessWidget {
                   image: DecorationImage(
                     image: NetworkImage(interest.imageUrl),
                     fit: BoxFit.cover,
-                    colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.4), BlendMode.darken),
+                    colorFilter: ColorFilter.mode(
+                      Colors.black.withValues(alpha: 0.4),
+                      BlendMode.darken,
+                    ),
                   ),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.lg,
+                  vertical: AppSpacing.sm,
+                ),
                 child: Text(
                   interest.label,
-                  style: AppTypography.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                  style: AppTypography.labelLarge.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               );
             }).toList(),

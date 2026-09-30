@@ -11,21 +11,12 @@ class AdaptiveSwitch extends StatelessWidget {
   final ValueChanged<bool>? onChanged;
   final Color? activeColor;
 
-  const AdaptiveSwitch({
-    super.key,
-    required this.value,
-    required this.onChanged,
-    this.activeColor,
-  });
+  const AdaptiveSwitch({super.key, required this.value, required this.onChanged, this.activeColor});
 
   @override
   Widget build(BuildContext context) {
     if (_ios) {
-      return CupertinoSwitch(
-        value: value,
-        onChanged: onChanged,
-        activeTrackColor: activeColor,
-      );
+      return CupertinoSwitch(value: value, onChanged: onChanged, activeTrackColor: activeColor);
     }
     return Switch(value: value, onChanged: onChanged, activeThumbColor: activeColor);
   }
@@ -42,12 +33,7 @@ class AdaptiveLoadingIndicator extends StatelessWidget {
   final Color? color;
   final double strokeWidth;
 
-  const AdaptiveLoadingIndicator({
-    super.key,
-    this.size = 24,
-    this.color,
-    this.strokeWidth = 2.5,
-  });
+  const AdaptiveLoadingIndicator({super.key, this.size = 24, this.color, this.strokeWidth = 2.5});
 
   @override
   Widget build(BuildContext context) {

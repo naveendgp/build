@@ -27,10 +27,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   Future<void> _initApp() async {
     // Start restoring the session immediately
     await ref.read(authProvider.notifier).restoreSession();
-    
+
     // Wait for the remaining splash duration
     await Future.delayed(const Duration(milliseconds: 3500));
-    
+
     if (mounted) {
       final auth = ref.read(authProvider);
       if (auth.status == AuthStatus.success) {
@@ -62,9 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       body: Stack(
         children: [
           // Particle field background
-          Positioned.fill(
-            child: ParticleField(particleCount: 35),
-          ),
+          Positioned.fill(child: ParticleField(particleCount: 35)),
 
           // Centered content
           Center(
@@ -106,7 +104,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               strokeWidth: 1.5,
               valueColor: AlwaysStoppedAnimation<Color>(
                 context.colors.primaryAccent.withValues(alpha: 0.4),
-              )),
+              ),
+            ),
           ),
         );
       },

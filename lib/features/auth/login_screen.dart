@@ -31,10 +31,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _handleLogin() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    final success = await ref.read(authProvider.notifier).login(
-      _emailCtrl.text.trim(),
-      _passwordCtrl.text,
-    );
+    final success = await ref
+        .read(authProvider.notifier)
+        .login(_emailCtrl.text.trim(), _passwordCtrl.text);
     if (success && mounted) {
       context.go('/home');
     }
@@ -63,10 +62,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             children: [
               const SizedBox(height: AppSpacing.lg),
               // Header
-              Text('Welcome Back', style: AppTypography.displaySmall.copyWith(color: context.colors.textPrimary)),
+              Text(
+                'Welcome Back',
+                style: AppTypography.displaySmall.copyWith(color: context.colors.textPrimary),
+              ),
               const SizedBox(height: AppSpacing.sm),
-              Text('Sign in to continue your journey',
-                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+              Text(
+                'Sign in to continue your journey',
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+              ),
               const SizedBox(height: AppSpacing.xxl),
 
               // Email
@@ -95,7 +99,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       children: [
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          width: 20, height: 20,
+                          width: 20,
+                          height: 20,
                           decoration: BoxDecoration(
                             color: auth.rememberMe
                                 ? context.colors.primaryAccent
@@ -109,20 +114,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           ),
                           child: auth.rememberMe
-                              ? const Icon(Icons.check_rounded,
-                                  size: 14, color: Colors.white)
+                              ? const Icon(Icons.check_rounded, size: 14, color: Colors.white)
                               : null,
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        Text('Remember me', style: AppTypography.bodySmall.copyWith(color: context.colors.textPrimary)),
+                        Text(
+                          'Remember me',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const Spacer(),
                   GestureDetector(
                     onTap: () => context.push('/forgot-password'),
-                    child: Text('Forgot Password?',
-                      style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
+                    child: Text(
+                      'Forgot Password?',
+                      style: AppTypography.labelMedium.copyWith(
+                        color: context.colors.primaryAccent,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -140,16 +153,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       borderRadius: AppSpacing.borderRadiusMd,
                       border: Border.all(color: context.colors.error.withValues(alpha: 0.2)),
                     ),
-                    child: Row(children: [
-                      Icon(Icons.error_outline_rounded, size: 18, color: context.colors.error),
-                      const SizedBox(width: AppSpacing.sm),
-                      Expanded(
-                        child: Text(
-                          auth.errorMessage!,
-                          style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline_rounded, size: 18, color: context.colors.error),
+                        const SizedBox(width: AppSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            auth.errorMessage!,
+                            style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+                          ),
                         ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -164,14 +179,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
               const SizedBox(height: AppSpacing.xl),
               // Divider
-              Row(children: [
-                Expanded(child: Container(height: 1, color: context.colors.border)),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: Text('or', style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary)),
-                ),
-                Expanded(child: Container(height: 1, color: context.colors.border)),
-              ]),
+              Row(
+                children: [
+                  Expanded(child: Container(height: 1, color: context.colors.border)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                    child: Text(
+                      'or',
+                      style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+                    ),
+                  ),
+                  Expanded(child: Container(height: 1, color: context.colors.border)),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xl),
 
               // Social
@@ -190,11 +210,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("Don't have an account? ", style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+                    Text(
+                      "Don't have an account? ",
+                      style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                    ),
                     GestureDetector(
                       onTap: () => context.go('/auth'),
-                      child: Text('Sign Up',
-                        style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
+                      child: Text(
+                        'Sign Up',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: context.colors.primaryAccent,
+                        ),
+                      ),
                     ),
                   ],
                 ),

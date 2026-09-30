@@ -11,16 +11,14 @@ import '../models/support_chat_models.dart';
 class HelpSupportHomeScreen extends ConsumerStatefulWidget {
   final int initialTabIndex;
 
-  const HelpSupportHomeScreen({
-    super.key,
-    this.initialTabIndex = 0,
-  });
+  const HelpSupportHomeScreen({super.key, this.initialTabIndex = 0});
 
   @override
   ConsumerState<HelpSupportHomeScreen> createState() => _HelpSupportHomeScreenState();
 }
 
-class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> with SingleTickerProviderStateMixin {
+class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -195,10 +193,7 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
+              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 24),
             ),
             Text(
@@ -220,7 +215,10 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
     return chatsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator.adaptive()),
       error: (err, stack) => Center(
-        child: Text('Failed to load live chats', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+        child: Text(
+          'Failed to load live chats',
+          style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+        ),
       ),
       data: (chats) {
         if (chats.isEmpty) {
@@ -228,11 +226,18 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.chat_bubble_outline_rounded, size: 64, color: context.colors.textTertiary),
+                Icon(
+                  Icons.chat_bubble_outline_rounded,
+                  size: 64,
+                  color: context.colors.textTertiary,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'No live chats yet',
-                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                  style: AppTypography.titleMedium.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -264,7 +269,10 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
     return ticketsAsync.when(
       loading: () => const Center(child: CircularProgressIndicator.adaptive()),
       error: (err, stack) => Center(
-        child: Text('Failed to load tickets', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+        child: Text(
+          'Failed to load tickets',
+          style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+        ),
       ),
       data: (tickets) {
         if (tickets.isEmpty) {
@@ -272,11 +280,18 @@ class _HelpSupportHomeScreenState extends ConsumerState<HelpSupportHomeScreen> w
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.confirmation_number_outlined, size: 64, color: context.colors.textTertiary),
+                Icon(
+                  Icons.confirmation_number_outlined,
+                  size: 64,
+                  color: context.colors.textTertiary,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'No tickets yet',
-                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                  style: AppTypography.titleMedium.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -352,25 +367,43 @@ class _LiveChatListTile extends StatelessWidget {
               children: [
                 Text(
                   _categoryLabel(chat.category),
-                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Row(
                   children: [
                     if (chat.unreadCount > 0) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                        decoration: BoxDecoration(color: context.colors.primaryAccent, borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(
+                          color: context.colors.primaryAccent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                         child: Text(
                           '${chat.unreadCount}',
-                          style: AppTypography.labelSmall.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: AppTypography.labelSmall.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
                     ],
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: Text(chat.status, style: AppTypography.labelSmall.copyWith(color: statusColor, fontWeight: FontWeight.bold)),
+                      decoration: BoxDecoration(
+                        color: statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        chat.status,
+                        style: AppTypography.labelSmall.copyWith(
+                          color: statusColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -386,7 +419,10 @@ class _LiveChatListTile extends StatelessWidget {
               ),
             ],
             const SizedBox(height: 8),
-            Text(_formatDate(chat.updatedAt), style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary)),
+            Text(
+              _formatDate(chat.updatedAt),
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+            ),
           ],
         ),
       ),

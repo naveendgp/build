@@ -10,41 +10,45 @@ class ApiClient {
   late final Dio _dio;
 
   ApiClient() {
-    _dio = Dio(BaseOptions(
-      baseUrl: baseUrl,
-      connectTimeout: const Duration(seconds: 30),
-      receiveTimeout: const Duration(seconds: 60),
-      sendTimeout: const Duration(seconds: 60),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        // Every answer here depends on who is asking, so none of it may be
-        // stored. Without this an intermediary could hand back its own copy
-        // and a brand you had just followed still read "Follow".
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache',
-      },
-    ));
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 30),
+        receiveTimeout: const Duration(seconds: 60),
+        sendTimeout: const Duration(seconds: 60),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // Every answer here depends on who is asking, so none of it may be
+          // stored. Without this an intermediary could hand back its own copy
+          // and a brand you had just followed still read "Follow".
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache',
+        },
+      ),
+    );
 
-    _dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) async {
-        final token = await SecureStorage.getToken();
-        if (token != null) {
-          options.headers['Authorization'] = 'Bearer $token';
-        }
-        return handler.next(options);
-      },
-      onResponse: (response, handler) {
-        return handler.next(response);
-      },
-      onError: (DioException e, handler) {
-        // Handle 401 Unauthorized globally — clear session and redirect
-        if (e.response?.statusCode == 401) {
-          SecureStorage.clearSession();
-        }
-        return handler.next(e);
-      },
-    ));
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          final token = await SecureStorage.getToken();
+          if (token != null) {
+            options.headers['Authorization'] = 'Bearer $token';
+          }
+          return handler.next(options);
+        },
+        onResponse: (response, handler) {
+          return handler.next(response);
+        },
+        onError: (DioException e, handler) {
+          // Handle 401 Unauthorized globally — clear session and redirect
+          if (e.response?.statusCode == 401) {
+            SecureStorage.clearSession();
+          }
+          return handler.next(e);
+        },
+      ),
+    );
   }
 
   Dio get dio => _dio;

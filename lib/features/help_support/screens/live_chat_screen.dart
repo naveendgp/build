@@ -47,7 +47,9 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
   void _submit() {
     if (_category == null) return;
     Haptics.medium();
-    ref.read(liveChatRequestProvider.notifier).submit(
+    ref
+        .read(liveChatRequestProvider.notifier)
+        .submit(
           category: _category!,
           description: _descController.text.trim().isEmpty ? null : _descController.text.trim(),
         );
@@ -78,12 +80,17 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
         ),
         title: Text(
           'Live Chat',
-          style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+          style: AppTypography.titleMedium.copyWith(
+            color: context.colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
       body: switch (state.status) {
         LiveChatRequestStatus.waiting => _buildWaiting(context, state),
         LiveChatRequestStatus.rejected => _buildRejected(context, state),
+        // Nobody picked it up: the same panel, with a way back to a ticket.
+        LiveChatRequestStatus.timedOut => _buildRejected(context, state, timedOut: true),
         _ => _buildForm(context, state),
       },
     );
@@ -98,7 +105,10 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
         children: [
           Text(
             'What do you need help with?',
-            style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+            style: AppTypography.titleMedium.copyWith(
+              color: context.colors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 16),
           Wrap(
@@ -115,7 +125,9 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: isSelected ? context.colors.primaryAccent.withOpacity(0.12) : context.colors.surface,
+                    color: isSelected
+                        ? context.colors.primaryAccent.withOpacity(0.12)
+                        : context.colors.surface,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: isSelected ? context.colors.primaryAccent : context.colors.borderLight,
@@ -125,12 +137,20 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(icon, size: 18, color: isSelected ? context.colors.primaryAccent : context.colors.textSecondary),
+                      Icon(
+                        icon,
+                        size: 18,
+                        color: isSelected
+                            ? context.colors.primaryAccent
+                            : context.colors.textSecondary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         label,
                         style: AppTypography.bodyMedium.copyWith(
-                          color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary,
+                          color: isSelected
+                              ? context.colors.primaryAccent
+                              : context.colors.textPrimary,
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
@@ -143,7 +163,10 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
           const SizedBox(height: 24),
           Text(
             'Describe your issue (optional)',
-            style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
+            style: AppTypography.labelLarge.copyWith(
+              color: context.colors.textSecondary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 8),
           TextField(
@@ -155,13 +178,22 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
               hintText: 'A few details help the agent get up to speed faster',
               filled: true,
               fillColor: context.colors.surface,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: context.colors.borderLight),
+              ),
             ),
           ),
           if (state.status == LiveChatRequestStatus.error && state.errorMessage != null) ...[
             const SizedBox(height: 12),
-            Text(state.errorMessage!, style: AppTypography.bodySmall.copyWith(color: context.colors.error)),
+            Text(
+              state.errorMessage!,
+              style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+            ),
           ],
           const SizedBox(height: 32),
           SizedBox(
@@ -174,8 +206,16 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               child: isSubmitting
-                  ? const CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-                  : Text('Request Live Chat', style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ? const CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    )
+                  : Text(
+                      'Request Live Chat',
+                      style: AppTypography.titleMedium.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
             ),
           ),
         ],
@@ -194,17 +234,25 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
             SizedBox(
               width: 64,
               height: 64,
-              child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent), strokeWidth: 3),
+              child: CircularProgressIndicator.adaptive(
+                valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                strokeWidth: 3,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               'Waiting for an agent…',
-              style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+              style: AppTypography.titleMedium.copyWith(
+                color: context.colors.textPrimary,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              position > 1 ? 'You are #$position in the queue' : 'You\'re next — an agent will join shortly',
+              position > 1
+                  ? 'You are #$position in the queue'
+                  : 'You\'re next — an agent will join shortly',
               style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -214,7 +262,10 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
                 Haptics.light();
                 ref.read(liveChatRequestProvider.notifier).reset();
               },
-              child: Text('Cancel', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+              ),
             ),
           ],
         ),
@@ -222,17 +273,22 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
     );
   }
 
-  Widget _buildRejected(BuildContext context, LiveChatRequestState state) {
+  Widget _buildRejected(BuildContext context, LiveChatRequestState state, {bool timedOut = false}) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.info_outline_rounded, size: 48, color: context.colors.error),
+            Icon(
+              timedOut ? Icons.schedule_rounded : Icons.info_outline_rounded,
+              size: 48,
+              color: timedOut ? context.colors.textSecondary : context.colors.error,
+            ),
             const SizedBox(height: 16),
             Text(
-              state.errorMessage ?? 'Your request was declined.',
+              state.errorMessage ??
+                  (timedOut ? 'No agent picked this up.' : 'Your request was declined.'),
               style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
               textAlign: TextAlign.center,
             ),
@@ -245,6 +301,19 @@ class _LiveChatScreenState extends ConsumerState<LiveChatScreen> {
               style: ElevatedButton.styleFrom(backgroundColor: context.colors.primaryAccent),
               child: const Text('Try Again', style: TextStyle(color: Colors.white)),
             ),
+            if (timedOut) ...[
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  Haptics.light();
+                  context.push('/help/ticket');
+                },
+                child: Text(
+                  'Raise a ticket instead',
+                  style: AppTypography.button.copyWith(color: context.colors.primaryAccent),
+                ),
+              ),
+            ],
           ],
         ),
       ),

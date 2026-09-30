@@ -20,13 +20,12 @@ class InterestsState {
     bool? isLoading,
     String? error,
     Set<String>? interestedIds,
-  }) =>
-      InterestsState(
-        posts: posts ?? this.posts,
-        isLoading: isLoading ?? this.isLoading,
-        error: error,
-        interestedIds: interestedIds ?? this.interestedIds,
-      );
+  }) => InterestsState(
+    posts: posts ?? this.posts,
+    isLoading: isLoading ?? this.isLoading,
+    error: error,
+    interestedIds: interestedIds ?? this.interestedIds,
+  );
 }
 
 class InterestsNotifier extends StateNotifier<InterestsState> {
@@ -87,7 +86,6 @@ class InterestsNotifier extends StateNotifier<InterestsState> {
   bool isInterested(String postId) => state.interestedIds.contains(postId);
 }
 
-final interestsProvider =
-    StateNotifierProvider<InterestsNotifier, InterestsState>(
+final interestsProvider = StateNotifierProvider<InterestsNotifier, InterestsState>(
   (ref) => InterestsNotifier(ref),
 );

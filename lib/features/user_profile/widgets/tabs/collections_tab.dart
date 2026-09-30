@@ -16,23 +16,15 @@ class CollectionsTab extends ConsumerWidget {
     final collectionsAsync = ref.watch(collectionsProvider);
 
     return collectionsAsync.when(
-      loading: () => const SizedBox(
-        height: 300,
-        child: Center(
-          child: CircularProgressIndicator.adaptive(),
-        ),
-      ),
+      loading: () =>
+          const SizedBox(height: 300, child: Center(child: CircularProgressIndicator.adaptive())),
       error: (error, _) => SizedBox(
         height: 300,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: context.colors.textTertiary,
-              ),
+              Icon(Icons.error_outline_rounded, size: 48, color: context.colors.textTertiary),
               const SizedBox(height: 12),
               Text(
                 'Failed to load collections',
@@ -53,11 +45,7 @@ class CollectionsTab extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.grid_view_rounded,
-                    size: 48,
-                    color: context.colors.textTertiary,
-                  ),
+                  Icon(Icons.grid_view_rounded, size: 48, color: context.colors.textTertiary),
                   const SizedBox(height: 12),
                   Text(
                     'No collections yet',
@@ -69,9 +57,7 @@ class CollectionsTab extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Create a collection to organize your saved posts',
-                    style: AppTypography.bodySmall.copyWith(
-                      color: context.colors.textTertiary,
-                    ),
+                    style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
                     textAlign: TextAlign.center,
                   ),
                 ],
@@ -83,8 +69,7 @@ class CollectionsTab extends ConsumerWidget {
         return GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-              .copyWith(bottom: 120),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8).copyWith(bottom: 120),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             crossAxisSpacing: 12,
@@ -112,11 +97,9 @@ class _CollectionCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Haptics.light();
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => CollectionDetailScreen(collection: item),
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => CollectionDetailScreen(collection: item)));
       },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,11 +146,7 @@ class _CollectionCard extends StatelessWidget {
                           color: Colors.black.withValues(alpha: 0.6),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
-                          Icons.lock_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
+                        child: const Icon(Icons.lock_rounded, color: Colors.white, size: 14),
                       ),
                     ),
                 ],
@@ -186,9 +165,7 @@ class _CollectionCard extends StatelessWidget {
           ),
           Text(
             '${item.postCount} posts',
-            style: AppTypography.labelSmall.copyWith(
-              color: context.colors.textSecondary,
-            ),
+            style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
           ),
         ],
       ),

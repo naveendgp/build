@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../models/settings_models.dart';
 
-final userSettingsProvider = StateNotifierProvider<UserSettingsNotifier, AsyncValue<UserSettings>>((ref) {
+final userSettingsProvider = StateNotifierProvider<UserSettingsNotifier, AsyncValue<UserSettings>>((
+  ref,
+) {
   final apiClient = ref.watch(apiClientProvider);
   return UserSettingsNotifier(apiClient);
 });
@@ -31,10 +33,7 @@ class UserSettingsNotifier extends StateNotifier<AsyncValue<UserSettings>> {
     state = AsyncValue.data(updatedSettings); // Optimistic update
 
     try {
-      await _apiClient.dio.put(
-        '/settings/user',
-        data: updatedSettings.toJson(),
-      );
+      await _apiClient.dio.put('/settings/user', data: updatedSettings.toJson());
     } catch (e) {
       state = previousState; // Rollback
       rethrow;
@@ -42,10 +41,11 @@ class UserSettingsNotifier extends StateNotifier<AsyncValue<UserSettings>> {
   }
 }
 
-final brandSettingsProvider = StateNotifierProvider<BrandSettingsNotifier, AsyncValue<BrandSettings>>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  return BrandSettingsNotifier(apiClient);
-});
+final brandSettingsProvider =
+    StateNotifierProvider<BrandSettingsNotifier, AsyncValue<BrandSettings>>((ref) {
+      final apiClient = ref.watch(apiClientProvider);
+      return BrandSettingsNotifier(apiClient);
+    });
 
 class BrandSettingsNotifier extends StateNotifier<AsyncValue<BrandSettings>> {
   final ApiClient _apiClient;
@@ -70,10 +70,7 @@ class BrandSettingsNotifier extends StateNotifier<AsyncValue<BrandSettings>> {
     state = AsyncValue.data(updatedSettings); // Optimistic update
 
     try {
-      await _apiClient.dio.put(
-        '/settings/brand',
-        data: updatedSettings.toJson(),
-      );
+      await _apiClient.dio.put('/settings/brand', data: updatedSettings.toJson());
     } catch (e) {
       state = previousState; // Rollback
       rethrow;
@@ -81,10 +78,11 @@ class BrandSettingsNotifier extends StateNotifier<AsyncValue<BrandSettings>> {
   }
 }
 
-final blockedBrandsProvider = StateNotifierProvider<BlockedBrandsNotifier, AsyncValue<List<BlockedBrand>>>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  return BlockedBrandsNotifier(apiClient);
-});
+final blockedBrandsProvider =
+    StateNotifierProvider<BlockedBrandsNotifier, AsyncValue<List<BlockedBrand>>>((ref) {
+      final apiClient = ref.watch(apiClientProvider);
+      return BlockedBrandsNotifier(apiClient);
+    });
 
 class BlockedBrandsNotifier extends StateNotifier<AsyncValue<List<BlockedBrand>>> {
   final ApiClient _apiClient;

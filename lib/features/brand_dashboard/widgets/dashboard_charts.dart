@@ -26,7 +26,6 @@ class DashboardCharts extends StatelessWidget {
         const SizedBox(height: AppSpacing.lg),
         _buildReachChart(context),
         const SizedBox(height: AppSpacing.xl),
-        _buildTrafficDonut(context),
       ],
     ).animate().fadeIn(duration: 500.ms, delay: 200.ms).slideY(begin: 0.05, end: 0);
   }

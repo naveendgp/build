@@ -39,14 +39,17 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<CollectionItem>>
   Future<void> deleteCollection(String id) async {
     try {
       await _repository.deleteCollection(id);
-      state = state.whenData(
-        (collections) => collections.where((c) => c.id != id).toList(),
-      );
+      state = state.whenData((collections) => collections.where((c) => c.id != id).toList());
     } catch (e) {
       rethrow;
     }
   }
-  Future<void> togglePostInCollection(String collectionId, dynamic post, {required bool isCurrentlyInCollection}) async {
+
+  Future<void> togglePostInCollection(
+    String collectionId,
+    dynamic post, {
+    required bool isCurrentlyInCollection,
+  }) async {
     final postId = post.id;
     // Optimistically update state
     state = state.whenData((collections) {
@@ -54,9 +57,9 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<CollectionItem>>
         if (c.id == collectionId) {
           final updatedPosts = List<SavedPostItem>.from(c.posts);
           int newPostCount = c.postCount;
-          
+
           List<String> newCoverImages = List.from(c.coverImages);
-          
+
           if (isCurrentlyInCollection) {
             updatedPosts.removeWhere((p) => p.id == postId);
             newPostCount = (newPostCount > 0) ? newPostCount - 1 : 0;
@@ -70,14 +73,16 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<CollectionItem>>
                 imageUrl: post.mediaUrl ?? '',
                 title: post.title ?? '',
                 aspectRatio: post.aspectRatio ?? 1.0,
-              )
+              ),
             );
             newPostCount += 1;
-            if (post.mediaUrl != null && post.mediaUrl.isNotEmpty && !newCoverImages.contains(post.mediaUrl)) {
+            if (post.mediaUrl != null &&
+                post.mediaUrl.isNotEmpty &&
+                !newCoverImages.contains(post.mediaUrl)) {
               newCoverImages.add(post.mediaUrl);
             }
           }
-          
+
           return CollectionItem(
             id: c.id,
             title: c.title,
@@ -106,7 +111,8 @@ class CollectionsNotifier extends StateNotifier<AsyncValue<List<CollectionItem>>
   }
 }
 
-final collectionsProvider = StateNotifierProvider<CollectionsNotifier, AsyncValue<List<CollectionItem>>>((ref) {
-  final repository = ref.watch(collectionsRepositoryProvider);
-  return CollectionsNotifier(repository);
-});
+final collectionsProvider =
+    StateNotifierProvider<CollectionsNotifier, AsyncValue<List<CollectionItem>>>((ref) {
+      final repository = ref.watch(collectionsRepositoryProvider);
+      return CollectionsNotifier(repository);
+    });

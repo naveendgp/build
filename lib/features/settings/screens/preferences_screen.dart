@@ -38,9 +38,7 @@ class PreferencesScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
           return Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
-            ),
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
             decoration: BoxDecoration(
               color: context.colors.card,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -51,8 +49,12 @@ class PreferencesScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Container(
-                    width: 40, height: 4,
-                    decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(100)),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: context.colors.border,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                   ),
                 ),
                 Padding(
@@ -68,10 +70,10 @@ class PreferencesScreen extends ConsumerWidget {
                       final item = interests[i];
                       final label = item['label'] as String;
                       final isSelected = selected.contains(label);
-                      
+
                       return ListTile(
-                        onTap: () { 
-                          Haptics.selection(); 
+                        onTap: () {
+                          Haptics.selection();
                           setState(() {
                             if (isSelected) {
                               selected.remove(label);
@@ -80,20 +82,38 @@ class PreferencesScreen extends ConsumerWidget {
                             }
                           });
                           ref.read(userProfileProvider.notifier).updateProfile({
-                            'interests': selected.join(',')
+                            'interests': selected.join(','),
                           });
                         },
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         leading: Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: isSelected ? context.colors.primaryAccent.withOpacity(0.15) : context.colors.surface,
-                            borderRadius: BorderRadius.circular(8)
+                            color: isSelected
+                                ? context.colors.primaryAccent.withOpacity(0.15)
+                                : context.colors.surface,
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(item['icon'] as IconData, size: 20, color: isSelected ? context.colors.primaryAccent : context.colors.textSecondary)
+                          child: Icon(
+                            item['icon'] as IconData,
+                            size: 20,
+                            color: isSelected
+                                ? context.colors.primaryAccent
+                                : context.colors.textSecondary,
+                          ),
                         ),
-                        title: Text(label, style: AppTypography.labelLarge.copyWith(color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary)),
-                        trailing: isSelected ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent) : null,
+                        title: Text(
+                          label,
+                          style: AppTypography.labelLarge.copyWith(
+                            color: isSelected
+                                ? context.colors.primaryAccent
+                                : context.colors.textPrimary,
+                          ),
+                        ),
+                        trailing: isSelected
+                            ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent)
+                            : null,
                       );
                     },
                   ),
@@ -102,7 +122,7 @@ class PreferencesScreen extends ConsumerWidget {
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
@@ -131,9 +151,7 @@ class PreferencesScreen extends ConsumerWidget {
       builder: (ctx) => StatefulBuilder(
         builder: (context, setState) {
           return Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(ctx).size.height * 0.75,
-            ),
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
             decoration: BoxDecoration(
               color: context.colors.card,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -144,11 +162,11 @@ class PreferencesScreen extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Container(
-                    width: 40, 
+                    width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: context.colors.border, 
-                      borderRadius: BorderRadius.circular(100)
+                      color: context.colors.border,
+                      borderRadius: BorderRadius.circular(100),
                     ),
                   ),
                 ),
@@ -165,10 +183,10 @@ class PreferencesScreen extends ConsumerWidget {
                       final cat = categories[i];
                       final label = cat['label'] as String;
                       final isSelected = selected.contains(label);
-                      
+
                       return ListTile(
-                        onTap: () { 
-                          Haptics.selection(); 
+                        onTap: () {
+                          Haptics.selection();
                           setState(() {
                             if (isSelected) {
                               selected.remove(label);
@@ -176,32 +194,39 @@ class PreferencesScreen extends ConsumerWidget {
                               selected.add(label);
                             }
                           });
-                          ref.read(userSettingsProvider.notifier).updateSettings(
-                            settings.copyWith(categoryInterests: selected)
-                          );
+                          ref
+                              .read(userSettingsProvider.notifier)
+                              .updateSettings(settings.copyWith(categoryInterests: selected));
                         },
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         leading: Container(
-                          width: 40, height: 40,
+                          width: 40,
+                          height: 40,
                           decoration: BoxDecoration(
-                            color: isSelected ? context.colors.primaryAccent.withOpacity(0.15) : context.colors.surface,
-                            borderRadius: BorderRadius.circular(8)
+                            color: isSelected
+                                ? context.colors.primaryAccent.withOpacity(0.15)
+                                : context.colors.surface,
+                            borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            cat['icon'] as IconData, 
-                            size: 20, 
-                            color: isSelected ? context.colors.primaryAccent : context.colors.textSecondary
-                          )
+                            cat['icon'] as IconData,
+                            size: 20,
+                            color: isSelected
+                                ? context.colors.primaryAccent
+                                : context.colors.textSecondary,
+                          ),
                         ),
                         title: Text(
-                          label, 
+                          label,
                           style: AppTypography.labelLarge.copyWith(
-                            color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary
-                          )
+                            color: isSelected
+                                ? context.colors.primaryAccent
+                                : context.colors.textPrimary,
+                          ),
                         ),
-                        trailing: isSelected 
-                          ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent) 
-                          : null,
+                        trailing: isSelected
+                            ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent)
+                            : null,
                       );
                     },
                   ),
@@ -210,7 +235,7 @@ class PreferencesScreen extends ConsumerWidget {
               ],
             ),
           );
-        }
+        },
       ),
     ).then((_) {
       // Refresh the profile so the updated categories show up
@@ -289,9 +314,9 @@ class PreferencesScreen extends ConsumerWidget {
                           value: settings.appReminders,
                           activeColor: context.colors.primaryAccent,
                           onChanged: (val) {
-                            ref.read(userSettingsProvider.notifier).updateSettings(
-                                  settings.copyWith(appReminders: val),
-                                );
+                            ref
+                                .read(userSettingsProvider.notifier)
+                                .updateSettings(settings.copyWith(appReminders: val));
                           },
                         ),
                       ),
@@ -302,9 +327,9 @@ class PreferencesScreen extends ConsumerWidget {
                           value: settings.pushNotifications,
                           activeColor: context.colors.primaryAccent,
                           onChanged: (val) {
-                            ref.read(userSettingsProvider.notifier).updateSettings(
-                                  settings.copyWith(pushNotifications: val),
-                                );
+                            ref
+                                .read(userSettingsProvider.notifier)
+                                .updateSettings(settings.copyWith(pushNotifications: val));
                           },
                         ),
                       ),

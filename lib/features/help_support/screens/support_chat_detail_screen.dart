@@ -53,7 +53,10 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
         ),
         title: Text(
           chat != null ? _categoryLabel(chat.category) : 'Live Chat',
-          style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+          style: AppTypography.titleMedium.copyWith(
+            color: context.colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         actions: [
           if (chat != null && !chat.isOpen)
@@ -66,7 +69,10 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
                     color: context.colors.textTertiary.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Text(chat.status, style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary)),
+                  child: Text(
+                    chat.status,
+                    style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+                  ),
                 ),
               ),
             ),
@@ -76,28 +82,34 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
         children: [
           Expanded(
             child: state.isLoading
-                ? Center(child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)))
+                ? Center(
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                    ),
+                  )
                 : state.error != null
-                    ? Center(child: Text(state.error!, style: TextStyle(color: context.colors.error)))
-                    : chat == null || chat.messages.isEmpty
-                        ? Center(
-                            child: Text(
-                              'Say hello to get started',
-                              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
-                            ),
-                          )
-                        : ListView.builder(
-                            controller: _scrollController,
-                            reverse: true,
-                            padding: const EdgeInsets.all(16),
-                            itemCount: chat.messages.length,
-                            itemBuilder: (context, index) {
-                              // messages are stored oldest -> newest; reverse the index
-                              // to pair with `reverse: true` list rendering.
-                              final msg = chat.messages[chat.messages.length - 1 - index];
-                              return _MessageBubble(message: msg);
-                            },
-                          ),
+                ? Center(
+                    child: Text(state.error!, style: TextStyle(color: context.colors.error)),
+                  )
+                : chat == null || chat.messages.isEmpty
+                ? Center(
+                    child: Text(
+                      'Say hello to get started',
+                      style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _scrollController,
+                    reverse: true,
+                    padding: const EdgeInsets.all(16),
+                    itemCount: chat.messages.length,
+                    itemBuilder: (context, index) {
+                      // messages are stored oldest -> newest; reverse the index
+                      // to pair with `reverse: true` list rendering.
+                      final msg = chat.messages[chat.messages.length - 1 - index];
+                      return _MessageBubble(message: msg);
+                    },
+                  ),
           ),
           _buildComposer(context, state.isSending, chat?.isOpen ?? true),
         ],
@@ -144,7 +156,10 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
                 filled: true,
                 fillColor: context.colors.background,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(22), borderSide: BorderSide.none),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(22),
+                  borderSide: BorderSide.none,
+                ),
               ),
             ),
           ),
@@ -154,11 +169,17 @@ class _SupportChatDetailScreenState extends ConsumerState<SupportChatDetailScree
             child: Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(color: context.colors.primaryAccent, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: context.colors.primaryAccent,
+                shape: BoxShape.circle,
+              ),
               child: isSending
                   ? const Padding(
                       padding: EdgeInsets.all(12),
-                      child: CircularProgressIndicator.adaptive(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                      child: CircularProgressIndicator.adaptive(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
                   : const Icon(Icons.arrow_upward_rounded, color: Colors.white),
             ),
@@ -208,7 +229,9 @@ class _MessageBubble extends StatelessWidget {
         ),
         child: Text(
           message.message,
-          style: AppTypography.bodyMedium.copyWith(color: isMe ? Colors.white : context.colors.textPrimary),
+          style: AppTypography.bodyMedium.copyWith(
+            color: isMe ? Colors.white : context.colors.textPrimary,
+          ),
         ),
       ),
     );

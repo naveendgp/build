@@ -48,22 +48,20 @@ class RatingDistributionCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   '${stats.totalReviews} Reviews',
-                  style: AppTypography.bodySmall.copyWith(
-                    color: context.colors.textSecondary,
-                  ),
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
                 ),
               ],
             ),
           ),
-          
+
           // Divider
           Container(
-              height: 100,
-              width: 1,
-              color: context.colors.border,
-              margin: const EdgeInsets.symmetric(horizontal: 20),
+            height: 100,
+            width: 1,
+            color: context.colors.border,
+            margin: const EdgeInsets.symmetric(horizontal: 20),
           ),
-          
+
           // Distribution Bars
           Expanded(
             flex: 3,
@@ -72,7 +70,7 @@ class RatingDistributionCard extends StatelessWidget {
                 final starNum = 5 - index;
                 final count = stats.distribution[starNum] ?? 0;
                 final ratio = stats.totalReviews > 0 ? count / stats.totalReviews : 0.0;
-                
+
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
@@ -91,10 +89,10 @@ class RatingDistributionCard extends StatelessWidget {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(4),
                           child: LinearProgressIndicator(
-                              value: ratio,
-                              minHeight: 8,
-                              backgroundColor: context.colors.border,
-                              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFB800)),
+                            value: ratio,
+                            minHeight: 8,
+                            backgroundColor: context.colors.border,
+                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFB800)),
                           ),
                         ),
                       ),

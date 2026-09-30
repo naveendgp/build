@@ -9,6 +9,7 @@ import '../../../core/storage/secure_storage.dart';
 import '../../../core/services/notification_service.dart';
 
 enum AuthStatus { idle, loading, success, error }
+
 enum UserRole { user, brand }
 
 class AuthState {
@@ -31,10 +32,10 @@ class AuthState {
   });
 
   AuthState copyWith({
-    AuthStatus? status, 
-    UserRole? selectedRole, 
+    AuthStatus? status,
+    UserRole? selectedRole,
     UserRole? loggedInRole,
-    String? errorMessage, 
+    String? errorMessage,
     bool? rememberMe,
     String? brandId,
     String? userId,
@@ -87,10 +88,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String email, String password) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/login',
+        data: {'email': email, 'password': password},
+      );
 
       if (response.statusCode == 200) {
         final data = response.data;
@@ -112,7 +113,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
 
         state = state.copyWith(
-          status: AuthStatus.success, 
+          status: AuthStatus.success,
           loggedInRole: role,
           brandId: brandId?.toString(),
           userId: userId?.toString(),
@@ -134,7 +135,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     } catch (e) {
       debugPrint('Unknown error in login: $e');
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -146,7 +150,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final roleString = await SecureStorage.getRole() ?? 'user';
         final brandId = await SecureStorage.getBrandId();
         String? userId = await SecureStorage.getUserId();
-        
+
         // Fallback: extract userId from JWT if it's missing (e.g. from an older session)
         if (userId == null) {
           try {
@@ -163,7 +167,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
 
         final role = roleString.toLowerCase() == 'brand' ? UserRole.brand : UserRole.user;
-        
+
         state = state.copyWith(
           status: AuthStatus.success,
           loggedInRole: role,
@@ -186,10 +190,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> forgotPassword(String email) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/send-otp', data: {
-        'email': email,
-        'type': 'forgot-password',
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/send-otp',
+        data: {'email': email, 'type': 'forgot-password'},
+      );
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);
@@ -203,7 +207,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -211,11 +218,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> verifyResetCode(String email, String code) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/verify-otp', data: {
-        'email': email,
-        'code': code,
-        'type': 'forgot-password',
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/verify-otp',
+        data: {'email': email, 'code': code, 'type': 'forgot-password'},
+      );
 
       debugPrint('verifyResetCode response: ${response.statusCode} ${response.data}');
 
@@ -233,13 +239,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } on DioException catch (e) {
-      debugPrint('verifyResetCode DioException: ${e.response?.statusCode} ${e.response?.data} | ${e.message}');
-      final msg = _extractErrorMessage(e, 'Network error (${e.response?.statusCode}): ${e.response?.data}');
+      debugPrint(
+        'verifyResetCode DioException: ${e.response?.statusCode} ${e.response?.data} | ${e.message}',
+      );
+      final msg = _extractErrorMessage(
+        e,
+        'Network error (${e.response?.statusCode}): ${e.response?.data}',
+      );
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
       debugPrint('verifyResetCode unexpected error: $e');
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred: $e');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred: $e',
+      );
       return false;
     }
   }
@@ -247,15 +261,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> resetPassword(String email, String code, String newPassword) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/reset-password-with-otp', data: {
-        'email': email,
-        // 'code' was being silently dropped here despite the caller passing it
-        // in — the backend has no way to confirm this request is authorized
-        // without it.
-        'code': code,
-        'newPassword': newPassword,
-        'type': 'forgot-password',
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/reset-password-with-otp',
+        data: {
+          'email': email,
+          // 'code' was being silently dropped here despite the caller passing it
+          // in — the backend has no way to confirm this request is authorized
+          // without it.
+          'code': code,
+          'newPassword': newPassword,
+          'type': 'forgot-password',
+        },
+      );
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);
@@ -269,7 +286,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -281,39 +301,37 @@ class AuthNotifier extends StateNotifier<AuthState> {
         scopes: ['email', 'profile'],
         serverClientId: '799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com',
       );
-      
+
       // If user is already signed in (from previous session), sign them out to force account picker
       await googleSignIn.signOut();
-      
+
       final GoogleSignInAccount? account = await googleSignIn.signIn();
-      
+
       if (account == null) {
         // User cancelled the login flow
         state = state.copyWith(status: AuthStatus.idle);
         return false;
       }
-      
+
       final GoogleSignInAuthentication auth = await account.authentication;
       final String? idToken = auth.idToken;
-      
+
       if (idToken == null) {
-        state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to retrieve Google token');
+        state = state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: 'Failed to retrieve Google token',
+        );
         return false;
       }
 
-      final response = await _apiClient.dio.post('/auth/google', data: {
-        'idToken': idToken,
-      });
+      final response = await _apiClient.dio.post('/auth/google', data: {'idToken': idToken});
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
         await SecureStorage.saveToken(data['token']);
         await SecureStorage.saveRole(data['role']?.toString().toLowerCase() ?? 'user');
-        
-        state = state.copyWith(
-          status: AuthStatus.success,
-          loggedInRole: UserRole.user,
-        );
+
+        state = state.copyWith(status: AuthStatus.success, loggedInRole: UserRole.user);
 
         // Initialize push notifications after successful Google login
         NotificationService().initialize();
@@ -328,7 +346,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred: $e');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred: $e',
+      );
       return false;
     }
   }
@@ -336,10 +357,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> changePassword(String currentPassword, String newPassword) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/change-password', data: {
-        'currentPassword': currentPassword,
-        'newPassword': newPassword,
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/change-password',
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);
@@ -353,7 +374,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -371,14 +395,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = state.copyWith(status: AuthStatus.success);
         return response.data is Map ? response.data['email'] as String? : null;
       }
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to send verification code');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'Failed to send verification code',
+      );
       return null;
     } on DioException catch (e) {
       final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return null;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return null;
     }
   }
@@ -386,10 +416,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> changePasswordWithOtp(String code, String newPassword) async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.post('/auth/change-password-with-otp', data: {
-        'code': code,
-        'newPassword': newPassword,
-      });
+      final response = await _apiClient.dio.post(
+        '/auth/change-password-with-otp',
+        data: {'code': code, 'newPassword': newPassword},
+      );
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);
@@ -403,7 +433,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -420,14 +453,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
         state = state.copyWith(status: AuthStatus.success);
         return response.data is Map ? response.data['email'] as String? : null;
       }
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'Failed to send verification code');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'Failed to send verification code',
+      );
       return null;
     } on DioException catch (e) {
       final msg = _extractErrorMessage(e, 'Network error');
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return null;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return null;
     }
   }
@@ -453,7 +492,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
-      state = state.copyWith(status: AuthStatus.error, errorMessage: 'An unexpected error occurred');
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: 'An unexpected error occurred',
+      );
       return false;
     }
   }
@@ -462,7 +504,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _apiClient.dio.post('/auth/logout');
     } catch (_) {}
-    
+
     await SecureStorage.clearSession();
     state = const AuthState();
   }

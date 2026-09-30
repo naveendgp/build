@@ -14,7 +14,7 @@ import '../../../core/utils/app_messenger.dart';
 
 class ProfileImagePicker extends ConsumerStatefulWidget {
   final String currentAvatarUrl;
-  
+
   const ProfileImagePicker({super.key, required this.currentAvatarUrl});
 
   @override
@@ -28,15 +28,17 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      final XFile? pickedFile = await _picker.pickImage(source: source, imageQuality: 70, maxWidth: 1080);
+      final XFile? pickedFile = await _picker.pickImage(
+        source: source,
+        imageQuality: 70,
+        maxWidth: 1080,
+      );
       if (pickedFile == null) return;
 
       await _uploadAvatar(File(pickedFile.path));
     } catch (e) {
       if (mounted) {
-        AppMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to pick image: $e')),
-        );
+        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick image: $e')));
       }
     }
   }
@@ -50,10 +52,10 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
     try {
       final apiClient = ref.read(apiClientProvider);
       String fileName = imageFile.path.split('/').last;
-      
+
       FormData formData = FormData.fromMap({
         "avatar": await MultipartFile.fromFile(
-          imageFile.path, 
+          imageFile.path,
           filename: fileName,
           contentType: http_parser.MediaType('image', 'jpeg'),
         ),
@@ -118,10 +120,7 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
         context,
         title: 'Change Profile Photo',
         actions: [
-          AdaptiveSheetAction(
-            label: 'Take Photo',
-            onPressed: () => _pickImage(ImageSource.camera),
-          ),
+          AdaptiveSheetAction(label: 'Take Photo', onPressed: () => _pickImage(ImageSource.camera)),
           AdaptiveSheetAction(
             label: 'Choose from Gallery',
             onPressed: () => _pickImage(ImageSource.gallery),
@@ -152,16 +151,25 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
             children: [
               Text(
                 'Change Profile Photo',
-                style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
+                style: AppTypography.titleMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: context.colors.textPrimary,
+                ),
               ),
               const SizedBox(height: 24),
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: context.colors.primaryAccent.withOpacity(0.1), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: context.colors.primaryAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
                   child: Icon(Icons.camera_alt_rounded, color: context.colors.primaryAccent),
                 ),
-                title: Text('Take Photo', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                title: Text(
+                  'Take Photo',
+                  style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -170,10 +178,16 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(color: context.colors.secondaryAccent.withOpacity(0.1), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: context.colors.secondaryAccent.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
                   child: Icon(Icons.photo_library_rounded, color: context.colors.secondaryAccent),
                 ),
-                title: Text('Choose from Gallery', style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)),
+                title: Text(
+                  'Choose from Gallery',
+                  style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                ),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -183,10 +197,16 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(color: context.colors.error.withOpacity(0.1), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: context.colors.error.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
                     child: Icon(Icons.delete_outline_rounded, color: context.colors.error),
                   ),
-                  title: Text('Remove Photo', style: AppTypography.bodyLarge.copyWith(color: context.colors.error)),
+                  title: Text(
+                    'Remove Photo',
+                    style: AppTypography.bodyLarge.copyWith(color: context.colors.error),
+                  ),
                   onTap: () {
                     Navigator.pop(context);
                     _removePhoto();
@@ -216,8 +236,8 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
                     colors: [
-                      context.colors.textSecondary.withOpacity(0.5), 
-                      context.colors.borderLight
+                      context.colors.textSecondary.withOpacity(0.5),
+                      context.colors.borderLight,
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -247,7 +267,8 @@ class _ProfileImagePickerState extends ConsumerState<ProfileImagePicker> {
                   child: Center(
                     child: CircularProgressIndicator.adaptive(
                       value: _uploadProgress,
-                      valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
+                      valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                    ),
                   ),
                 ),
               if (!_isUploading)

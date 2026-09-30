@@ -39,21 +39,18 @@ class SocialAuthButton extends StatefulWidget {
   State<SocialAuthButton> createState() => _SocialAuthButtonState();
 }
 
-class _SocialAuthButtonState extends State<SocialAuthButton>
-    with SingleTickerProviderStateMixin {
+class _SocialAuthButtonState extends State<SocialAuthButton> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -67,10 +64,7 @@ class _SocialAuthButtonState extends State<SocialAuthButton>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: GestureDetector(
         onTapDown: (_) => _controller.forward(),
@@ -91,17 +85,11 @@ class _SocialAuthButtonState extends State<SocialAuthButton>
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                widget.icon,
-                size: 24,
-                color: context.colors.textPrimary,
-              ),
+              Icon(widget.icon, size: 24, color: context.colors.textPrimary),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 widget.label,
-                style: AppTypography.labelLarge.copyWith(
-                  color: context.colors.textPrimary,
-                ),
+                style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary),
               ),
             ],
           ),

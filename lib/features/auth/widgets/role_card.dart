@@ -65,18 +65,14 @@ class RoleCard extends StatelessWidget {
                 Text(
                   title,
                   style: AppTypography.titleSmall.copyWith(
-                    color: isSelected
-                        ? context.colors.textPrimary
-                        : context.colors.textSecondary,
+                    color: isSelected ? context.colors.textPrimary : context.colors.textSecondary,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: AppTypography.bodySmall.copyWith(
-                    color: context.colors.textTertiary,
-                  ),
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
                 ),
               ],
             ),
@@ -89,22 +85,14 @@ class RoleCard extends StatelessWidget {
             height: 24,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected
-                  ? context.colors.primaryAccent
-                  : Colors.transparent,
+              color: isSelected ? context.colors.primaryAccent : Colors.transparent,
               border: Border.all(
-                color: isSelected
-                    ? context.colors.primaryAccent
-                    : context.colors.textTertiary,
+                color: isSelected ? context.colors.primaryAccent : context.colors.textTertiary,
                 width: isSelected ? 0 : 1.5,
               ),
             ),
             child: isSelected
-                ? const Icon(
-                    Icons.check_rounded,
-                    size: 16,
-                    color: Colors.white,
-                  )
+                ? const Icon(Icons.check_rounded, size: 16, color: Colors.white)
                 : null,
           ),
         ],

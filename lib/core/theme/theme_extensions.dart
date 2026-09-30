@@ -105,11 +105,7 @@ class AppThemeShadows extends ThemeExtension<AppThemeShadows> {
   final List<BoxShadow> layer2;
   final List<BoxShadow> layer3;
 
-  const AppThemeShadows({
-    required this.layer1,
-    required this.layer2,
-    required this.layer3,
-  });
+  const AppThemeShadows({required this.layer1, required this.layer2, required this.layer3});
 
   @override
   AppThemeShadows copyWith({
@@ -140,18 +136,10 @@ class AppThemeGlass extends ThemeExtension<AppThemeGlass> {
   final Color border;
   final double blur;
 
-  const AppThemeGlass({
-    required this.background,
-    required this.border,
-    required this.blur,
-  });
+  const AppThemeGlass({required this.background, required this.border, required this.blur});
 
   @override
-  AppThemeGlass copyWith({
-    Color? background,
-    Color? border,
-    double? blur,
-  }) {
+  AppThemeGlass copyWith({Color? background, Color? border, double? blur}) {
     return AppThemeGlass(
       background: background ?? this.background,
       border: border ?? this.border,

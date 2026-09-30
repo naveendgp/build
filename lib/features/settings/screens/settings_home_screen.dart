@@ -104,11 +104,7 @@ class SettingsHomeScreen extends ConsumerWidget {
                 icon: Icons.question_answer_outlined,
                 onTap: () => context.push('/help/faq'),
               ),
-              SettingsItem(
-                title: 'Privacy Policy',
-                icon: Icons.privacy_tip_outlined,
-                onTap: () {},
-              ),
+              SettingsItem(title: 'Privacy Policy', icon: Icons.privacy_tip_outlined, onTap: () {}),
             ],
           ),
           const SizedBox(height: 16),

@@ -51,10 +51,10 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
 
   Future<void> loadNotifications() async {
     state = state.copyWith(isLoading: true, clearError: true);
-    
+
     try {
       final notifications = await _repository.getNotifications();
-      
+
       state = state.copyWith(
         isLoading: false,
         notifications: notifications,
@@ -92,7 +92,7 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
       }
       return n;
     }).toList();
-    
+
     state = state.copyWith(
       notifications: updated,
       unreadCount: updated.where((n) => !n.isRead).length,
@@ -142,8 +142,9 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
   }
 }
 
-final notificationsProvider = StateNotifierProvider.autoDispose<NotificationsNotifier, NotificationsState>((ref) {
-  final apiClient = ref.read(apiClientProvider);
-  final repository = NotificationsRepository(apiClient);
-  return NotificationsNotifier(repository);
-});
+final notificationsProvider =
+    StateNotifierProvider.autoDispose<NotificationsNotifier, NotificationsState>((ref) {
+      final apiClient = ref.read(apiClientProvider);
+      final repository = NotificationsRepository(apiClient);
+      return NotificationsNotifier(repository);
+    });

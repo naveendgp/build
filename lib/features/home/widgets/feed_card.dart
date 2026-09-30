@@ -22,6 +22,32 @@ import '../../settings/providers/interests_provider.dart';
 import '../../../core/utils/app_messenger.dart';
 
 /// Premium immersive single-feed card — cinematic edge-to-edge design
+/// The button's words, or null when there should be no button.
+///
+/// The backend passes the brand's own ctaText straight through, and a post
+/// saved without one arrived as an empty string - drawn as a red pill with
+/// nothing written on it. The action it carries says what it does, so that
+/// is what it says.
+String? _ctaLabel(FeedPost post) {
+  if (post.ctaType == null || post.ctaType == 'NONE') return null;
+
+  final written = post.ctaLabel?.trim() ?? '';
+  final lower = written.toLowerCase();
+  if (lower == 'no button' || lower == 'none') return null;
+  if (written.isNotEmpty) return written;
+
+  switch (post.ctaType) {
+    case 'OPEN_LEAD_FORM':
+      return 'Get Started';
+    case 'OPEN_CHAT':
+      return 'Send Message';
+    case 'OPEN_URL':
+      return 'Learn More';
+    default:
+      return null;
+  }
+}
+
 class FeedCard extends ConsumerWidget {
   final FeedPost post;
   final VoidCallback onLike;
@@ -83,12 +109,12 @@ class FeedCard extends ConsumerWidget {
               ),
             // Media
             _buildMedia(),
-            if (post.ctaLabel != null &&
-                post.ctaLabel!.trim().toLowerCase() != 'no button' &&
-                post.ctaLabel!.trim().toLowerCase() != 'none' &&
-                post.ctaType != 'NONE') ...[
+            if (_ctaLabel(post) != null) ...[
               const SizedBox(height: 8),
-              PremiumPostCTAButton(label: post.ctaLabel!, onTap: () => _handleCtaTap(context, ref)),
+              PremiumPostCTAButton(
+                label: _ctaLabel(post)!,
+                onTap: () => _handleCtaTap(context, ref),
+              ),
             ],
             // Bottom info
             _buildFooter(context, ref),

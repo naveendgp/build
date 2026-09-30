@@ -137,7 +137,10 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
       const SizedBox(height: 16),
       Text(
         'Delete Account',
-        style: AppTypography.titleLarge.copyWith(color: context.colors.error, fontWeight: FontWeight.bold),
+        style: AppTypography.titleLarge.copyWith(
+          color: context.colors.error,
+          fontWeight: FontWeight.bold,
+        ),
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 8),
@@ -161,7 +164,10 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
           Expanded(
             child: TextButton(
               onPressed: _isLoading ? null : () => Navigator.pop(context),
-              child: Text('Cancel', style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary)),
+              child: Text(
+                'Cancel',
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -179,9 +185,15 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
                     ? const SizedBox(
                         width: 24,
                         height: 24,
-                        child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+                        child: CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          strokeWidth: 2,
+                        ),
                       )
-                    : const Text('Send Code', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    : const Text(
+                        'Send Code',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
               ),
             ),
           ),
@@ -196,12 +208,17 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
       const SizedBox(height: 16),
       Text(
         'Confirm Deletion',
-        style: AppTypography.titleLarge.copyWith(color: context.colors.error, fontWeight: FontWeight.bold),
+        style: AppTypography.titleLarge.copyWith(
+          color: context.colors.error,
+          fontWeight: FontWeight.bold,
+        ),
         textAlign: TextAlign.center,
       ),
       const SizedBox(height: 8),
       Text(
-        _maskedEmail != null ? 'Enter the code sent to $_maskedEmail' : 'Enter the code sent to your email',
+        _maskedEmail != null
+            ? 'Enter the code sent to $_maskedEmail'
+            : 'Enter the code sent to your email',
         style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
         textAlign: TextAlign.center,
       ),
@@ -212,7 +229,10 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
         maxLength: 6,
         textAlign: TextAlign.center,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, letterSpacing: 6),
+        style: AppTypography.titleMedium.copyWith(
+          color: context.colors.textPrimary,
+          letterSpacing: 6,
+        ),
         decoration: InputDecoration(
           counterText: '',
           labelText: 'Verification Code',
@@ -228,7 +248,10 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
               )
             : TextButton(
                 onPressed: _isLoading ? null : _sendCode,
-                child: Text('Resend Code', style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent)),
+                child: Text(
+                  'Resend Code',
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.primaryAccent),
+                ),
               ),
       ),
       if (_errorMsg != null) ...[
@@ -253,9 +276,15 @@ class _DeleteAccountSheetState extends ConsumerState<DeleteAccountSheet> {
               ? const SizedBox(
                   width: 24,
                   height: 24,
-                  child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+                  child: CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    strokeWidth: 2,
+                  ),
                 )
-              : const Text('Delete My Account', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              : const Text(
+                  'Delete My Account',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
         ),
       ),
     ];

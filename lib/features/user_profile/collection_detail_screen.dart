@@ -13,10 +13,7 @@ import 'providers/collections_provider.dart';
 class CollectionDetailScreen extends ConsumerStatefulWidget {
   final CollectionItem collection;
 
-  const CollectionDetailScreen({
-    super.key,
-    required this.collection,
-  });
+  const CollectionDetailScreen({super.key, required this.collection});
 
   @override
   ConsumerState<CollectionDetailScreen> createState() => _CollectionDetailScreenState();
@@ -48,8 +45,8 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final coverImage = widget.collection.coverImages.isNotEmpty 
-        ? widget.collection.coverImages.first 
+    final coverImage = widget.collection.coverImages.isNotEmpty
+        ? widget.collection.coverImages.first
         : null;
 
     return Scaffold(
@@ -75,7 +72,7 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
             ),
 
             flexibleSpace: FlexibleSpaceBar(
-              title: _isScrolled 
+              title: _isScrolled
                   ? Text(widget.collection.title, style: AppTypography.titleMedium)
                   : null,
               centerTitle: true,
@@ -86,13 +83,12 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
                     Image.network(
                       coverImage,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: context.colors.borderLight.withValues(alpha: 0.3),
-                      ),
+                      errorBuilder: (context, error, stackTrace) =>
+                          Container(color: context.colors.borderLight.withValues(alpha: 0.3)),
                     )
                   else
                     Container(color: context.colors.borderLight.withValues(alpha: 0.3)),
-                  
+
                   // Gradient Overlay
                   DecoratedBox(
                     decoration: BoxDecoration(
@@ -108,7 +104,7 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
                       ),
                     ),
                   ),
-                  
+
                   // Content Header
                   Positioned(
                     left: AppSpacing.lg,
@@ -131,7 +127,10 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
                               children: [
                                 const Icon(Icons.lock_rounded, size: 12, color: Colors.white),
                                 const SizedBox(width: 4),
-                                Text('Private', style: AppTypography.labelSmall.copyWith(color: Colors.white)),
+                                Text(
+                                  'Private',
+                                  style: AppTypography.labelSmall.copyWith(color: Colors.white),
+                                ),
                               ],
                             ),
                           ),
@@ -157,7 +156,6 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
             ),
           ),
 
-          
           // Content Grid
           if (widget.collection.posts.isEmpty)
             SliverFillRemaining(
@@ -165,7 +163,11 @@ class _CollectionDetailScreenState extends ConsumerState<CollectionDetailScreen>
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.photo_library_outlined, size: 48, color: context.colors.textTertiary),
+                    Icon(
+                      Icons.photo_library_outlined,
+                      size: 48,
+                      color: context.colors.textTertiary,
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     Text('No posts yet', style: AppTypography.titleMedium),
                     const SizedBox(height: AppSpacing.sm),

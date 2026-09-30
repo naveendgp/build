@@ -87,19 +87,28 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
   /// Instagram-style carousel selection — lets the user pick several photos
   /// from the gallery in a single picker session instead of repeatedly
   /// re-opening the picker to add one image at a time.
+  /// A carousel holds five pictures. More than that and nobody swipes to the
+  /// end, and the post takes longer to send than it is worth.
+  static const maxCarouselImages = 5;
+
   Future<bool> pickImages({ImageSource source = ImageSource.gallery}) async {
     if (source != ImageSource.gallery) {
       return pickImage(source: source);
     }
+    final room = maxCarouselImages - state.media.length;
+    if (room <= 0) return false;
+
     final picked = await _picker.pickMultiImage(imageQuality: 70, maxWidth: 1080);
     if (picked.isNotEmpty) {
-      final items = picked.map(
-        (file) => MediaItem(
-          id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
-          file: File(file.path),
-          type: MediaType.image,
-        ),
-      );
+      final items = picked
+          .take(room)
+          .map(
+            (file) => MediaItem(
+              id: 'media_${DateTime.now().millisecondsSinceEpoch}_${file.path.hashCode}',
+              file: File(file.path),
+              type: MediaType.image,
+            ),
+          );
       state = state.copyWith(media: [...state.media, ...items]);
       return true;
     }

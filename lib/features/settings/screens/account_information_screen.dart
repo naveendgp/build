@@ -19,7 +19,8 @@ class AccountInformationScreen extends ConsumerStatefulWidget {
   ConsumerState<AccountInformationScreen> createState() => _AccountInformationScreenState();
 }
 
-class _AccountInformationScreenState extends ConsumerState<AccountInformationScreen> with SingleTickerProviderStateMixin {
+class _AccountInformationScreenState extends ConsumerState<AccountInformationScreen>
+    with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isModified = false;
@@ -35,9 +36,9 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     super.initState();
     _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
     _fadeAnimation = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-    
+
     final profile = ref.read(userProfileProvider).profile;
-    
+
     _usernameController = TextEditingController(text: profile?.username ?? '');
     _locationController = TextEditingController(text: profile?.location ?? '');
 
@@ -49,8 +50,9 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
 
   void _checkModifications() {
     final profile = ref.read(userProfileProvider).profile;
-    final bool modified = (_usernameController.text.trim() != (profile?.username ?? '')) ||
-                          (_locationController.text.trim() != (profile?.location ?? ''));
+    final bool modified =
+        (_usernameController.text.trim() != (profile?.username ?? '')) ||
+        (_locationController.text.trim() != (profile?.location ?? ''));
     if (_isModified != modified) {
       setState(() {
         _isModified = modified;
@@ -70,9 +72,9 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
 
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate() || !_isModified) return;
-    
+
     setState(() => _isLoading = true);
-    
+
     try {
       final apiClient = ref.read(apiClientProvider);
       final updateData = {
@@ -81,7 +83,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
       };
 
       await apiClient.dio.put('/user/me', data: updateData);
-      
+
       if (mounted) {
         AppMessenger.of(context).showSnackBar(
           SnackBar(
@@ -89,7 +91,10 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
               children: [
                 const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
                 const SizedBox(width: 12),
-                Text('Profile Updated Successfully', style: AppTypography.labelLarge.copyWith(color: Colors.white)),
+                Text(
+                  'Profile Updated Successfully',
+                  style: AppTypography.labelLarge.copyWith(color: Colors.white),
+                ),
               ],
             ),
             backgroundColor: context.colors.success,
@@ -122,95 +127,138 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     bool sheetLoading = false;
     String? selectedGender;
     final genderOptions = ['Male', 'Female', 'Other', 'Prefer Not To Say'];
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
-        return StatefulBuilder(builder: (ctx, setSheetState) {
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-            child: Container(
-              decoration: BoxDecoration(
-                color: context.colors.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-              ),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Add $fieldName',
-                    style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  if (dbKey == 'gender')
-                    DropdownButtonFormField<String>(
-                      value: selectedGender,
-                      items: genderOptions.map((g) => DropdownMenuItem(value: g, child: Text(g, style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary)))).toList(),
-                      onChanged: (val) {
-                        setSheetState(() => selectedGender = val);
-                      },
-                      dropdownColor: context.colors.surfaceSecondary,
-                      decoration: InputDecoration(
-                        hintText: 'Select your gender',
-                        filled: true,
-                        fillColor: context.colors.background,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      ),
-                    )
-                  else
-                    TextFormField(
-                      controller: controller,
-                      keyboardType: keyboardType,
-                      autofocus: true,
-                      style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
-                      decoration: InputDecoration(
-                        hintText: 'Enter your $fieldName',
-                        filled: true,
-                        fillColor: context.colors.background,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.colors.surface,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add $fieldName',
+                      style: AppTypography.titleMedium.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: context.colors.textPrimary,
                       ),
                     ),
-                    
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: sheetLoading ? null : () async {
-                      final valueToSave = dbKey == 'gender' ? selectedGender : controller.text.trim();
-                      if (valueToSave == null || valueToSave.isEmpty) return;
-                      
-                      setSheetState(() => sheetLoading = true);
-                      try {
-                        await ref.read(apiClientProvider).dio.put('/user/me', data: {
-                          dbKey: valueToSave,
-                        });
-                        if (mounted) {
-                          ref.read(userProfileProvider.notifier).loadProfile();
-                          Navigator.pop(ctx);
-                        }
-                      } catch (e) {
-                        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Error adding $fieldName')));
-                      } finally {
-                        if (mounted) setSheetState(() => sheetLoading = false);
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: context.colors.primaryAccent,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 16),
+
+                    if (dbKey == 'gender')
+                      DropdownButtonFormField<String>(
+                        value: selectedGender,
+                        items: genderOptions
+                            .map(
+                              (g) => DropdownMenuItem(
+                                value: g,
+                                child: Text(
+                                  g,
+                                  style: AppTypography.bodyLarge.copyWith(
+                                    color: context.colors.textPrimary,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (val) {
+                          setSheetState(() => selectedGender = val);
+                        },
+                        dropdownColor: context.colors.surfaceSecondary,
+                        decoration: InputDecoration(
+                          hintText: 'Select your gender',
+                          filled: true,
+                          fillColor: context.colors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      )
+                    else
+                      TextFormField(
+                        controller: controller,
+                        keyboardType: keyboardType,
+                        autofocus: true,
+                        style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+                        decoration: InputDecoration(
+                          hintText: 'Enter your $fieldName',
+                          filled: true,
+                          fillColor: context.colors.background,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: sheetLoading
+                          ? null
+                          : () async {
+                              final valueToSave = dbKey == 'gender'
+                                  ? selectedGender
+                                  : controller.text.trim();
+                              if (valueToSave == null || valueToSave.isEmpty) return;
+
+                              setSheetState(() => sheetLoading = true);
+                              try {
+                                await ref
+                                    .read(apiClientProvider)
+                                    .dio
+                                    .put('/user/me', data: {dbKey: valueToSave});
+                                if (mounted) {
+                                  ref.read(userProfileProvider.notifier).loadProfile();
+                                  Navigator.pop(ctx);
+                                }
+                              } catch (e) {
+                                AppMessenger.of(
+                                  context,
+                                ).showSnackBar(SnackBar(content: Text('Error adding $fieldName')));
+                              } finally {
+                                if (mounted) setSheetState(() => sheetLoading = false);
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: context.colors.primaryAccent,
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: sheetLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Save $fieldName',
+                              style: AppTypography.labelLarge.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
-                    child: sheetLoading 
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2))
-                        : Text('Save $fieldName', style: AppTypography.labelLarge.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          );
-        });
+            );
+          },
+        );
       },
     );
   }
@@ -221,7 +269,10 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
       builder: (ctx) => AlertDialog(
         backgroundColor: context.colors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Contact Support', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+        title: Text(
+          'Contact Support',
+          style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
+        ),
         content: Text(
           'Please reach out to support@lyket.app to verify your identity and add this protected information.',
           style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
@@ -229,7 +280,10 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Close', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
+            child: Text(
+              'Close',
+              style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent),
+            ),
           ),
         ],
       ),
@@ -252,11 +306,17 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
             children: [
               Text(
                 'Profile Completion',
-                style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                style: AppTypography.labelLarge.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               Text(
                 '${(percent * 100).toInt()}%',
-                style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.bold),
+                style: AppTypography.labelLarge.copyWith(
+                  color: context.colors.primaryAccent,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -288,13 +348,16 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                   Expanded(
                     child: Text(
                       'Complete your profile. Missing information may affect personalization.',
-                      style: AppTypography.bodySmall.copyWith(color: context.colors.textPrimary, height: 1.3),
+                      style: AppTypography.bodySmall.copyWith(
+                        color: context.colors.textPrimary,
+                        height: 1.3,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ]
+          ],
         ],
       ),
     );
@@ -318,7 +381,10 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
             width: 110,
             child: Text(
               label,
-              style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.w500),
+              style: AppTypography.labelMedium.copyWith(
+                color: context.colors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           Expanded(
@@ -335,7 +401,9 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                       fillColor: context.colors.background.withOpacity(0.5),
                       filled: true,
                       hintText: hintText,
-                      hintStyle: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
+                      hintStyle: AppTypography.bodyMedium.copyWith(
+                        color: context.colors.textTertiary,
+                      ),
                     ),
                   )
                 : Text(
@@ -390,7 +458,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                       indent: 16,
                       endIndent: 16,
                     ),
-                ]
+                ],
               ],
             ),
           ),
@@ -404,7 +472,8 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     final profileState = ref.watch(userProfileProvider);
     final profile = profileState.profile;
 
-    if (profile == null) return const Scaffold(body: Center(child: CircularProgressIndicator.adaptive()));
+    if (profile == null)
+      return const Scaffold(body: Center(child: CircularProgressIndicator.adaptive()));
 
     final completion = profile.completionPercentage;
     final missing = profile.missingFields;
@@ -412,7 +481,13 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: AppBar(
-        title: Text('Account Information', style: AppTypography.titleMedium.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
+        title: Text(
+          'Account Information',
+          style: AppTypography.titleMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: context.colors.textPrimary,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: context.colors.background,
         elevation: 0,
@@ -436,14 +511,16 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                       const SizedBox(height: 8),
                       Text(
                         'Manage your personal account information.',
-                        style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
                       ),
                       _buildProfileCompleteness(completion, missing),
                     ],
                   ),
                 ),
               ),
-              
+
               SliverToBoxAdapter(
                 child: FadeTransition(
                   opacity: _fadeAnimation,
@@ -460,12 +537,21 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                               value: profile.name,
                               isEditable: false,
                               isMissing: profile.name.isEmpty,
-                              customAction: profile.name.isEmpty 
-                                ? TextButton(
-                                    onPressed: () => _openMissingFieldSheet('Full Name', 'name', TextInputType.name),
-                                    child: Text('Add', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
-                                  )
-                                : null,
+                              customAction: profile.name.isEmpty
+                                  ? TextButton(
+                                      onPressed: () => _openMissingFieldSheet(
+                                        'Full Name',
+                                        'name',
+                                        TextInputType.name,
+                                      ),
+                                      child: Text(
+                                        'Add',
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: context.colors.primaryAccent,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
                             ),
                             _buildField(
                               label: 'Username',
@@ -483,7 +569,7 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                             ),
                           ],
                         ),
-                        
+
                         _buildSection(
                           title: 'Private Information',
                           children: [
@@ -492,12 +578,17 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                               value: profile.email,
                               isEditable: false,
                               isMissing: profile.email.isEmpty,
-                              customAction: profile.email.isNotEmpty 
-                                ? null
-                                : TextButton(
-                                    onPressed: _showContactSupport,
-                                    child: Text('Contact', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
-                                  ),
+                              customAction: profile.email.isNotEmpty
+                                  ? null
+                                  : TextButton(
+                                      onPressed: _showContactSupport,
+                                      child: Text(
+                                        'Contact',
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: context.colors.primaryAccent,
+                                        ),
+                                      ),
+                                    ),
                             ),
                             _buildField(
                               label: 'Phone',
@@ -505,51 +596,80 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                               isEditable: false,
                               isMissing: profile.contactNumber.isEmpty,
                               customAction: profile.contactNumber.isEmpty
-                                ? TextButton(
-                                    onPressed: () => _openMissingFieldSheet('Phone Number', 'contactNumber', TextInputType.phone),
-                                    child: Text('Add', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
-                                  )
-                                : null,
+                                  ? TextButton(
+                                      onPressed: () => _openMissingFieldSheet(
+                                        'Phone Number',
+                                        'contactNumber',
+                                        TextInputType.phone,
+                                      ),
+                                      child: Text(
+                                        'Add',
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: context.colors.primaryAccent,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
                             ),
                             _buildField(
                               label: 'Gender',
                               value: profile.gender,
                               isEditable: false,
                               isMissing: profile.gender.isEmpty,
-                              customAction: profile.gender.isEmpty 
-                                ? TextButton(
-                                    onPressed: () => _openMissingFieldSheet('Gender', 'gender', TextInputType.text),
-                                    child: Text('Add', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
-                                  )
-                                : null,
+                              customAction: profile.gender.isEmpty
+                                  ? TextButton(
+                                      onPressed: () => _openMissingFieldSheet(
+                                        'Gender',
+                                        'gender',
+                                        TextInputType.text,
+                                      ),
+                                      child: Text(
+                                        'Add',
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: context.colors.primaryAccent,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
                             ),
                             _buildField(
                               label: 'Date of Birth',
                               value: profile.dateOfBirth,
                               isEditable: false,
                               isMissing: profile.dateOfBirth.isEmpty,
-                              customAction: profile.dateOfBirth.isEmpty 
-                                ? TextButton(
-                                    onPressed: () async {
-                                      final picked = await showAdaptiveDatePicker(
-                                        context,
-                                        initialDate: DateTime(2000),
-                                        firstDate: DateTime(1900),
-                                        lastDate: DateTime.now(),
-                                      );
-                                      if (picked != null && mounted) {
-                                        final dob = DateFormat('yyyy-MM-dd').format(picked);
-                                        await ref.read(apiClientProvider).dio.put('/user/me', data: {'dateOfBirth': '${dob}T00:00:00.000Z'});
-                                        ref.read(userProfileProvider.notifier).loadProfile();
-                                      }
-                                    },
-                                    child: Text('Add', style: AppTypography.labelMedium.copyWith(color: context.colors.primaryAccent)),
-                                  )
-                                : null,
+                              customAction: profile.dateOfBirth.isEmpty
+                                  ? TextButton(
+                                      onPressed: () async {
+                                        final picked = await showAdaptiveDatePicker(
+                                          context,
+                                          initialDate: DateTime(2000),
+                                          firstDate: DateTime(1900),
+                                          lastDate: DateTime.now(),
+                                        );
+                                        if (picked != null && mounted) {
+                                          final dob = DateFormat('yyyy-MM-dd').format(picked);
+                                          await ref
+                                              .read(apiClientProvider)
+                                              .dio
+                                              .put(
+                                                '/user/me',
+                                                data: {'dateOfBirth': '${dob}T00:00:00.000Z'},
+                                              );
+                                          ref.read(userProfileProvider.notifier).loadProfile();
+                                        }
+                                      },
+                                      child: Text(
+                                        'Add',
+                                        style: AppTypography.labelMedium.copyWith(
+                                          color: context.colors.primaryAccent,
+                                        ),
+                                      ),
+                                    )
+                                  : null,
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 120),
                       ],
                     ),
@@ -588,10 +708,20 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                     ),
                     child: Center(
                       child: _isLoading
-                          ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 3))
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator.adaptive(
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                strokeWidth: 3,
+                              ),
+                            )
                           : Text(
                               'Save Changes',
-                              style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: AppTypography.titleMedium.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                     ),
                   ),

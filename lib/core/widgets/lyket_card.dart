@@ -28,21 +28,18 @@ class LyketCard extends StatefulWidget {
   State<LyketCard> createState() => _LyketCardState();
 }
 
-class _LyketCardState extends State<LyketCard>
-    with SingleTickerProviderStateMixin {
+class _LyketCardState extends State<LyketCard> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 100),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(duration: const Duration(milliseconds: 100), vsync: this);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.98,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -56,15 +53,10 @@ class _LyketCardState extends State<LyketCard>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: GestureDetector(
-        onTapDown: widget.onTap != null
-            ? (_) => _controller.forward()
-            : null,
+        onTapDown: widget.onTap != null ? (_) => _controller.forward() : null,
         onTapUp: widget.onTap != null
             ? (_) {
                 _controller.reverse();
@@ -72,9 +64,7 @@ class _LyketCardState extends State<LyketCard>
                 widget.onTap?.call();
               }
             : null,
-        onTapCancel: widget.onTap != null
-            ? () => _controller.reverse()
-            : null,
+        onTapCancel: widget.onTap != null ? () => _controller.reverse() : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
@@ -83,8 +73,8 @@ class _LyketCardState extends State<LyketCard>
           decoration: widget.isSelected
               ? AppDecorations.selectedCard(context)
               : widget.useGlass
-                  ? AppDecorations.glassCard(context)
-                  : AppDecorations.floatingCard(context),
+              ? AppDecorations.glassCard(context)
+              : AppDecorations.floatingCard(context),
           child: widget.useGlass
               ? ClipRRect(
                   borderRadius: AppSpacing.borderRadiusXl,
@@ -96,10 +86,7 @@ class _LyketCardState extends State<LyketCard>
                     ),
                   ),
                 )
-              : Padding(
-                  padding: widget.padding ?? AppSpacing.paddingCard,
-                  child: widget.child,
-                ),
+              : Padding(padding: widget.padding ?? AppSpacing.paddingCard, child: widget.child),
         ),
       ),
     );

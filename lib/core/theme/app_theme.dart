@@ -95,11 +95,7 @@ class AppTheme {
       brightness: Brightness.dark,
       fontFamily: AppTypography.fontFamily,
       pageTransitionsTheme: _pageTransitions,
-      extensions: <ThemeExtension<dynamic>>[
-        _darkColors,
-        _darkShadows,
-        _darkGlass,
-      ],
+      extensions: <ThemeExtension<dynamic>>[_darkColors, _darkShadows, _darkGlass],
 
       // Color Scheme
       colorScheme: const ColorScheme.dark(
@@ -123,10 +119,7 @@ class AppTheme {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle.light,
-        iconTheme: const IconThemeData(
-          color: ThemeTokens.darkTextPrimary,
-          size: 22,
-        ),
+        iconTheme: const IconThemeData(color: ThemeTokens.darkTextPrimary, size: 22),
         titleTextStyle: AppTypography.titleMedium,
         centerTitle: true,
       ),
@@ -138,9 +131,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.borderRadiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
           textStyle: AppTypography.button,
         ),
       ),
@@ -184,11 +175,7 @@ class AppTheme {
       brightness: Brightness.light,
       fontFamily: AppTypography.fontFamily,
       pageTransitionsTheme: _pageTransitions,
-      extensions: <ThemeExtension<dynamic>>[
-        _lightColors,
-        _lightShadows,
-        _lightGlass,
-      ],
+      extensions: <ThemeExtension<dynamic>>[_lightColors, _lightShadows, _lightGlass],
 
       colorScheme: const ColorScheme.light(
         primary: ThemeTokens.primaryAccent,
@@ -209,13 +196,8 @@ class AppTheme {
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        iconTheme: const IconThemeData(
-          color: ThemeTokens.lightTextPrimary,
-          size: 22,
-        ),
-        titleTextStyle: AppTypography.titleMedium.copyWith(
-          color: ThemeTokens.lightTextPrimary,
-        ),
+        iconTheme: const IconThemeData(color: ThemeTokens.lightTextPrimary, size: 22),
+        titleTextStyle: AppTypography.titleMedium.copyWith(color: ThemeTokens.lightTextPrimary),
         centerTitle: true,
       ),
 
@@ -225,9 +207,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size(double.infinity, AppSpacing.buttonHeight),
-          shape: RoundedRectangleBorder(
-            borderRadius: AppSpacing.borderRadiusMd,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
           textStyle: AppTypography.button,
         ),
       ),

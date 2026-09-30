@@ -155,12 +155,6 @@ class _AddQuestionSheet extends StatelessWidget {
                 _buildTypeBtn(context, 'Paragraph', Icons.notes_rounded, FormFieldType.longText),
                 _buildTypeBtn(
                   context,
-                  'Single Choice',
-                  Icons.radio_button_checked_rounded,
-                  FormFieldType.singleChoice,
-                ),
-                _buildTypeBtn(
-                  context,
                   'Multiple Choice',
                   Icons.check_box_rounded,
                   FormFieldType.multipleChoice,
@@ -205,11 +199,22 @@ class _AddQuestionSheet extends StatelessWidget {
                   FormFieldType.phone,
                   'phone',
                 ),
+                // Read by its label: the form shows a date picker for it, and
+                // nothing later than today can be chosen.
+                _buildPrebuiltBtn(
+                  context,
+                  'Date of Birth',
+                  Icons.cake_rounded,
+                  FormFieldType.shortText,
+                  'Date of Birth',
+                ),
+                // Single choice is gone as a question type, so gender is a
+                // dropdown of the same options.
                 _buildPrebuiltBtn(
                   context,
                   'Gender',
                   Icons.wc_rounded,
-                  FormFieldType.singleChoice,
+                  FormFieldType.dropDown,
                   'What is your gender?',
                   ['Male', 'Female', 'Other', 'Prefer not to say'],
                 ),

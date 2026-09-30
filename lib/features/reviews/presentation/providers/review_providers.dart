@@ -18,7 +18,10 @@ final reviewListProvider = FutureProvider.family<List<BrandReview>, String>((ref
   return repository.getReviews(brandId);
 });
 
-final reviewEligibilityProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, brandId) async {
+final reviewEligibilityProvider = FutureProvider.family<Map<String, dynamic>, String>((
+  ref,
+  brandId,
+) async {
   final repository = ref.watch(reviewRepositoryProvider);
   return repository.checkEligibility(brandId);
 });

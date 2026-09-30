@@ -62,7 +62,7 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
     try {
       final api = ref.read(apiClientProvider);
       final response = await api.dio.get('/follow/me');
-      
+
       if (mounted) {
         setState(() {
           following = (response.data['data'] as List)
@@ -84,7 +84,7 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height * 0.75;
-    
+
     return Container(
       height: height,
       decoration: BoxDecoration(
@@ -110,7 +110,7 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
@@ -134,11 +134,9 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
             ),
           ),
           Divider(color: context.colors.borderLight, height: 1),
-          
+
           // Content
-          Expanded(
-            child: _buildContent(context),
-          ),
+          Expanded(child: _buildContent(context)),
         ],
       ),
     );
@@ -147,7 +145,9 @@ class _FollowingBottomSheetState extends ConsumerState<FollowingBottomSheet> {
   Widget _buildContent(BuildContext context) {
     if (isLoading) {
       return Center(
-        child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
+        child: CircularProgressIndicator.adaptive(
+          valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+        ),
       );
     }
 

@@ -20,11 +20,7 @@ class SavedTab extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.bookmark_border_rounded,
-                size: 48,
-                color: context.colors.textTertiary,
-              ),
+              Icon(Icons.bookmark_border_rounded, size: 48, color: context.colors.textTertiary),
               const SizedBox(height: 12),
               Text(
                 'No saved posts yet',
@@ -36,9 +32,7 @@ class SavedTab extends ConsumerWidget {
               const SizedBox(height: 4),
               Text(
                 'Posts you save will appear here',
-                style: AppTypography.bodySmall.copyWith(
-                  color: context.colors.textTertiary,
-                ),
+                style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
               ),
             ],
           ),
@@ -64,9 +58,7 @@ class SavedTab extends ConsumerWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ExplorePostDetailScreen(postId: item.id),
-              ),
+              MaterialPageRoute(builder: (context) => ExplorePostDetailScreen(postId: item.id)),
             );
           },
           child: Container(
@@ -106,10 +98,7 @@ class SavedTab extends ConsumerWidget {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.15),
-                          ],
+                          colors: [Colors.transparent, Colors.black.withValues(alpha: 0.15)],
                         ),
                       ),
                     ),
@@ -118,11 +107,7 @@ class SavedTab extends ConsumerWidget {
                     const Positioned(
                       top: 6,
                       right: 6,
-                      child: Icon(
-                        Icons.play_arrow_rounded,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
                     ),
                 ],
               ),

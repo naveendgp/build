@@ -46,8 +46,7 @@ class LyketTextField extends StatefulWidget {
   State<LyketTextField> createState() => _LyketTextFieldState();
 }
 
-class _LyketTextFieldState extends State<LyketTextField>
-    with SingleTickerProviderStateMixin {
+class _LyketTextFieldState extends State<LyketTextField> with SingleTickerProviderStateMixin {
   late AnimationController _glowController;
   late Animation<double> _glowAnimation;
   bool _isFocused = false;
@@ -60,13 +59,11 @@ class _LyketTextFieldState extends State<LyketTextField>
     _focusNode = FocusNode();
     _focusNode.addListener(_onFocusChange);
 
-    _glowController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _glowController, curve: Curves.easeOut),
-    );
+    _glowController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _glowAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _glowController, curve: Curves.easeOut));
   }
 
   void _onFocusChange() {
@@ -97,8 +94,9 @@ class _LyketTextFieldState extends State<LyketTextField>
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: context.colors.primaryAccent
-                          .withValues(alpha: 0.08 * _glowAnimation.value),
+                      color: context.colors.primaryAccent.withValues(
+                        alpha: 0.08 * _glowAnimation.value,
+                      ),
                       blurRadius: 16 * _glowAnimation.value,
                       spreadRadius: 0,
                     ),
@@ -119,9 +117,7 @@ class _LyketTextFieldState extends State<LyketTextField>
         maxLength: widget.maxLength,
         readOnly: widget.readOnly,
         onTap: widget.onTap,
-        style: AppTypography.bodyLarge.copyWith(
-          color: context.colors.textPrimary,
-        ),
+        style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
         cursorColor: context.colors.primaryAccent,
         cursorWidth: 2,
         decoration: InputDecoration(

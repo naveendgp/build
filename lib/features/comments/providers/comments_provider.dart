@@ -77,16 +77,9 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
           .map((j) => Comment.fromJson(j as Map<String, dynamic>))
           .toList();
 
-      state = state.copyWith(
-        isLoading: false,
-        comments: comments,
-        nextCursor: data['nextCursor'],
-      );
+      state = state.copyWith(isLoading: false, comments: comments, nextCursor: data['nextCursor']);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to load comments',
-      );
+      state = state.copyWith(isLoading: false, error: 'Failed to load comments');
     }
   }
 
@@ -98,10 +91,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     try {
       final response = await _api.dio.get(
         '/posts/$postId/comments',
-        queryParameters: {
-          'limit': 20,
-          'cursor': state.nextCursor,
-        },
+        queryParameters: {'limit': 20, 'cursor': state.nextCursor},
       );
 
       final data = response.data;
@@ -174,10 +164,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     List<Comment> updateTree(List<Comment> comments) {
       return comments.map((c) {
         if (c.id == commentId) {
-          return c.copyWith(
-            isLiked: !c.isLiked,
-            likeCount: c.likeCount + (c.isLiked ? -1 : 1),
-          );
+          return c.copyWith(isLiked: !c.isLiked, likeCount: c.likeCount + (c.isLiked ? -1 : 1));
         }
         if (c.replies.isNotEmpty) {
           return c.copyWith(replies: updateTree(c.replies));
@@ -190,9 +177,10 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
   }
 }
 
-final commentsProvider = StateNotifierProvider.family<CommentsNotifier, CommentsState, String>(
-  (ref, postId) {
-    final api = ref.read(apiClientProvider);
-    return CommentsNotifier(api, ref, postId)..loadComments();
-  },
-);
+final commentsProvider = StateNotifierProvider.family<CommentsNotifier, CommentsState, String>((
+  ref,
+  postId,
+) {
+  final api = ref.read(apiClientProvider);
+  return CommentsNotifier(api, ref, postId)..loadComments();
+});

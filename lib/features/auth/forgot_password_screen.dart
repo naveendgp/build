@@ -22,16 +22,19 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   final _emailFormKey = GlobalKey<FormState>();
   final _passwordFormKey = GlobalKey<FormState>();
-  
+
   final _pageController = PageController();
   int _currentPage = 0;
-  
+
   final _emailController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  
+
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
 
   Timer? _resendTimer;
   int _cooldownSeconds = 0;
@@ -71,13 +74,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _resendCode() async {
     if (_resendCount >= 3) return;
-    
+
     // Clear previous errors before calling API
     ref.read(authProvider.notifier).resetError();
-    
+
     await ref.read(authProvider.notifier).forgotPassword(_emailController.text.trim());
     final authState = ref.read(authProvider);
-    
+
     if (authState.status != AuthStatus.error) {
       setState(() {
         _resendCount++;
@@ -115,10 +118,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _handleEmailSubmit() async {
     if (!_emailFormKey.currentState!.validate()) return;
-    
+
     ref.read(authProvider.notifier).resetError();
     await ref.read(authProvider.notifier).forgotPassword(_emailController.text.trim());
-    
+
     final authState = ref.read(authProvider);
     if (authState.status != AuthStatus.error) {
       _startResendTimer();
@@ -168,14 +171,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _handleResetPassword() async {
     if (!_passwordFormKey.currentState!.validate()) return;
-    
+
     ref.read(authProvider.notifier).resetError();
-    await ref.read(authProvider.notifier).resetPassword(
-      _emailController.text.trim(),
-      _getOtpString(),
-      _newPasswordController.text,
-    );
-    
+    await ref
+        .read(authProvider.notifier)
+        .resetPassword(_emailController.text.trim(), _getOtpString(), _newPasswordController.text);
+
     final authState = ref.read(authProvider);
     if (authState.status != AuthStatus.error) {
       if (mounted) {
@@ -236,9 +237,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             SizedBox(height: AppSpacing.sm),
             Text(
               'Enter your email address to receive a password reset code.',
-              style: AppTypography.bodyLarge.copyWith(
-                color: context.colors.textSecondary,
-              ),
+              style: AppTypography.bodyLarge.copyWith(color: context.colors.textSecondary),
             ),
             SizedBox(height: AppSpacing.xl),
             LyketTextField(
@@ -276,9 +275,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           SizedBox(height: AppSpacing.sm),
           Text(
             'We sent a 6-digit code to ${_emailController.text}',
-            style: AppTypography.bodyLarge.copyWith(
-              color: context.colors.textSecondary,
-            ),
+            style: AppTypography.bodyLarge.copyWith(color: context.colors.textSecondary),
           ),
           SizedBox(height: AppSpacing.xl),
           Row(
@@ -354,7 +351,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                       onPressed: _resendCode,
                       child: Text(
                         'Resend Code',
-                        style: AppTypography.bodyLarge.copyWith(color: context.colors.primaryAccent),
+                        style: AppTypography.bodyLarge.copyWith(
+                          color: context.colors.primaryAccent,
+                        ),
                       ),
                     ),
                 ],
@@ -380,9 +379,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             SizedBox(height: AppSpacing.sm),
             Text(
               'Create a new password for your account.',
-              style: AppTypography.bodyLarge.copyWith(
-                color: context.colors.textSecondary,
-              ),
+              style: AppTypography.bodyLarge.copyWith(color: context.colors.textSecondary),
             ),
             SizedBox(height: AppSpacing.xl),
             LyketPasswordField(
@@ -424,13 +421,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    
+
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios),
-          onPressed: _previousPage,
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios), onPressed: _previousPage),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -444,11 +438,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                 child: PageView(
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    _buildEmailStep(),
-                    _buildOtpStep(),
-                    _buildNewPasswordStep(),
-                  ],
+                  children: [_buildEmailStep(), _buildOtpStep(), _buildNewPasswordStep()],
                 ),
               ),
             ],

@@ -8,11 +8,7 @@ class CategorySelector extends StatelessWidget {
   final String? selectedCategory;
   final ValueChanged<String> onSelect;
 
-  const CategorySelector({
-    super.key,
-    required this.selectedCategory,
-    required this.onSelect,
-  });
+  const CategorySelector({super.key, required this.selectedCategory, required this.onSelect});
 
   static const List<Map<String, dynamic>> categories = [
     {'label': 'Fashion & Apparel', 'icon': Icons.checkroom_rounded},
@@ -35,9 +31,7 @@ class CategorySelector extends StatelessWidget {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => Container(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(ctx).size.height * 0.65,
-        ),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.65),
         decoration: BoxDecoration(
           color: context.colors.card,
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -47,8 +41,14 @@ class CategorySelector extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 12),
-              child: Container(width: 40, height: 4,
-                decoration: BoxDecoration(color: context.colors.border, borderRadius: BorderRadius.circular(100))),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.colors.border,
+                  borderRadius: BorderRadius.circular(100),
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.all(20),
@@ -64,17 +64,36 @@ class CategorySelector extends StatelessWidget {
                   final label = cat['label'] as String;
                   final sel = selectedCategory == label;
                   return ListTile(
-                    onTap: () { Haptics.selection(); onSelect(label); Navigator.pop(ctx); },
+                    onTap: () {
+                      Haptics.selection();
+                      onSelect(label);
+                      Navigator.pop(ctx);
+                    },
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    leading: Container(width: 40, height: 40,
+                    leading: Container(
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: sel ? context.colors.primaryAccent.withValues(alpha: 0.15) : context.colors.surface,
-                        borderRadius: BorderRadius.circular(8)),
-                      child: Icon(cat['icon'] as IconData, size: 20,
-                        color: sel ? context.colors.primaryAccent : context.colors.textSecondary)),
-                    title: Text(label, style: AppTypography.labelLarge.copyWith(
-                      color: sel ? context.colors.primaryAccent : context.colors.textPrimary)),
-                    trailing: sel ? Icon(Icons.check_rounded, size: 20, color: context.colors.primaryAccent) : null,
+                        color: sel
+                            ? context.colors.primaryAccent.withValues(alpha: 0.15)
+                            : context.colors.surface,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        cat['icon'] as IconData,
+                        size: 20,
+                        color: sel ? context.colors.primaryAccent : context.colors.textSecondary,
+                      ),
+                    ),
+                    title: Text(
+                      label,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: sel ? context.colors.primaryAccent : context.colors.textPrimary,
+                      ),
+                    ),
+                    trailing: sel
+                        ? Icon(Icons.check_rounded, size: 20, color: context.colors.primaryAccent)
+                        : null,
                   );
                 },
               ),
@@ -100,11 +119,16 @@ class CategorySelector extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Expanded(child: Text(
-              selectedCategory ?? 'Select Category',
-              style: AppTypography.bodyLarge.copyWith(
-                color: selectedCategory != null ? context.colors.textPrimary : context.colors.textTertiary),
-            )),
+            Expanded(
+              child: Text(
+                selectedCategory ?? 'Select Category',
+                style: AppTypography.bodyLarge.copyWith(
+                  color: selectedCategory != null
+                      ? context.colors.textPrimary
+                      : context.colors.textTertiary,
+                ),
+              ),
+            ),
             Icon(Icons.keyboard_arrow_down_rounded, size: 22, color: context.colors.textTertiary),
           ],
         ),

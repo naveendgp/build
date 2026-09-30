@@ -46,7 +46,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
   Timer? _otpTimer;
   List<String> _otpDigits = ['', '', '', '', '', ''];
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
-  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
 
   @override
   void dispose() {
@@ -83,8 +86,11 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
   }
 
   void _goToStep(int step) {
-    _pageCtrl.animateToPage(step,
-      duration: const Duration(milliseconds: 400), curve: Curves.easeInOut);
+    _pageCtrl.animateToPage(
+      step,
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOut,
+    );
     ref.read(brandSignupProvider.notifier).setStep(step);
   }
 
@@ -138,10 +144,7 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
     ref.listen<SignupState>(brandSignupProvider, (prev, next) {
       if (prev?.errorMessage != next.errorMessage && next.errorMessage != null) {
         AppMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!),
-            backgroundColor: context.colors.error,
-          ),
+          SnackBar(content: Text(next.errorMessage!), backgroundColor: context.colors.error),
         );
       }
     });
@@ -160,7 +163,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
             }
           },
         ),
-        title: Text('Brand Account', style: AppTypography.titleSmall.copyWith(color: context.colors.textPrimary)),
+        title: Text(
+          'Brand Account',
+          style: AppTypography.titleSmall.copyWith(color: context.colors.textPrimary),
+        ),
       ),
       body: Column(
         children: [
@@ -176,15 +182,19 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
           ),
           Padding(
             padding: EdgeInsets.fromLTRB(
-              AppSpacing.lg, AppSpacing.md, AppSpacing.lg, bottomPad + AppSpacing.lg),
+              AppSpacing.lg,
+              AppSpacing.md,
+              AppSpacing.lg,
+              bottomPad + AppSpacing.lg,
+            ),
             child: LyketButton(
               label: state.currentStep == 3 ? 'Create Brand Account' : 'Next',
               isLoading: state.isLoading,
               onPressed: state.isLoading
                   ? null
                   : state.currentStep == 3
-                      ? (_termsAccepted ? _submit : _showTermsRequiredSnackbar)
-                      : _nextStep,
+                  ? (_termsAccepted ? _submit : _showTermsRequiredSnackbar)
+                  : _nextStep,
             ),
           ),
         ],
@@ -202,9 +212,15 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Build Your Brand\nPresence', style: AppTypography.headlineLarge.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Build Your Brand\nPresence',
+              style: AppTypography.headlineLarge.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Start with your business basics', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+            Text(
+              'Start with your business basics',
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            ),
             const SizedBox(height: AppSpacing.xl),
             LyketTextField(
               label: 'Business Name',
@@ -250,7 +266,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
               },
             ),
             const SizedBox(height: AppSpacing.md),
-            Text('Business Category', style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Business Category',
+              style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
             CategorySelector(
               selectedCategory: state.businessCategory,
@@ -258,7 +277,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
             ),
             if (state.businessCategory != null) ...[
               const SizedBox(height: AppSpacing.md),
-              Text('Sub-Category', style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary)),
+              Text(
+                'Sub-Category',
+                style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary),
+              ),
               const SizedBox(height: AppSpacing.sm),
               SubCategorySelector(
                 selectedCategory: state.businessCategory,
@@ -283,9 +305,15 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Account Security', style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Account Security',
+              style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Set up your login credentials', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+            Text(
+              'Set up your login credentials',
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            ),
             const SizedBox(height: AppSpacing.xl),
             LyketTextField(
               label: 'Email',
@@ -300,7 +328,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
             const SizedBox(height: AppSpacing.md),
             if (state.isEmailVerified)
               Container(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.md),
+                padding: const EdgeInsets.symmetric(
+                  vertical: AppSpacing.sm,
+                  horizontal: AppSpacing.md,
+                ),
                 decoration: BoxDecoration(
                   color: context.colors.success.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -309,7 +340,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                   children: [
                     Icon(Icons.check_circle_rounded, color: context.colors.success, size: 20),
                     const SizedBox(width: AppSpacing.sm),
-                    Text('Email verified', style: AppTypography.bodyMedium.copyWith(color: context.colors.success)),
+                    Text(
+                      'Email verified',
+                      style: AppTypography.bodyMedium.copyWith(color: context.colors.success),
+                    ),
                   ],
                 ),
               )
@@ -329,11 +363,20 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.colors.primaryAccent,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.radiusSm)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    ),
                     padding: EdgeInsets.zero,
                   ),
                   child: state.isOtpSending
-                      ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator.adaptive(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)))
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator.adaptive(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
                       : const Text('Verify Email'),
                 ),
               )
@@ -341,7 +384,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Enter the 6-digit code sent to your email', style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary)),
+                  Text(
+                    'Enter the 6-digit code sent to your email',
+                    style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -352,7 +398,8 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                         child: RawKeyboardListener(
                           focusNode: FocusNode(),
                           onKey: (event) {
-                            if (event is RawKeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+                            if (event is RawKeyDownEvent &&
+                                event.logicalKey == LogicalKeyboardKey.backspace) {
                               if (_otpDigits[index].isEmpty && index > 0) {
                                 _otpFocusNodes[index - 1].requestFocus();
                               }
@@ -365,7 +412,9 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                             textAlignVertical: TextAlignVertical.center,
                             keyboardType: TextInputType.number,
                             maxLength: 1,
-                            style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary),
+                            style: AppTypography.headlineMedium.copyWith(
+                              color: context.colors.textPrimary,
+                            ),
                             decoration: InputDecoration(
                               counterText: '',
                               contentPadding: EdgeInsets.symmetric(vertical: 14),
@@ -385,15 +434,15 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                               ),
                             ),
                             onChanged: (val) {
-                                setState(() {
-                                  _otpDigits[index] = val;
-                                });
-                                if (val.isNotEmpty && index < 5) {
-                                  _otpFocusNodes[index + 1].requestFocus();
-                                } else if (val.isEmpty && index > 0) {
-                                  _otpFocusNodes[index - 1].requestFocus();
-                                }
-                              
+                              setState(() {
+                                _otpDigits[index] = val;
+                              });
+                              if (val.isNotEmpty && index < 5) {
+                                _otpFocusNodes[index + 1].requestFocus();
+                              } else if (val.isEmpty && index > 0) {
+                                _otpFocusNodes[index - 1].requestFocus();
+                              }
+
                               if (val.isNotEmpty && index == 5) {
                                 final code = _otpDigits.join();
                                 if (code.length == 6) {
@@ -408,7 +457,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                   ),
                   if (state.otpError != null) ...[
                     const SizedBox(height: AppSpacing.xs),
-                    Text(state.otpError!, style: AppTypography.bodySmall.copyWith(color: context.colors.error)),
+                    Text(
+                      state.otpError!,
+                      style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+                    ),
                   ],
                   if (state.isOtpVerifying) ...[
                     const SizedBox(height: AppSpacing.sm),
@@ -422,7 +474,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                         onPressed: (state.otpCooldown > 0 || state.otpSendCount >= 3)
                             ? null
                             : () async {
-                                final success = await notifier.sendEmailOtp(_emailCtrl.text, 'signup');
+                                final success = await notifier.sendEmailOtp(
+                                  _emailCtrl.text,
+                                  'signup',
+                                );
                                 if (success) {
                                   setState(() {
                                     for (int i = 0; i < 6; i++) {
@@ -438,8 +493,8 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                           state.otpCooldown > 0
                               ? 'Resend in ${state.otpCooldown}s'
                               : state.otpSendCount >= 3
-                                  ? 'Max attempts reached'
-                                  : 'Resend Code',
+                              ? 'Max attempts reached'
+                              : 'Resend Code',
                           style: AppTypography.labelMedium.copyWith(
                             color: (state.otpCooldown > 0 || state.otpSendCount >= 3)
                                 ? context.colors.textTertiary
@@ -486,7 +541,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
           children: [
             Row(
               children: [
-                Text('Brand Tags', style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary)),
+                Text(
+                  'Brand Tags',
+                  style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 GestureDetector(
                   onTap: () {
@@ -494,29 +552,48 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
                       context: context,
                       builder: (ctx) => AlertDialog(
                         backgroundColor: context.colors.card,
-                        title: Text('What are tags for?', style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary)),
+                        title: Text(
+                          'What are tags for?',
+                          style: AppTypography.titleMedium.copyWith(
+                            color: context.colors.textPrimary,
+                          ),
+                        ),
                         content: Text(
                           'Tags help describe your brand with keywords (e.g. "vegan", "handmade", "sustainable"). '
                           'They make your brand easier to discover when users search or browse by interest.',
-                          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: Text('Got it', style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
+                            child: Text(
+                              'Got it',
+                              style: AppTypography.labelLarge.copyWith(
+                                color: context.colors.primaryAccent,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     );
                   },
-                  child: Icon(Icons.info_outline_rounded, size: 20, color: context.colors.textTertiary),
+                  child: Icon(
+                    Icons.info_outline_rounded,
+                    size: 20,
+                    color: context.colors.textTertiary,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Add tags that describe your brand', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+            Text(
+              'Add tags that describe your brand',
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            ),
             const SizedBox(height: AppSpacing.xl),
-            
+
             Row(
               children: [
                 Expanded(
@@ -578,15 +655,25 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Brand Assets', style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Brand Assets',
+              style: AppTypography.headlineMedium.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Upload your brand visuals', style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary)),
+            Text(
+              'Upload your brand visuals',
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            ),
             const SizedBox(height: AppSpacing.xl),
-            Text('Logo', style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Logo',
+              style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
             Center(
               child: SizedBox(
-                width: 120, height: 120,
+                width: 120,
+                height: 120,
                 child: UploadArea(
                   label: 'Brand Logo',
                   isCircle: true,
@@ -597,7 +684,10 @@ class _BrandSignupScreenState extends ConsumerState<BrandSignupScreen> {
               ),
             ),
             const SizedBox(height: AppSpacing.xl),
-            Text('Cover Image (Optional)', style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary)),
+            Text(
+              'Cover Image (Optional)',
+              style: AppTypography.labelLarge.copyWith(color: context.colors.textPrimary),
+            ),
             const SizedBox(height: AppSpacing.sm),
             UploadArea(
               label: 'Cover Image',

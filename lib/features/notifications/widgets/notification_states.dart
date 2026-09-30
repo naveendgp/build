@@ -28,11 +28,7 @@ class NotificationEmptyState extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(color: context.colors.border, width: 0.5),
             ),
-            child: Icon(
-              icon,
-              size: 48,
-              color: context.colors.textTertiary,
-            ),
+            child: Icon(icon, size: 48, color: context.colors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.lg),
           Text(
@@ -48,9 +44,7 @@ class NotificationEmptyState extends StatelessWidget {
             child: Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: AppTypography.bodyMedium.copyWith(
-                color: context.colors.textSecondary,
-              ),
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
             ),
           ),
         ],
@@ -73,10 +67,8 @@ class _NotificationSkeletonState extends State<NotificationSkeleton>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))
+      ..repeat();
   }
 
   @override

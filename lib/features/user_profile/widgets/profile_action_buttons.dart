@@ -11,10 +11,7 @@ import '../../../core/utils/app_messenger.dart';
 class ProfileActionButtons extends StatelessWidget {
   final UserProfileData profile;
 
-  const ProfileActionButtons({
-    super.key,
-    required this.profile,
-  });
+  const ProfileActionButtons({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -39,12 +36,10 @@ class ProfileActionButtons extends StatelessWidget {
               label: 'Share Profile',
               onTap: () {
                 Haptics.light();
-                Clipboard.setData(
-                  ClipboardData(text: '@${profile.username}'),
-                );
-                AppMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Profile link copied!')),
-                );
+                Clipboard.setData(ClipboardData(text: '@${profile.username}'));
+                AppMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
               },
             ),
           ),
@@ -53,11 +48,7 @@ class ProfileActionButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildButton(
-    BuildContext context, {
-    required String label,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildButton(BuildContext context, {required String label, required VoidCallback onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -65,10 +56,7 @@ class ProfileActionButtons extends StatelessWidget {
         decoration: BoxDecoration(
           color: context.colors.surface,
           borderRadius: AppSpacing.borderRadiusSm,
-          border: Border.all(
-            color: context.colors.borderLight,
-            width: 0.5,
-          ),
+          border: Border.all(color: context.colors.borderLight, width: 0.5),
         ),
         alignment: Alignment.center,
         child: Text(

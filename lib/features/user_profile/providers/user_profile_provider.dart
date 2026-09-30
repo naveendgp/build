@@ -71,11 +71,7 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
     } catch (e, st) {
       debugPrint('UserProfile API Error: $e\n$st');
       if (mounted) {
-        state = state.copyWith(
-          isLoading: false,
-          error: e.toString(),
-          profile: null,
-        );
+        state = state.copyWith(isLoading: false, error: e.toString(), profile: null);
       }
     }
   }
@@ -95,12 +91,15 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
     if (isSaving) {
       // Add if not exists
       if (!updatedPosts.any((p) => p.id == postId)) {
-        updatedPosts.insert(0, SavedPostItem(
-          id: postId,
-          imageUrl: post.mediaUrl ?? '',
-          title: post.title ?? '',
-          aspectRatio: post.aspectRatio ?? 1.0,
-        ));
+        updatedPosts.insert(
+          0,
+          SavedPostItem(
+            id: postId,
+            imageUrl: post.mediaUrl ?? '',
+            title: post.title ?? '',
+            aspectRatio: post.aspectRatio ?? 1.0,
+          ),
+        );
       }
     } else {
       updatedPosts.removeWhere((p) => p.id == postId);
@@ -122,7 +121,8 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
   }
 }
 
-final userProfileProvider = StateNotifierProvider.autoDispose<UserProfileNotifier, UserProfileState>((ref) {
-  final apiClient = ref.watch(apiClientProvider);
-  return UserProfileNotifier(apiClient);
-});
+final userProfileProvider =
+    StateNotifierProvider.autoDispose<UserProfileNotifier, UserProfileState>((ref) {
+      final apiClient = ref.watch(apiClientProvider);
+      return UserProfileNotifier(apiClient);
+    });

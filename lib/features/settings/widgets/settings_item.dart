@@ -51,13 +51,10 @@ class SettingsItem extends StatelessWidget {
                   ),
                 ),
               ),
-              if (trailing != null) trailing!
+              if (trailing != null)
+                trailing!
               else if (onTap != null)
-                Icon(
-                  Icons.chevron_right_rounded,
-                  size: 20,
-                  color: context.colors.textTertiary,
-                ),
+                Icon(Icons.chevron_right_rounded, size: 20, color: context.colors.textTertiary),
             ],
           ),
         ),

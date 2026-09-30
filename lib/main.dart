@@ -14,53 +14,52 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() {
-  runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
-    // Firebase is optional at startup (powers push notifications). If the
-    // platform config is missing — e.g. no GoogleService-Info.plist on iOS —
-    // initialization must not abort app launch.
-    try {
-      await Firebase.initializeApp();
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    } catch (e, stack) {
-      debugPrint('Firebase initialization failed; continuing without it: $e\n$stack');
-    }
+  runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
+      // Firebase is optional at startup (powers push notifications). If the
+      // platform config is missing — e.g. no GoogleService-Info.plist on iOS —
+      // initialization must not abort app launch.
+      try {
+        await Firebase.initializeApp();
+        FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+      } catch (e, stack) {
+        debugPrint('Firebase initialization failed; continuing without it: $e\n$stack');
+      }
 
-    // Global error handlers
-    FlutterError.onError = (details) {
-      FlutterError.presentError(details);
-      // TODO: FirebaseCrashlytics.instance.recordFlutterFatalError(details);
-    };
+      // Global error handlers
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        // TODO: FirebaseCrashlytics.instance.recordFlutterFatalError(details);
+      };
 
-    PlatformDispatcher.instance.onError = (error, stack) {
+      PlatformDispatcher.instance.onError = (error, stack) {
+        // TODO: FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+        return true;
+      };
+
+      // Set immersive dark system UI
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.light,
+          systemNavigationBarColor: Color(0xFF0A0A0B),
+          systemNavigationBarIconBrightness: Brightness.light,
+        ),
+      );
+
+      // Lock to portrait for premium experience
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+
+      runApp(const ProviderScope(child: LyketApp()));
+    },
+    (error, stack) {
+      // Catch-all for async errors
       // TODO: FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-      return true;
-    };
-
-    // Set immersive dark system UI
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor: Color(0xFF0A0A0B),
-        systemNavigationBarIconBrightness: Brightness.light,
-      ),
-    );
-
-    // Lock to portrait for premium experience
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-
-    runApp(
-      const ProviderScope(
-        child: LyketApp(),
-      ),
-    );
-  }, (error, stack) {
-    // Catch-all for async errors
-    // TODO: FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    debugPrint('Uncaught error: $error\n$stack');
-  });
+      debugPrint('Uncaught error: $error\n$stack');
+    },
+  );
 }

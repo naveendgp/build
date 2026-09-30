@@ -209,12 +209,18 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (isOwner)
-          Padding(
-            padding: const EdgeInsets.only(right: 8.0, top: 8.0, bottom: 4.0),
-            child: Align(
-              alignment: Alignment.centerRight,
+          // A 48pt IconButton in a padded row of its own cost a band of empty
+          // gallery. It is a small, tight target in the corner instead.
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4, top: 2, bottom: 2),
               child: IconButton(
-                icon: Icon(Icons.info_outline_rounded, color: context.colors.textSecondary),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                iconSize: 18,
+                icon: Icon(Icons.info_outline_rounded, color: context.colors.textTertiary),
                 tooltip: 'Gallery Info',
                 onPressed: () {
                   showDialog(

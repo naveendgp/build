@@ -5,7 +5,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../user_profile/models/user_profile_models.dart';
-import '../../user_profile/widgets/tabs/collections_tab.dart';
 import '../../explore/screens/explore_post_detail_screen.dart';
 import '../../home/widgets/video_player_widget.dart';
 
@@ -24,22 +23,7 @@ class BrandSavedPostsScreen extends ConsumerStatefulWidget {
   ConsumerState<BrandSavedPostsScreen> createState() => _BrandSavedPostsScreenState();
 }
 
-class _BrandSavedPostsScreenState extends ConsumerState<BrandSavedPostsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
+class _BrandSavedPostsScreenState extends ConsumerState<BrandSavedPostsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,27 +42,10 @@ class _BrandSavedPostsScreenState extends ConsumerState<BrandSavedPostsScreen>
             color: context.colors.textPrimary,
           ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: context.colors.primaryAccent,
-          unselectedLabelColor: context.colors.textSecondary,
-          indicatorColor: context.colors.primaryAccent,
-          indicatorSize: TabBarIndicatorSize.tab,
-          labelStyle: AppTypography.bodyMedium.copyWith(fontWeight: FontWeight.w600),
-          tabs: const [
-            Tab(text: 'Saved'),
-            Tab(text: 'Collections'),
-          ],
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _BrandSavedPostsGrid(),
-          // CollectionsTab works for brands too — /collections endpoint is role-aware
-          SingleChildScrollView(child: CollectionsTab()),
-        ],
-      ),
+      // Collections are a personal-account idea: a brand saves posts, it does
+      // not file them.
+      body: _BrandSavedPostsGrid(),
     );
   }
 }

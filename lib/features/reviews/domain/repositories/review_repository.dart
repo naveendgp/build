@@ -35,12 +35,16 @@ class ReviewRepositoryImpl implements IReviewRepository {
   }
 
   @override
-  Future<BrandReview> addReview(String brandId, double rating, String? title, String description) async {
-    final res = await _apiClient.dio.post('/reviews/$brandId', data: {
-      'rating': rating,
-      'title': title,
-      'description': description,
-    });
+  Future<BrandReview> addReview(
+    String brandId,
+    double rating,
+    String? title,
+    String description,
+  ) async {
+    final res = await _apiClient.dio.post(
+      '/reviews/$brandId',
+      data: {'rating': rating, 'title': title, 'description': description},
+    );
     return BrandReview.fromJson(res.data);
   }
 
@@ -51,16 +55,15 @@ class ReviewRepositoryImpl implements IReviewRepository {
 
   @override
   Future<BrandReview> replyToReview(String reviewId, String response) async {
-    final res = await _apiClient.dio.post('/reviews/$reviewId/response', data: {
-      'response': response,
-    });
+    final res = await _apiClient.dio.post(
+      '/reviews/$reviewId/response',
+      data: {'response': response},
+    );
     return BrandReview.fromJson(res.data);
   }
 
   @override
   Future<void> reportReview(String reviewId, String reason) async {
-    await _apiClient.dio.post('/reviews/$reviewId/report', data: {
-      'reason': reason,
-    });
+    await _apiClient.dio.post('/reviews/$reviewId/report', data: {'reason': reason});
   }
 }

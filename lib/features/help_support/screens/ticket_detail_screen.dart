@@ -39,7 +39,12 @@ class TicketDetailScreen extends ConsumerWidget {
       ),
       body: ticketAsync.when(
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-        error: (err, stack) => Center(child: Text('Failed to load ticket', style: AppTypography.bodyMedium.copyWith(color: context.colors.error))),
+        error: (err, stack) => Center(
+          child: Text(
+            'Failed to load ticket',
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+          ),
+        ),
         data: (ticket) => SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
@@ -49,7 +54,10 @@ class TicketDetailScreen extends ConsumerWidget {
               const SizedBox(height: 32),
               Text(
                 'Description',
-                style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                style: AppTypography.titleMedium.copyWith(
+                  color: context.colors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 12),
               Container(
@@ -69,7 +77,10 @@ class TicketDetailScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
                 Text(
                   'Attachments',
-                  style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+                  style: AppTypography.titleMedium.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Wrap(
@@ -82,15 +93,12 @@ class TicketDetailScreen extends ConsumerWidget {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: context.colors.borderLight),
-                        image: DecorationImage(
-                          image: NetworkImage(url),
-                          fit: BoxFit.cover,
-                        ),
+                        image: DecorationImage(image: NetworkImage(url), fit: BoxFit.cover),
                       ),
                     );
                   }).toList(),
-                )
-              ]
+                ),
+              ],
             ],
           ),
         ),
@@ -107,7 +115,13 @@ class TicketDetailScreen extends ConsumerWidget {
                   context.push('/messages/${ticketAsync.value!.conversation!['id']}');
                 },
                 icon: const Icon(Icons.chat_bubble_outline_rounded, color: Colors.white),
-                label: Text('Open Support Chat', style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold)),
+                label: Text(
+                  'Open Support Chat',
+                  style: AppTypography.titleMedium.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: context.colors.primaryAccent,
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -122,14 +136,23 @@ class TicketDetailScreen extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, SupportTicket ticket) {
     final isResolved = ticket.status == 'RESOLVED' || ticket.status == 'CLOSED';
     final statusColor = isResolved ? context.colors.success : context.colors.warning;
-    
+
     Color priorityColor;
-    switch(ticket.priority.toLowerCase()) {
-      case 'urgent': priorityColor = context.colors.error; break;
-      case 'high': priorityColor = context.colors.warning; break;
-      case 'medium': priorityColor = Colors.blue; break;
-      case 'low': priorityColor = context.colors.textSecondary; break;
-      default: priorityColor = context.colors.primaryAccent;
+    switch (ticket.priority.toLowerCase()) {
+      case 'urgent':
+        priorityColor = context.colors.error;
+        break;
+      case 'high':
+        priorityColor = context.colors.warning;
+        break;
+      case 'medium':
+        priorityColor = Colors.blue;
+        break;
+      case 'low':
+        priorityColor = context.colors.textSecondary;
+        break;
+      default:
+        priorityColor = context.colors.primaryAccent;
     }
 
     return Column(
@@ -140,7 +163,10 @@ class TicketDetailScreen extends ConsumerWidget {
           children: [
             Text(
               '#${ticket.id.substring(0, 8).toUpperCase()}',
-              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
+              style: AppTypography.bodyMedium.copyWith(
+                color: context.colors.textSecondary,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -150,7 +176,10 @@ class TicketDetailScreen extends ConsumerWidget {
               ),
               child: Text(
                 ticket.status,
-                style: AppTypography.labelMedium.copyWith(color: statusColor, fontWeight: FontWeight.bold),
+                style: AppTypography.labelMedium.copyWith(
+                  color: statusColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
@@ -158,12 +187,20 @@ class TicketDetailScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         Text(
           ticket.subject,
-          style: AppTypography.titleLarge.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+          style: AppTypography.titleLarge.copyWith(
+            color: context.colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 24),
         Row(
           children: [
-            _buildBadge(context, ticket.ticketType, Icons.category_rounded, context.colors.primaryAccent),
+            _buildBadge(
+              context,
+              ticket.ticketType,
+              Icons.category_rounded,
+              context.colors.primaryAccent,
+            ),
             const SizedBox(width: 12),
             _buildBadge(context, ticket.priority.toUpperCase(), Icons.flag_rounded, priorityColor),
           ],
@@ -192,7 +229,10 @@ class TicketDetailScreen extends ConsumerWidget {
           const SizedBox(width: 6),
           Text(
             text,
-            style: AppTypography.labelMedium.copyWith(color: context.colors.textPrimary, fontWeight: FontWeight.bold),
+            style: AppTypography.labelMedium.copyWith(
+              color: context.colors.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

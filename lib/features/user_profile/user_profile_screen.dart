@@ -88,83 +88,89 @@ class UserProfileScreen extends ConsumerWidget {
         children: [
           SafeArea(
             child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) {
-            return [
-              // App Bar — minimal, just back + settings
-              SliverAppBar(
-                pinned: false,
-                floating: true,
-                snap: true,
-                backgroundColor: context.colors.background,
-                elevation: 0,
-                scrolledUnderElevation: 0,
-                leading: IconButton(
-                  icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: context.colors.textPrimary),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-                actions: [
-                  IconButton(
-                    icon: Icon(Icons.menu_rounded, size: 26, color: context.colors.textPrimary),
-                    onPressed: () {
-                      context.push('/settings');
-                    },
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  // App Bar — minimal, just back + settings
+                  SliverAppBar(
+                    pinned: false,
+                    floating: true,
+                    snap: true,
+                    backgroundColor: context.colors.background,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    leading: IconButton(
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 20,
+                        color: context.colors.textPrimary,
+                      ),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                    actions: [
+                      IconButton(
+                        icon: Icon(Icons.menu_rounded, size: 26, color: context.colors.textPrimary),
+                        onPressed: () {
+                          context.push('/settings');
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
 
-              // Profile Header — avatar, name, username, bio, stats
-              SliverToBoxAdapter(
-                child: ProfileHeader(
-                  profile: profile,
-                  savedCount: state.savedPosts.length,
-                  collectionsCount: collectionsState.value?.length ?? 0,
-                  remindersCount: remindersState.reminders.length,
-                  onSavedTap: () {
-                    Haptics.light();
-                    notifier.setTab(ProfileTab.saved);
-                  },
-                  onCollectionsTap: () {
-                    Haptics.light();
-                    notifier.setTab(ProfileTab.collections);
-                  },
-                  onRemindersTap: () {
-                    Haptics.light();
-                    context.push('/reminders');
-                  },
-                ),
-              ),
-
-              // Action Buttons — Edit Profile + Share Profile
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 16, bottom: 16),
-                  child: ProfileActionButtons(profile: profile),
-                ),
-              ),
-
-              // Sticky Tab Bar
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _StickyTabBarDelegate(
-                  child: ProfileTabBar(
-                    currentTab: state.currentTab,
-                    onTabChanged: (tab) {
-                      Haptics.light();
-                      notifier.setTab(tab);
-                    },
+                  // Profile Header — avatar, name, username, bio, stats
+                  SliverToBoxAdapter(
+                    child: ProfileHeader(
+                      profile: profile,
+                      savedCount: state.savedPosts.length,
+                      collectionsCount: collectionsState.value?.length ?? 0,
+                      remindersCount: remindersState.reminders.length,
+                      onSavedTap: () {
+                        Haptics.light();
+                        notifier.setTab(ProfileTab.saved);
+                      },
+                      onCollectionsTap: () {
+                        Haptics.light();
+                        notifier.setTab(ProfileTab.collections);
+                      },
+                      onRemindersTap: () {
+                        Haptics.light();
+                        context.push('/reminders');
+                      },
+                    ),
                   ),
-                ),
+
+                  // Action Buttons — Edit Profile + Share Profile
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 16),
+                      child: ProfileActionButtons(profile: profile),
+                    ),
+                  ),
+
+                  // Sticky Tab Bar
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _StickyTabBarDelegate(
+                      child: ProfileTabBar(
+                        currentTab: state.currentTab,
+                        onTabChanged: (tab) {
+                          Haptics.light();
+                          notifier.setTab(tab);
+                        },
+                      ),
+                    ),
+                  ),
+                ];
+              },
+              body: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: _buildTabContent(state.currentTab),
               ),
-            ];
-          },
-          body: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: _buildTabContent(state.currentTab),
-          ),
             ),
           ),
           Positioned(
-            bottom: 0, left: 0, right: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
             child: BottomNavDock(currentIndex: 4, onTap: (i) => _navTo(context, i)),
           ),
         ],
@@ -195,11 +201,7 @@ class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      height: 48,
-      color: Theme.of(context).scaffoldBackgroundColor,
-      child: child,
-    );
+    return Container(height: 48, color: Theme.of(context).scaffoldBackgroundColor, child: child);
   }
 
   @override

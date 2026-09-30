@@ -63,7 +63,7 @@ class _CommentComposerState extends State<CommentComposer> {
   Widget build(BuildContext context) {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    // Only apply bottom padding if the keyboard is NOT open, 
+    // Only apply bottom padding if the keyboard is NOT open,
     // otherwise the padding is handled by the parent sheet.
     final effectiveBottom = viewInsets > 0 ? AppSpacing.sm : bottomPadding + AppSpacing.sm;
 
@@ -74,12 +74,7 @@ class _CommentComposerState extends State<CommentComposer> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: context.colors.surface.withValues(alpha: 0.85),
-            border: Border(
-              top: BorderSide(
-                color: context.colors.borderLight,
-                width: 0.5,
-              ),
-            ),
+            border: Border(top: BorderSide(color: context.colors.borderLight, width: 0.5)),
           ),
           padding: EdgeInsets.only(
             left: AppSpacing.md,
@@ -89,10 +84,7 @@ class _CommentComposerState extends State<CommentComposer> {
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildReplyIndicator(),
-              _buildInputRow(),
-            ],
+            children: [_buildReplyIndicator(), _buildInputRow()],
           ),
         ),
       ),
@@ -108,16 +100,12 @@ class _CommentComposerState extends State<CommentComposer> {
       alignment: Alignment.topCenter,
       child: AnimatedCrossFade(
         duration: const Duration(milliseconds: 200),
-        crossFadeState:
-            isReplying ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+        crossFadeState: isReplying ? CrossFadeState.showFirst : CrossFadeState.showSecond,
         sizeCurve: Curves.easeOutCubic,
         firstChild: Container(
           width: double.infinity,
           margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.sm,
-            vertical: 6,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 6),
           decoration: BoxDecoration(
             color: context.colors.card,
             borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -156,11 +144,7 @@ class _CommentComposerState extends State<CommentComposer> {
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
                   padding: const EdgeInsets.all(AppSpacing.xxs),
-                  child: Icon(
-                    Icons.close,
-                    size: 16,
-                    color: context.colors.textTertiary,
-                  ),
+                  child: Icon(Icons.close, size: 16, color: context.colors.textTertiary),
                 ),
               ),
             ],
@@ -181,27 +165,17 @@ class _CommentComposerState extends State<CommentComposer> {
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(22),
-              border: Border.all(
-                color: context.colors.border,
-                width: 0.5,
-              ),
+              border: Border.all(color: context.colors.border, width: 0.5),
             ),
             child: TextField(
               controller: _controller,
               focusNode: _focusNode,
-              style: AppTypography.bodyMedium.copyWith(
-                color: context.colors.textPrimary,
-              ),
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Share your thoughts\u2026',
-                hintStyle: AppTypography.bodyMedium.copyWith(
-                  color: context.colors.textTertiary,
-                ),
+                hintStyle: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 isDense: true,
               ),
               maxLines: 4,
@@ -233,7 +207,8 @@ class _CommentComposerState extends State<CommentComposer> {
                       height: 16,
                       child: CircularProgressIndicator.adaptive(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
                     )
                   : AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
@@ -241,9 +216,7 @@ class _CommentComposerState extends State<CommentComposer> {
                         Icons.arrow_upward_rounded,
                         key: ValueKey(_hasText),
                         size: 20,
-                        color: _hasText
-                            ? Colors.white
-                            : context.colors.textTertiary,
+                        color: _hasText ? Colors.white : context.colors.textTertiary,
                       ),
                     ),
             ),

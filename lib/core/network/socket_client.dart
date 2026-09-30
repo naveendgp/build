@@ -33,9 +33,7 @@ class SocketClient {
     _socket = io.io(baseUrl, <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
-      'auth': {
-        'token': token ?? '',
-      },
+      'auth': {'token': token ?? ''},
     });
 
     // Reattach all cached listeners to the new socket instance

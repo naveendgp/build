@@ -8,10 +8,7 @@ import '../../../core/utils/validators.dart';
 class PasswordStrengthBar extends StatelessWidget {
   final String password;
 
-  const PasswordStrengthBar({
-    super.key,
-    required this.password,
-  });
+  const PasswordStrengthBar({super.key, required this.password});
 
   @override
   Widget build(BuildContext context) {
@@ -38,9 +35,7 @@ class PasswordStrengthBar extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOut,
                 height: 3,
-                margin: EdgeInsets.only(
-                  right: index < 3 ? AppSpacing.xs : 0,
-                ),
+                margin: EdgeInsets.only(right: index < 3 ? AppSpacing.xs : 0),
                 decoration: BoxDecoration(
                   borderRadius: AppSpacing.borderRadiusFull,
                   color: index < strength
@@ -58,9 +53,7 @@ class PasswordStrengthBar extends StatelessWidget {
             child: Text(
               label,
               key: ValueKey(label),
-              style: AppTypography.labelSmall.copyWith(
-                color: colors[(strength - 1).clamp(0, 3)],
-              ),
+              style: AppTypography.labelSmall.copyWith(color: colors[(strength - 1).clamp(0, 3)]),
             ),
           ),
         ],

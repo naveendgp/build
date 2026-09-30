@@ -10,11 +10,7 @@ class SaveItemCard extends StatefulWidget {
   final SavedPostItem item;
   final VoidCallback? onTap;
 
-  const SaveItemCard({
-    super.key,
-    required this.item,
-    this.onTap,
-  });
+  const SaveItemCard({super.key, required this.item, this.onTap});
 
   @override
   State<SaveItemCard> createState() => _SaveItemCardState();
@@ -28,13 +24,11 @@ class _SaveItemCardState extends State<SaveItemCard> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 150),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 150));
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -71,10 +65,7 @@ class _SaveItemCardState extends State<SaveItemCard> with SingleTickerProviderSt
         onTapCancel: _handleTapCancel,
         child: AnimatedBuilder(
           animation: _scaleAnimation,
-          builder: (context, child) => Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
+          builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
           child: Container(
             decoration: BoxDecoration(
               borderRadius: AppSpacing.borderRadiusMd,
@@ -89,7 +80,7 @@ class _SaveItemCardState extends State<SaveItemCard> with SingleTickerProviderSt
                         color: Colors.black.withValues(alpha: 0.4),
                         blurRadius: 12,
                         offset: Offset(0, 4),
-                      )
+                      ),
                     ]
                   : [],
             ),
@@ -100,27 +91,33 @@ class _SaveItemCardState extends State<SaveItemCard> with SingleTickerProviderSt
                   aspectRatio: widget.item.aspectRatio,
                   child: widget.item.isVideo && widget.item.videoUrl != null
                       ? _buildAutoPlayVideo()
-                      : (widget.item.imageUrl.isNotEmpty && !widget.item.imageUrl.toLowerCase().endsWith('.mp4')
-                          ? Image.network(
-                              widget.item.imageUrl,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
+                      : (widget.item.imageUrl.isNotEmpty &&
+                                !widget.item.imageUrl.toLowerCase().endsWith('.mp4')
+                            ? Image.network(
+                                widget.item.imageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: context.colors.borderLight.withValues(alpha: 0.3),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.broken_image_rounded,
+                                      color: context.colors.textTertiary,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Container(
                                 color: context.colors.borderLight.withValues(alpha: 0.3),
                                 child: Center(
-                                  child: Icon(Icons.broken_image_rounded, color: context.colors.textTertiary),
+                                  child: Icon(
+                                    widget.item.isVideo
+                                        ? Icons.play_circle_fill_rounded
+                                        : Icons.bookmark_rounded,
+                                    color: context.colors.textTertiary,
+                                    size: 40,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : Container(
-                              color: context.colors.borderLight.withValues(alpha: 0.3),
-                              child: Center(
-                                child: Icon(
-                                  widget.item.isVideo ? Icons.play_circle_fill_rounded : Icons.bookmark_rounded, 
-                                  color: context.colors.textTertiary,
-                                  size: 40,
-                                ),
-                              ),
-                            )),
+                              )),
                 ),
                 // Gradient Overlay for metadata legibility
                 Positioned.fill(

@@ -23,8 +23,7 @@ class InterestsScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: context.colors.textPrimary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.colors.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -39,8 +38,7 @@ class InterestsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(
-      BuildContext context, WidgetRef ref, InterestsState state) {
+  Widget _buildBody(BuildContext context, WidgetRef ref, InterestsState state) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator.adaptive());
     }
@@ -50,17 +48,16 @@ class InterestsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.error_outline_rounded,
-                size: 48, color: context.colors.error),
+            Icon(Icons.error_outline_rounded, size: 48, color: context.colors.error),
             const SizedBox(height: 16),
-            Text('Failed to load interests',
-                style: AppTypography.bodyMedium
-                    .copyWith(color: context.colors.textSecondary)),
+            Text(
+              'Failed to load interests',
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () => ref.read(interestsProvider.notifier).fetch(),
-              child: Text('Retry',
-                  style: TextStyle(color: context.colors.primaryAccent)),
+              child: Text('Retry', style: TextStyle(color: context.colors.primaryAccent)),
             ),
           ],
         ),
@@ -72,19 +69,16 @@ class InterestsScreen extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.favorite_border_rounded,
-                size: 56, color: context.colors.textTertiary),
+            Icon(Icons.favorite_border_rounded, size: 56, color: context.colors.textTertiary),
             const SizedBox(height: 16),
             Text(
               'No interests yet',
-              style: AppTypography.titleMedium
-                  .copyWith(color: context.colors.textSecondary),
+              style: AppTypography.titleMedium.copyWith(color: context.colors.textSecondary),
             ),
             const SizedBox(height: 8),
             Text(
               'Tap "Interested" on a post to save it here',
-              style: AppTypography.bodySmall
-                  .copyWith(color: context.colors.textTertiary),
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -119,8 +113,7 @@ class _InterestItem extends ConsumerWidget {
       decoration: BoxDecoration(
         color: context.colors.surfaceSecondary,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: context.colors.borderLight.withValues(alpha: 0.15)),
+        border: Border.all(color: context.colors.borderLight.withValues(alpha: 0.15)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -158,8 +151,7 @@ class _InterestItem extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   post.brandName,
-                  style: AppTypography.labelSmall
-                      .copyWith(color: context.colors.textTertiary),
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -171,12 +163,12 @@ class _InterestItem extends ConsumerWidget {
           GestureDetector(
             onTap: () async {
               final confirm = await showAdaptiveConfirmDialog(
-                                      context,
-                                      title: 'Remove Interest?',
-                                      message: 'This post will be removed from your interests.',
-                                      confirmLabel: 'Remove',
-                                      isDestructive: true,
-                                    );
+                context,
+                title: 'Remove Interest?',
+                message: 'This post will be removed from your interests.',
+                confirmLabel: 'Remove',
+                isDestructive: true,
+              );
               if (confirm == true) {
                 ref.read(interestsProvider.notifier).removeInterest(post.id);
               }
@@ -187,8 +179,7 @@ class _InterestItem extends ConsumerWidget {
                 color: context.colors.error.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.delete_outline_rounded,
-                  size: 18, color: context.colors.error),
+              child: Icon(Icons.delete_outline_rounded, size: 18, color: context.colors.error),
             ),
           ),
         ],
@@ -197,10 +188,9 @@ class _InterestItem extends ConsumerWidget {
   }
 
   Widget _thumb(BuildContext context) => Container(
-        width: 64,
-        height: 64,
-        color: context.colors.surface,
-        child: Icon(Icons.image_rounded,
-            size: 24, color: context.colors.textTertiary),
-      );
+    width: 64,
+    height: 64,
+    color: context.colors.surface,
+    child: Icon(Icons.image_rounded, size: 24, color: context.colors.textTertiary),
+  );
 }

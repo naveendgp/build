@@ -35,10 +35,10 @@ class SupportApiClient {
     required String category,
     String? description,
   }) async {
-    final res = await _client.dio.post('/request/create', data: {
-      'category': category,
-      if (description != null) 'description': description,
-    });
+    final res = await _client.dio.post(
+      '/request/create',
+      data: {'category': category, if (description != null) 'description': description},
+    );
     return SupportRequestModel.fromJson(res.data);
   }
 
@@ -74,7 +74,8 @@ class SupportApiClient {
   Future<int> getUnreadChatCount() async {
     final res = await _client.dio.get('/chat/unread-count');
     final data = res.data;
-    return data is Map ? (data['count'] is int ? data['count'] : int.tryParse('${data['count']}') ?? 0) : 0;
+    return data is Map
+        ? (data['count'] is int ? data['count'] : int.tryParse('${data['count']}') ?? 0)
+        : 0;
   }
 }
-

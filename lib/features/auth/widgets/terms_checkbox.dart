@@ -39,10 +39,8 @@ class TermsCheckbox extends StatelessWidget {
               value: accepted,
               onChanged: (v) => onChanged(v ?? false),
               activeColor: context.colors.primaryAccent,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5)),
-              side: BorderSide(
-                  color: context.colors.textTertiary, width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+              side: BorderSide(color: context.colors.textTertiary, width: 1.5),
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               visualDensity: VisualDensity.compact,
             ),
@@ -54,11 +52,13 @@ class TermsCheckbox extends StatelessWidget {
               child: RichText(
                 text: TextSpan(
                   style: AppTypography.bodySmall.copyWith(
-                      color: context.colors.textSecondary, height: 1.5),
+                    color: context.colors.textSecondary,
+                    height: 1.5,
+                  ),
                   children: [
                     const TextSpan(
-                        text:
-                            'I confirm that I have read, understood, and agree to the '),
+                      text: 'I confirm that I have read, understood, and agree to the ',
+                    ),
                     WidgetSpan(
                       alignment: PlaceholderAlignment.baseline,
                       baseline: TextBaseline.alphabetic,
@@ -79,8 +79,7 @@ class TermsCheckbox extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const TextSpan(
-                        text: ' and all applicable Platform policies.'),
+                    const TextSpan(text: ' and all applicable Platform policies.'),
                   ],
                 ),
               ),

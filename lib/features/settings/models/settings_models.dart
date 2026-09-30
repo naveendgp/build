@@ -1,9 +1,4 @@
-enum VerificationStatus {
-  notSubmitted,
-  underReview,
-  verified,
-  rejected,
-}
+enum VerificationStatus { notSubmitted, underReview, verified, rejected }
 
 VerificationStatus _verificationStatusFromString(String? status) {
   switch (status) {
@@ -88,10 +83,8 @@ class UserSettings {
       id: (json['id'] ?? '').toString(),
       userId: (json['userId'] ?? '').toString(),
       everyoneCanMessageMe: _parseBool(json['everyoneCanMessageMe'], defaultValue: true),
-      categoryInterests: (json['categoryInterests'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      categoryInterests:
+          (json['categoryInterests'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       pushNotifications: _parseBool(json['pushNotifications'], defaultValue: true),
       appReminders: _parseBool(json['appReminders'], defaultValue: true),
       campaignReminders: _parseBool(json['campaignReminders'], defaultValue: true),
@@ -199,10 +192,8 @@ class BrandSettings {
       twitter: json['twitter']?.toString(),
       whatsapp: json['whatsapp']?.toString(),
       verificationStatus: _verificationStatusFromString(json['verificationStatus']?.toString()),
-      businessDocuments: (json['businessDocuments'] as List<dynamic>?)
-              ?.map((e) => e.toString())
-              .toList() ??
-          [],
+      businessDocuments:
+          (json['businessDocuments'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       newFollowerNotification: _parseBool(json['newFollowerNotification'], defaultValue: true),
       newMessageNotification: _parseBool(json['newMessageNotification'], defaultValue: true),
       newLeadNotification: _parseBool(json['newLeadNotification'], defaultValue: true),

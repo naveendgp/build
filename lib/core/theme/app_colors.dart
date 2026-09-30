@@ -60,11 +60,7 @@ class AppColors {
   );
 
   static const LinearGradient cinematicGradient = LinearGradient(
-    colors: [
-      Color(0xFF0A0A0B),
-      Color(0xFF1B0000),
-      Color(0xFF0A0A0B),
-    ],
+    colors: [Color(0xFF0A0A0B), Color(0xFF1B0000), Color(0xFF0A0A0B)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );

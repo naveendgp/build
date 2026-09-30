@@ -37,10 +37,7 @@ class RemindersScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.only(top: 8, bottom: 32),
           children: [
-            RemindersSection(
-              provider: allRemindersProvider,
-              emptyText: 'No reminders yet.',
-            ),
+            RemindersSection(provider: allRemindersProvider, emptyText: 'No reminders yet.'),
           ],
         ),
       ),

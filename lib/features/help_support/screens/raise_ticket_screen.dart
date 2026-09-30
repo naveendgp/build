@@ -39,15 +39,17 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
 
   void _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     Haptics.medium();
 
-    await ref.read(createTicketProvider.notifier).submitTicket(
-      subject: _subjectController.text.trim(),
-      message: _descController.text.trim(),
-      priority: _priority,
-      ticketType: _ticketType,
-    );
+    await ref
+        .read(createTicketProvider.notifier)
+        .submitTicket(
+          subject: _subjectController.text.trim(),
+          message: _descController.text.trim(),
+          priority: _priority,
+          ticketType: _ticketType,
+        );
   }
 
   @override
@@ -57,14 +59,20 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
     ref.listen<CreateTicketState>(createTicketProvider, (prev, next) {
       if (next.status == TicketUploadState.success && next.result != null) {
         ref.invalidate(myTicketsProvider);
-        AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
+        AppMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Ticket submitted successfully!')));
         context.pop();
       } else if (next.status == TicketUploadState.error) {
-        AppMessenger.of(context).showSnackBar(SnackBar(content: Text(next.errorMessage ?? 'Error')));
+        AppMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.errorMessage ?? 'Error')));
       }
     });
 
-    final isLoading = uploadState.status == TicketUploadState.uploading || uploadState.status == TicketUploadState.submitting;
+    final isLoading =
+        uploadState.status == TicketUploadState.uploading ||
+        uploadState.status == TicketUploadState.submitting;
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -140,10 +148,15 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                   child: isLoading
-                      ? const CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+                      ? const CircularProgressIndicator.adaptive(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
                       : Text(
                           'Submit Ticket',
-                          style: AppTypography.titleMedium.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: AppTypography.titleMedium.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
@@ -164,7 +177,13 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: context.colors.textSecondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
           value: value,
@@ -173,8 +192,14 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: context.colors.surface,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.colors.borderLight),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.colors.borderLight),
+            ),
           ),
           dropdownColor: context.colors.surface,
         ),
@@ -192,7 +217,13 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AppTypography.labelLarge.copyWith(color: context.colors.textSecondary, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: AppTypography.labelLarge.copyWith(
+            color: context.colors.textSecondary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
@@ -203,8 +234,14 @@ class _RaiseTicketScreenState extends ConsumerState<RaiseTicketScreen> {
           decoration: InputDecoration(
             filled: true,
             fillColor: context.colors.surface,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: context.colors.borderLight)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.colors.borderLight),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: context.colors.borderLight),
+            ),
           ),
         ),
       ],

@@ -38,37 +38,37 @@ Future<DateTime?> showAdaptiveDatePicker(
     builder: (ctx) => CupertinoTheme(
       data: CupertinoThemeData(brightness: brightness),
       child: Container(
-      height: 300,
-      padding: const EdgeInsets.only(top: 6),
-      color: CupertinoColors.systemBackground.resolveFrom(ctx),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                CupertinoButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.date,
-                initialDateTime: initialDate,
-                minimumDate: firstDate,
-                maximumDate: lastDate,
-                onDateTimeChanged: (d) => selected = d,
+        height: 300,
+        padding: const EdgeInsets.only(top: 6),
+        color: CupertinoColors.systemBackground.resolveFrom(ctx),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  CupertinoButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.date,
+                  initialDateTime: initialDate,
+                  minimumDate: firstDate,
+                  maximumDate: lastDate,
+                  onDateTimeChanged: (d) => selected = d,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),
@@ -89,8 +89,7 @@ Future<TimeOfDay?> showAdaptiveTimePicker(
   }
 
   final now = DateTime.now();
-  DateTime selected =
-      DateTime(now.year, now.month, now.day, initialTime.hour, initialTime.minute);
+  DateTime selected = DateTime(now.year, now.month, now.day, initialTime.hour, initialTime.minute);
   // The wheel resolves its colours from the nearest CupertinoTheme, and
   // without one it follows the operating system instead of the app. Switching
   // the app to dark while the phone stayed light left the picker white.
@@ -100,41 +99,39 @@ Future<TimeOfDay?> showAdaptiveTimePicker(
     builder: (ctx) => CupertinoTheme(
       data: CupertinoThemeData(brightness: brightness),
       child: Container(
-      height: 300,
-      padding: const EdgeInsets.only(top: 6),
-      color: CupertinoColors.systemBackground.resolveFrom(ctx),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                CupertinoButton(
-                  onPressed: () => Navigator.of(ctx).pop(false),
-                  child: const Text('Cancel'),
-                ),
-                CupertinoButton(
-                  onPressed: () => Navigator.of(ctx).pop(true),
-                  child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
-                ),
-              ],
-            ),
-            Expanded(
-              child: CupertinoDatePicker(
-                mode: CupertinoDatePickerMode.time,
-                initialDateTime: selected,
-                onDateTimeChanged: (d) => selected = d,
+        height: 300,
+        padding: const EdgeInsets.only(top: 6),
+        color: CupertinoColors.systemBackground.resolveFrom(ctx),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CupertinoButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: const Text('Cancel'),
+                  ),
+                  CupertinoButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: const Text('Done', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime: selected,
+                  onDateTimeChanged: (d) => selected = d,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     ),
   );
 
-  return confirmed == true
-      ? TimeOfDay(hour: selected.hour, minute: selected.minute)
-      : null;
+  return confirmed == true ? TimeOfDay(hour: selected.hour, minute: selected.minute) : null;
 }

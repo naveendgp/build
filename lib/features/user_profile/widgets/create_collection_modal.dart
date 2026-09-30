@@ -43,79 +43,88 @@ class _CreateCollectionModalState extends ConsumerState<CreateCollectionModal> {
       ),
       child: SingleChildScrollView(
         child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: context.colors.border,
-                borderRadius: BorderRadius.circular(2),
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.colors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Text('New Collection', style: AppTypography.titleLarge.copyWith(fontWeight: FontWeight.bold, color: context.colors.textPrimary)),
-          const SizedBox(height: AppSpacing.xl),
-
-          TextField(
-            controller: _nameController,
-            style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
-            decoration: InputDecoration(
-              hintText: 'Name your collection',
-              hintStyle: AppTypography.bodyLarge.copyWith(color: context.colors.textTertiary),
-              filled: true,
-              fillColor: context.colors.surface,
-              border: OutlineInputBorder(
-                borderRadius: AppSpacing.borderRadiusMd,
-                borderSide: BorderSide.none,
+            const SizedBox(height: AppSpacing.xl),
+            Text(
+              'New Collection',
+              style: AppTypography.titleLarge.copyWith(
+                fontWeight: FontWeight.bold,
+                color: context.colors.textPrimary,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 16),
             ),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () async {
-                final name = _nameController.text.trim();
-                if (name.isNotEmpty) {
-                  Haptics.selection();
+            const SizedBox(height: AppSpacing.xl),
 
-                  try {
-                    final notifier = ref.read(collectionsProvider.notifier);
-                    final newCollection = await notifier.createCollection(name);
-                    if (widget.initialPost != null) {
-                      await notifier.togglePostInCollection(
-                        newCollection.id,
-                        widget.initialPost,
-                        isCurrentlyInCollection: false,
-                      );
-                    }
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  } catch (e) {
-                    if (context.mounted) {
-                      AppMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to create collection: $e')),
-                      );
+            TextField(
+              controller: _nameController,
+              style: AppTypography.bodyLarge.copyWith(color: context.colors.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Name your collection',
+                hintStyle: AppTypography.bodyLarge.copyWith(color: context.colors.textTertiary),
+                filled: true,
+                fillColor: context.colors.surface,
+                border: OutlineInputBorder(
+                  borderRadius: AppSpacing.borderRadiusMd,
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: 16),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  final name = _nameController.text.trim();
+                  if (name.isNotEmpty) {
+                    Haptics.selection();
+
+                    try {
+                      final notifier = ref.read(collectionsProvider.notifier);
+                      final newCollection = await notifier.createCollection(name);
+                      if (widget.initialPost != null) {
+                        await notifier.togglePostInCollection(
+                          newCollection.id,
+                          widget.initialPost,
+                          isCurrentlyInCollection: false,
+                        );
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                    } catch (e) {
+                      if (context.mounted) {
+                        AppMessenger.of(
+                          context,
+                        ).showSnackBar(SnackBar(content: Text('Failed to create collection: $e')));
+                      }
                     }
                   }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.primaryAccent,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: context.colors.primaryAccent,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: AppSpacing.borderRadiusMd),
+                ),
+                child: Text(
+                  'Create Collection',
+                  style: AppTypography.button.copyWith(color: Colors.white),
+                ),
               ),
-              child: Text('Create Collection', style: AppTypography.button.copyWith(color: Colors.white)),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }

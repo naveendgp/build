@@ -72,11 +72,14 @@ class BlockedBrandsScreen extends ConsumerWidget {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: context.colors.surfaceSecondary,
-                      backgroundImage: (brand.logoUrl != null && brand.logoUrl!.isNotEmpty) 
-                          ? NetworkImage(brand.logoUrl!) 
+                      backgroundImage: (brand.logoUrl != null && brand.logoUrl!.isNotEmpty)
+                          ? NetworkImage(brand.logoUrl!)
                           : null,
                       child: (brand.logoUrl == null || brand.logoUrl!.isEmpty)
-                          ? Text(brand.name.isNotEmpty ? brand.name[0] : '?', style: TextStyle(color: context.colors.textPrimary))
+                          ? Text(
+                              brand.name.isNotEmpty ? brand.name[0] : '?',
+                              style: TextStyle(color: context.colors.textPrimary),
+                            )
                           : null,
                     ),
                     const SizedBox(width: AppSpacing.md),
@@ -101,9 +104,7 @@ class BlockedBrandsScreen extends ConsumerWidget {
                       ),
                     ),
                     TextButton(
-                      style: TextButton.styleFrom(
-                        foregroundColor: context.colors.error,
-                      ),
+                      style: TextButton.styleFrom(foregroundColor: context.colors.error),
                       onPressed: () {
                         ref.read(blockedBrandsProvider.notifier).unblockBrand(brand.id);
                       },
@@ -117,7 +118,10 @@ class BlockedBrandsScreen extends ConsumerWidget {
         },
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, st) => Center(
-          child: Text('Failed to load blocked brands.', style: TextStyle(color: context.colors.error)),
+          child: Text(
+            'Failed to load blocked brands.',
+            style: TextStyle(color: context.colors.error),
+          ),
         ),
       ),
     );

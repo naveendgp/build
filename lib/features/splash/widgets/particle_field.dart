@@ -5,17 +5,13 @@ import 'package:flutter/material.dart';
 class ParticleField extends StatefulWidget {
   final int particleCount;
 
-  const ParticleField({
-    super.key,
-    this.particleCount = 30,
-  });
+  const ParticleField({super.key, this.particleCount = 30});
 
   @override
   State<ParticleField> createState() => _ParticleFieldState();
 }
 
-class _ParticleFieldState extends State<ParticleField>
-    with SingleTickerProviderStateMixin {
+class _ParticleFieldState extends State<ParticleField> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late List<_Particle> _particles;
   final _random = Random();
@@ -24,10 +20,7 @@ class _ParticleFieldState extends State<ParticleField>
   void initState() {
     super.initState();
     _particles = List.generate(widget.particleCount, (_) => _generateParticle());
-    _controller = AnimationController(
-      duration: const Duration(seconds: 10),
-      vsync: this,
-    )..repeat();
+    _controller = AnimationController(duration: const Duration(seconds: 10), vsync: this)..repeat();
   }
 
   _Particle _generateParticle() {
@@ -54,10 +47,7 @@ class _ParticleFieldState extends State<ParticleField>
       animation: _controller,
       builder: (context, _) {
         return CustomPaint(
-          painter: _ParticlePainter(
-            particles: _particles,
-            progress: _controller.value,
-          ),
+          painter: _ParticlePainter(particles: _particles, progress: _controller.value),
           size: Size.infinite,
         );
       },
@@ -89,10 +79,7 @@ class _ParticlePainter extends CustomPainter {
   final List<_Particle> particles;
   final double progress;
 
-  _ParticlePainter({
-    required this.particles,
-    required this.progress,
-  });
+  _ParticlePainter({required this.particles, required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -105,8 +92,7 @@ class _ParticlePainter extends CustomPainter {
       final px = x % size.width;
       final py = y % size.height;
 
-      final opacity = particle.opacity *
-          (0.5 + 0.5 * sin(t * 2 + particle.phase));
+      final opacity = particle.opacity * (0.5 + 0.5 * sin(t * 2 + particle.phase));
 
       final paint = Paint()
         ..color = Colors.white.withValues(alpha: opacity.clamp(0.0, 1.0))
@@ -117,6 +103,5 @@ class _ParticlePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _ParticlePainter oldDelegate) =>
-      oldDelegate.progress != progress;
+  bool shouldRepaint(covariant _ParticlePainter oldDelegate) => oldDelegate.progress != progress;
 }

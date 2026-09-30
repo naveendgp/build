@@ -11,8 +11,7 @@ class AnimatedLogo extends StatefulWidget {
   State<AnimatedLogo> createState() => _AnimatedLogoState();
 }
 
-class _AnimatedLogoState extends State<AnimatedLogo>
-    with SingleTickerProviderStateMixin {
+class _AnimatedLogoState extends State<AnimatedLogo> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -20,10 +19,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
+    _controller = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
 
     _scaleAnimation = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(
@@ -83,9 +79,7 @@ class _AnimatedLogoState extends State<AnimatedLogo>
                           context.colors.textPrimary,
                           context.colors.textPrimary.withValues(alpha: 0.7),
                         ],
-                      ).createShader(
-                        const Rect.fromLTWH(0, 0, 200, 60),
-                      ),
+                      ).createShader(const Rect.fromLTWH(0, 0, 200, 60)),
                   ),
                 ),
               ],

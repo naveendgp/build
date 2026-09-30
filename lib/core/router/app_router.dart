@@ -45,12 +45,13 @@ class AppRouter {
     redirect: (context, state) async {
       final isPublic = state.matchedLocation == '/terms';
 
-      final isGoingToAuth = state.matchedLocation == '/login' ||
-                            state.matchedLocation == '/signup/user' ||
-                            state.matchedLocation == '/signup/brand' ||
-                            state.matchedLocation == '/auth' ||
-                            state.matchedLocation == '/forgot-password' ||
-                            state.matchedLocation == '/splash';
+      final isGoingToAuth =
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/signup/user' ||
+          state.matchedLocation == '/signup/brand' ||
+          state.matchedLocation == '/auth' ||
+          state.matchedLocation == '/forgot-password' ||
+          state.matchedLocation == '/splash';
 
       final hasSession = await SecureStorage.hasSession();
 
@@ -61,7 +62,7 @@ class AppRouter {
       if (hasSession && isGoingToAuth && state.matchedLocation != '/splash') {
         return '/home';
       }
-      
+
       return null;
     },
     routes: [
@@ -315,10 +316,7 @@ class AppRouter {
           final prefilled = state.uri.queryParameters['prefilled'];
           return CustomTransitionPage(
             key: state.pageKey,
-            child: ChatScreen(
-              conversationId: id,
-              prefilledMessage: prefilled,
-            ),
+            child: ChatScreen(conversationId: id, prefilledMessage: prefilled),
             transitionsBuilder: (_, animation, secondaryAnimation, child) {
               return FadeTransition(
                 opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
@@ -568,9 +566,9 @@ class AppRouter {
           return CustomTransitionPage(
             key: state.pageKey,
             child: HelpSupportHomeScreen(initialTabIndex: initialTab),
-          transitionsBuilder: (_, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
+            transitionsBuilder: (_, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
             transitionDuration: const Duration(milliseconds: 300),
           );
         },

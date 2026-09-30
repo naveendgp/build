@@ -28,8 +28,7 @@ class LyketButton extends StatefulWidget {
   State<LyketButton> createState() => _LyketButtonState();
 }
 
-class _LyketButtonState extends State<LyketButton>
-    with SingleTickerProviderStateMixin {
+class _LyketButtonState extends State<LyketButton> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   bool _isPressed = false;
@@ -39,13 +38,11 @@ class _LyketButtonState extends State<LyketButton>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 120),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(duration: const Duration(milliseconds: 120), vsync: this);
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -81,10 +78,7 @@ class _LyketButtonState extends State<LyketButton>
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
-        return Transform.scale(
-          scale: _scaleAnimation.value,
-          child: child,
-        );
+        return Transform.scale(scale: _scaleAnimation.value, child: child);
       },
       child: GestureDetector(
         onTapDown: _handleTapDown,
@@ -138,10 +132,9 @@ class _LyketButtonState extends State<LyketButton>
                       child: CircularProgressIndicator.adaptive(
                         strokeWidth: 2.5,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          widget.isOutlined
-                              ? context.colors.primaryAccent
-                              : Colors.white,
-                        )),
+                          widget.isOutlined ? context.colors.primaryAccent : Colors.white,
+                        ),
+                      ),
                     )
                   : Row(
                       mainAxisSize: MainAxisSize.min,
@@ -150,18 +143,14 @@ class _LyketButtonState extends State<LyketButton>
                           Icon(
                             widget.icon,
                             size: 20,
-                            color: widget.isOutlined
-                                ? context.colors.textPrimary
-                                : Colors.white,
+                            color: widget.isOutlined ? context.colors.textPrimary : Colors.white,
                           ),
                           const SizedBox(width: AppSpacing.sm),
                         ],
                         Text(
                           widget.label,
                           style: AppTypography.button.copyWith(
-                            color: widget.isOutlined
-                                ? context.colors.textPrimary
-                                : Colors.white,
+                            color: widget.isOutlined ? context.colors.textPrimary : Colors.white,
                           ),
                         ),
                       ],

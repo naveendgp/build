@@ -14,10 +14,10 @@ class ThemeTokens {
   static const Color darkBackground = Color(0xFF0A0A0B);
   static const Color darkSurface = Color(0xFF121316);
   static const Color darkCard = Color(0xFF1B1D22);
-  
+
   static const Color darkBorderPrimary = Color(0x0FFFFFFF); // 6% white
   static const Color darkBorderSecondary = Color(0x1AFFFFFF); // 10% white
-  
+
   static const Color darkTextPrimary = Color(0xFFFFFFFF);
   static const Color darkTextSecondary = Color(0xFFA1A1AA);
   static const Color darkTextTertiary = Color(0xFF71717A);
@@ -28,7 +28,7 @@ class ThemeTokens {
   static const Color lightSurfaceSecondary = Color(0xFFE5E5EA);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightCard = Color(0xFFFFFFFF);
-  
+
   static const Color lightBorderPrimary = Color(0x1F000000); // 12% black
   static const Color lightBorderSecondary = Color(0x0F000000); // 6% black
 

@@ -55,10 +55,7 @@ Future<bool?> showAdaptiveConfirmDialog(
         ),
       ),
       content: message != null
-          ? Text(
-              message,
-              style: AppTypography.bodyMedium.copyWith(color: ctx.colors.textSecondary),
-            )
+          ? Text(message, style: AppTypography.bodyMedium.copyWith(color: ctx.colors.textSecondary))
           : null,
       actions: [
         TextButton(

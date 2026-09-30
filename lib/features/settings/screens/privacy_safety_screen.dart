@@ -40,30 +40,6 @@ class PrivacySafetyScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.only(top: 16, bottom: 48),
         children: [
-          if (!isBrand) ...[
-            userSettingsState.when(
-              data: (settings) => SettingsGroup(
-                title: 'Messaging',
-                children: [
-                  SettingsItem(
-                    title: 'Everyone Can Message Me',
-                    icon: Icons.chat_bubble_outline_rounded,
-                    trailing: Switch.adaptive(
-                      value: settings.everyoneCanMessageMe,
-                      activeColor: context.colors.primaryAccent,
-                      onChanged: (val) {
-                        ref.read(userSettingsProvider.notifier).updateSettings(
-                              settings.copyWith(everyoneCanMessageMe: val),
-                            );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-              error: (e, st) => const Center(child: Text('Error loading settings')),
-            ),
-          ],
           SettingsGroup(
             title: 'Security',
             children: [

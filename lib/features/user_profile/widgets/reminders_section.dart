@@ -19,11 +19,7 @@ class RemindersSection extends ConsumerWidget {
   final StateNotifierProvider<RemindersNotifier, RemindersState>? provider;
   final String emptyText;
 
-  const RemindersSection({
-    super.key,
-    this.provider,
-    this.emptyText = 'No upcoming reminders.',
-  });
+  const RemindersSection({super.key, this.provider, this.emptyText = 'No upcoming reminders.'});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,22 +40,33 @@ class RemindersSection extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Reminders', style: AppTypography.titleMedium),
-              Icon(Icons.notifications_active_rounded, color: context.colors.primaryAccent, size: 20),
+              Icon(
+                Icons.notifications_active_rounded,
+                color: context.colors.primaryAccent,
+                size: 20,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           if (state.isLoading)
             const Center(child: CircularProgressIndicator.adaptive(strokeWidth: 2))
           else if (state.error != null)
-            Text(state.error!, style: AppTypography.bodyMedium.copyWith(color: context.colors.error))
+            Text(
+              state.error!,
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+            )
           else if (state.reminders.isEmpty)
-            Text(emptyText, style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary))
+            Text(
+              emptyText,
+              style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+            )
           else
             ListView.separated(
               shrinkWrap: true,
               physics: NeverScrollableScrollPhysics(),
               itemCount: state.reminders.length,
-              separatorBuilder: (context, index) => Divider(color: context.colors.borderLight, height: 24),
+              separatorBuilder: (context, index) =>
+                  Divider(color: context.colors.borderLight, height: 24),
               itemBuilder: (context, index) {
                 final reminder = state.reminders[index];
                 return Row(
@@ -77,7 +84,11 @@ class RemindersSection extends ConsumerWidget {
                             width: 48,
                             height: 48,
                             color: context.colors.background,
-                            child: Icon(Icons.image_not_supported, size: 20, color: context.colors.textSecondary),
+                            child: Icon(
+                              Icons.image_not_supported,
+                              size: 20,
+                              color: context.colors.textSecondary,
+                            ),
                           ),
                         ),
                       )
@@ -105,7 +116,9 @@ class RemindersSection extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(
                             'Due ${timeago.format(reminder.reminderTime, allowFromNow: true)}',
-                            style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+                            style: AppTypography.labelMedium.copyWith(
+                              color: context.colors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
@@ -116,7 +129,11 @@ class RemindersSection extends ConsumerWidget {
                       IconButton(
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
-                        icon: Icon(Icons.edit_rounded, color: context.colors.primaryAccent, size: 20),
+                        icon: Icon(
+                          Icons.edit_rounded,
+                          color: context.colors.primaryAccent,
+                          size: 20,
+                        ),
                         onPressed: () => _editReminder(context, ref, reminder),
                       ),
                   ],
@@ -147,23 +164,26 @@ class RemindersSection extends ConsumerWidget {
     final newDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
     try {
       final apiClient = ref.read(apiClientProvider);
-      await apiClient.dio.put('/reminders/${reminder.id}', data: {
-        // .toUtc() is required — a bare local-time ISO string (no 'Z') gets
-        // parsed by the backend as server-local time, not phone-local time.
-        // Depending on the timezone gap that can shift a genuinely-future
-        // time into "the past" server-side, which the backend rejects with
-        // a 500 (see setReminder in feed_provider.dart, which already does
-        // this correctly for reminder creation).
-        'reminderTime': newDateTime.toUtc().toIso8601String(),
-      });
+      await apiClient.dio.put(
+        '/reminders/${reminder.id}',
+        data: {
+          // .toUtc() is required — a bare local-time ISO string (no 'Z') gets
+          // parsed by the backend as server-local time, not phone-local time.
+          // Depending on the timezone gap that can shift a genuinely-future
+          // time into "the past" server-side, which the backend rejects with
+          // a 500 (see setReminder in feed_provider.dart, which already does
+          // this correctly for reminder creation).
+          'reminderTime': newDateTime.toUtc().toIso8601String(),
+        },
+      );
       // Refresh whichever list is actually being shown (upcoming or full
       // history) rather than assuming — a stale list would still show the
       // old time even though the update succeeded.
       ref.read((provider ?? remindersProvider).notifier).loadReminders();
       if (context.mounted) {
-        AppMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder updated successfully')),
-        );
+        AppMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Reminder updated successfully')));
       }
     } on DioException catch (e) {
       final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
@@ -174,9 +194,9 @@ class RemindersSection extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        AppMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update reminder: $e')),
-        );
+        AppMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update reminder: $e')));
       }
     }
   }

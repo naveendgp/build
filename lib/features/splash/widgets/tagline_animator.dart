@@ -17,8 +17,7 @@ class TaglineAnimator extends StatefulWidget {
   State<TaglineAnimator> createState() => _TaglineAnimatorState();
 }
 
-class _TaglineAnimatorState extends State<TaglineAnimator>
-    with SingleTickerProviderStateMixin {
+class _TaglineAnimatorState extends State<TaglineAnimator> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _started = false;
 
@@ -54,8 +53,10 @@ class _TaglineAnimatorState extends State<TaglineAnimator>
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: List.generate(widget.text.length, (index) {
-            final charProgress = (((_controller.value * widget.text.length) - index))
-                .clamp(0.0, 1.0);
+            final charProgress = (((_controller.value * widget.text.length) - index)).clamp(
+              0.0,
+              1.0,
+            );
 
             return Opacity(
               opacity: charProgress,

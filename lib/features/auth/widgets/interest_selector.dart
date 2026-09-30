@@ -7,11 +7,7 @@ class InterestSelector extends StatelessWidget {
   final Set<String> selectedInterests;
   final ValueChanged<String> onToggle;
 
-  const InterestSelector({
-    super.key,
-    required this.selectedInterests,
-    required this.onToggle,
-  });
+  const InterestSelector({super.key, required this.selectedInterests, required this.onToggle});
 
   static const List<Map<String, dynamic>> interests = [
     {'label': 'Technology', 'icon': Icons.computer_rounded},

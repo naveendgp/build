@@ -91,7 +91,11 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
           ),
           Text(
             'Write a Review',
-            style: TextStyle(color: context.colors.textPrimary, fontSize: 24, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              color: context.colors.textPrimary,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
@@ -101,7 +105,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
-          
+
           Flexible(
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -119,14 +123,16 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                         },
                         icon: Icon(
                           index < _rating ? Icons.star_rounded : Icons.star_outline_rounded,
-                          color: index < _rating ? const Color(0xFFFFB800) : context.colors.borderLight,
+                          color: index < _rating
+                              ? const Color(0xFFFFB800)
+                              : context.colors.borderLight,
                           size: 40,
                         ),
                       );
                     }),
                   ),
                   const SizedBox(height: 32),
-                  
+
                   // Title Input
                   TextField(
                     controller: _titleController,
@@ -144,7 +150,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Description Input
                   TextField(
                     controller: _descController,
@@ -168,7 +174,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
               ),
             ),
           ),
-          
+
           Text(
             'Minimum 20 characters',
             style: TextStyle(
@@ -180,7 +186,7 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
             textAlign: TextAlign.right,
           ),
           const SizedBox(height: 32),
-          
+
           // Submit Button
           ElevatedButton(
             onPressed: _isLoading || _rating == 0 || _descController.text.trim().length < 20
@@ -199,7 +205,10 @@ class _ReviewCreationModalState extends ConsumerState<ReviewCreationModal> {
                 ? const SizedBox(
                     width: 24,
                     height: 24,
-                    child: CircularProgressIndicator.adaptive(valueColor: AlwaysStoppedAnimation<Color>(Colors.white), strokeWidth: 2),
+                    child: CircularProgressIndicator.adaptive(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      strokeWidth: 2,
+                    ),
                   )
                 : const Text(
                     'Submit Review',

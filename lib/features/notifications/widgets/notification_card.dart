@@ -50,18 +50,20 @@ class NotificationCard extends StatelessWidget {
             color: notification.isRead ? context.colors.surface : context.colors.card,
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
             border: Border.all(
-              color: notification.isPriority 
+              color: notification.isPriority
                   ? context.colors.primaryAccent.withValues(alpha: 0.3)
                   : context.colors.border,
               width: notification.isPriority ? 1 : 0.5,
             ),
-            boxShadow: notification.isRead ? [] : [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.2),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            boxShadow: notification.isRead
+                ? []
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -80,7 +82,9 @@ class NotificationCard extends StatelessWidget {
                             notification.title,
                             style: AppTypography.labelLarge.copyWith(
                               fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.w700,
-                              color: notification.isRead ? context.colors.textSecondary : context.colors.textPrimary,
+                              color: notification.isRead
+                                  ? context.colors.textSecondary
+                                  : context.colors.textPrimary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -89,7 +93,9 @@ class NotificationCard extends StatelessWidget {
                         Text(
                           '${notification.createdAt.toLocal().hour}:${notification.createdAt.toLocal().minute.toString().padLeft(2, '0')}',
                           style: AppTypography.labelSmall.copyWith(
-                            color: notification.isPriority ? context.colors.primaryAccent : context.colors.textTertiary,
+                            color: notification.isPriority
+                                ? context.colors.primaryAccent
+                                : context.colors.textTertiary,
                             fontWeight: notification.isPriority ? FontWeight.w600 : FontWeight.w400,
                           ),
                         ),
@@ -99,7 +105,9 @@ class NotificationCard extends StatelessWidget {
                     Text(
                       notification.message,
                       style: AppTypography.bodyMedium.copyWith(
-                        color: notification.isRead ? context.colors.textTertiary : context.colors.textSecondary,
+                        color: notification.isRead
+                            ? context.colors.textTertiary
+                            : context.colors.textSecondary,
                         height: 1.4,
                       ),
                       maxLines: 2,

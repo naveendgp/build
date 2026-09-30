@@ -43,7 +43,10 @@ class ArchivedPostsScreen extends ConsumerWidget {
       body: archivedAsync.when(
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, stack) => Center(
-          child: Text('Failed to load archived posts', style: AppTypography.bodyMedium.copyWith(color: context.colors.error)),
+          child: Text(
+            'Failed to load archived posts',
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.error),
+          ),
         ),
         data: (posts) {
           if (posts.isEmpty) {
@@ -138,18 +141,20 @@ class _ArchivedPostItem extends ConsumerWidget {
           GestureDetector(
             onTap: () async {
               final confirm = await showAdaptiveConfirmDialog(
-                                      context,
-                                      title: 'Repost?',
-                                      message: 'This post will be restored to your public feed.',
-                                      confirmLabel: 'Repost',
-                                    );
+                context,
+                title: 'Repost?',
+                message: 'This post will be restored to your public feed.',
+                confirmLabel: 'Repost',
+              );
 
               if (confirm == true) {
                 await ref.read(dashboardServiceProvider).unarchivePost(post.id);
                 ref.invalidate(archivedPostsProvider);
                 // Invalidate home feed and dashboard
                 if (context.mounted) {
-                  AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post restored successfully')));
+                  AppMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('Post restored successfully')));
                 }
               }
             },
@@ -164,7 +169,14 @@ class _ArchivedPostItem extends ConsumerWidget {
                 children: [
                   const Icon(Icons.restore_rounded, size: 16, color: Colors.white),
                   const SizedBox(width: 4),
-                  const Text('Repost', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                  const Text(
+                    'Repost',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -173,23 +185,27 @@ class _ArchivedPostItem extends ConsumerWidget {
           GestureDetector(
             onTap: () async {
               final confirm = await showAdaptiveConfirmDialog(
-                                      context,
-                                      title: 'Delete Post?',
-                                      message: 'This will permanently delete the post. This action cannot be undone.',
-                                      confirmLabel: 'Delete',
-                                      isDestructive: true,
-                                    );
+                context,
+                title: 'Delete Post?',
+                message: 'This will permanently delete the post. This action cannot be undone.',
+                confirmLabel: 'Delete',
+                isDestructive: true,
+              );
 
               if (confirm == true) {
                 try {
                   await ref.read(dashboardServiceProvider).deletePost(post.id);
                   ref.invalidate(archivedPostsProvider);
                   if (context.mounted) {
-                    AppMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted permanently')));
+                    AppMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text('Post deleted permanently')));
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete post: $e')));
+                    AppMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Failed to delete post: $e')));
                   }
                 }
               }

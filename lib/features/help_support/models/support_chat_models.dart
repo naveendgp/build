@@ -28,7 +28,9 @@ class SupportRequestModel {
       category: (json['category'] ?? '').toString(),
       description: json['description']?.toString(),
       status: (json['status'] ?? 'PENDING').toString(),
-      queuePosition: json['queuePosition'] is int ? json['queuePosition'] : int.tryParse('${json['queuePosition']}') ?? 0,
+      queuePosition: json['queuePosition'] is int
+          ? json['queuePosition']
+          : int.tryParse('${json['queuePosition']}') ?? 0,
       rejectionReason: json['rejectionReason']?.toString(),
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
     );
@@ -96,9 +98,12 @@ class SupportChat {
       id: (json['id'] ?? '').toString(),
       category: (json['category'] ?? '').toString(),
       status: (json['status'] ?? 'Open').toString(),
-      unreadCount: json['unreadCount'] is int ? json['unreadCount'] : int.tryParse('${json['unreadCount']}') ?? 0,
+      unreadCount: json['unreadCount'] is int
+          ? json['unreadCount']
+          : int.tryParse('${json['unreadCount']}') ?? 0,
       updatedAt: DateTime.tryParse(json['updatedAt']?.toString() ?? '') ?? DateTime.now(),
-      messages: (json['messages'] as List?)?.map((e) => SupportChatMessage.fromJson(e)).toList() ?? [],
+      messages:
+          (json['messages'] as List?)?.map((e) => SupportChatMessage.fromJson(e)).toList() ?? [],
     );
   }
 }

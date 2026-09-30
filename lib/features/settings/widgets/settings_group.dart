@@ -7,11 +7,7 @@ class SettingsGroup extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  const SettingsGroup({
-    Key? key,
-    required this.title,
-    required this.children,
-  }) : super(key: key);
+  const SettingsGroup({Key? key, required this.title, required this.children}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +30,7 @@ class SettingsGroup extends StatelessWidget {
           decoration: BoxDecoration(
             color: context.colors.surface,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: context.colors.borderLight,
-              width: 0.5,
-            ),
+            border: Border.all(color: context.colors.borderLight, width: 0.5),
           ),
           child: Column(
             children: [
@@ -51,7 +44,7 @@ class SettingsGroup extends StatelessWidget {
                     indent: 48,
                     endIndent: 0,
                   ),
-              ]
+              ],
             ],
           ),
         ),

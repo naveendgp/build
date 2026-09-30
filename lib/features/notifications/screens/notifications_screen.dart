@@ -31,22 +31,28 @@ class NotificationsScreen extends ConsumerWidget {
           children: [
             _buildHeader(context, state, notifier),
             _buildFilterTabs(context, state, notifier),
-            Expanded(
-              child: _buildListContent(context, ref, state, notifier),
-            ),
+            Expanded(child: _buildListContent(context, ref, state, notifier)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, NotificationsState state, NotificationsNotifier notifier) {
+  Widget _buildHeader(
+    BuildContext context,
+    NotificationsState state,
+    NotificationsNotifier notifier,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.sm),
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.colors.textPrimary, size: 20),
+            icon: Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: context.colors.textPrimary,
+              size: 20,
+            ),
             onPressed: () => context.pop(),
           ),
           const SizedBox(width: AppSpacing.xs),
@@ -95,8 +101,11 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-
-  Widget _buildFilterTabs(BuildContext context, NotificationsState state, NotificationsNotifier notifier) {
+  Widget _buildFilterTabs(
+    BuildContext context,
+    NotificationsState state,
+    NotificationsNotifier notifier,
+  ) {
     final filters = [
       {'label': 'All', 'value': NotificationFilter.all},
       {'label': 'Reminders', 'value': NotificationFilter.reminders},
@@ -142,25 +151,25 @@ class NotificationsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildListContent(BuildContext context, WidgetRef ref, NotificationsState state, NotificationsNotifier notifier) {
+  Widget _buildListContent(
+    BuildContext context,
+    WidgetRef ref,
+    NotificationsState state,
+    NotificationsNotifier notifier,
+  ) {
     final bool showUpcoming = state.activeFilter == NotificationFilter.reminders;
     final upcomingState = ref.watch(remindersProvider);
     final hasUpcoming = showUpcoming && upcomingState.reminders.isNotEmpty;
 
     if (state.isLoading && !hasUpcoming) {
-      return const SingleChildScrollView(
-        child: NotificationSkeleton(),
-      );
+      return const SingleChildScrollView(child: NotificationSkeleton());
     }
 
     final notifications = notifier.filteredNotifications;
 
     if (notifications.isEmpty && !hasUpcoming) {
       return const SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.only(top: 100),
-          child: NotificationEmptyState(),
-        ),
+        child: Padding(padding: EdgeInsets.only(top: 100), child: NotificationEmptyState()),
       );
     }
 
@@ -170,37 +179,49 @@ class NotificationsScreen extends ConsumerWidget {
         if (hasUpcoming) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
-            child: Text('Upcoming', style: AppTypography.titleSmall.copyWith(color: context.colors.textSecondary)),
+            child: Text(
+              'Upcoming',
+              style: AppTypography.titleSmall.copyWith(color: context.colors.textSecondary),
+            ),
           ),
           ...upcomingState.reminders.map((reminder) => _buildUpcomingCard(context, ref, reminder)),
           if (notifications.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.md),
-              child: Text('Past Reminders', style: AppTypography.titleSmall.copyWith(color: context.colors.textSecondary)),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.md,
+              ),
+              child: Text(
+                'Past Reminders',
+                style: AppTypography.titleSmall.copyWith(color: context.colors.textSecondary),
+              ),
             ),
         ],
-        ...notifications.map((notification) => NotificationCard(
-          notification: notification,
-          onTap: () {
-            if (notification.referenceId != null) {
-              final eType = notification.entityType?.toLowerCase();
-              if (eType == 'post' || notification.type == NotificationType.social) {
-                context.push('/explore/post', extra: notification.referenceId);
-              } else if (eType == 'user') {
-                // Future: handle user routing
-              } else if (eType == 'conversation' || notification.type == NotificationType.message) {
-                context.push('/messages/${notification.referenceId}');
-              } else if (notification.type == NotificationType.brand || eType == 'brand') {
-                context.push('/brand/${notification.referenceId}');
+        ...notifications.map(
+          (notification) => NotificationCard(
+            notification: notification,
+            onTap: () {
+              if (notification.referenceId != null) {
+                final eType = notification.entityType?.toLowerCase();
+                if (eType == 'post' || notification.type == NotificationType.social) {
+                  context.push('/explore/post', extra: notification.referenceId);
+                } else if (eType == 'user') {
+                  // Future: handle user routing
+                } else if (eType == 'conversation' ||
+                    notification.type == NotificationType.message) {
+                  context.push('/messages/${notification.referenceId}');
+                } else if (notification.type == NotificationType.brand || eType == 'brand') {
+                  context.push('/brand/${notification.referenceId}');
+                }
               }
-            }
-          },
-          onDismiss: () {
-            Haptics.medium();
-            notifier.deleteNotification(notification.id);
-          },
-          onMarkRead: () => notifier.markAsRead(notification.id),
-        )),
+            },
+            onDismiss: () {
+              Haptics.medium();
+              notifier.deleteNotification(notification.id);
+            },
+            onMarkRead: () => notifier.markAsRead(notification.id),
+          ),
+        ),
       ],
     );
   }
@@ -231,7 +252,8 @@ class NotificationsScreen extends ConsumerWidget {
                     imageUrl: reminder.post!.mediaUrl,
                     fit: BoxFit.cover,
                     placeholder: (context, url) => Container(color: context.colors.surface),
-                    errorWidget: (context, url, error) => Icon(Icons.alarm_rounded, color: context.colors.primaryAccent),
+                    errorWidget: (context, url, error) =>
+                        Icon(Icons.alarm_rounded, color: context.colors.primaryAccent),
                   )
                 : Icon(Icons.alarm_rounded, color: context.colors.primaryAccent),
           ),
@@ -242,14 +264,20 @@ class NotificationsScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Scheduled: ${reminder.title}',
-                  style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w700, color: context.colors.textPrimary),
+                  style: AppTypography.labelLarge.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: context.colors.textPrimary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Due ${timeago.format(reminder.reminderTime, allowFromNow: true)}',
-                  style: AppTypography.bodyMedium.copyWith(color: context.colors.primaryAccent, fontWeight: FontWeight.w600),
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: context.colors.primaryAccent,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -272,15 +300,24 @@ class NotificationsScreen extends ConsumerWidget {
                   initialTime: TimeOfDay.fromDateTime(reminder.reminderTime),
                 );
                 if (time != null && context.mounted) {
-                  final newDateTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                  final newDateTime = DateTime(
+                    date.year,
+                    date.month,
+                    date.day,
+                    time.hour,
+                    time.minute,
+                  );
                   try {
                     final apiClient = ref.read(apiClientProvider);
-                    await apiClient.dio.put('/reminders/${reminder.id}', data: {
-                      // .toUtc() matters — see reminders_section.dart's
-                      // _editReminder for why a bare local ISO string can
-                      // get rejected as "in the past" by the backend.
-                      'reminderTime': newDateTime.toUtc().toIso8601String(),
-                    });
+                    await apiClient.dio.put(
+                      '/reminders/${reminder.id}',
+                      data: {
+                        // .toUtc() matters — see reminders_section.dart's
+                        // _editReminder for why a bare local ISO string can
+                        // get rejected as "in the past" by the backend.
+                        'reminderTime': newDateTime.toUtc().toIso8601String(),
+                      },
+                    );
                     ref.read(remindersProvider.notifier).loadReminders();
                     if (context.mounted) {
                       AppMessenger.of(context).showSnackBar(
@@ -289,9 +326,9 @@ class NotificationsScreen extends ConsumerWidget {
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      AppMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to update reminder: $e')),
-                      );
+                      AppMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Failed to update reminder: $e')));
                     }
                   }
                 }

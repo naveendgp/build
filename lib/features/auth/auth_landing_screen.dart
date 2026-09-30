@@ -32,109 +32,137 @@ class AuthLandingScreen extends ConsumerWidget {
                     child: IntrinsicHeight(
                       child: Column(
                         children: [
-                const SizedBox(height: AppSpacing.xxxl),
-                // Heading
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOut,
-                  builder: (_, v, child) => Opacity(
-                    opacity: v,
-                    child: Transform.translate(offset: Offset(0, 20 * (1 - v)), child: child),
-                  ),
-                  child: Column(
-                    children: [
-                      Text('Discover.', style: AppTypography.displayLarge.copyWith(
-                        color: context.colors.textPrimary, height: 1.1)),
-                      Text('Connect.', style: AppTypography.displayLarge.copyWith(
-                        color: context.colors.primaryAccent, height: 1.1)),
-                      Text('Grow.', style: AppTypography.displayLarge.copyWith(
-                        color: context.colors.textPrimary, height: 1.1)),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeOut,
-                  builder: (_, v, child) => Opacity(opacity: v, child: child),
-                  child: Text(
-                    'Choose how you want to experience Lyket',
-                    style: AppTypography.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xxl),
-                // Role cards
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0, end: 1),
-                  duration: const Duration(milliseconds: 900),
-                  curve: Curves.easeOut,
-                  builder: (_, v, child) => Opacity(
-                    opacity: v,
-                    child: Transform.translate(offset: Offset(0, 30 * (1 - v)), child: child),
-                  ),
-                  child: Column(
-                    children: [
-                      RoleCard(
-                        icon: Icons.person_rounded,
-                        title: 'Personal User',
-                        description: 'Discover brands, explore content, and connect',
-                        isSelected: auth.selectedRole == UserRole.user,
-                        onTap: () => ref.read(authProvider.notifier).selectRole(UserRole.user),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      RoleCard(
-                        icon: Icons.business_rounded,
-                        title: 'Brand / Business',
-                        description: 'Grow your brand, reach new audiences, and analyze',
-                        isSelected: auth.selectedRole == UserRole.brand,
-                        onTap: () => ref.read(authProvider.notifier).selectRole(UserRole.brand),
-                      ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                // CTA
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  opacity: auth.selectedRole != null ? 1.0 : 0.4,
-                  child: LyketButton(
-                    label: 'Continue',
-                    onPressed: auth.selectedRole != null
-                        ? () {
-                            final path = auth.selectedRole == UserRole.user
-                                ? '/signup/user'
-                                : '/signup/brand';
-                            context.push(path);
-                          }
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                // Login link
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text('Already have an account? ', style: AppTypography.bodyMedium),
-                    GestureDetector(
-                      onTap: () => context.push('/login'),
-                      child: Text('Log In', style: AppTypography.labelLarge.copyWith(color: context.colors.primaryAccent)),
-                    ),
-                  ],
-                ),
-                SizedBox(height: bottomPad + AppSpacing.lg),
-                        ],  // Column children
-                      ),   // Column
-                    ),     // IntrinsicHeight
-                  ),       // ConstrainedBox
-                );         // SingleChildScrollView
-              },           // LayoutBuilder builder
-            ),             // LayoutBuilder
-          ),               // Padding
-        ),                 // SafeArea
-      ),                   // AnimatedGradientBg
-    );                     // Scaffold
+                          const SizedBox(height: AppSpacing.xxxl),
+                          // Heading
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: 1),
+                            duration: const Duration(milliseconds: 800),
+                            curve: Curves.easeOut,
+                            builder: (_, v, child) => Opacity(
+                              opacity: v,
+                              child: Transform.translate(
+                                offset: Offset(0, 20 * (1 - v)),
+                                child: child,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                Text(
+                                  'Discover.',
+                                  style: AppTypography.displayLarge.copyWith(
+                                    color: context.colors.textPrimary,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                Text(
+                                  'Connect.',
+                                  style: AppTypography.displayLarge.copyWith(
+                                    color: context.colors.primaryAccent,
+                                    height: 1.1,
+                                  ),
+                                ),
+                                Text(
+                                  'Grow.',
+                                  style: AppTypography.displayLarge.copyWith(
+                                    color: context.colors.textPrimary,
+                                    height: 1.1,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: 1),
+                            duration: const Duration(milliseconds: 800),
+                            curve: Curves.easeOut,
+                            builder: (_, v, child) => Opacity(opacity: v, child: child),
+                            child: Text(
+                              'Choose how you want to experience Lyket',
+                              style: AppTypography.bodyMedium,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xxl),
+                          // Role cards
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0, end: 1),
+                            duration: const Duration(milliseconds: 900),
+                            curve: Curves.easeOut,
+                            builder: (_, v, child) => Opacity(
+                              opacity: v,
+                              child: Transform.translate(
+                                offset: Offset(0, 30 * (1 - v)),
+                                child: child,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                RoleCard(
+                                  icon: Icons.person_rounded,
+                                  title: 'Personal User',
+                                  description: 'Discover brands, explore content, and connect',
+                                  isSelected: auth.selectedRole == UserRole.user,
+                                  onTap: () =>
+                                      ref.read(authProvider.notifier).selectRole(UserRole.user),
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                RoleCard(
+                                  icon: Icons.business_rounded,
+                                  title: 'Brand / Business',
+                                  description: 'Grow your brand, reach new audiences, and analyze',
+                                  isSelected: auth.selectedRole == UserRole.brand,
+                                  onTap: () =>
+                                      ref.read(authProvider.notifier).selectRole(UserRole.brand),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const Spacer(),
+                          // CTA
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 300),
+                            opacity: auth.selectedRole != null ? 1.0 : 0.4,
+                            child: LyketButton(
+                              label: 'Continue',
+                              onPressed: auth.selectedRole != null
+                                  ? () {
+                                      final path = auth.selectedRole == UserRole.user
+                                          ? '/signup/user'
+                                          : '/signup/brand';
+                                      context.push(path);
+                                    }
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                          // Login link
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Already have an account? ', style: AppTypography.bodyMedium),
+                              GestureDetector(
+                                onTap: () => context.push('/login'),
+                                child: Text(
+                                  'Log In',
+                                  style: AppTypography.labelLarge.copyWith(
+                                    color: context.colors.primaryAccent,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: bottomPad + AppSpacing.lg),
+                        ], // Column children
+                      ), // Column
+                    ), // IntrinsicHeight
+                  ), // ConstrainedBox
+                ); // SingleChildScrollView
+              }, // LayoutBuilder builder
+            ), // LayoutBuilder
+          ), // Padding
+        ), // SafeArea
+      ), // AnimatedGradientBg
+    ); // Scaffold
   }
 }

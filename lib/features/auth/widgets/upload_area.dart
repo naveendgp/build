@@ -44,7 +44,9 @@ class UploadArea extends StatelessWidget {
           borderRadius: isCircle ? null : AppSpacing.borderRadiusLg,
           shape: isCircle ? BoxShape.circle : BoxShape.rectangle,
           border: Border.all(
-            color: hasImage ? context.colors.primaryAccent.withValues(alpha: 0.3) : context.colors.border,
+            color: hasImage
+                ? context.colors.primaryAccent.withValues(alpha: 0.3)
+                : context.colors.border,
             width: 1.5,
           ),
         ),
@@ -58,11 +60,13 @@ class UploadArea extends StatelessWidget {
                   ),
                   if (onRemove != null)
                     Positioned(
-                      top: 8, right: 8,
+                      top: 8,
+                      right: 8,
                       child: GestureDetector(
                         onTap: onRemove,
                         child: Container(
-                          width: 28, height: 28,
+                          width: 28,
+                          height: 28,
                           decoration: BoxDecoration(
                             color: context.colors.background.withValues(alpha: 0.8),
                             shape: BoxShape.circle,
@@ -77,12 +81,17 @@ class UploadArea extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: 44, height: 44,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: context.colors.card,
                       borderRadius: AppSpacing.borderRadiusMd,
                     ),
-                    child: Icon(Icons.cloud_upload_outlined, size: 22, color: context.colors.textTertiary),
+                    child: Icon(
+                      Icons.cloud_upload_outlined,
+                      size: 22,
+                      color: context.colors.textTertiary,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(label, style: AppTypography.labelMedium),

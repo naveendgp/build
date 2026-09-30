@@ -14,6 +14,7 @@ import 'widgets/cta_step.dart';
 import 'widgets/lead_form/lead_form_builder.dart';
 import 'widgets/schedule_step.dart';
 import 'widgets/review_step.dart';
+import '../../core/utils/app_messenger.dart';
 
 class CreatePostScreen extends ConsumerStatefulWidget {
   const CreatePostScreen({super.key});
@@ -186,7 +187,20 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
                     notifier.removeMedia(state.media[index].id);
                   }
                 },
-                onAddMore: () => notifier.pickImages(),
+                onAddMore: () async {
+                  // Says why nothing happened, rather than ignoring the tap.
+                  if (state.media.length >= CreatePostNotifier.maxCarouselImages) {
+                    AppMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'A carousel holds ${CreatePostNotifier.maxCarouselImages} pictures.',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+                  await notifier.pickImages();
+                },
               ),
             );
           case CreateStep.details:

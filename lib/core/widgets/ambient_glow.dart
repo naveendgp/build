@@ -21,21 +21,18 @@ class AmbientGlow extends StatefulWidget {
   State<AmbientGlow> createState() => _AmbientGlowState();
 }
 
-class _AmbientGlowState extends State<AmbientGlow>
-    with SingleTickerProviderStateMixin {
+class _AmbientGlowState extends State<AmbientGlow> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
-    _pulseAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
+    _pulseAnimation = Tween<double>(
+      begin: 0.7,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     if (widget.animate) {
       _controller.repeat(reverse: true);
     } else {

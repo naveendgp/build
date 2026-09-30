@@ -1,10 +1,4 @@
-enum NotificationType {
-  reminder,
-  brand,
-  social,
-  message,
-  system
-}
+enum NotificationType { reminder, brand, social, message, system }
 
 class AppNotification {
   final String id;
@@ -14,7 +8,7 @@ class AppNotification {
   final DateTime createdAt;
   final bool isRead;
   final bool isPriority;
-  
+
   // Polymorphic payload fields
   final String? avatarUrl;
   final String? referenceId; // e.g. postId, messageId, or userId
@@ -91,9 +85,7 @@ class AppNotification {
       referenceId: json['referenceId']?.toString(),
       entityType: json['entityType']?.toString(),
       ctaText: json['ctaText']?.toString(),
-      expiresAt: json['expiresAt'] != null
-          ? DateTime.tryParse(json['expiresAt'].toString())
-          : null,
+      expiresAt: json['expiresAt'] != null ? DateTime.tryParse(json['expiresAt'].toString()) : null,
     );
   }
 }

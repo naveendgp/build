@@ -29,10 +29,7 @@ class LyketChip extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm + 2,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm + 2),
         decoration: BoxDecoration(
           color: isSelected
               ? context.colors.primaryAccent.withValues(alpha: 0.15)
@@ -65,11 +62,7 @@ class LyketChip extends StatelessWidget {
             ),
             if (isSelected) ...[
               const SizedBox(width: AppSpacing.xs + 2),
-              Icon(
-                Icons.check_rounded,
-                size: 14,
-                color: context.colors.primaryAccent,
-              ),
+              Icon(Icons.check_rounded, size: 14, color: context.colors.primaryAccent),
             ],
           ],
         ),

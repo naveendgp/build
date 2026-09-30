@@ -49,11 +49,8 @@ class _CommentCardState extends State<CommentCard> {
   Widget build(BuildContext context) {
     final comment = widget.comment;
     final avatarSize = widget.isReply ? 32.0 : 38.0;
-    final hasProfilePic =
-        comment.profilePic != null && comment.profilePic!.isNotEmpty;
-    final initial = comment.username.isNotEmpty
-        ? comment.username[0].toUpperCase()
-        : '?';
+    final hasProfilePic = comment.profilePic != null && comment.profilePic!.isNotEmpty;
+    final initial = comment.username.isNotEmpty ? comment.username[0].toUpperCase() : '?';
 
     Widget card = Padding(
       padding: EdgeInsets.only(
@@ -92,8 +89,7 @@ class _CommentCardState extends State<CommentCard> {
                 _buildActionRow(comment),
 
                 // Reply thread
-                if (!widget.isReply && comment.replies.isNotEmpty)
-                  _buildReplyThread(comment),
+                if (!widget.isReply && comment.replies.isNotEmpty) _buildReplyThread(comment),
               ],
             ),
           ),
@@ -107,10 +103,7 @@ class _CommentCardState extends State<CommentCard> {
         decoration: BoxDecoration(
           color: context.colors.primaryAccent.withValues(alpha: 0.03),
           border: Border(
-            left: BorderSide(
-              color: context.colors.primaryAccent.withValues(alpha: 0.4),
-              width: 2,
-            ),
+            left: BorderSide(color: context.colors.primaryAccent.withValues(alpha: 0.4), width: 2),
           ),
           borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
         ),
@@ -123,9 +116,7 @@ class _CommentCardState extends State<CommentCard> {
     }
 
     return Padding(
-      padding: EdgeInsets.symmetric(
-        vertical: widget.isReply ? 0 : AppSpacing.sm,
-      ),
+      padding: EdgeInsets.symmetric(vertical: widget.isReply ? 0 : AppSpacing.sm),
       child: card,
     );
   }
@@ -183,17 +174,10 @@ class _CommentCardState extends State<CommentCard> {
         // Verified badge for brand
         if (comment.isBrandReply) ...[
           const SizedBox(width: AppSpacing.xxs + 2),
-          Icon(
-            Icons.verified_rounded,
-            size: 14,
-            color: Colors.red,
-          ),
+          Icon(Icons.verified_rounded, size: 14, color: Colors.red),
           const SizedBox(width: AppSpacing.xs),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xs + 2,
-              vertical: 1,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs + 2, vertical: 1),
             decoration: BoxDecoration(
               color: context.colors.primaryAccent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -272,7 +256,6 @@ class _CommentCardState extends State<CommentCard> {
             ),
           ),
         ],
-
       ],
     );
   }
@@ -341,9 +324,7 @@ class _CommentCardState extends State<CommentCard> {
                 )
                 .toList(),
           ),
-          crossFadeState: _showReplies
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
+          crossFadeState: _showReplies ? CrossFadeState.showSecond : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 250),
           sizeCurve: Curves.easeInOut,
         ),

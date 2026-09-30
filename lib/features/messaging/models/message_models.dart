@@ -112,6 +112,11 @@ class Message {
 
 class Conversation {
   final String id;
+
+  /// A thread with support rather than with a brand or a person. These belong
+  /// in Help & Support, not in the inbox.
+  final bool isSupportChat;
+
   final ChatParticipant otherParticipant;
   final Message? lastMessage;
   final int unreadCount;
@@ -125,6 +130,7 @@ class Conversation {
     this.unreadCount = 0,
     required this.updatedAt,
     this.isRequest = false,
+    this.isSupportChat = false,
   });
 
   factory Conversation.fromJson(Map<String, dynamic> json, String currentUserId) {
@@ -189,6 +195,7 @@ class Conversation {
 
     return Conversation(
       id: (json['conversationId'] ?? json['id'])?.toString() ?? '',
+      isSupportChat: isSupportChat,
       otherParticipant: participantJson != null
           ? ChatParticipant.fromJson(participantJson)
           : (isSupportChat

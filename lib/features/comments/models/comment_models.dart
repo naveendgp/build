@@ -49,9 +49,7 @@ class Comment {
       content: json['content'] ?? '',
       createdAt: DateTime.tryParse(json['createdAt'] ?? '') ?? DateTime.now(),
       parentId: json['parentId'],
-      replies: repliesJson
-          .map((r) => Comment.fromJson(r as Map<String, dynamic>))
-          .toList(),
+      replies: repliesJson.map((r) => Comment.fromJson(r as Map<String, dynamic>)).toList(),
       // Backend doesn't have like count on comments yet — default to 0
       likeCount: json['likeCount'] ?? 0,
       isLiked: _parseBool(json['isLiked']),
@@ -67,11 +65,7 @@ class Comment {
     return false;
   }
 
-  Comment copyWith({
-    bool? isLiked,
-    int? likeCount,
-    List<Comment>? replies,
-  }) {
+  Comment copyWith({bool? isLiked, int? likeCount, List<Comment>? replies}) {
     return Comment(
       id: id,
       postId: postId,
@@ -89,8 +83,4 @@ class Comment {
   }
 }
 
-enum CommentFilter {
-  top,
-  newest,
-  brandReplies,
-}
+enum CommentFilter { top, newest, brandReplies }

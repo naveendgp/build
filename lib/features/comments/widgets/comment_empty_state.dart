@@ -22,16 +22,12 @@ class CommentEmptyState extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               'Start the conversation',
-              style: AppTypography.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             Text(
               'Be the first to share your thoughts',
-              style: AppTypography.bodySmall.copyWith(
-                color: context.colors.textTertiary,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
             ),
           ],
         ),

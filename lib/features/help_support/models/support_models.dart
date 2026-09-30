@@ -33,7 +33,9 @@ class SupportTicket {
       ticketType: json['ticketType']?.toString() ?? 'SUPPORT',
       attachments: (json['attachments'] as List?)?.map((e) => e.toString()).toList() ?? [],
       issueType: json['issueType']?.toString(),
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString()) : DateTime.now(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.parse(json['createdAt'].toString())
+          : DateTime.now(),
       conversation: json['conversation'] as Map<String, dynamic>?,
     );
   }
@@ -45,12 +47,7 @@ class FaqItem {
   final String answer;
   final String category;
 
-  FaqItem({
-    required this.id,
-    required this.question,
-    required this.answer,
-    required this.category,
-  });
+  FaqItem({required this.id, required this.question, required this.answer, required this.category});
 
   factory FaqItem.fromJson(Map<String, dynamic> json) {
     return FaqItem(

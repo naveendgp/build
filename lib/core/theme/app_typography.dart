@@ -19,7 +19,6 @@ class AppTypography {
     fontWeight: FontWeight.w700,
     letterSpacing: -1.0,
     height: 1.15,
-
   );
 
   static TextStyle displayMedium = GoogleFonts.inter(
@@ -27,7 +26,6 @@ class AppTypography {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     height: 1.2,
-
   );
 
   static TextStyle displaySmall = GoogleFonts.inter(
@@ -35,7 +33,6 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
     height: 1.25,
-
   );
 
   // ─── Headline ────────────────────────────────────────────
@@ -44,7 +41,6 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.3,
     height: 1.3,
-
   );
 
   static TextStyle headlineMedium = GoogleFonts.inter(
@@ -52,14 +48,12 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
     height: 1.3,
-
   );
 
   static TextStyle headlineSmall = GoogleFonts.inter(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     height: 1.35,
-
   );
 
   // ─── Title ───────────────────────────────────────────────
@@ -67,7 +61,6 @@ class AppTypography {
     fontSize: 22,
     fontWeight: FontWeight.w600,
     height: 1.35,
-
   );
 
   static TextStyle titleMedium = GoogleFonts.inter(
@@ -75,7 +68,6 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.1,
     height: 1.4,
-
   );
 
   static TextStyle titleSmall = GoogleFonts.inter(
@@ -83,7 +75,6 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.1,
     height: 1.4,
-
   );
 
   // ─── Body ────────────────────────────────────────────────
@@ -91,21 +82,18 @@ class AppTypography {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.5,
-
   );
 
   static TextStyle bodyMedium = GoogleFonts.inter(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
-
   );
 
   static TextStyle bodySmall = GoogleFonts.inter(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.5,
-
   );
 
   // ─── Label ───────────────────────────────────────────────
@@ -114,7 +102,6 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.1,
     height: 1.4,
-
   );
 
   static TextStyle labelMedium = GoogleFonts.inter(
@@ -122,7 +109,6 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.3,
     height: 1.4,
-
   );
 
   static TextStyle labelSmall = GoogleFonts.inter(
@@ -130,7 +116,6 @@ class AppTypography {
     fontWeight: FontWeight.w400,
     letterSpacing: 0.3,
     height: 1.4,
-
   );
 
   // ─── Button ──────────────────────────────────────────────
@@ -139,7 +124,6 @@ class AppTypography {
     fontWeight: FontWeight.w600,
     letterSpacing: 0.2,
     height: 1.0,
-
   );
 
   static TextStyle buttonSmall = GoogleFonts.inter(
@@ -147,6 +131,5 @@ class AppTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.2,
     height: 1.0,
-
   );
 }

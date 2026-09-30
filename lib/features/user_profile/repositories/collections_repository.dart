@@ -23,10 +23,7 @@ class CollectionsRepository {
 
   Future<CollectionItem> createCollection(String name) async {
     try {
-      final response = await _apiClient.dio.post(
-        '/collections',
-        data: {'name': name},
-      );
+      final response = await _apiClient.dio.post('/collections', data: {'name': name});
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return CollectionItem.fromJson(response.data);
@@ -49,6 +46,7 @@ class CollectionsRepository {
       throw Exception('Network error: $e');
     }
   }
+
   Future<void> addPostToCollection(String collectionId, String postId) async {
     try {
       final response = await _apiClient.dio.post('/collections/$collectionId/posts/$postId');

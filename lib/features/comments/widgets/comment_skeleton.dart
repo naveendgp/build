@@ -9,17 +9,14 @@ class CommentSkeleton extends StatefulWidget {
   State<CommentSkeleton> createState() => _CommentSkeletonState();
 }
 
-class _CommentSkeletonState extends State<CommentSkeleton>
-    with SingleTickerProviderStateMixin {
+class _CommentSkeletonState extends State<CommentSkeleton> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500))
+      ..repeat();
   }
 
   @override
@@ -44,9 +41,7 @@ class _CommentSkeletonState extends State<CommentSkeleton>
             child: Column(
               children: List.generate(4, (index) {
                 return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: index < 3 ? AppSpacing.lg : 0,
-                  ),
+                  padding: EdgeInsets.only(bottom: index < 3 ? AppSpacing.lg : 0),
                   child: _SkeletonCard(translateX: translateX),
                 );
               }),

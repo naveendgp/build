@@ -9,11 +9,7 @@ class CollectionCard extends StatefulWidget {
   final CollectionItem item;
   final VoidCallback? onTap;
 
-  const CollectionCard({
-    super.key,
-    required this.item,
-    this.onTap,
-  });
+  const CollectionCard({super.key, required this.item, this.onTap});
 
   @override
   State<CollectionCard> createState() => _CollectionCardState();
@@ -27,13 +23,11 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 150),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _controller = AnimationController(vsync: this, duration: Duration(milliseconds: 150));
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -69,10 +63,7 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
         onTapCancel: _handleTapCancel,
         child: AnimatedBuilder(
           animation: _scaleAnimation,
-          builder: (context, child) => Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          ),
+          builder: (context, child) => Transform.scale(scale: _scaleAnimation.value, child: child),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -91,7 +82,7 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
                             color: Colors.black.withValues(alpha: 0.4),
                             blurRadius: 12,
                             offset: Offset(0, 4),
-                          )
+                          ),
                         ]
                       : [],
                 ),
@@ -134,9 +125,7 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
               SizedBox(height: 2),
               Text(
                 '${widget.item.postCount} items • ${widget.item.lastUpdated}',
-                style: AppTypography.labelMedium.copyWith(
-                  color: context.colors.textSecondary,
-                ),
+                style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -173,10 +162,7 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
     // 3 or more images: 1 large left, 2 stacked right
     return Row(
       children: [
-        Expanded(
-          flex: 2,
-          child: _buildNetworkImage(images[0]),
-        ),
+        Expanded(flex: 2, child: _buildNetworkImage(images[0])),
         SizedBox(width: 2),
         Expanded(
           flex: 1,
@@ -200,9 +186,7 @@ class _CollectionCardState extends State<CollectionCard> with SingleTickerProvid
       height: double.infinity,
       errorBuilder: (context, error, stackTrace) => Container(
         color: context.colors.borderLight.withValues(alpha: 0.3),
-        child: Center(
-          child: Icon(Icons.broken_image_rounded, color: context.colors.textTertiary),
-        ),
+        child: Center(child: Icon(Icons.broken_image_rounded, color: context.colors.textTertiary)),
       ),
     );
   }

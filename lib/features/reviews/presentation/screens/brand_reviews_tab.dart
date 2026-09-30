@@ -13,11 +13,7 @@ class BrandReviewsTab extends ConsumerWidget {
   final String brandId;
   final bool isOwner;
 
-  const BrandReviewsTab({
-    super.key,
-    required this.brandId,
-    this.isOwner = false,
-  });
+  const BrandReviewsTab({super.key, required this.brandId, this.isOwner = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,7 +78,11 @@ class BrandReviewsTab extends ConsumerWidget {
                 child: Center(
                   child: Column(
                     children: [
-                      Icon(Icons.rate_review_outlined, size: 64, color: context.colors.textSecondary.withValues(alpha: 0.5)),
+                      Icon(
+                        Icons.rate_review_outlined,
+                        size: 64,
+                        color: context.colors.textSecondary.withValues(alpha: 0.5),
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'No reviews yet.',
@@ -91,7 +91,9 @@ class BrandReviewsTab extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         'Be the first to share your experience.',
-                        style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: context.colors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -101,9 +103,7 @@ class BrandReviewsTab extends ConsumerWidget {
 
             return Column(
               children: reviews.map((review) {
-                return ReviewCard(
-                  review: review,
-                );
+                return ReviewCard(review: review);
               }).toList(),
             );
           },
@@ -112,10 +112,14 @@ class BrandReviewsTab extends ConsumerWidget {
             child: Center(child: CircularProgressIndicator.adaptive()),
           ),
           error: (error, _) => Center(
-            child: Text('Failed to load reviews\n$error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.redAccent)),
+            child: Text(
+              'Failed to load reviews\n$error',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.redAccent),
+            ),
           ),
         ),
-        
+
         const SizedBox(height: 100),
       ],
     );

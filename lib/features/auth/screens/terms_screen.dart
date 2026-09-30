@@ -13,9 +13,7 @@ class TermsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sections = type == TermsType.brand ? _brandSections : _userSections;
-    final title = type == TermsType.brand
-        ? 'Brand Terms & Conditions'
-        : 'User Terms & Conditions';
+    final title = type == TermsType.brand ? 'Brand Terms & Conditions' : 'User Terms & Conditions';
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -24,14 +22,16 @@ class TermsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded,
-              color: context.colors.textPrimary, size: 20),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: context.colors.textPrimary, size: 20),
           onPressed: () => context.pop(),
         ),
-        title: Text(title,
-            style: AppTypography.titleMedium.copyWith(
-                color: context.colors.textPrimary,
-                fontWeight: FontWeight.bold)),
+        title: Text(
+          title,
+          style: AppTypography.titleMedium.copyWith(
+            color: context.colors.textPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: CustomScrollView(
         slivers: [
@@ -43,20 +43,19 @@ class TermsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: context.colors.primaryAccent.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color:
-                          context.colors.primaryAccent.withValues(alpha: 0.2)),
+                  border: Border.all(color: context.colors.primaryAccent.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline_rounded,
-                        color: context.colors.primaryAccent, size: 18),
+                    Icon(Icons.info_outline_rounded, color: context.colors.primaryAccent, size: 18),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         'Please read these terms carefully before creating your account.',
                         style: AppTypography.bodySmall.copyWith(
-                            color: context.colors.primaryAccent, height: 1.4),
+                          color: context.colors.primaryAccent,
+                          height: 1.4,
+                        ),
                       ),
                     ),
                   ],
@@ -67,16 +66,12 @@ class TermsScreen extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  if (i < sections.length) {
-                    return _SectionCard(
-                        section: sections[i], index: i + 1);
-                  }
-                  return _AcknowledgementCard(type: type);
-                },
-                childCount: sections.length + 1,
-              ),
+              delegate: SliverChildBuilderDelegate((context, i) {
+                if (i < sections.length) {
+                  return _SectionCard(section: sections[i], index: i + 1);
+                }
+                return _AcknowledgementCard(type: type);
+              }, childCount: sections.length + 1),
             ),
           ),
         ],
@@ -110,24 +105,23 @@ class _SectionCardState extends State<_SectionCard> {
           child: Column(
             children: [
               Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 child: Row(
                   children: [
                     Container(
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: context.colors.primaryAccent
-                            .withValues(alpha: 0.12),
+                        color: context.colors.primaryAccent.withValues(alpha: 0.12),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
                         child: Text(
                           '${widget.index}',
                           style: AppTypography.labelSmall.copyWith(
-                              color: context.colors.primaryAccent,
-                              fontWeight: FontWeight.bold),
+                            color: context.colors.primaryAccent,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -136,8 +130,9 @@ class _SectionCardState extends State<_SectionCard> {
                       child: Text(
                         widget.section.title,
                         style: AppTypography.bodyMedium.copyWith(
-                            color: context.colors.textPrimary,
-                            fontWeight: FontWeight.w600),
+                          color: context.colors.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                     Icon(
@@ -153,28 +148,23 @@ class _SectionCardState extends State<_SectionCard> {
               if (_expanded)
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Divider(
-                          color: context.colors.borderLight
-                              .withValues(alpha: 0.3),
-                          height: 1),
+                      Divider(color: context.colors.borderLight.withValues(alpha: 0.3), height: 1),
                       const SizedBox(height: 12),
                       if (widget.section.body != null)
                         Text(
                           widget.section.body!,
                           style: AppTypography.bodySmall.copyWith(
-                              color: context.colors.textSecondary,
-                              height: 1.6),
+                            color: context.colors.textSecondary,
+                            height: 1.6,
+                          ),
                         ),
                       if (widget.section.bullets != null) ...[
-                        if (widget.section.body != null)
-                          const SizedBox(height: 8),
-                        ...widget.section.bullets!
-                            .map((b) => _BulletItem(text: b)),
+                        if (widget.section.body != null) const SizedBox(height: 8),
+                        ...widget.section.bullets!.map((b) => _BulletItem(text: b)),
                       ],
                     ],
                   ),
@@ -204,14 +194,20 @@ class _BulletItem extends StatelessWidget {
               width: 5,
               height: 5,
               decoration: BoxDecoration(
-                  color: context.colors.primaryAccent, shape: BoxShape.circle),
+                color: context.colors.primaryAccent,
+                shape: BoxShape.circle,
+              ),
             ),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(text,
-                style: AppTypography.bodySmall.copyWith(
-                    color: context.colors.textSecondary, height: 1.5)),
+            child: Text(
+              text,
+              style: AppTypography.bodySmall.copyWith(
+                color: context.colors.textSecondary,
+                height: 1.5,
+              ),
+            ),
           ),
         ],
       ),
@@ -234,29 +230,32 @@ class _AcknowledgementCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.surfaceSecondary,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-            color: context.colors.primaryAccent.withValues(alpha: 0.25)),
+        border: Border.all(color: context.colors.primaryAccent.withValues(alpha: 0.25)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.verified_outlined,
-                  color: context.colors.primaryAccent, size: 18),
+              Icon(Icons.verified_outlined, color: context.colors.primaryAccent, size: 18),
               const SizedBox(width: 8),
               Text(
                 'Acceptance',
                 style: AppTypography.labelLarge.copyWith(
-                    color: context.colors.primaryAccent,
-                    fontWeight: FontWeight.bold),
+                  color: context.colors.primaryAccent,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 10),
-          Text(text,
-              style: AppTypography.bodySmall.copyWith(
-                  color: context.colors.textSecondary, height: 1.6)),
+          Text(
+            text,
+            style: AppTypography.bodySmall.copyWith(
+              color: context.colors.textSecondary,
+              height: 1.6,
+            ),
+          ),
         ],
       ),
     );
@@ -288,7 +287,8 @@ const _brandSections = [
   ),
   _TermsSection(
     title: 'Advertising Standards',
-    body: 'All advertisements and promotional content must be lawful, truthful, and not misleading. You must not:',
+    body:
+        'All advertisements and promotional content must be lawful, truthful, and not misleading. You must not:',
     bullets: [
       'Make false or exaggerated claims.',
       'Advertise fake discounts or misleading offers.',
@@ -409,7 +409,8 @@ const _userSections = [
   ),
   _TermsSection(
     title: 'User Account',
-    body: 'You are responsible for maintaining the security of your account and login credentials. You must not:',
+    body:
+        'You are responsible for maintaining the security of your account and login credentials. You must not:',
     bullets: [
       'Share your account with others.',
       'Create multiple accounts to bypass Platform restrictions.',
@@ -445,7 +446,8 @@ const _userSections = [
   ),
   _TermsSection(
     title: 'Messaging',
-    body: 'If you contact a Brand through the Platform, you agree to communicate respectfully and lawfully. You must not:',
+    body:
+        'If you contact a Brand through the Platform, you agree to communicate respectfully and lawfully. You must not:',
     bullets: [
       'Send spam or unsolicited messages.',
       'Harass, threaten, or abuse other users or Brands.',

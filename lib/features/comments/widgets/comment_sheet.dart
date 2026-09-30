@@ -17,11 +17,7 @@ class CommentSheet extends ConsumerStatefulWidget {
   final String postId;
   final int commentCount;
 
-  const CommentSheet({
-    super.key,
-    required this.postId,
-    required this.commentCount,
-  });
+  const CommentSheet({super.key, required this.postId, required this.commentCount});
 
   /// Shows the comment sheet as a modal bottom sheet.
   static void show(BuildContext context, String postId, int commentCount) {
@@ -41,22 +37,15 @@ class CommentSheet extends ConsumerStatefulWidget {
   ConsumerState<CommentSheet> createState() => _CommentSheetState();
 }
 
-class _CommentSheetState extends ConsumerState<CommentSheet>
-    with SingleTickerProviderStateMixin {
+class _CommentSheetState extends ConsumerState<CommentSheet> with SingleTickerProviderStateMixin {
   late AnimationController _entryController;
   late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _entryController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 400),
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _entryController,
-      curve: Curves.easeOutCubic,
-    );
+    _entryController = AnimationController(vsync: this, duration: Duration(milliseconds: 400));
+    _fadeAnimation = CurvedAnimation(parent: _entryController, curve: Curves.easeOutCubic);
     _entryController.forward();
   }
 
@@ -86,81 +75,70 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
           return Padding(
             padding: EdgeInsets.only(bottom: viewInsets),
             child: ClipRRect(
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(32),
-              ),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.colors.surface.withValues(alpha: 0.92),
-                  borderRadius: BorderRadius.vertical(
-                    top: Radius.circular(32),
-                  ),
-                  border: Border(
-                    top: BorderSide(
-                      color: context.colors.borderLight,
-                      width: 0.5,
-                    ),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 40,
-                      offset: Offset(0, -10),
-                    ),
-                  ],
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final minSafeHeight = 350.0;
-                    final effectiveHeight = constraints.maxHeight < minSafeHeight 
-                        ? minSafeHeight 
-                        : constraints.maxHeight;
-
-                    return SingleChildScrollView(
-                      physics: constraints.maxHeight < minSafeHeight 
-                          ? ClampingScrollPhysics() 
-                          : NeverScrollableScrollPhysics(),
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          minHeight: effectiveHeight,
-                          maxHeight: effectiveHeight,
-                        ),
-                        child: Column(
-                          children: [
-                            // Drag Handle
-                            _buildDragHandle(),
-
-                            // Header
-                            _buildHeader(context, state),
-
-                            // Divider
-                            Container(
-                              height: 0.5,
-                              margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                              color: context.colors.border,
-                            ),
-
-                            // Comment List
-                            Expanded(
-                              child: _buildCommentList(state, notifier, scrollController),
-                            ),
-
-                            // Composer
-                            CommentComposer(
-                              replyToName: state.replyToName,
-                              isSending: state.isSending,
-                              onCancelReply: () => notifier.clearReply(),
-                              onSend: (text) => notifier.addComment(text),
-                            ),
-                          ],
-                        ),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 40, sigmaY: 40),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.colors.surface.withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                    border: Border(top: BorderSide(color: context.colors.borderLight, width: 0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 40,
+                        offset: Offset(0, -10),
                       ),
-                    );
-                  },
+                    ],
+                  ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final minSafeHeight = 350.0;
+                      final effectiveHeight = constraints.maxHeight < minSafeHeight
+                          ? minSafeHeight
+                          : constraints.maxHeight;
+
+                      return SingleChildScrollView(
+                        physics: constraints.maxHeight < minSafeHeight
+                            ? ClampingScrollPhysics()
+                            : NeverScrollableScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: effectiveHeight,
+                            maxHeight: effectiveHeight,
+                          ),
+                          child: Column(
+                            children: [
+                              // Drag Handle
+                              _buildDragHandle(),
+
+                              // Header
+                              _buildHeader(context, state),
+
+                              // Divider
+                              Container(
+                                height: 0.5,
+                                margin: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                                color: context.colors.border,
+                              ),
+
+                              // Comment List
+                              Expanded(child: _buildCommentList(state, notifier, scrollController)),
+
+                              // Composer
+                              CommentComposer(
+                                replyToName: state.replyToName,
+                                isSending: state.isSending,
+                                onCancelReply: () => notifier.clearReply(),
+                                onSend: (text) => notifier.addComment(text),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
-              ),
               ),
             ),
           );
@@ -186,9 +164,7 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
   }
 
   Widget _buildHeader(BuildContext context, CommentsState state) {
-    final count = state.comments.isNotEmpty
-        ? state.comments.length
-        : widget.commentCount;
+    final count = state.comments.isNotEmpty ? state.comments.length : widget.commentCount;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 8, 20, 12),
@@ -228,15 +204,8 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
             child: Container(
               width: 32,
               height: 32,
-              decoration: BoxDecoration(
-                color: context.colors.card,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.close_rounded,
-                size: 18,
-                color: context.colors.textSecondary,
-              ),
+              decoration: BoxDecoration(color: context.colors.card, shape: BoxShape.circle),
+              child: Icon(Icons.close_rounded, size: 18, color: context.colors.textSecondary),
             ),
           ),
         ],
@@ -263,8 +232,7 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
-        if (notification is ScrollEndNotification &&
-            notification.metrics.extentAfter < 100) {
+        if (notification is ScrollEndNotification && notification.metrics.extentAfter < 100) {
           notifier.loadMore();
         }
         return false;
@@ -284,7 +252,8 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
                   height: 20,
                   child: CircularProgressIndicator.adaptive(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent)),
+                    valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+                  ),
                 ),
               ),
             );
@@ -320,16 +289,12 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
             SizedBox(height: 16),
             Text(
               'Couldn\'t load comments',
-              style: AppTypography.titleSmall.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: AppTypography.titleSmall.copyWith(fontWeight: FontWeight.w600),
             ),
             SizedBox(height: 8),
             Text(
               'Check your connection and try again',
-              style: AppTypography.bodySmall.copyWith(
-                color: context.colors.textTertiary,
-              ),
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textTertiary),
             ),
             SizedBox(height: 20),
             GestureDetector(
@@ -338,16 +303,11 @@ class _CommentSheetState extends ConsumerState<CommentSheet>
                 notifier.loadComments();
               },
               child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 10,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                 decoration: BoxDecoration(
                   color: context.colors.primaryAccent.withValues(alpha: 0.1),
                   borderRadius: AppSpacing.borderRadiusFull,
-                  border: Border.all(
-                    color: context.colors.primaryAccent.withValues(alpha: 0.3),
-                  ),
+                  border: Border.all(color: context.colors.primaryAccent.withValues(alpha: 0.3)),
                 ),
                 child: Text(
                   'Retry',

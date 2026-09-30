@@ -29,7 +29,7 @@ class UpcomingReminder {
       final mediaUrl = (mediaList != null && mediaList.isNotEmpty)
           ? mediaList[0]['url']
           : 'https://via.placeholder.com/150';
-          
+
       parsedPost = FeedPost(
         id: json['post']['id'],
         brandId: '',
@@ -60,17 +60,9 @@ class RemindersState {
   final List<UpcomingReminder> reminders;
   final String? error;
 
-  RemindersState({
-    this.isLoading = true,
-    this.reminders = const [],
-    this.error,
-  });
+  RemindersState({this.isLoading = true, this.reminders = const [], this.error});
 
-  RemindersState copyWith({
-    bool? isLoading,
-    List<UpcomingReminder>? reminders,
-    String? error,
-  }) {
+  RemindersState copyWith({bool? isLoading, List<UpcomingReminder>? reminders, String? error}) {
     return RemindersState(
       isLoading: isLoading ?? this.isLoading,
       reminders: reminders ?? this.reminders,
@@ -87,8 +79,8 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
   /// notifications bell). Pass '/reminders' via [allRemindersProvider] for
   /// the full history, matching what the web app shows.
   RemindersNotifier(this._apiClient, {String endpoint = '/reminders/upcoming'})
-      : _endpoint = endpoint,
-        super(RemindersState()) {
+    : _endpoint = endpoint,
+      super(RemindersState()) {
     loadReminders();
   }
 
@@ -116,21 +108,28 @@ class RemindersNotifier extends StateNotifier<RemindersState> {
         final reminders = data.map((json) => UpcomingReminder.fromJson(json)).toList();
         state = state.copyWith(isLoading: false, reminders: reminders);
       } else {
-        state = state.copyWith(isLoading: false, error: 'Failed to load reminders (status ${res.statusCode})');
+        state = state.copyWith(
+          isLoading: false,
+          error: 'Failed to load reminders (status ${res.statusCode})',
+        );
       }
     } on DioException catch (e) {
-      debugPrint('loadReminders($_endpoint) DioException: ${e.response?.statusCode} ${e.response?.data} | ${e.message}');
+      debugPrint(
+        'loadReminders($_endpoint) DioException: ${e.response?.statusCode} ${e.response?.data} | ${e.message}',
+      );
       final serverMsg = e.response?.data is Map ? e.response?.data['message'] : null;
       state = state.copyWith(
         isLoading: false,
-        error: serverMsg ?? 'Failed to load reminders (${e.response?.statusCode ?? e.type}): ${e.response?.data ?? e.message}',
+        error:
+            serverMsg ??
+            'Failed to load reminders (${e.response?.statusCode ?? e.type}): ${e.response?.data ?? e.message}',
       );
     } catch (e) {
       debugPrint('loadReminders($_endpoint) unexpected error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
-  
+
   void removeReminder(String id) {
     final updated = state.reminders.where((r) => r.id != id).toList();
     state = state.copyWith(reminders: updated);

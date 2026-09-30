@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http_parser/http_parser.dart' as http_parser;
@@ -26,13 +27,9 @@ class CreateTicketState {
   final TicketUploadState status;
   final String? errorMessage;
   final SupportTicket? result;
-  
-  const CreateTicketState({
-    this.status = TicketUploadState.idle,
-    this.errorMessage,
-    this.result,
-  });
-  
+
+  const CreateTicketState({this.status = TicketUploadState.idle, this.errorMessage, this.result});
+
   CreateTicketState copyWith({
     TicketUploadState? status,
     String? errorMessage,
@@ -40,15 +37,20 @@ class CreateTicketState {
   }) {
     return CreateTicketState(
       status: status ?? this.status,
-      errorMessage: errorMessage, // null by default unless explicitly given? Wait, if we use copyWith, we usually preserve.
+      errorMessage:
+          errorMessage, // null by default unless explicitly given? Wait, if we use copyWith, we usually preserve.
       result: result ?? this.result,
     );
   }
 }
 
-final createTicketProvider = StateNotifierProvider.autoDispose<CreateTicketNotifier, CreateTicketState>((ref) {
-  return CreateTicketNotifier(ref.watch(supportApiClientProvider), ref.watch(apiClientProvider));
-});
+final createTicketProvider =
+    StateNotifierProvider.autoDispose<CreateTicketNotifier, CreateTicketState>((ref) {
+      return CreateTicketNotifier(
+        ref.watch(supportApiClientProvider),
+        ref.watch(apiClientProvider),
+      );
+    });
 
 class CreateTicketNotifier extends StateNotifier<CreateTicketState> {
   final SupportApiClient _apiClient;
@@ -65,7 +67,6 @@ class CreateTicketNotifier extends StateNotifier<CreateTicketState> {
     state = state.copyWith(status: TicketUploadState.submitting, errorMessage: null);
 
     try {
-
       final ticket = await _apiClient.createTicket({
         'subject': subject,
         'message': message,
@@ -80,10 +81,7 @@ class CreateTicketNotifier extends StateNotifier<CreateTicketState> {
 
       state = state.copyWith(status: TicketUploadState.success, result: ticket);
     } catch (e) {
-      state = state.copyWith(
-        status: TicketUploadState.error,
-        errorMessage: e.toString(),
-      );
+      state = state.copyWith(status: TicketUploadState.error, errorMessage: e.toString());
     }
   }
 
@@ -108,7 +106,18 @@ final myChatsProvider = FutureProvider.autoDispose<List<SupportChat>>((ref) {
   return ref.watch(supportApiClientProvider).listChats();
 });
 
-enum LiveChatRequestStatus { idle, submitting, waiting, approved, rejected, error }
+enum LiveChatRequestStatus {
+  idle,
+  submitting,
+  waiting,
+  approved,
+  rejected,
+
+  /// Nobody picked the request up. The wait used to run forever, with the
+  /// spinner still turning after everyone had gone home.
+  timedOut,
+  error,
+}
 
 class LiveChatRequestState {
   final LiveChatRequestStatus status;
@@ -144,6 +153,11 @@ class LiveChatRequestNotifier extends StateNotifier<LiveChatRequestState> {
 
   LiveChatRequestNotifier(this._api, this._socket) : super(const LiveChatRequestState());
 
+  /// How long to wait for an agent before saying nobody came. Long enough
+  /// for a busy queue, short enough that the screen does not lie.
+  static const _waitLimit = Duration(minutes: 3);
+  Timer? _waitTimer;
+
   void Function(dynamic)? _onApproved;
   void Function(dynamic)? _onRejected;
   void Function(dynamic)? _onPosition;
@@ -154,13 +168,32 @@ class LiveChatRequestNotifier extends StateNotifier<LiveChatRequestState> {
       final request = await _api.createSupportRequest(category: category, description: description);
       state = state.copyWith(status: LiveChatRequestStatus.waiting, request: request);
       _listenForUpdates(request.id);
+      _startWaitTimer();
     } on DioException catch (e) {
       final data = e.response?.data;
       final msg = data is Map ? data['message']?.toString() : null;
-      state = state.copyWith(status: LiveChatRequestStatus.error, errorMessage: msg ?? 'Failed to start live chat');
+      state = state.copyWith(
+        status: LiveChatRequestStatus.error,
+        errorMessage: msg ?? 'Failed to start live chat',
+      );
     } catch (e) {
-      state = state.copyWith(status: LiveChatRequestStatus.error, errorMessage: 'Failed to start live chat');
+      state = state.copyWith(
+        status: LiveChatRequestStatus.error,
+        errorMessage: 'Failed to start live chat',
+      );
     }
+  }
+
+  void _startWaitTimer() {
+    _waitTimer?.cancel();
+    _waitTimer = Timer(_waitLimit, () {
+      if (!mounted || state.status != LiveChatRequestStatus.waiting) return;
+      _removeListeners();
+      state = state.copyWith(
+        status: LiveChatRequestStatus.timedOut,
+        errorMessage: 'No agent picked this up. Try again, or raise a ticket instead.',
+      );
+    });
   }
 
   void _listenForUpdates(String requestId) {
@@ -171,6 +204,7 @@ class LiveChatRequestNotifier extends StateNotifier<LiveChatRequestState> {
       final req = data['request'];
       if (req is! Map || req['id']?.toString() != requestId) return;
       final chat = data['chat'];
+      _waitTimer?.cancel();
       state = state.copyWith(
         status: LiveChatRequestStatus.approved,
         chatId: chat is Map ? chat['id']?.toString() : null,
@@ -224,14 +258,19 @@ class LiveChatRequestNotifier extends StateNotifier<LiveChatRequestState> {
 
   @override
   void dispose() {
+    _waitTimer?.cancel();
     _removeListeners();
     super.dispose();
   }
 }
 
-final liveChatRequestProvider = StateNotifierProvider.autoDispose<LiveChatRequestNotifier, LiveChatRequestState>((ref) {
-  return LiveChatRequestNotifier(ref.watch(supportApiClientProvider), ref.watch(socketClientProvider));
-});
+final liveChatRequestProvider =
+    StateNotifierProvider.autoDispose<LiveChatRequestNotifier, LiveChatRequestState>((ref) {
+      return LiveChatRequestNotifier(
+        ref.watch(supportApiClientProvider),
+        ref.watch(socketClientProvider),
+      );
+    });
 
 // ─── Chat detail (message thread) ──────────────────────────────────
 
@@ -241,19 +280,9 @@ class ChatDetailState {
   final String? error;
   final bool isSending;
 
-  const ChatDetailState({
-    this.isLoading = true,
-    this.chat,
-    this.error,
-    this.isSending = false,
-  });
+  const ChatDetailState({this.isLoading = true, this.chat, this.error, this.isSending = false});
 
-  ChatDetailState copyWith({
-    bool? isLoading,
-    SupportChat? chat,
-    String? error,
-    bool? isSending,
-  }) {
+  ChatDetailState copyWith({bool? isLoading, SupportChat? chat, String? error, bool? isSending}) {
     return ChatDetailState(
       isLoading: isLoading ?? this.isLoading,
       chat: chat ?? this.chat,
@@ -336,6 +365,11 @@ class ChatDetailNotifier extends StateNotifier<ChatDetailState> {
   }
 }
 
-final chatDetailProvider = StateNotifierProvider.autoDispose.family<ChatDetailNotifier, ChatDetailState, String>((ref, chatId) {
-  return ChatDetailNotifier(ref.watch(supportApiClientProvider), ref.watch(socketClientProvider), chatId);
-});
+final chatDetailProvider = StateNotifierProvider.autoDispose
+    .family<ChatDetailNotifier, ChatDetailState, String>((ref, chatId) {
+      return ChatDetailNotifier(
+        ref.watch(supportApiClientProvider),
+        ref.watch(socketClientProvider),
+        chatId,
+      );
+    });

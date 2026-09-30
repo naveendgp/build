@@ -81,7 +81,9 @@ class KpiCardsSection extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1B1D22),
+                  // Was a dark-theme colour whatever the theme, so the icon
+                  // sat on a black tile in light mode.
+                  color: context.colors.surfaceSecondary,
                   shape: BoxShape.circle,
                   border: Border.all(color: context.colors.borderLight.withValues(alpha: 0.1)),
                 ),
@@ -129,7 +131,7 @@ class KpiCardsSection extends StatelessWidget {
           Text(
             title,
             style: AppTypography.labelMedium.copyWith(
-              color: const Color(0xFFA1A1AA),
+              color: context.colors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),

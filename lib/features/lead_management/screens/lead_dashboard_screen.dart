@@ -12,7 +12,6 @@ import '../widgets/kpi_cards.dart';
 
 import 'tabs/forms_tab.dart';
 import 'tabs/leads_tab.dart';
-import 'tabs/analytics_tab.dart';
 import 'tabs/exports_tab.dart';
 
 class LeadDashboardScreen extends ConsumerWidget {
@@ -111,8 +110,6 @@ class LeadDashboardScreen extends ConsumerWidget {
         return const FormsTab();
       case LeadDashboardTab.leads:
         return const LeadsTab();
-      case LeadDashboardTab.analytics:
-        return const AnalyticsTab();
       case LeadDashboardTab.exports:
         return const ExportsTab();
     }
@@ -130,7 +127,6 @@ class _SegmentedNavigation extends StatelessWidget {
     final tabs = [
       {'enum': LeadDashboardTab.forms, 'label': 'Forms'},
       {'enum': LeadDashboardTab.leads, 'label': 'Leads'},
-      {'enum': LeadDashboardTab.analytics, 'label': 'Analytics'},
       {'enum': LeadDashboardTab.exports, 'label': 'Exports'},
     ];
 
