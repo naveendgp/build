@@ -15,6 +15,7 @@ import '../../user_profile/providers/user_profile_provider.dart';
 import '../../sharing/services/share_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/app_messenger.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class ExplorePostDetailScreen extends ConsumerStatefulWidget {
   final FeedPost? post;
@@ -90,24 +91,27 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
       AppMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Saved to collections',
+            'Saved',
             style: TextStyle(color: context.colors.textPrimary, fontWeight: FontWeight.w600),
           ),
           backgroundColor: context.colors.surface,
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Save to collection',
-            textColor: context.colors.primaryAccent,
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: Colors.transparent,
-                isScrollControlled: true,
-                builder: (context) => SaveToCollectionSheet(post: _post!),
-              );
-            },
-          ),
+          // Personal accounts file posts into collections; brands just save.
+          action: ref.read(authProvider).loggedInRole == UserRole.brand
+              ? null
+              : SnackBarAction(
+                  label: 'Save to collection',
+                  textColor: context.colors.primaryAccent,
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      backgroundColor: Colors.transparent,
+                      isScrollControlled: true,
+                      builder: (context) => SaveToCollectionSheet(post: _post!),
+                    );
+                  },
+                ),
         ),
       );
     }

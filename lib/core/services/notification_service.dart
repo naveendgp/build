@@ -64,9 +64,23 @@ class NotificationService {
         importance: Importance.max,
       );
 
+      // Reminders are something the person asked for at a chosen time, so
+      // they get their own channel: distinct heading, and settable on its own
+      // in Android's notification settings.
+      const AndroidNotificationChannel reminderChannel = AndroidNotificationChannel(
+        'reminders_channel',
+        'Reminders',
+        description: 'Posts you asked to be reminded about.',
+        importance: Importance.max,
+      );
+
       await _localNotifications
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
           ?.createNotificationChannel(channel);
+
+      await _localNotifications
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(reminderChannel);
 
       await _localNotifications
           .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
@@ -158,24 +172,47 @@ class NotificationService {
     required int id,
     required String title,
     required String body,
+    bool isReminder = false,
   }) async {
     await _localNotifications.show(
       id: id,
       title: title,
       body: body,
-      notificationDetails: const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'high_importance_channel',
-          'High Importance Notifications',
-          channelDescription: 'This channel is used for important notifications.',
-          icon: '@mipmap/ic_launcher',
-          color: Color(0xFF7C5CFF),
-          importance: Importance.max,
-          priority: Priority.high,
-        ),
-      ),
+      notificationDetails: isReminder ? _reminderDetails(body) : _defaultDetails,
     );
   }
+
+  static const NotificationDetails _defaultDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'high_importance_channel',
+      'High Importance Notifications',
+      channelDescription: 'This channel is used for important notifications.',
+      icon: '@mipmap/ic_launcher',
+      color: Color(0xFF7C5CFF),
+      importance: Importance.max,
+      priority: Priority.high,
+    ),
+  );
+
+  /// A reminder reads as an alarm rather than as another message: the app's
+  /// red, the notification mark rather than the launcher icon, the whole text
+  /// shown without expanding, and Android's own reminder category so the
+  /// system treats it that way.
+  NotificationDetails _reminderDetails(String body) => NotificationDetails(
+    android: AndroidNotificationDetails(
+      'reminders_channel',
+      'Reminders',
+      channelDescription: 'Posts you asked to be reminded about.',
+      icon: '@drawable/ic_notification',
+      color: const Color(0xFFFF0000),
+      colorized: true,
+      importance: Importance.max,
+      priority: Priority.max,
+      category: AndroidNotificationCategory.reminder,
+      ticker: 'Reminder',
+      styleInformation: BigTextStyleInformation(body, contentTitle: 'Reminder'),
+    ),
+  );
 
   Future<void> _registerTokenWithBackend(String token) async {
     try {

@@ -22,6 +22,7 @@ class NotificationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isReminder = notification.type == NotificationType.reminder;
     return Dismissible(
       key: Key(notification.id),
       direction: DismissDirection.endToStart,
@@ -47,14 +48,26 @@ class NotificationCard extends StatelessWidget {
           margin: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: notification.isRead ? context.colors.surface : context.colors.card,
+            // A reminder is something the person asked for at a chosen time,
+            // so it reads apart from the rest: a red edge down its left side
+            // and a faint red ground, rather than another grey card.
+            color: isReminder
+                ? context.colors.primaryAccent.withValues(alpha: 0.06)
+                : (notification.isRead ? context.colors.surface : context.colors.card),
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(
-              color: notification.isPriority
-                  ? context.colors.primaryAccent.withValues(alpha: 0.3)
-                  : context.colors.border,
-              width: notification.isPriority ? 1 : 0.5,
-            ),
+            border: isReminder
+                ? Border(
+                    left: BorderSide(color: context.colors.primaryAccent, width: 3),
+                    top: BorderSide(color: context.colors.primaryAccent.withValues(alpha: 0.2)),
+                    right: BorderSide(color: context.colors.primaryAccent.withValues(alpha: 0.2)),
+                    bottom: BorderSide(color: context.colors.primaryAccent.withValues(alpha: 0.2)),
+                  )
+                : Border.all(
+                    color: notification.isPriority
+                        ? context.colors.primaryAccent.withValues(alpha: 0.3)
+                        : context.colors.border,
+                    width: notification.isPriority ? 1 : 0.5,
+                  ),
             boxShadow: notification.isRead
                 ? []
                 : [
@@ -74,6 +87,24 @@ class NotificationCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (isReminder) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.alarm_rounded, size: 12, color: context.colors.primaryAccent),
+                          const SizedBox(width: 4),
+                          Text(
+                            'REMINDER',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: context.colors.primaryAccent,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 9,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [

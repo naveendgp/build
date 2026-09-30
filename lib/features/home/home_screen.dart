@@ -78,6 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
           title: catchword,
           body: title,
+          isReminder: true,
         );
       });
 
@@ -363,18 +364,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     backgroundColor: context.colors.surface,
                     behavior: SnackBarBehavior.floating,
                     duration: const Duration(seconds: 4),
-                    action: SnackBarAction(
-                      label: 'Save to collection',
-                      textColor: context.colors.primaryAccent,
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          backgroundColor: Colors.transparent,
-                          isScrollControlled: true,
-                          builder: (context) => SaveToCollectionSheet(post: post),
-                        );
-                      },
-                    ),
+                    // Collections are a personal-account idea: a brand has
+                    // nowhere to file a post, so it is not asked.
+                    action: ref.read(authProvider).loggedInRole == UserRole.brand
+                        ? null
+                        : SnackBarAction(
+                            label: 'Save to collection',
+                            textColor: context.colors.primaryAccent,
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.transparent,
+                                isScrollControlled: true,
+                                builder: (context) => SaveToCollectionSheet(post: post),
+                              );
+                            },
+                          ),
                   ),
                 );
               }
