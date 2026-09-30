@@ -1,3 +1,5 @@
+import '../../../core/network/api_client.dart';
+
 enum MessageType { text, image, video, link, postShare, cta }
 
 bool _parseBool(dynamic val) {
@@ -29,12 +31,23 @@ class ChatParticipant {
     return ChatParticipant(
       id: json['id']?.toString() ?? '',
       name: (json['name'] ?? json['username'] ?? json['brandName'] ?? 'Unknown').toString(),
-      avatarUrl: json['avatarUrl'] ?? json['profilePic'] ?? json['logo'],
+      // Brands come back with logoUrl, people with profilePic, and the
+      // socket payload uses avatarUrl. A relative path needs resolving, and
+      // an empty string has to read as "no picture" so the default shows.
+      avatarUrl: _parseAvatar(json),
       isBrand: _parseBool(json['isBrand']),
       isOnline: _parseBool(json['isOnline']),
       category: json['category']?.toString(),
     );
   }
+}
+
+String? _parseAvatar(Map<String, dynamic> json) {
+  for (final key in ['avatarUrl', 'profilePic', 'profilePicture', 'logoUrl', 'logo', 'image']) {
+    final raw = json[key]?.toString().trim();
+    if (raw != null && raw.isNotEmpty) return ApiClient.resolveMediaUrl(raw);
+  }
+  return null;
 }
 
 class Message {

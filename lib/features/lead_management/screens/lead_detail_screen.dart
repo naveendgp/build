@@ -67,87 +67,83 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      data: AppTheme.darkTheme,
-      child: Scaffold(
-        backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.background,
-        appBar: AppBar(
-          backgroundColor: AppTheme.darkTheme.extension<AppThemeColors>()!.surface,
-          title: Text('Lead Details', style: AppTypography.titleMedium),
-          centerTitle: true,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-            onPressed: () => Navigator.pop(context),
-          ),
+    return Scaffold(
+      backgroundColor: context.colors.background,
+      appBar: AppBar(
+        backgroundColor: context.colors.surface,
+        title: Text('Lead Details', style: AppTypography.titleMedium),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Profile Info
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
-                    child: Text(
-                      widget.lead.username.isNotEmpty
-                          ? widget.lead.username.substring(0, 1).toUpperCase()
-                          : '?',
-                      style: AppTypography.headlineMedium.copyWith(
-                        color: context.colors.primaryAccent,
-                      ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header Profile Info
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
+                  child: Text(
+                    widget.lead.username.isNotEmpty
+                        ? widget.lead.username.substring(0, 1).toUpperCase()
+                        : '?',
+                    style: AppTypography.headlineMedium.copyWith(
+                      color: context.colors.primaryAccent,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          widget.lead.username,
-                          style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: AppSpacing.xxs),
-                        if (widget.lead.email != null)
-                          Text(
-                            widget.lead.email!,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: context.colors.textSecondary,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  _buildQualityScore(context, widget.lead.qualityScore),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Source Info
-              _buildSectionHeader(context, 'Acquisition Source'),
-              const SizedBox(height: AppSpacing.md),
-              _buildInfoCard(context, [_InfoRow('Date', _formatDate(widget.lead.createdAt))]),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Form Answers
-              _buildSectionHeader(context, 'Form Answers'),
-              const SizedBox(height: AppSpacing.md),
-              if (_isLoadingForm)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator.adaptive(),
-                  ),
-                )
-              else
-                _buildInfoCard(
-                  context,
-                  _mappedAnswers.entries.map((e) => _InfoRow(e.key, e.value)).toList(),
                 ),
-            ],
-          ),
+                const SizedBox(width: AppSpacing.md),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.lead.username,
+                        style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: AppSpacing.xxs),
+                      if (widget.lead.email != null)
+                        Text(
+                          widget.lead.email!,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Source Info
+            _buildSectionHeader(context, 'Acquisition Source'),
+            const SizedBox(height: AppSpacing.md),
+            _buildInfoCard(context, [_InfoRow('Date', _formatDate(widget.lead.createdAt))]),
+            const SizedBox(height: AppSpacing.xl),
+
+            // Form Answers
+            _buildSectionHeader(context, 'Form Answers'),
+            const SizedBox(height: AppSpacing.md),
+            if (_isLoadingForm)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(20),
+                  child: CircularProgressIndicator.adaptive(),
+                ),
+              )
+            else
+              _buildInfoCard(
+                context,
+                _mappedAnswers.entries.map((e) => _InfoRow(e.key, e.value)).toList(),
+              ),
+          ],
         ),
       ),
     );
@@ -199,33 +195,6 @@ class _LeadDetailScreenState extends ConsumerState<LeadDetailScreen> {
             ),
           );
         }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildQualityScore(BuildContext context, double score) {
-    Color color = context.colors.success;
-    if (score < 5) {
-      color = context.colors.error;
-    } else if (score < 8) {
-      color = context.colors.warning;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: AppSpacing.borderRadiusSm,
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Column(
-        children: [
-          Text(
-            score.toStringAsFixed(1),
-            style: AppTypography.headlineSmall.copyWith(color: color, fontWeight: FontWeight.bold),
-          ),
-          Text('Score', style: AppTypography.labelSmall.copyWith(color: color)),
-        ],
       ),
     );
   }

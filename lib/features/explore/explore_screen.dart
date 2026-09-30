@@ -161,7 +161,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> with SingleTicker
                 SliverToBoxAdapter(child: SizedBox(height: topPad + _currentHeaderHeight + 12)),
 
                 // Content
-                if (searchState.isActive || searchState.query.isNotEmpty)
+                // Only once a search has actually run: tapping the box used
+                // to answer "No results found" before anything was asked.
+                if (searchState.searchLoadState != SearchLoadState.idle)
                   _buildSearchResultsSliver()
                 else
                   _buildExploreContent(),
@@ -174,29 +176,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> with SingleTicker
 
           // ── Floating header ────────────────────────────────
           _buildFloatingHeader(topPad),
-
-          // ── Search suggestions overlay ─────────────────────
-          if (searchState.isActive && searchState.searchLoadState == SearchLoadState.idle)
-            Positioned(
-              top: topPad + _currentHeaderHeight - 4,
-              left: 16,
-              right: 16,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxHeight: _suggestionsMaxHeight(context, topPad)),
-                child: SearchSuggestions(
-                  suggestions: searchState.suggestions,
-                  recentSearches: searchState.recentSearches,
-                  onClear: () => ref.read(searchProvider.notifier).clearRecent(),
-                  onSelect: (term) {
-                    _searchCtrl.text = term;
-                    _searchFocus.unfocus();
-                    ref.read(searchProvider.notifier).updateQuery(term);
-                    ref.read(searchProvider.notifier).search();
-                  },
-                  onRemoveRecent: (term) => ref.read(searchProvider.notifier).removeRecent(term),
-                ),
-              ),
-            ),
 
           // ── Bottom Nav Dock ────────────────────────────────
           Positioned(

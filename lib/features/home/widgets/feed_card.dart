@@ -365,45 +365,45 @@ class FeedCard extends ConsumerWidget {
                     onShare();
                   },
                 ),
-                if (ref.read(authProvider).loggedInRole == UserRole.user)
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final isInterested = ref.watch(
-                        interestsProvider.select((s) => s.interestedIds.contains(post.id)),
-                      );
-                      return ListTile(
-                        leading: Icon(
-                          isInterested ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                // A brand tells the feed what it thinks of a post too.
+                Consumer(
+                  builder: (context, ref, _) {
+                    final isInterested = ref.watch(
+                      interestsProvider.select((s) => s.interestedIds.contains(post.id)),
+                    );
+                    return ListTile(
+                      leading: Icon(
+                        isInterested ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                        color: isInterested
+                            ? context.colors.primaryAccent
+                            : context.colors.textPrimary,
+                      ),
+                      title: Text(
+                        isInterested ? 'Remove from Interests' : 'Interested',
+                        style: AppTypography.bodyLarge.copyWith(
                           color: isInterested
                               ? context.colors.primaryAccent
                               : context.colors.textPrimary,
                         ),
-                        title: Text(
-                          isInterested ? 'Remove from Interests' : 'Interested',
-                          style: AppTypography.bodyLarge.copyWith(
-                            color: isInterested
-                                ? context.colors.primaryAccent
-                                : context.colors.textPrimary,
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          final notifier = ref.read(interestsProvider.notifier);
-                          if (isInterested) {
-                            notifier.removeInterest(post.id);
-                            AppMessenger.of(
-                              context,
-                            ).showSnackBar(const SnackBar(content: Text('Removed from interests')));
-                          } else {
-                            notifier.addInterest(post.id);
-                            AppMessenger.of(
-                              context,
-                            ).showSnackBar(const SnackBar(content: Text('Added to interests')));
-                          }
-                        },
-                      );
-                    },
-                  ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        final notifier = ref.read(interestsProvider.notifier);
+                        if (isInterested) {
+                          notifier.removeInterest(post.id);
+                          AppMessenger.of(
+                            context,
+                          ).showSnackBar(const SnackBar(content: Text('Removed from interests')));
+                        } else {
+                          notifier.addInterest(post.id);
+                          AppMessenger.of(
+                            context,
+                          ).showSnackBar(const SnackBar(content: Text('Added to interests')));
+                        }
+                      },
+                    );
+                  },
+                ),
                 if (!isDetailMode)
                   ListTile(
                     leading: Icon(Icons.visibility_off_outlined, color: context.colors.textPrimary),

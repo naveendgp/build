@@ -104,7 +104,6 @@ class LeadsTableView extends ConsumerWidget {
                     ],
                   ),
                 ),
-                _buildQualityScore(context, lead.qualityScore),
                 IconButton(
                   onPressed: () => _setArchived(context, ref, lead, !showingArchived),
                   tooltip: showingArchived ? 'Put back' : 'Archive',
@@ -120,28 +119,6 @@ class LeadsTableView extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildQualityScore(BuildContext context, double score) {
-    Color color = context.colors.success;
-    if (score < 30) {
-      color = context.colors.error;
-    } else if (score < 70) {
-      color = context.colors.warning;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: AppSpacing.borderRadiusSm,
-        border: Border.all(color: color.withValues(alpha: 0.2)),
-      ),
-      child: Text(
-        score.toStringAsFixed(0),
-        style: AppTypography.labelSmall.copyWith(color: color, fontWeight: FontWeight.bold),
-      ),
     );
   }
 }

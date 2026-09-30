@@ -41,12 +41,10 @@ class MessagingHomeScreen extends ConsumerWidget {
             child: Column(
               children: [
                 _buildHeader(context),
-                _buildTabs(
-                  context,
-                  inboxState.activeTab,
-                  notifier,
-                  isBrand: ref.watch(authProvider).loggedInRole == UserRole.brand,
-                ),
+                // One tab is not a switch: a person's inbox reads as a plain
+                // list, the way WhatsApp does.
+                if (ref.watch(authProvider).loggedInRole == UserRole.brand)
+                  _buildTabs(context, inboxState.activeTab, notifier, isBrand: true),
                 Expanded(
                   child: inboxState.isLoading
                       ? Center(

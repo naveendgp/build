@@ -150,14 +150,11 @@ class HamburgerMenuSheet extends ConsumerWidget {
               context.push('/brand-saved');
             }),
           ],
+          _buildMenuItem(context, AppIcons.settings, 'Settings', () {
+            context.push('/settings');
+          }),
           _buildMenuItem(context, AppIcons.help, 'Help & Support', () {
             context.push('/help');
-          }),
-          _buildMenuItem(context, AppIcons.faq, 'FAQ', () {
-            context.push('/help/faq');
-          }),
-          _buildMenuItem(context, AppIcons.tickets, 'My Tickets', () {
-            context.push('/help?tab=tickets');
           }),
 
           SizedBox(height: 8),

@@ -56,11 +56,6 @@ class SettingsHomeScreen extends ConsumerWidget {
                   icon: Icons.tune_rounded,
                   onTap: () => context.push('/settings/preferences'),
                 ),
-                SettingsItem(
-                  title: 'Interests',
-                  icon: Icons.favorite_border_rounded,
-                  onTap: () => context.push('/settings/interests'),
-                ),
                 // What the person told the feed: Interested, Not interested,
                 // and the posts they reported.
                 SettingsItem(
@@ -93,6 +88,11 @@ class SettingsHomeScreen extends ConsumerWidget {
                   title: 'Archived Posts',
                   icon: Icons.archive_outlined,
                   onTap: () => context.push('/settings/archived-posts'),
+                ),
+                SettingsItem(
+                  title: 'Others',
+                  icon: Icons.tune_outlined,
+                  onTap: () => context.push('/settings/others'),
                 ),
               ],
             ),
