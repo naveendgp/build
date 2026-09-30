@@ -263,6 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               builder: (ctx, child) => FeedHeader(
                 scrollOffset: activeCtrl.hasClients ? activeCtrl.offset : 0,
                 layoutSwitch: FeedViewToggle(
+                  compact: true,
                   currentMode: state.viewMode,
                   onChanged: notifier.setViewMode,
                 ),

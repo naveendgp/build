@@ -9,9 +9,18 @@ import '../providers/feed_provider.dart';
 /// Floating glassmorphism segmented control for feed view toggle
 class FeedViewToggle extends StatelessWidget {
   final FeedViewMode currentMode;
+
+  /// Tighter, for sitting inside the feed's top bar next to the title and the
+  /// two action buttons.
+  final bool compact;
   final ValueChanged<FeedViewMode> onChanged;
 
-  const FeedViewToggle({super.key, required this.currentMode, required this.onChanged});
+  const FeedViewToggle({
+    super.key,
+    required this.currentMode,
+    required this.onChanged,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,6 +67,7 @@ class FeedViewToggle extends StatelessWidget {
 }
 
 class _ToggleTab extends StatelessWidget {
+  final bool compact;
   final IconData icon;
   final String label;
   final bool isActive;
@@ -68,6 +78,7 @@ class _ToggleTab extends StatelessWidget {
     required this.label,
     required this.isActive,
     required this.onTap,
+    this.compact = false,
   });
 
   @override
@@ -77,7 +88,9 @@ class _ToggleTab extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: compact
+            ? const EdgeInsets.symmetric(horizontal: 10, vertical: 6)
+            : const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
               ? context.colors.primaryAccent.withValues(alpha: 0.15)

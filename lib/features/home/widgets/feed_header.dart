@@ -50,6 +50,9 @@ class FeedHeader extends ConsumerWidget {
                 ),
               ),
               const Spacer(),
+              // The list/grid switch sits in the bar itself. It used to float
+              // below it, which cost a strip of the feed.
+              if (layoutSwitch != null) ...[layoutSwitch!, const SizedBox(width: 8)],
               // Actions
               _HeaderAction(
                 icon: Icons.notifications_none_rounded,
