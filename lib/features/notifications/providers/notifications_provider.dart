@@ -3,7 +3,10 @@ import '../../../core/network/api_client.dart';
 import '../models/notification_models.dart';
 import '../repositories/notifications_repository.dart';
 
-enum NotificationFilter { all, reminders, brands, messages, activity }
+/// Three lists, and everything falls into one of them: brand posts and the
+/// things people do count as activity, reminders are their own, and messages
+/// are messages.
+enum NotificationFilter { all, reminders, messages }
 
 class NotificationsState {
   final bool isLoading;
@@ -73,14 +76,13 @@ class NotificationsNotifier extends StateNotifier<NotificationsState> {
     switch (state.activeFilter) {
       case NotificationFilter.reminders:
         return state.notifications.where((n) => n.type == NotificationType.reminder).toList();
-      case NotificationFilter.brands:
-        return state.notifications.where((n) => n.type == NotificationType.brand).toList();
       case NotificationFilter.messages:
         return state.notifications.where((n) => n.type == NotificationType.message).toList();
-      case NotificationFilter.activity:
-        return state.notifications.where((n) => n.type == NotificationType.social).toList();
       case NotificationFilter.all:
-        return state.notifications;
+        // All activity: everything except the two that have their own list.
+        return state.notifications
+            .where((n) => n.type != NotificationType.reminder && n.type != NotificationType.message)
+            .toList();
     }
   }
 

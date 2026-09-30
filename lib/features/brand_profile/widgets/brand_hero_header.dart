@@ -235,15 +235,6 @@ class BrandHeroHeader extends ConsumerWidget {
                   '@${profile.username}',
                   style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
                 ),
-                if (profile.bio != null && profile.bio!.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    profile.bio!,
-                    style: AppTypography.bodySmall.copyWith(color: context.colors.textPrimary),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,

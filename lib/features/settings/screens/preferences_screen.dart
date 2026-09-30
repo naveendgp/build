@@ -1,255 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../core/constants/interests.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../../core/utils/app_messenger.dart';
+import '../../../core/utils/haptics.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_item.dart';
-import '../../../core/utils/haptics.dart';
-import '../../user_profile/providers/user_profile_provider.dart';
 
-class PreferencesScreen extends ConsumerWidget {
-  const PreferencesScreen({Key? key}) : super(key: key);
+/// Settings → Preferences, the same two lists the web shows: interests, up to
+/// five and shown on the profile, and business categories, as many as you
+/// like. Both are saved in one list and both tune the feed.
+class PreferencesScreen extends ConsumerStatefulWidget {
+  const PreferencesScreen({super.key});
 
-  void _showInterestSheet(BuildContext context, WidgetRef ref, dynamic profile) {
-    const List<Map<String, dynamic>> interests = [
-      {'label': 'Technology', 'icon': Icons.computer_rounded},
-      {'label': 'Fashion', 'icon': Icons.checkroom_rounded},
-      {'label': 'Food', 'icon': Icons.restaurant_rounded},
-      {'label': 'Travel', 'icon': Icons.flight_rounded},
-      {'label': 'Fitness', 'icon': Icons.fitness_center_rounded},
-      {'label': 'Art', 'icon': Icons.palette_rounded},
-      {'label': 'Music', 'icon': Icons.music_note_rounded},
-      {'label': 'Photography', 'icon': Icons.camera_alt_rounded},
-      {'label': 'Gaming', 'icon': Icons.sports_esports_rounded},
-      {'label': 'Business', 'icon': Icons.business_center_rounded},
-      {'label': 'Education', 'icon': Icons.school_rounded},
-      {'label': 'Lifestyle', 'icon': Icons.spa_rounded},
-    ];
+  @override
+  ConsumerState<PreferencesScreen> createState() => _PreferencesScreenState();
+}
 
-    List<String> selected = List<String>.from(profile.aiIdentityTags);
+class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
+  List<String>? _tags;
+  bool _saving = false;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
-            decoration: BoxDecoration(
-              color: context.colors.card,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: context.colors.border,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text('My Interests', style: AppTypography.titleMedium),
-                ),
-                Flexible(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: interests.length,
-                    shrinkWrap: true,
-                    itemBuilder: (_, i) {
-                      final item = interests[i];
-                      final label = item['label'] as String;
-                      final isSelected = selected.contains(label);
+  List<String> get _selected => _tags ?? const [];
+  int get _interestCount => _selected.where(personalTags.contains).length;
 
-                      return ListTile(
-                        onTap: () {
-                          Haptics.selection();
-                          setState(() {
-                            if (isSelected) {
-                              selected.remove(label);
-                            } else {
-                              selected.add(label);
-                            }
-                          });
-                          ref.read(userProfileProvider.notifier).updateProfile({
-                            'interests': selected.join(','),
-                          });
-                        },
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? context.colors.primaryAccent.withOpacity(0.15)
-                                : context.colors.surface,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            item['icon'] as IconData,
-                            size: 20,
-                            color: isSelected
-                                ? context.colors.primaryAccent
-                                : context.colors.textSecondary,
-                          ),
-                        ),
-                        title: Text(
-                          label,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: isSelected
-                                ? context.colors.primaryAccent
-                                : context.colors.textPrimary,
-                          ),
-                        ),
-                        trailing: isSelected
-                            ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent)
-                            : null,
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
+  Future<void> _toggle(String tag, dynamic settings) async {
+    final isInterest = personalTags.contains(tag);
+    final next = List<String>.from(_selected);
 
-  void _showCategorySheet(BuildContext context, WidgetRef ref, dynamic settings) {
-    // We'll reuse the categories list locally to avoid tight coupling to auth widgets
-    const List<Map<String, dynamic>> categories = [
-      {'label': 'Fashion & Apparel', 'icon': Icons.checkroom_rounded},
-      {'label': 'Technology', 'icon': Icons.devices_rounded},
-      {'label': 'Food & Beverage', 'icon': Icons.restaurant_rounded},
-      {'label': 'Health & Wellness', 'icon': Icons.favorite_rounded},
-      {'label': 'Education', 'icon': Icons.school_rounded},
-      {'label': 'Entertainment', 'icon': Icons.movie_rounded},
-      {'label': 'Real Estate', 'icon': Icons.apartment_rounded},
-      {'label': 'Automotive', 'icon': Icons.directions_car_rounded},
-      {'label': 'Finance', 'icon': Icons.account_balance_rounded},
-      {'label': 'Retail', 'icon': Icons.storefront_rounded},
-    ];
+    if (next.contains(tag)) {
+      next.remove(tag);
+    } else {
+      // Only interests are capped; categories are as many as you like.
+      if (isInterest && _interestCount >= maxInterests) {
+        AppMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('You can pick up to $maxInterests. Remove one to add another.')),
+        );
+        return;
+      }
+      next.add(tag);
+    }
 
-    List<String> selected = List<String>.from(settings.categoryInterests);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.75),
-            decoration: BoxDecoration(
-              color: context.colors.card,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: context.colors.border,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Text('Category Interests', style: AppTypography.titleMedium),
-                ),
-                Flexible(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    itemCount: categories.length,
-                    shrinkWrap: true,
-                    itemBuilder: (_, i) {
-                      final cat = categories[i];
-                      final label = cat['label'] as String;
-                      final isSelected = selected.contains(label);
-
-                      return ListTile(
-                        onTap: () {
-                          Haptics.selection();
-                          setState(() {
-                            if (isSelected) {
-                              selected.remove(label);
-                            } else {
-                              selected.add(label);
-                            }
-                          });
-                          ref
-                              .read(userSettingsProvider.notifier)
-                              .updateSettings(settings.copyWith(categoryInterests: selected));
-                        },
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? context.colors.primaryAccent.withOpacity(0.15)
-                                : context.colors.surface,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(
-                            cat['icon'] as IconData,
-                            size: 20,
-                            color: isSelected
-                                ? context.colors.primaryAccent
-                                : context.colors.textSecondary,
-                          ),
-                        ),
-                        title: Text(
-                          label,
-                          style: AppTypography.labelLarge.copyWith(
-                            color: isSelected
-                                ? context.colors.primaryAccent
-                                : context.colors.textPrimary,
-                          ),
-                        ),
-                        trailing: isSelected
-                            ? Icon(Icons.check_circle_rounded, color: context.colors.primaryAccent)
-                            : null,
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: MediaQuery.of(ctx).padding.bottom + 12),
-              ],
-            ),
-          );
-        },
-      ),
-    ).then((_) {
-      // Refresh the profile so the updated categories show up
-      ref.read(userProfileProvider.notifier).loadProfile();
+    Haptics.selection();
+    setState(() {
+      _tags = next;
+      _saving = true;
     });
+
+    await ref
+        .read(userSettingsProvider.notifier)
+        .updateSettings(settings.copyWith(categoryInterests: next));
+    if (mounted) setState(() => _saving = false);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final isBrand = authState.loggedInRole == UserRole.brand;
-    final userSettingsState = ref.watch(userSettingsProvider);
-    final brandSettingsState = ref.watch(brandSettingsProvider);
-    final userProfileState = ref.watch(userProfileProvider);
+  Widget build(BuildContext context) {
+    final settingsState = ref.watch(userSettingsProvider);
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -268,121 +79,189 @@ class PreferencesScreen extends ConsumerWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(top: 16, bottom: 48),
-        children: [
-          if (!isBrand)
-            userSettingsState.when(
-              data: (settings) => Column(
-                children: [
-                  if (!isBrand && userProfileState.profile != null) ...[
-                    SettingsGroup(
-                      title: 'Personalization',
-                      children: [
-                        SettingsItem(
-                          title: 'My Interests (Tags)',
-                          icon: Icons.favorite_border_rounded,
-                          onTap: () => _showInterestSheet(context, ref, userProfileState.profile),
-                        ),
-                        SettingsItem(
-                          title: 'Category Interests',
-                          icon: Icons.category_outlined,
-                          onTap: () => _showCategorySheet(context, ref, settings),
-                        ),
-                      ],
-                    ),
-                  ] else ...[
-                    SettingsGroup(
-                      title: 'Content Preferences',
-                      children: [
-                        SettingsItem(
-                          title: 'Category Interests',
-                          icon: Icons.category_outlined,
-                          onTap: () => _showCategorySheet(context, ref, settings),
-                        ),
-                      ],
-                    ),
-                  ],
-                  SettingsGroup(
-                    title: 'Notifications',
-                    children: [
-                      SettingsItem(
-                        title: 'Reminders',
-                        icon: Icons.notifications_active_outlined,
-                        trailing: Switch.adaptive(
-                          value: settings.appReminders,
-                          activeColor: context.colors.primaryAccent,
-                          onChanged: (val) {
-                            ref
-                                .read(userSettingsProvider.notifier)
-                                .updateSettings(settings.copyWith(appReminders: val));
-                          },
-                        ),
-                      ),
-                      SettingsItem(
-                        title: 'Messages',
-                        icon: Icons.message_outlined,
-                        trailing: Switch.adaptive(
-                          value: settings.pushNotifications,
-                          activeColor: context.colors.primaryAccent,
-                          onChanged: (val) {
-                            ref
-                                .read(userSettingsProvider.notifier)
-                                .updateSettings(settings.copyWith(pushNotifications: val));
-                          },
-                        ),
-                      ),
-                    ],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: context.colors.surfaceSecondary,
+                  borderRadius: AppSpacing.borderRadiusFull,
+                ),
+                child: Text(
+                  _saving ? 'Saving…' : '$_interestCount/$maxInterests interests',
+                  style: AppTypography.labelSmall.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
-                ],
+                ),
               ),
-              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-              error: (e, st) => const Center(child: Text('Error loading settings')),
-            )
-          else
-            brandSettingsState.when(
-              data: (settings) => SettingsGroup(
+            ),
+          ),
+        ],
+      ),
+      body: settingsState.when(
+        loading: () => Center(
+          child: CircularProgressIndicator.adaptive(
+            valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
+          ),
+        ),
+        error: (_, _) => Center(
+          child: Text(
+            'Could not load your preferences',
+            style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+          ),
+        ),
+        data: (settings) {
+          _tags ??= List<String>.from(settings.categoryInterests);
+          return ListView(
+            padding: const EdgeInsets.only(top: 16, bottom: 48),
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  'Pick up to $maxInterests interests, and any business categories. '
+                  'Both tune your feed; interests show on your profile.',
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              _buildSection(
+                context,
+                title: 'Interests',
+                subtitle: 'Topics you want to see more of.',
+                tags: personalTags,
+                settings: settings,
+              ),
+              _buildSection(
+                context,
+                title: 'Categories',
+                subtitle: 'Business categories you want to follow.',
+                tags: brandCategories,
+                settings: settings,
+              ),
+              // The switches that were already here, kept as they were.
+              SettingsGroup(
                 title: 'Notifications',
                 children: [
                   SettingsItem(
-                    title: 'New Followers',
-                    icon: Icons.person_add_outlined,
+                    title: 'Reminders',
+                    icon: Icons.alarm_rounded,
                     trailing: Switch.adaptive(
-                      value: settings.newFollowerNotification,
-                      activeColor: context.colors.primaryAccent,
+                      value: settings.appReminders,
+                      activeThumbColor: context.colors.primaryAccent,
                       onChanged: (val) => ref
-                          .read(brandSettingsProvider.notifier)
-                          .updateSettings(settings.copyWith(newFollowerNotification: val)),
+                          .read(userSettingsProvider.notifier)
+                          .updateSettings(settings.copyWith(appReminders: val)),
                     ),
                   ),
                   SettingsItem(
-                    title: 'New Messages',
-                    icon: Icons.mail_outline_rounded,
+                    title: 'Messages',
+                    icon: Icons.chat_bubble_outline_rounded,
                     trailing: Switch.adaptive(
-                      value: settings.newMessageNotification,
-                      activeColor: context.colors.primaryAccent,
+                      value: settings.pushNotifications,
+                      activeThumbColor: context.colors.primaryAccent,
                       onChanged: (val) => ref
-                          .read(brandSettingsProvider.notifier)
-                          .updateSettings(settings.copyWith(newMessageNotification: val)),
-                    ),
-                  ),
-                  SettingsItem(
-                    title: 'New Leads',
-                    icon: Icons.leaderboard_outlined,
-                    trailing: Switch.adaptive(
-                      value: settings.newLeadNotification,
-                      activeColor: context.colors.primaryAccent,
-                      onChanged: (val) => ref
-                          .read(brandSettingsProvider.notifier)
-                          .updateSettings(settings.copyWith(newLeadNotification: val)),
+                          .read(userSettingsProvider.notifier)
+                          .updateSettings(settings.copyWith(pushNotifications: val)),
                     ),
                   ),
                 ],
               ),
-              loading: () => const Center(child: CircularProgressIndicator.adaptive()),
-              error: (e, st) => const Center(child: Text('Error loading settings')),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSection(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required List<String> tags,
+    required dynamic settings,
+  }) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: AppSpacing.borderRadiusLg,
+        border: Border.all(color: context.colors.borderLight, width: 0.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.titleSmall.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+                ),
+              ],
             ),
+          ),
+          Divider(height: 1, color: context.colors.borderLight),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: tags.map((tag) {
+                final isSelected = _selected.contains(tag);
+                return GestureDetector(
+                  onTap: () => _toggle(tag, settings),
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? context.colors.primaryAccent.withValues(alpha: 0.12)
+                          : Colors.transparent,
+                      borderRadius: AppSpacing.borderRadiusFull,
+                      border: Border.all(
+                        color: isSelected
+                            ? context.colors.primaryAccent.withValues(alpha: 0.5)
+                            : context.colors.border,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isSelected) ...[
+                          Icon(Icons.check_rounded, size: 14, color: context.colors.primaryAccent),
+                          const SizedBox(width: 6),
+                        ],
+                        Text(
+                          tag,
+                          style: AppTypography.labelLarge.copyWith(
+                            color: isSelected
+                                ? context.colors.primaryAccent
+                                : context.colors.textSecondary,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
         ],
       ),
     );

@@ -240,14 +240,16 @@ class FeedCard extends ConsumerWidget {
             ),
           const SizedBox(width: 4),
           // Menu
-          if (isOwner || authState.loggedInRole == UserRole.user)
-            GestureDetector(
-              onTap: () => _showPostMenu(context, ref, isOwner: isOwner),
-              child: Padding(
-                padding: EdgeInsets.all(6),
-                child: Icon(Icons.more_vert_rounded, size: 20, color: context.colors.textTertiary),
-              ),
+          // Everyone gets the menu: the owner manages the post, and anyone
+          // else - person or brand - reports it or tells the feed what they
+          // think of it. A brand looking at another brand's post had none.
+          GestureDetector(
+            onTap: () => _showPostMenu(context, ref, isOwner: isOwner),
+            child: Padding(
+              padding: EdgeInsets.all(6),
+              child: Icon(Icons.more_vert_rounded, size: 20, color: context.colors.textTertiary),
             ),
+          ),
         ],
       ),
     );

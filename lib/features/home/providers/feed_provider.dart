@@ -240,6 +240,10 @@ class FeedNotifier extends StateNotifier<FeedState> {
         } else {
           await _apiClient.dio.delete('/follow/$targetBrandId');
         }
+        // The brand's own screen holds its own copy of this, so following
+        // from the feed left "Follow" showing on the profile until a restart.
+        ref.invalidate(brandProfileProvider(targetBrandId!));
+        ref.invalidate(userProfileProvider);
       } catch (e) {
         // Ignore for optimistic UI
       }

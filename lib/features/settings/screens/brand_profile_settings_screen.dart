@@ -509,7 +509,6 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
               SettingsGroup(
                 title: 'Business Information',
                 children: [
-                  _buildTextField(context, 'Short Bio', _bioController, maxLines: 2),
                   _buildTextField(context, 'Business Description', _descController, maxLines: 3),
                   _buildTextField(context, 'Website', _websiteController),
                   _buildTextField(context, 'Contact Email', _emailController),

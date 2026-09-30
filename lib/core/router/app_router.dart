@@ -25,6 +25,7 @@ import '../../features/settings/screens/account_information_screen.dart';
 import '../../features/settings/screens/blocked_brands_screen.dart';
 import '../../features/settings/screens/archived_posts_screen.dart';
 import '../../features/settings/screens/interests_screen.dart';
+import '../../features/settings/screens/others_screen.dart';
 import '../../features/help_support/screens/help_support_home_screen.dart';
 import '../../features/help_support/screens/faq_screen.dart';
 import '../../features/help_support/screens/raise_ticket_screen.dart';
@@ -457,6 +458,23 @@ class AppRouter {
             pageBuilder: (context, state) => CustomTransitionPage(
               key: state.pageKey,
               child: const ArchivedPostsScreen(),
+              transitionsBuilder: (_, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(1, 0),
+                    end: Offset.zero,
+                  ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+            ),
+          ),
+          GoRoute(
+            path: 'others',
+            pageBuilder: (context, state) => CustomTransitionPage(
+              key: state.pageKey,
+              child: const OthersScreen(),
               transitionsBuilder: (_, animation, secondaryAnimation, child) {
                 return SlideTransition(
                   position: Tween<Offset>(

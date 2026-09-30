@@ -6,6 +6,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../models/user_profile_models.dart';
 import 'following_bottom_sheet.dart';
 import '../../settings/providers/settings_provider.dart';
+import '../../../core/constants/interests.dart';
 
 class ProfileHeader extends ConsumerWidget {
   final UserProfileData profile;
@@ -31,8 +32,12 @@ class ProfileHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Watch the local settings to show interests instantly without waiting for backend sync
     final settingsState = ref.watch(userSettingsProvider);
-    final List<String> displayInterests =
-        settingsState.value?.categoryInterests ?? profile.aiIdentityTags;
+    // Only the personal interests show here, up to five: the business
+    // categories are saved in the same list but belong to the feed, not to
+    // the profile.
+    final List<String> displayInterests = interestsOnly(
+      settingsState.value?.categoryInterests ?? profile.aiIdentityTags,
+    );
     return Column(
       children: [
         const SizedBox(height: 8),

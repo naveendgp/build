@@ -61,6 +61,13 @@ class SettingsHomeScreen extends ConsumerWidget {
                   icon: Icons.favorite_border_rounded,
                   onTap: () => context.push('/settings/interests'),
                 ),
+                // What the person told the feed: Interested, Not interested,
+                // and the posts they reported.
+                SettingsItem(
+                  title: 'Others',
+                  icon: Icons.tune_outlined,
+                  onTap: () => context.push('/settings/others'),
+                ),
               ],
             ),
           ] else ...[

@@ -107,9 +107,8 @@ class NotificationsScreen extends ConsumerWidget {
     NotificationsNotifier notifier,
   ) {
     final filters = [
-      {'label': 'All', 'value': NotificationFilter.all},
+      {'label': 'All Activity', 'value': NotificationFilter.all},
       {'label': 'Reminders', 'value': NotificationFilter.reminders},
-      {'label': 'Brands', 'value': NotificationFilter.brands},
       {'label': 'Messages', 'value': NotificationFilter.messages},
     ];
 
