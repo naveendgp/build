@@ -16,10 +16,17 @@ class CommentCard extends StatefulWidget {
     required this.onLike,
     this.onDelete,
     this.isReply = false,
+    this.expandedReplies = const {},
+    required this.onToggleReplies,
   });
 
   final Comment comment;
   final void Function(String parentId, String username) onReply;
+
+  /// Which comments have their replies open, and how to change that. Held by
+  /// the sheet so a reload does not close the thread being replied to.
+  final Set<String> expandedReplies;
+  final void Function(String commentId) onToggleReplies;
   final ValueChanged<String> onLike;
   final ValueChanged<String>? onDelete;
   final bool isReply;
@@ -29,11 +36,11 @@ class CommentCard extends StatefulWidget {
 }
 
 class _CommentCardState extends State<CommentCard> {
-  bool _showReplies = false;
+  bool get _showReplies => widget.expandedReplies.contains(widget.comment.id);
 
   void _toggleReplies() {
     Haptics.selection();
-    setState(() => _showReplies = !_showReplies);
+    widget.onToggleReplies(widget.comment.id);
   }
 
   String _formatTimeAgo(DateTime date) {
@@ -316,6 +323,8 @@ class _CommentCardState extends State<CommentCard> {
                 .map(
                   (reply) => CommentCard(
                     comment: reply,
+                    expandedReplies: widget.expandedReplies,
+                    onToggleReplies: widget.onToggleReplies,
                     onReply: widget.onReply,
                     onLike: widget.onLike,
                     onDelete: widget.onDelete,

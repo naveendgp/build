@@ -18,6 +18,8 @@ import 'highlight_banner.dart';
 import 'video_player_widget.dart';
 import 'media_carousel.dart';
 import '../../../core/network/api_client.dart';
+import '../../settings/providers/others_provider.dart';
+import '../../comments/providers/comments_provider.dart';
 import '../../settings/providers/interests_provider.dart';
 import '../../../core/utils/app_messenger.dart';
 
@@ -593,6 +595,7 @@ class FeedCard extends ConsumerWidget {
   }
 
   Widget _buildFooter(BuildContext context, WidgetRef ref) {
+    final commentCount = post.commentCount + (ref.watch(commentCountDeltaProvider)[post.id] ?? 0);
     final authState = ref.watch(authProvider);
     final isBrand = authState.loggedInRole == UserRole.brand;
 
@@ -603,15 +606,17 @@ class FeedCard extends ConsumerWidget {
         children: [
           ExpandablePostDescription(post: post),
           const SizedBox(height: 12),
-          // Interaction bar
+          // Interaction bar. The comment count follows the shared delta, so
+          // a comment left from the detail screen - which keeps its own copy
+          // of the post - shows up straight away.
           InteractionBar(
             isLiked: post.isLiked,
             isBookmarked: post.isBookmarked,
             likeCount: post.likeCount,
-            commentCount: post.commentCount,
+            commentCount: commentCount,
             shareCount: post.shareCount,
             onLike: onLike,
-            onComment: () => CommentSheet.show(context, post.id, post.commentCount),
+            onComment: () => CommentSheet.show(context, post.id, commentCount),
             onBookmark: onBookmark,
             onShare: onShare,
             onReminder: onReminder,

@@ -151,7 +151,7 @@ class _SegmentedNavigation extends StatelessWidget {
                 curve: Curves.easeInOut,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: isActive ? context.colors.card : Colors.transparent,
+                  color: isActive ? context.colors.primaryAccent : Colors.transparent,
                   borderRadius: AppSpacing.borderRadiusFull,
                   border: isActive
                       ? Border.all(color: context.colors.borderLight.withValues(alpha: 0.2))
@@ -169,7 +169,7 @@ class _SegmentedNavigation extends StatelessWidget {
                 child: Text(
                   label,
                   style: AppTypography.labelMedium.copyWith(
-                    color: isActive ? context.colors.textPrimary : context.colors.textTertiary,
+                    color: isActive ? Colors.white : context.colors.textTertiary,
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                   ),
                   maxLines: 1,

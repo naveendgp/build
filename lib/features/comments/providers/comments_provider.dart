@@ -15,6 +15,10 @@ class CommentsState {
   final String? replyToId;
   final String? replyToName;
 
+  /// Which comments have their replies open. Held here rather than inside
+  /// each card so a reload does not close them.
+  final Set<String> expandedReplies;
+
   const CommentsState({
     this.isLoading = false,
     this.isLoadingMore = false,
@@ -25,6 +29,7 @@ class CommentsState {
     this.filter = CommentFilter.newest,
     this.replyToId,
     this.replyToName,
+    this.expandedReplies = const {},
   });
 
   CommentsState copyWith({
@@ -40,6 +45,7 @@ class CommentsState {
     bool clearReply = false,
     bool clearError = false,
     bool clearCursor = false,
+    Set<String>? expandedReplies,
   }) {
     return CommentsState(
       isLoading: isLoading ?? this.isLoading,
@@ -51,9 +57,18 @@ class CommentsState {
       filter: filter ?? this.filter,
       replyToId: clearReply ? null : (replyToId ?? this.replyToId),
       replyToName: clearReply ? null : (replyToName ?? this.replyToName),
+      expandedReplies: expandedReplies ?? this.expandedReplies,
     );
   }
 }
+
+/// How far a post's comment count has moved since it was fetched, by post id.
+///
+/// A post is shown in several places at once - the feed list, the detail
+/// screen opened from the grid, a brand's profile - and each holds its own
+/// copy. Bumping the feed's copy alone left the others reading the old
+/// number, so the change is kept here and read wherever the count is drawn.
+final commentCountDeltaProvider = StateProvider<Map<String, int>>((ref) => {});
 
 class CommentsNotifier extends StateNotifier<CommentsState> {
   final ApiClient _api;
@@ -127,7 +142,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       // Reload comments to get fresh data with proper user info
       state = state.copyWith(isSending: false, clearReply: true);
       await loadComments();
-      _ref.read(feedProvider.notifier).adjustCommentCount(postId, 1);
+      _bumpCount(1);
       return true;
     } catch (e) {
       state = state.copyWith(isSending: false);
@@ -140,13 +155,33 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       await _api.dio.delete('/comments/$commentId');
       Haptics.light();
       await loadComments();
-      _ref.read(feedProvider.notifier).adjustCommentCount(postId, -1);
+      _bumpCount(-1);
     } catch (_) {}
+  }
+
+  void _bumpCount(int delta) {
+    final deltas = Map<String, int>.from(_ref.read(commentCountDeltaProvider));
+    deltas[postId] = (deltas[postId] ?? 0) + delta;
+    _ref.read(commentCountDeltaProvider.notifier).state = deltas;
+    _ref.read(feedProvider.notifier).adjustCommentCount(postId, delta);
+  }
+
+  /// Opens or closes one comment's replies. Reloading after a reply rebuilt
+  /// the list, and with the state inside each card the thread you had just
+  /// replied in closed itself.
+  void toggleReplies(String commentId) {
+    final open = Set<String>.from(state.expandedReplies);
+    if (!open.remove(commentId)) open.add(commentId);
+    state = state.copyWith(expandedReplies: open);
   }
 
   void setReplyTo(String commentId, String authorName) {
     Haptics.selection();
-    state = state.copyWith(replyToId: commentId, replyToName: authorName);
+    state = state.copyWith(
+      replyToId: commentId,
+      replyToName: authorName,
+      expandedReplies: {...state.expandedReplies, commentId},
+    );
   }
 
   void clearReply() {

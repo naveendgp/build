@@ -4,6 +4,7 @@ import '../../../core/network/api_client.dart';
 import '../../user_profile/providers/user_profile_provider.dart';
 import '../../user_profile/providers/reminders_provider.dart';
 import '../../brand_profile/providers/brand_profile_provider.dart';
+import '../../comments/providers/comments_provider.dart';
 import '../../brand_profile/screens/brand_saved_posts_screen.dart';
 import '../models/feed_models.dart';
 
@@ -74,6 +75,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   Future<void> refreshFeed() async {
+    // Counts come back fresh from the server, so the running adjustments are
+    // dropped rather than counted twice.
+    ref.read(commentCountDeltaProvider.notifier).state = {};
     state = state.copyWith(loadState: FeedLoadState.loading);
     try {
       final res = await _apiClient.dio.get('/feed');

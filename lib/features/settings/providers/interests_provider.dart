@@ -63,6 +63,9 @@ class InterestsNotifier extends StateNotifier<InterestsState> {
     state = state.copyWith(interestedIds: newIds);
     try {
       await _api.dio.post('/posts/$postId/interested');
+      // The list itself is what Settings > Others reads, and only the id was
+      // being kept, so a post marked Interested never appeared there.
+      await fetch();
     } catch (_) {
       final revert = Set<String>.from(state.interestedIds)..remove(postId);
       state = state.copyWith(interestedIds: revert);

@@ -25,7 +25,7 @@ class FormsTab extends ConsumerWidget {
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.symmetric(vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? context.colors.card : Colors.transparent,
+              color: isSelected ? context.colors.primaryAccent : Colors.transparent,
               borderRadius: AppSpacing.borderRadiusFull,
               border: isSelected
                   ? Border.all(color: context.colors.borderLight.withValues(alpha: 0.2))
@@ -35,7 +35,7 @@ class FormsTab extends ConsumerWidget {
               label,
               textAlign: TextAlign.center,
               style: AppTypography.labelMedium.copyWith(
-                color: isSelected ? context.colors.textPrimary : context.colors.textTertiary,
+                color: isSelected ? Colors.white : context.colors.textTertiary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),

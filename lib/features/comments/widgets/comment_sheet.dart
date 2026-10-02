@@ -264,6 +264,8 @@ class _CommentSheetState extends ConsumerState<CommentSheet> with SingleTickerPr
             padding: EdgeInsets.only(bottom: 20),
             child: CommentCard(
               comment: comment,
+              expandedReplies: state.expandedReplies,
+              onToggleReplies: notifier.toggleReplies,
               onReply: (id, name) => notifier.setReplyTo(id, name),
               onLike: (id) => notifier.toggleLike(id),
               onDelete: (id) => notifier.deleteComment(id),
