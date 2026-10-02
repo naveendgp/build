@@ -37,6 +37,10 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
     super.initState();
     if (widget.post != null) {
       _post = widget.post;
+      // Explore hands over the post it already has, and its payload carries no
+      // like or comment totals — which is why a post with comments opened
+      // showing zero. Read the post itself for the real counts.
+      _fetchPost(silent: true);
     } else if (widget.postId != null) {
       _fetchPost();
     }
@@ -45,11 +49,12 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
   /// The post could not be loaded: gone, or never there.
   bool _isGone = false;
 
-  Future<void> _fetchPost() async {
-    setState(() => _isLoading = true);
+  Future<void> _fetchPost({bool silent = false}) async {
+    if (!silent) setState(() => _isLoading = true);
     try {
       final client = ref.read(apiClientProvider);
-      final response = await client.dio.get('/posts/${widget.postId}');
+      final id = widget.postId ?? widget.post!.id;
+      final response = await client.dio.get('/posts/$id');
       if (response.statusCode == 200) {
         setState(() {
           _post = FeedPost.fromJson(response.data);
@@ -59,10 +64,11 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
       debugPrint('Failed to fetch post: $e');
       // A link to a post that is no longer there is the ordinary case here -
       // archived, or taken down by the brand - so the screen says so rather
-      // than spinning forever.
-      if (mounted) setState(() => _isGone = true);
+      // than spinning forever. With a post already on screen, a failed refresh
+      // changes nothing.
+      if (mounted && !silent) setState(() => _isGone = true);
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted && !silent) setState(() => _isLoading = false);
     }
   }
 

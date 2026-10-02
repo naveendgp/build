@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../home/models/feed_models.dart';
+import 'others_provider.dart';
 
 class InterestsState {
   final List<FeedPost> posts;
@@ -63,6 +64,9 @@ class InterestsNotifier extends StateNotifier<InterestsState> {
     state = state.copyWith(interestedIds: newIds);
     try {
       await _api.dio.post('/posts/$postId/interested');
+      // The server drops any "Not interested" on the same post, so the hidden
+      // list has to be read again or the post sits in both.
+      ref.invalidate(notInterestedPostsProvider);
       // The list itself is what Settings > Others reads, and only the id was
       // being kept, so a post marked Interested never appeared there.
       await fetch();
@@ -84,6 +88,16 @@ class InterestsNotifier extends StateNotifier<InterestsState> {
     } catch (_) {
       state = state.copyWith(posts: prevPosts, interestedIds: prevIds);
     }
+  }
+
+  /// Drops a post from this list without calling the server — for when
+  /// something else (marking it Not interested) already removed it there.
+  void forget(String postId) {
+    if (!state.interestedIds.contains(postId)) return;
+    state = state.copyWith(
+      posts: state.posts.where((p) => p.id != postId).toList(),
+      interestedIds: Set<String>.from(state.interestedIds)..remove(postId),
+    );
   }
 
   bool isInterested(String postId) => state.interestedIds.contains(postId);

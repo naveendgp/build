@@ -6,6 +6,8 @@ import '../../user_profile/providers/reminders_provider.dart';
 import '../../brand_profile/providers/brand_profile_provider.dart';
 import '../../comments/providers/comments_provider.dart';
 import '../../brand_profile/screens/brand_saved_posts_screen.dart';
+import '../../settings/providers/interests_provider.dart';
+import '../../settings/providers/others_provider.dart';
 import '../models/feed_models.dart';
 
 enum FeedViewMode { single, grid }
@@ -275,6 +277,11 @@ class FeedNotifier extends StateNotifier<FeedState> {
     state = state.copyWith(posts: state.posts.where((p) => p.id != postId).toList());
     try {
       await _apiClient.dio.post('/posts/$postId/not-interested');
+      // The two lists are exclusive on the server: marking a post Not
+      // interested drops any Interested on it. Without this the app went on
+      // showing it in both.
+      ref.read(interestsProvider.notifier).forget(postId);
+      ref.invalidate(notInterestedPostsProvider);
     } catch (e) {
       // Ignore
     }

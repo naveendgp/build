@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../auth/providers/auth_provider.dart';
-import '../providers/settings_provider.dart';
 import '../widgets/settings_group.dart';
 import '../widgets/settings_item.dart';
 import '../widgets/change_password_sheet.dart';
@@ -15,10 +13,6 @@ class PrivacySafetyScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authProvider);
-    final isBrand = authState.loggedInRole == UserRole.brand;
-    final userSettingsState = ref.watch(userSettingsProvider);
-
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: AppBar(
@@ -48,12 +42,13 @@ class PrivacySafetyScreen extends ConsumerWidget {
                 icon: Icons.lock_outline_rounded,
                 onTap: () => ChangePasswordSheet.show(context),
               ),
-              if (!isBrand)
-                SettingsItem(
-                  title: 'Blocked Accounts',
-                  icon: Icons.block_flipped,
-                  onTap: () => context.push('/settings/blocked-brands'),
-                ),
+              // Brands have their own blocked list — the people they blocked
+              // from messaging them — and it used to be hidden from them.
+              SettingsItem(
+                title: 'Blocked Accounts',
+                icon: Icons.block_flipped,
+                onTap: () => context.push('/settings/blocked-brands'),
+              ),
             ],
           ),
           SettingsGroup(

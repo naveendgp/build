@@ -180,6 +180,42 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
   }
 
   @override
+
+  /// What the gallery is for. Opened from the ⓘ on the add tile.
+  void _showGalleryInfo(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: context.colors.card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Gallery',
+          style: AppTypography.titleLarge.copyWith(
+            fontWeight: FontWeight.bold,
+            color: context.colors.textPrimary,
+          ),
+        ),
+        content: Text(
+          'Add photos or videos showcasing your shop, products, or services. '
+          'These will appear on your public brand profile.',
+          style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(
+              'Got it',
+              style: AppTypography.button.copyWith(color: context.colors.primaryAccent),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
   Widget build(BuildContext context) {
     final gallery = widget.gallery;
     final isOwner = widget.isOwner;
@@ -208,60 +244,6 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (isOwner)
-          // A 48pt IconButton in a padded row of its own cost a band of empty
-          // gallery. It is a small, tight target in the corner instead.
-          Align(
-            alignment: Alignment.centerRight,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 4, top: 2, bottom: 2),
-              child: IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                iconSize: 18,
-                icon: Icon(Icons.info_outline_rounded, color: context.colors.textTertiary),
-                tooltip: 'Gallery Info',
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: context.colors.card,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      title: Text(
-                        'Gallery',
-                        style: AppTypography.titleLarge.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: context.colors.textPrimary,
-                        ),
-                      ),
-                      content: Text(
-                        'Add photos or videos showcasing your shop, products, or services. These will appear on your public brand profile.',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: context.colors.textSecondary,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: Text(
-                            'Got it',
-                            style: AppTypography.button.copyWith(
-                              color: context.colors.primaryAccent,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
         GridView.builder(
           physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
@@ -275,29 +257,54 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
           itemCount: itemCount,
           itemBuilder: (context, index) {
             if (isOwner && index == 0) {
-              return InkWell(
-                onTap: _isUploading ? null : _pickAndUploadImage,
-                child: Container(
-                  color: context.colors.surfaceSecondary,
-                  child: Center(
-                    child: _isUploading
-                        ? SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator.adaptive(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                context.colors.primaryAccent,
-                              ),
-                            ),
-                          )
-                        : Icon(
-                            Icons.add_photo_alternate_rounded,
-                            color: context.colors.textTertiary,
-                            size: 32,
-                          ),
+              // The info button used to sit in a row of its own above the
+              // grid, which pushed every picture down behind a band of empty
+              // space. It rides in the corner of the add tile now.
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: InkWell(
+                      onTap: _isUploading ? null : _pickAndUploadImage,
+                      child: Container(
+                        color: context.colors.surfaceSecondary,
+                        child: Center(
+                          child: _isUploading
+                              ? SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator.adaptive(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      context.colors.primaryAccent,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.add_photo_alternate_rounded,
+                                  color: context.colors.textTertiary,
+                                  size: 32,
+                                ),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    top: 2,
+                    right: 2,
+                    child: InkWell(
+                      onTap: () => _showGalleryInfo(context),
+                      customBorder: const CircleBorder(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          size: 16,
+                          color: context.colors.textTertiary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               );
             }
 

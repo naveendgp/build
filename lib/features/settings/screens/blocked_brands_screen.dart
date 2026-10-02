@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 
 class BlockedBrandsScreen extends ConsumerWidget {
@@ -11,7 +12,12 @@ class BlockedBrandsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final blockedBrandsState = ref.watch(blockedBrandsProvider);
+    // A brand blocks people; a person blocks brands. Same screen, the two
+    // lists live behind different endpoints.
+    final isBrand = ref.watch(authProvider).loggedInRole == UserRole.brand;
+    final blockedBrandsState = isBrand
+        ? ref.watch(blockedUsersProvider)
+        : ref.watch(blockedBrandsProvider);
 
     return Scaffold(
       backgroundColor: context.colors.background,
@@ -24,7 +30,7 @@ class BlockedBrandsScreen extends ConsumerWidget {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Blocked Brands',
+          'Blocked Accounts',
           style: AppTypography.titleLarge.copyWith(
             color: context.colors.textPrimary,
             fontWeight: FontWeight.bold,
@@ -41,12 +47,14 @@ class BlockedBrandsScreen extends ConsumerWidget {
                   Icon(Icons.block_rounded, size: 48, color: context.colors.textTertiary),
                   const SizedBox(height: 16),
                   Text(
-                    'No blocked brands',
+                    isBrand ? 'No blocked accounts' : 'No blocked brands',
                     style: AppTypography.titleMedium.copyWith(color: context.colors.textPrimary),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'When you block a brand, it will appear here.',
+                    isBrand
+                        ? 'When you block someone, they appear here.'
+                        : 'When you block a brand, it will appear here.',
                     style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
                   ),
                 ],
@@ -106,7 +114,11 @@ class BlockedBrandsScreen extends ConsumerWidget {
                     TextButton(
                       style: TextButton.styleFrom(foregroundColor: context.colors.error),
                       onPressed: () {
-                        ref.read(blockedBrandsProvider.notifier).unblockBrand(brand.id);
+                        if (isBrand) {
+                          ref.read(blockedUsersProvider.notifier).unblockUser(brand.id);
+                        } else {
+                          ref.read(blockedBrandsProvider.notifier).unblockBrand(brand.id);
+                        }
                       },
                       child: const Text('Unblock'),
                     ),
@@ -119,7 +131,7 @@ class BlockedBrandsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (err, st) => Center(
           child: Text(
-            'Failed to load blocked brands.',
+            isBrand ? 'Could not load blocked accounts.' : 'Could not load blocked brands.',
             style: TextStyle(color: context.colors.error),
           ),
         ),

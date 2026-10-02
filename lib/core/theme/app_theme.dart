@@ -161,6 +161,25 @@ class AppTheme {
         floatingLabelStyle: AppTypography.labelMedium.copyWith(color: ThemeTokens.primaryAccent),
       ),
 
+      // Snackbars followed Material's defaults, which invert the theme: a pale
+      // sheet in dark mode and a near-black one in light. They now use the
+      // app's own surfaces, so a message reads the same way as the screen
+      // behind it.
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: ThemeTokens.darkCard,
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: ThemeTokens.darkTextPrimary,
+        ),
+        actionTextColor: ThemeTokens.primaryAccent,
+        elevation: 6,
+        insetPadding: const EdgeInsets.all(AppSpacing.md),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppSpacing.borderRadiusMd,
+          side: const BorderSide(color: ThemeTokens.darkBorderSecondary),
+        ),
+      ),
+
       // Splash / Ink
       splashFactory: InkSparkle.splashFactory,
       splashColor: ThemeTokens.primaryAccent.withValues(alpha: 0.08),
@@ -234,6 +253,21 @@ class AppTheme {
         hintStyle: AppTypography.bodyMedium.copyWith(color: ThemeTokens.lightTextTertiary),
         labelStyle: AppTypography.bodyMedium.copyWith(color: ThemeTokens.lightTextSecondary),
         floatingLabelStyle: AppTypography.labelMedium.copyWith(color: ThemeTokens.primaryAccent),
+      ),
+
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: ThemeTokens.lightSurface,
+        contentTextStyle: AppTypography.bodyMedium.copyWith(
+          color: ThemeTokens.lightTextPrimary,
+        ),
+        actionTextColor: ThemeTokens.primaryAccent,
+        elevation: 6,
+        insetPadding: const EdgeInsets.all(AppSpacing.md),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppSpacing.borderRadiusMd,
+          side: const BorderSide(color: ThemeTokens.lightBorderPrimary),
+        ),
       ),
 
       splashFactory: InkSparkle.splashFactory,

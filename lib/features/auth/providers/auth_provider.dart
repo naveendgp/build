@@ -471,14 +471,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  /// Deleting the account now requires the code sent by
-  /// [sendDeleteAccountOtp] — this used to delete immediately with no
-  /// re-authentication at all, the most irreversible action in the app
-  /// had less protection than changing a password.
-  Future<bool> deleteAccount(String code) async {
+  /// Deletes the account for good. The sheet asks the person to type DELETE
+  /// first; the emailed code this used to require is gone, matching the web
+  /// settings page.
+  Future<bool> deleteAccount() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      final response = await _apiClient.dio.delete('/auth/delete-account', data: {'code': code});
+      final response = await _apiClient.dio.delete('/auth/delete-account');
 
       if (response.statusCode == 200) {
         state = state.copyWith(status: AuthStatus.success);

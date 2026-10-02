@@ -127,3 +127,46 @@ class BlockedBrandsNotifier extends StateNotifier<AsyncValue<List<BlockedBrand>>
     }
   }
 }
+
+/// The people a brand has blocked. The mirror of [blockedBrandsProvider],
+/// which is a person's list of blocked brands — a brand account has no
+/// `userId`, so that endpoint answers 401 for it.
+final blockedUsersProvider =
+    StateNotifierProvider<BlockedUsersNotifier, AsyncValue<List<BlockedBrand>>>((ref) {
+      final apiClient = ref.watch(apiClientProvider);
+      return BlockedUsersNotifier(apiClient);
+    });
+
+class BlockedUsersNotifier extends StateNotifier<AsyncValue<List<BlockedBrand>>> {
+  final ApiClient _apiClient;
+
+  BlockedUsersNotifier(this._apiClient) : super(const AsyncValue.loading()) {
+    fetchBlockedUsers();
+  }
+
+  Future<void> fetchBlockedUsers() async {
+    try {
+      state = const AsyncValue.loading();
+      final response = await _apiClient.dio.get('/brand/blocked-users');
+      final data = response.data as List? ?? const [];
+      state = AsyncValue.data(
+        data.map((j) => BlockedBrand.fromJson(Map<String, dynamic>.from(j as Map))).toList(),
+      );
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> unblockUser(String userId) async {
+    final previous = state;
+    if (state.hasValue) {
+      state = AsyncValue.data(state.value!.where((u) => u.id != userId).toList());
+    }
+    try {
+      await _apiClient.dio.delete('/brand/blocked-users/$userId');
+    } catch (e) {
+      state = previous;
+      rethrow;
+    }
+  }
+}

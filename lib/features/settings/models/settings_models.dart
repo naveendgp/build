@@ -309,7 +309,9 @@ class BlockedBrand {
       id: (json['id'] ?? '').toString(),
       name: (json['name'] ?? '').toString(),
       username: (json['username'] ?? '').toString(),
-      logoUrl: json['logoUrl']?.toString(),
+      // A blocked person comes back with `avatarUrl`; a blocked brand with
+      // `logoUrl`. The same row renders both.
+      logoUrl: (json['logoUrl'] ?? json['avatarUrl'] ?? json['profilePic'])?.toString(),
       category: json['category']?.toString(),
       isBrandPublic: _parseBool(json['isBrandPublic'], defaultValue: true),
       blockedAt: DateTime.tryParse(json['blockedAt']?.toString() ?? '') ?? DateTime.now(),

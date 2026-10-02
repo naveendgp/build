@@ -223,7 +223,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children: [
-                CircleAvatar(radius: 20, backgroundImage: NetworkImage(widget.brandAvatar)),
+                _BrandAvatar(url: widget.brandAvatar, name: widget.brandName),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -672,6 +672,48 @@ class _DateOfBirthFieldState extends State<_DateOfBirthField> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// The brand's logo on the form header.
+///
+/// This was a bare `CircleAvatar(backgroundImage: NetworkImage(...))`, so a
+/// brand with no logo — or a URL that failed — showed the avatar's default
+/// background, a flat red disc. It now falls back to the brand's initial.
+class _BrandAvatar extends StatelessWidget {
+  final String url;
+  final String name;
+
+  const _BrandAvatar({required this.url, required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = name.trim().isEmpty ? '?' : name.trim()[0].toUpperCase();
+    final fallback = Container(
+      color: context.colors.surfaceSecondary,
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: AppTypography.titleMedium.copyWith(
+          color: context.colors.textSecondary,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+
+    return ClipOval(
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: url.trim().isEmpty
+            ? fallback
+            : Image.network(
+                url,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) => fallback,
+              ),
       ),
     );
   }
