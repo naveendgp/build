@@ -14,6 +14,9 @@ class DashboardSummary {
   /// already counted by the backend.
   final MetricValue likes;
 
+  /// Every picture and video uploaded, carousels slide by slide.
+  final MetricValue mediaCount;
+
   DashboardSummary({
     required this.followers,
     required this.posts,
@@ -24,6 +27,7 @@ class DashboardSummary {
     required this.leads,
     required this.messages,
     required this.likes,
+    required this.mediaCount,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) {
@@ -37,6 +41,7 @@ class DashboardSummary {
       leads: MetricValue.fromJson(json['leads'] ?? {}),
       messages: MetricValue.fromJson(json['messages'] ?? {}),
       likes: MetricValue.fromJson(json['likes'] ?? {}),
+      mediaCount: MetricValue.fromJson(json['mediaCount'] ?? {}),
     );
   }
 }

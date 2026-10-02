@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
+
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
-import '../../../core/theme/app_spacing.dart';
-import '../../../core/utils/haptics.dart';
+import '../models/dashboard_post.dart';
 import '../providers/dashboard_providers.dart';
-import '../widgets/dashboard_kpi_cards.dart';
-import '../widgets/dashboard_charts.dart';
-import '../widgets/dashboard_post_card_list.dart';
-import '../widgets/dashboard_demographics.dart';
-import '../widgets/dashboard_top_content.dart';
+import '../widgets/dashboard_sections.dart';
 
+/// The brand dashboard, laid out as the web one is: the six summary cards,
+/// Interactions over the last 30 days, Campaign mix, then the posts with their
+/// views, likes, comments and the result their objective asked for.
+///
+/// Every number comes from the API — the demographics and performance-score
+/// panels that used to sit here were not on the web page and are gone.
 class BrandDashboardScreen extends ConsumerWidget {
   const BrandDashboardScreen({super.key});
 
@@ -20,11 +22,11 @@ class BrandDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final summaryAsync = ref.watch(dashboardSummaryProvider);
     final chartsAsync = ref.watch(dashboardChartsProvider);
-    final postsAsync = ref.watch(dashboardPostsProvider);
+    final postsAsync = ref.watch(brandDashboardPostsProvider);
+    final posts = postsAsync.value ?? const <BrandDashboardPost>[];
 
     return Scaffold(
       backgroundColor: context.colors.background,
-      endDrawer: _buildAnalyticsDrawer(context, ref),
       appBar: AppBar(
         backgroundColor: context.colors.background,
         elevation: 0,
@@ -33,406 +35,141 @@ class BrandDashboardScreen extends ConsumerWidget {
           icon: Icon(Icons.arrow_back_rounded, color: context.colors.textPrimary),
           onPressed: () => context.pop(),
         ),
-        title: Text(
-          'Brand Dashboard',
-          style: AppTypography.titleLarge.copyWith(
-            color: context.colors.textPrimary,
-            fontWeight: FontWeight.w700,
-          ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Dashboard',
+              style: AppTypography.titleLarge.copyWith(
+                color: context.colors.textPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              'How your brand is doing',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+            ),
+          ],
         ),
-        actions: [_buildPeriodSelector(context, ref), const SizedBox(width: 8)],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: AppSpacing.md),
+            child: FilledButton.icon(
+              onPressed: () => context.push('/create'),
+              style: FilledButton.styleFrom(
+                backgroundColor: context.colors.primaryAccent,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: const Size(0, 36),
+              ),
+              icon: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+              label: Text(
+                'Create',
+                style: AppTypography.labelLarge.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(dashboardSummaryProvider);
           ref.invalidate(dashboardChartsProvider);
-          ref.invalidate(dashboardPostsProvider);
-          ref.invalidate(followerDemographicsProvider);
-          ref.invalidate(topContentProvider);
+          ref.invalidate(brandDashboardPostsProvider);
         },
         color: context.colors.primaryAccent,
         backgroundColor: context.colors.surface,
-        child: SingleChildScrollView(
+        child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. KPI Cards
-              summaryAsync.when(
-                data: (summary) => DashboardKpiCards(summary: summary),
-                loading: () => const _LoadingSkeleton(height: 360),
-                error: (err, stack) => _ErrorWidget(error: err),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // 2. Charts
-              chartsAsync.when(
-                data: (charts) => DashboardCharts(data: charts),
-                loading: () => const _LoadingSkeleton(height: 400),
-                error: (err, stack) => _ErrorWidget(error: err),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // 3. Follower Demographics
-              const DashboardDemographics(),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // 4. Top Content by Month
-              const DashboardTopContent(),
-              const SizedBox(height: AppSpacing.xxl),
-
-              // 5. Posts List (Premium Cards)
-              postsAsync.when(
-                data: (posts) => DashboardPostCardList(posts: posts),
-                loading: () => const _LoadingSkeleton(height: 300),
-                error: (err, stack) => _ErrorWidget(error: err),
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-            ],
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.md,
+            AppSpacing.xxl,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnalyticsDrawer(BuildContext context, WidgetRef ref) {
-    final post = ref.watch(selectedPostProvider);
-
-    if (post == null) {
-      return Drawer(
-        backgroundColor: context.colors.surface,
-        width: 340,
-        child: const Center(child: CircularProgressIndicator.adaptive()),
-      );
-    }
-
-    return Drawer(
-      backgroundColor: context.colors.surface,
-      width: 340,
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      'Analytics: ${post.title}',
-                      style: AppTypography.titleLarge.copyWith(
-                        color: context.colors.textPrimary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close_rounded, color: context.colors.textSecondary),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ],
-              ),
+            // 1. Summary
+            summaryAsync.when(
+              data: (summary) =>
+                  DashboardSummaryCards(summary: summary, postCountFallback: posts.length),
+              loading: () => const _Skeleton(height: 220),
+              error: (err, _) => _Failed(message: 'Could not load your numbers', error: err),
             ),
-            Divider(color: context.colors.borderLight.withOpacity(0.1)),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                children: [
-                  Text(
-                    'Reach & Engagement',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: context.colors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.visibility_rounded,
-                    'Total Reach',
-                    _formatNumber(post.metrics.impressions),
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.favorite_rounded,
-                    'Likes',
-                    _formatNumber(post.metrics.likes),
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.chat_bubble_rounded,
-                    'Comments',
-                    _formatNumber(post.metrics.comments),
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.send_rounded,
-                    'Shares',
-                    _formatNumber(post.metrics.shares),
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.bookmark_rounded,
-                    'Saves',
-                    _formatNumber(post.metrics.saves),
-                  ),
+            const SizedBox(height: AppSpacing.md),
 
-                  const SizedBox(height: AppSpacing.xl),
-                  Text(
-                    'Conversion',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: context.colors.textPrimary,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.touch_app_rounded,
-                    'Click Through Rate',
-                    '${post.metrics.ctr}%',
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.person_add_rounded,
-                    'Leads Generated',
-                    _formatNumber(post.metrics.leads),
-                  ),
-                  _buildDrawerMetric(
-                    context,
-                    Icons.forum_rounded,
-                    'Messages Started',
-                    _formatNumber(post.metrics.messages),
-                  ),
-                ],
-              ),
+            // 2. Interactions, last 30 days
+            chartsAsync.when(
+              data: (charts) => DashboardInteractionsChart(trend: charts.reachTrend),
+              loading: () => const _Skeleton(height: 260),
+              error: (err, _) => _Failed(message: 'Could not load interactions', error: err),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // 3. Campaign mix
+            postsAsync.when(
+              data: (list) => DashboardCampaignMix(posts: list),
+              loading: () => const _Skeleton(height: 160),
+              error: (_, _) => const SizedBox.shrink(),
+            ),
+            const SizedBox(height: AppSpacing.md),
+
+            // 4. Posts
+            postsAsync.when(
+              data: (list) => DashboardPostsSection(posts: list),
+              loading: () => const _Skeleton(height: 280),
+              error: (err, _) => _Failed(message: 'Could not load your posts', error: err),
             ),
           ],
         ),
       ),
     );
   }
-
-  String _formatNumber(int number) {
-    if (number >= 1000) return '${(number / 1000).toStringAsFixed(1)}k';
-    return number.toString();
-  }
-
-  Widget _buildDrawerMetric(BuildContext context, IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: context.colors.surfaceSecondary,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 16, color: context.colors.primaryAccent),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
-              ),
-            ],
-          ),
-          Text(
-            value,
-            style: AppTypography.titleMedium.copyWith(
-              color: context.colors.textPrimary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPeriodSelector(BuildContext context, WidgetRef ref) {
-    final dateRange = ref.watch(dashboardDateRangeProvider);
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (dateRange.isCustom)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: context.colors.primaryAccent.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '${DateFormat('MMM d').format(dateRange.startDate!)} – ${DateFormat('MMM d').format(dateRange.endDate!)}',
-              style: AppTypography.labelSmall.copyWith(
-                color: context.colors.primaryAccent,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        PopupMenuButton<String>(
-          icon: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary, size: 20),
-          color: context.colors.surfaceSecondary,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          onSelected: (value) async {
-            if (value == 'custom') {
-              Haptics.selection();
-              final picked = await showDateRangePicker(
-                context: context,
-                firstDate: DateTime.now().subtract(const Duration(days: 365)),
-                lastDate: DateTime.now(),
-                initialDateRange: dateRange.isCustom
-                    ? DateTimeRange(start: dateRange.startDate!, end: dateRange.endDate!)
-                    : DateTimeRange(
-                        start: DateTime.now().subtract(const Duration(days: 30)),
-                        end: DateTime.now(),
-                      ),
-                builder: (context, child) {
-                  return Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: ColorScheme.dark(
-                        primary: context.colors.primaryAccent,
-                        onPrimary: Colors.white,
-                        surface: context.colors.surface,
-                        onSurface: context.colors.textPrimary,
-                      ),
-                    ),
-                    child: child!,
-                  );
-                },
-              );
-              if (picked != null) {
-                ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(
-                  presetDays: null,
-                  startDate: picked.start,
-                  endDate: picked.end,
-                );
-              }
-            } else {
-              final days = int.parse(value);
-              ref.read(dashboardDateRangeProvider.notifier).state = DashboardDateRange(
-                presetDays: days,
-              );
-            }
-          },
-          itemBuilder: (context) {
-            final currentPreset = dateRange.presetDays;
-            return [
-              _buildPopupItem(
-                context,
-                '7',
-                'Last 7 Days',
-                currentPreset == 7 && !dateRange.isCustom,
-              ),
-              _buildPopupItem(
-                context,
-                '30',
-                'Last 30 Days',
-                currentPreset == 30 && !dateRange.isCustom,
-              ),
-              _buildPopupItem(
-                context,
-                '90',
-                'Last 90 Days',
-                currentPreset == 90 && !dateRange.isCustom,
-              ),
-              const PopupMenuDivider(),
-              PopupMenuItem<String>(
-                value: 'custom',
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.date_range_rounded,
-                      size: 18,
-                      color: dateRange.isCustom
-                          ? context.colors.primaryAccent
-                          : context.colors.textSecondary,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Custom Range',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: dateRange.isCustom
-                            ? context.colors.primaryAccent
-                            : context.colors.textPrimary,
-                        fontWeight: dateRange.isCustom ? FontWeight.w600 : FontWeight.normal,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ];
-          },
-        ),
-      ],
-    );
-  }
-
-  PopupMenuItem<String> _buildPopupItem(
-    BuildContext context,
-    String value,
-    String label,
-    bool isSelected,
-  ) {
-    return PopupMenuItem<String>(
-      value: value,
-      child: Text(
-        label,
-        style: AppTypography.bodyMedium.copyWith(
-          color: isSelected ? context.colors.primaryAccent : context.colors.textPrimary,
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-    );
-  }
 }
 
-class _LoadingSkeleton extends StatelessWidget {
+class _Skeleton extends StatelessWidget {
   final double height;
-  const _LoadingSkeleton({required this.height});
+  const _Skeleton({required this.height});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: context.colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(16),
+  Widget build(BuildContext context) => Container(
+    height: height,
+    decoration: BoxDecoration(
+      color: context.colors.surfaceSecondary,
+      borderRadius: AppSpacing.borderRadiusMd,
+    ),
+    child: Center(
+      child: CircularProgressIndicator.adaptive(
+        valueColor: AlwaysStoppedAnimation<Color>(context.colors.primaryAccent),
       ),
-      child: const Center(child: CircularProgressIndicator.adaptive()),
-    );
-  }
+    ),
+  );
 }
 
-class _ErrorWidget extends StatelessWidget {
+class _Failed extends StatelessWidget {
+  final String message;
   final Object error;
-  const _ErrorWidget({required this.error});
+  const _Failed({required this.message, required this.error});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('[dashboard] $message: $error');
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: context.colors.error.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        color: context.colors.surface,
+        borderRadius: AppSpacing.borderRadiusMd,
+        border: Border.all(color: context.colors.borderLight, width: 0.5),
       ),
       child: Row(
         children: [
-          Icon(Icons.error_outline_rounded, color: context.colors.error),
-          const SizedBox(width: 12),
+          Icon(Icons.error_outline_rounded, size: 18, color: context.colors.textSecondary),
+          const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              'Failed to load data: $error',
-              style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+              '$message. Pull down to try again.',
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
             ),
           ),
         ],

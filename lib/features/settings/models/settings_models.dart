@@ -145,6 +145,10 @@ class BrandSettings {
   final String? contactPhone;
   final String? businessAddress;
   final String? gstVatNumber;
+
+  /// Interests and business categories, saved together the way the user
+  /// settings do. A brand picks these in Settings > Preferences too.
+  final List<String> categoryInterests;
   final String? instagram;
   final String? facebook;
   final String? twitter;
@@ -155,6 +159,8 @@ class BrandSettings {
   final bool newMessageNotification;
   final bool newLeadNotification;
   final bool newOrderNotification;
+  final bool appReminders;
+  final bool pushNotifications;
 
   BrandSettings({
     required this.id,
@@ -165,6 +171,7 @@ class BrandSettings {
     this.contactPhone,
     this.businessAddress,
     this.gstVatNumber,
+    this.categoryInterests = const [],
     this.instagram,
     this.facebook,
     this.twitter,
@@ -175,6 +182,8 @@ class BrandSettings {
     this.newMessageNotification = true,
     this.newLeadNotification = true,
     this.newOrderNotification = true,
+    this.appReminders = true,
+    this.pushNotifications = true,
   });
 
   factory BrandSettings.fromJson(Map<String, dynamic> json) {
@@ -187,6 +196,8 @@ class BrandSettings {
       contactPhone: json['contactPhone']?.toString(),
       businessAddress: json['businessAddress']?.toString(),
       gstVatNumber: json['gstVatNumber']?.toString(),
+      categoryInterests:
+          (json['categoryInterests'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? [],
       instagram: json['instagram']?.toString(),
       facebook: json['facebook']?.toString(),
       twitter: json['twitter']?.toString(),
@@ -198,6 +209,8 @@ class BrandSettings {
       newMessageNotification: _parseBool(json['newMessageNotification'], defaultValue: true),
       newLeadNotification: _parseBool(json['newLeadNotification'], defaultValue: true),
       newOrderNotification: _parseBool(json['newOrderNotification'], defaultValue: true),
+      appReminders: _parseBool(json['appReminders'], defaultValue: true),
+      pushNotifications: _parseBool(json['pushNotifications'], defaultValue: true),
     );
   }
 
@@ -209,6 +222,7 @@ class BrandSettings {
       'contactPhone': contactPhone,
       'businessAddress': businessAddress,
       'gstVatNumber': gstVatNumber,
+      'categoryInterests': categoryInterests,
       'instagram': instagram,
       'facebook': facebook,
       'twitter': twitter,
@@ -219,6 +233,8 @@ class BrandSettings {
       'newMessageNotification': newMessageNotification,
       'newLeadNotification': newLeadNotification,
       'newOrderNotification': newOrderNotification,
+      'appReminders': appReminders,
+      'pushNotifications': pushNotifications,
     };
   }
 
@@ -229,6 +245,7 @@ class BrandSettings {
     String? contactPhone,
     String? businessAddress,
     String? gstVatNumber,
+    List<String>? categoryInterests,
     String? instagram,
     String? facebook,
     String? twitter,
@@ -239,6 +256,8 @@ class BrandSettings {
     bool? newMessageNotification,
     bool? newLeadNotification,
     bool? newOrderNotification,
+    bool? appReminders,
+    bool? pushNotifications,
   }) {
     return BrandSettings(
       id: this.id,
@@ -249,6 +268,7 @@ class BrandSettings {
       contactPhone: contactPhone ?? this.contactPhone,
       businessAddress: businessAddress ?? this.businessAddress,
       gstVatNumber: gstVatNumber ?? this.gstVatNumber,
+      categoryInterests: categoryInterests ?? this.categoryInterests,
       instagram: instagram ?? this.instagram,
       facebook: facebook ?? this.facebook,
       twitter: twitter ?? this.twitter,
@@ -259,6 +279,8 @@ class BrandSettings {
       newMessageNotification: newMessageNotification ?? this.newMessageNotification,
       newLeadNotification: newLeadNotification ?? this.newLeadNotification,
       newOrderNotification: newOrderNotification ?? this.newOrderNotification,
+      appReminders: appReminders ?? this.appReminders,
+      pushNotifications: pushNotifications ?? this.pushNotifications,
     );
   }
 }

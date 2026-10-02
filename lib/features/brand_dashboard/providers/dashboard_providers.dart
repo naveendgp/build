@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart' show DateTimeRange;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../services/dashboard_service.dart';
 import '../models/dashboard_models.dart';
+import '../models/dashboard_post.dart';
 
 final dashboardServiceProvider = Provider<DashboardService>((ref) {
   final apiClient = ref.watch(apiClientProvider);
@@ -63,31 +65,27 @@ final dashboardChartsProvider = FutureProvider.autoDispose<DashboardChartsData>(
   return service.getCharts(periodDays: range.presetDays ?? 30);
 });
 
-// Post Analytics Filter (All, PUBLISHED, ARCHIVED)
-final dashboardPostsStatusFilterProvider = StateProvider<String>((ref) => 'All');
 
-// Post Analytics Provider
-final dashboardPostsProvider = FutureProvider.autoDispose<List<PostAnalytics>>((ref) async {
-  final service = ref.watch(dashboardServiceProvider);
-  final status = ref.watch(dashboardPostsStatusFilterProvider);
-  return service.getPostAnalytics(page: 1, status: status);
+// ── The brand's own posts, as the web dashboard reads them ─────────────
+//
+// `/analytics/posts` returns a scored summary; the dashboard list needs the
+// posts themselves — objective, schedule, media and raw counts — which is what
+// `/brand/me/posts` gives, the same call the web page makes.
+final brandDashboardPostsProvider = FutureProvider.autoDispose<List<BrandDashboardPost>>((
+  ref,
+) async {
+  final api = ref.watch(apiClientProvider);
+  final res = await api.dio.get('/brand/me/posts');
+  final data = res.data as List? ?? const [];
+  return data.map((j) => BrandDashboardPost.fromJson(Map<String, dynamic>.from(j as Map))).toList();
 });
 
-// Selected Post Provider for Drawer
-final selectedPostProvider = StateProvider<PostAnalytics?>((ref) => null);
+/// Which stretch of time the posts list covers: `all`, a `yyyy-MM` month, or
+/// `range` with [dashboardPostsRangeProvider].
+final dashboardPostsPeriodProvider = StateProvider<String>((ref) => 'all');
 
-// Follower Demographics Provider
-final followerDemographicsProvider = FutureProvider.autoDispose<FollowerDemographics>((ref) async {
-  final service = ref.watch(dashboardServiceProvider);
-  return service.getFollowerDemographics();
-});
+/// The dates behind the `range` period; null until the brand picks them.
+final dashboardPostsRangeProvider = StateProvider<DateTimeRange?>((ref) => null);
 
-// Top Content — selected month/year
-final topContentMonthProvider = StateProvider<DateTime>((ref) => DateTime.now());
-
-// Top Content Provider
-final topContentProvider = FutureProvider.autoDispose<List<TopContentPost>>((ref) async {
-  final service = ref.watch(dashboardServiceProvider);
-  final date = ref.watch(topContentMonthProvider);
-  return service.getTopContent(date.month, date.year);
-});
+/// `top` or `newest`, as on the web.
+final dashboardPostsSortProvider = StateProvider<String>((ref) => 'top');
