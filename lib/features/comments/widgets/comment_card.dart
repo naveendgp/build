@@ -15,6 +15,7 @@ class CommentCard extends StatefulWidget {
     required this.onReply,
     required this.onLike,
     this.onDelete,
+    this.currentAccountId,
     this.isReply = false,
     this.expandedReplies = const {},
     required this.onToggleReplies,
@@ -29,6 +30,11 @@ class CommentCard extends StatefulWidget {
   final void Function(String commentId) onToggleReplies;
   final ValueChanged<String> onLike;
   final ValueChanged<String>? onDelete;
+
+  /// The signed-in account — a person's id, or a brand's. Only the comment's
+  /// own author sees Delete; the server refuses anyone else, so the button
+  /// used to be offered to everyone and silently did nothing.
+  final String? currentAccountId;
   final bool isReply;
 
   @override
@@ -241,8 +247,11 @@ class _CommentCardState extends State<CommentCard> {
           ),
         ),
 
-        // Delete button (only if onDelete provided)
-        if (widget.onDelete != null) ...[
+        // Delete: the author's own comment only.
+        if (widget.onDelete != null &&
+            widget.currentAccountId != null &&
+            widget.currentAccountId!.isNotEmpty &&
+            comment.userId == widget.currentAccountId) ...[
           const SizedBox(width: AppSpacing.md),
           GestureDetector(
             onTap: () {
@@ -328,6 +337,7 @@ class _CommentCardState extends State<CommentCard> {
                     onReply: widget.onReply,
                     onLike: widget.onLike,
                     onDelete: widget.onDelete,
+                    currentAccountId: widget.currentAccountId,
                     isReply: true,
                   ),
                 )

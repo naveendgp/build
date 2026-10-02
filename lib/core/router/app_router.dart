@@ -218,6 +218,18 @@ class AppRouter {
           transitionDuration: const Duration(milliseconds: 300),
         ),
       ),
+      // Shared links land here: lyket.in/posts/<id> (the web's own path) and
+      // lyket://posts/<id>. The screen fetches the post by id.
+      GoRoute(
+        path: '/posts/:id',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: ExplorePostDetailScreen(postId: state.pathParameters['id']),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
       GoRoute(
         path: '/explore/post',
         pageBuilder: (context, state) {

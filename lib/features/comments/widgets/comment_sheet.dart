@@ -5,6 +5,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
+import '../../../core/adaptive/adaptive.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/comments_provider.dart';
 import 'comment_card.dart';
 import 'comment_composer.dart';
@@ -268,12 +270,31 @@ class _CommentSheetState extends ConsumerState<CommentSheet> with SingleTickerPr
               onToggleReplies: notifier.toggleReplies,
               onReply: (id, name) => notifier.setReplyTo(id, name),
               onLike: (id) => notifier.toggleLike(id),
-              onDelete: (id) => notifier.deleteComment(id),
+              onDelete: (id) => _confirmDelete(id, notifier),
+              currentAccountId: _accountId,
             ),
           );
         },
       ),
     );
+  }
+
+  /// Whoever is signed in: a brand posts as its brand id, a person as theirs.
+  String? get _accountId {
+    final auth = ref.watch(authProvider);
+    return auth.loggedInRole == UserRole.brand ? auth.brandId : auth.userId;
+  }
+
+  /// Deleting a comment takes its replies with it, so it is worth a question.
+  Future<void> _confirmDelete(String commentId, CommentsNotifier notifier) async {
+    final ok = await showAdaptiveConfirmDialog(
+      context,
+      title: 'Delete this comment?',
+      message: 'Any replies to it are removed too. This cannot be undone.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (ok == true) await notifier.deleteComment(commentId);
   }
 
   Widget _buildErrorState(CommentsNotifier notifier) {

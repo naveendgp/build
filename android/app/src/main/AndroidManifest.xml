@@ -38,9 +38,33 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Hands the incoming link to go_router instead of dropping it. -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+            <!-- Shared links (lyket.in/posts/..., lyket.in/brand/...) opened
+                 the browser, because nothing here claimed them. Android
+                 verifies this against https://lyket.in/.well-known/assetlinks.json
+                 and https://www.lyket.in/.well-known/assetlinks.json; without
+                 those files it falls back to the browser. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="lyket.in"/>
+                <data android:scheme="https" android:host="www.lyket.in"/>
+            </intent-filter>
+
+            <!-- lyket://posts/<id> — works without web verification, for
+                 testing and for links the app itself makes. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="lyket"/>
             </intent-filter>
         </activity>
 

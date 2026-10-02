@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
@@ -150,13 +151,28 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     }
   }
 
-  Future<void> deleteComment(String commentId) async {
+  Future<bool> deleteComment(String commentId) async {
+    // A deleted comment takes its replies with it, so the post's count drops
+    // by more than one.
+    var removed = 1;
+    for (final c in state.comments) {
+      if (c.id == commentId) {
+        removed += c.replies.length;
+        break;
+      }
+    }
     try {
       await _api.dio.delete('/comments/$commentId');
       Haptics.light();
       await loadComments();
-      _bumpCount(-1);
-    } catch (_) {}
+      _bumpCount(-removed);
+      return true;
+    } catch (e) {
+      // The server allows only the comment's own author; anyone else gets a
+      // 403. The button is hidden for them, so this is a network hiccup.
+      debugPrint('Deleting comment failed: $e');
+      return false;
+    }
   }
 
   void _bumpCount(int delta) {
