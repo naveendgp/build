@@ -177,7 +177,17 @@ class FeedNotifier extends StateNotifier<FeedState> {
         await _apiClient.dio.delete('/likes/$postId');
       }
     } catch (e) {
-      // Ignore for optimistic UI
+      // Put it back. The heart used to stay where it was tapped while the
+      // server knew nothing about it, until something refetched the post.
+      state = state.copyWith(
+        posts: state.posts.map((p) {
+          if (p.id != postId) return p;
+          return p.copyWith(
+            isLiked: !isLiking,
+            likeCount: isLiking ? (p.likeCount - 1).clamp(0, 1 << 31) : p.likeCount + 1,
+          );
+        }).toList(),
+      );
     }
   }
 
@@ -210,7 +220,18 @@ class FeedNotifier extends StateNotifier<FeedState> {
         await _apiClient.dio.delete('/saved-posts/$postId/save');
       }
     } catch (e) {
-      // Ignore for optimistic UI, or could revert state
+      // Put it back, here and in the saved lists that were just told about it.
+      final reverted = state.posts.map((p) {
+        if (p.id != postId) return p;
+        return p.copyWith(isBookmarked: !isSaving);
+      }).toList();
+      state = state.copyWith(posts: reverted);
+      if (targetPost != null) {
+        ref
+            .read(userProfileProvider.notifier)
+            .syncSavedPost(postId, !isSaving, targetPost!.copyWith(isBookmarked: !isSaving));
+        ref.invalidate(brandSavedPostsProvider);
+      }
     }
   }
 
@@ -255,7 +276,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
     }
   }
 
-  Future<void> setReminder(String postId, DateTime reminderTime) async {
+  /// Returns false when the reminder was not stored, so the screen can stop
+  /// telling the person it was set.
+  Future<bool> setReminder(String postId, DateTime reminderTime) async {
     try {
       await _apiClient.dio.post(
         '/reminders',
@@ -267,8 +290,10 @@ class FeedNotifier extends StateNotifier<FeedState> {
       );
       // Refresh the upcoming reminders list so it shows up in the Profile tab
       ref.read(remindersProvider.notifier).loadReminders();
+      return true;
     } catch (e) {
-      // Could show error in UI
+      debugPrint('Setting a reminder failed: $e');
+      return false;
     }
   }
 

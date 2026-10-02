@@ -116,9 +116,10 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       });
       Haptics.heavy();
       if (!mounted) return;
-      AppMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to submit the form. Please try again.')));
+      // A lead that did not reach the brand has to be said out loud: the
+      // ordinary snackbar is suppressed for failures, so this looked like it
+      // had been sent.
+      AppMessenger.of(context).showError('Could not submit the form. Please try again.');
     }
   }
 

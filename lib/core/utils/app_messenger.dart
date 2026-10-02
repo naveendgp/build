@@ -65,6 +65,23 @@ class AppMessenger {
     return ScaffoldMessenger.of(_context).showSnackBar(snackBar);
   }
 
+  /// Shows a failure that the person needs to know about, whatever it says.
+  ///
+  /// [showSnackBar] hides failures on purpose — a background request that did
+  /// not land is noise. But when someone has just pressed Submit and it did
+  /// not go through, silence reads as success and the work is lost. Those call
+  /// sites use this.
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showError(String message) {
+    return ScaffoldMessenger.of(_context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: _context.colors.error,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+      ),
+    );
+  }
+
   void clearSnackBars() => ScaffoldMessenger.of(_context).clearSnackBars();
 
   void hideCurrentSnackBar({SnackBarClosedReason reason = SnackBarClosedReason.hide}) =>

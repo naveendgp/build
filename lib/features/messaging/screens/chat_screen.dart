@@ -66,6 +66,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     }
   }
 
+  /// Sends, and says so when it did not go. A failed message is taken back out
+  /// of the thread, so without this it just disappeared.
+  Future<void> _send(ChatNotifier notifier, String text) async {
+    final sent = await notifier.sendMessage(text);
+    if (!sent && mounted) {
+      AppMessenger.of(context).showError('Message not sent. Check your connection and try again.');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatProvider(widget.conversationId));
@@ -123,7 +132,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 )
               else
                 ChatComposer(
-                  onSend: (text) => notifier.sendMessage(text),
+                  onSend: (text) => _send(notifier, text),
                   isTyping: chatState.isTyping,
                   initialText: widget.prefilledMessage,
                 ),

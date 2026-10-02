@@ -250,8 +250,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  Future<void> sendMessage(String text) async {
-    if (text.trim().isEmpty) return;
+  /// Returns false when the message did not reach the server, so the screen
+  /// can say so and hand the text back instead of losing it.
+  Future<bool> sendMessage(String text) async {
+    if (text.trim().isEmpty) return false;
 
     final newMessage = Message(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -275,12 +277,15 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(
         messages: state.messages.map((m) => m.id == newMessage.id ? actualMessage : m).toList(),
       );
+      return true;
     } catch (e) {
-      // Revert on failure
+      // Revert on failure. The screen reports it; nothing used to, so the
+      // message simply vanished from the thread.
       state = state.copyWith(
         messages: state.messages.where((m) => m.id != newMessage.id).toList(),
         error: 'Failed to send message',
       );
+      return false;
     }
   }
 

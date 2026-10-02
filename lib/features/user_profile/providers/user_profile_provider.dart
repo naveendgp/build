@@ -109,7 +109,9 @@ class UserProfileNotifier extends StateNotifier<UserProfileState> {
 
   Future<bool> updateProfile(Map<String, dynamic> data) async {
     try {
-      final res = await apiClient.dio.put('/user/profile', data: data);
+      // `/user/profile` does not exist — the route is `/user/me`, and this
+      // call answered 404.
+      final res = await apiClient.dio.put('/user/me', data: data);
       if (res.statusCode == 200) {
         await loadProfile();
         return true;

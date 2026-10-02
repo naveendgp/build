@@ -158,14 +158,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         time.hour,
                         time.minute,
                       );
-                      notifier.setReminder(postId, dateTime);
-                      AppMessenger.of(parentContext).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
+                      // "Reminder set" used to appear whether or not the
+                      // server took it.
+                      final set = await notifier.setReminder(postId, dateTime);
+                      if (!parentContext.mounted) return;
+                      if (set) {
+                        AppMessenger.of(parentContext).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                      } else {
+                        AppMessenger.of(
+                          parentContext,
+                        ).showError('Could not set that reminder. Please try again.');
+                      }
                     }
                   }
                 },
@@ -223,11 +232,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return ListTile(
       title: Text(label, style: AppTypography.bodyLarge),
       trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
-      onTap: () {
+      onTap: () async {
         Navigator.pop(context);
         final dateTime = DateTime.now().add(duration);
-        notifier.setReminder(postId, dateTime);
-        AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
+        final set = await notifier.setReminder(postId, dateTime);
+        if (!context.mounted) return;
+        if (set) {
+          AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
+        } else {
+          AppMessenger.of(context).showError('Could not set that reminder. Please try again.');
+        }
       },
     );
   }
