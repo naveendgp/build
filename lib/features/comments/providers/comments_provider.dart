@@ -63,13 +63,16 @@ class CommentsState {
   }
 }
 
-/// How far a post's comment count has moved since it was fetched, by post id.
+/// A post's true comment count, by post id — an absolute number, not an
+/// adjustment.
 ///
-/// A post is shown in several places at once - the feed list, the detail
-/// screen opened from the grid, a brand's profile - and each holds its own
-/// copy. Bumping the feed's copy alone left the others reading the old
-/// number, so the change is kept here and read wherever the count is drawn.
-final commentCountDeltaProvider = StateProvider<Map<String, int>>((ref) => {});
+/// A post is shown in several places at once: the feed list, the detail screen
+/// opened from the grid, a brand's profile, each holding its own copy. This
+/// held a *delta* before, which was then also applied to the feed's own copy,
+/// so one deletion counted twice and read as -2; and because the delta was
+/// never cleared, a refreshed post stayed wrong for the rest of the session.
+/// The count is now written once, from the server's own total.
+final commentCountProvider = StateProvider<Map<String, int>>((ref) => {});
 
 class CommentsNotifier extends StateNotifier<CommentsState> {
   final ApiClient _api;
@@ -94,6 +97,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
           .toList();
 
       state = state.copyWith(isLoading: false, comments: comments, nextCursor: data['nextCursor']);
+      _publishCount(data, comments);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Failed to load comments');
     }
@@ -121,6 +125,7 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
         comments: [...state.comments, ...newComments],
         nextCursor: data['nextCursor'],
       );
+      _publishCount(data, state.comments);
     } catch (e) {
       state = state.copyWith(isLoadingMore: false);
     }
@@ -143,7 +148,6 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
       // Reload comments to get fresh data with proper user info
       state = state.copyWith(isSending: false, clearReply: true);
       await loadComments();
-      _bumpCount(1);
       return true;
     } catch (e) {
       state = state.copyWith(isSending: false);
@@ -152,20 +156,12 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
   }
 
   Future<bool> deleteComment(String commentId) async {
-    // A deleted comment takes its replies with it, so the post's count drops
-    // by more than one.
-    var removed = 1;
-    for (final c in state.comments) {
-      if (c.id == commentId) {
-        removed += c.replies.length;
-        break;
-      }
-    }
     try {
       await _api.dio.delete('/comments/$commentId');
       Haptics.light();
+      // Reloading republishes the count, replies included, so nothing here
+      // has to guess how far it moved.
       await loadComments();
-      _bumpCount(-removed);
       return true;
     } catch (e) {
       // The server allows only the comment's own author; anyone else gets a
@@ -175,11 +171,27 @@ class CommentsNotifier extends StateNotifier<CommentsState> {
     }
   }
 
-  void _bumpCount(int delta) {
-    final deltas = Map<String, int>.from(_ref.read(commentCountDeltaProvider));
-    deltas[postId] = (deltas[postId] ?? 0) + delta;
-    _ref.read(commentCountDeltaProvider.notifier).state = deltas;
-    _ref.read(feedProvider.notifier).adjustCommentCount(postId, delta);
+  /// Records what the post's comment count actually is, for every screen
+  /// drawing it.
+  ///
+  /// `total` is the server's count of every comment on the post, replies
+  /// included. Older servers do not send it: then the count is only safe to
+  /// publish when this page is the whole thread (no cursor to follow), and
+  /// otherwise the existing number is left alone rather than made up.
+  void _publishCount(dynamic data, List<Comment> comments) {
+    final total = data is Map ? data['total'] : null;
+    int? count;
+    if (total is int) {
+      count = total;
+    } else if (state.nextCursor == null) {
+      count = comments.fold<int>(0, (sum, c) => sum + 1 + c.replies.length);
+    }
+    if (count == null) return;
+
+    final counts = Map<String, int>.from(_ref.read(commentCountProvider));
+    counts[postId] = count;
+    _ref.read(commentCountProvider.notifier).state = counts;
+    _ref.read(feedProvider.notifier).setCommentCount(postId, count);
   }
 
   /// Opens or closes one comment's replies. Reloading after a reply rebuilt

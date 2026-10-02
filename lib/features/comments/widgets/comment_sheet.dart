@@ -166,7 +166,9 @@ class _CommentSheetState extends ConsumerState<CommentSheet> with SingleTickerPr
   }
 
   Widget _buildHeader(BuildContext context, CommentsState state) {
-    final count = state.comments.isNotEmpty ? state.comments.length : widget.commentCount;
+    // The header counted only the top-level comments on screen, so it
+    // disagreed with the number on the post whenever a thread had replies.
+    final count = ref.watch(commentCountProvider)[widget.postId] ?? widget.commentCount;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20, 8, 20, 12),

@@ -79,7 +79,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
   Future<void> refreshFeed() async {
     // Counts come back fresh from the server, so the running adjustments are
     // dropped rather than counted twice.
-    ref.read(commentCountDeltaProvider.notifier).state = {};
+    ref.read(commentCountProvider.notifier).state = {};
     state = state.copyWith(loadState: FeedLoadState.loading);
     try {
       final res = await _apiClient.dio.get('/feed');
@@ -145,12 +145,11 @@ class FeedNotifier extends StateNotifier<FeedState> {
   /// A delta rather than setting an absolute count, because the comment
   /// sheet only ever loads one page at a time — its loaded-list length
   /// isn't the true total once a post has more comments than fit on a page.
-  void adjustCommentCount(String postId, int delta) {
+  /// Sets a post's comment count to what the server says it is. This took a
+  /// delta before, which the sheet applied on top of its own adjustment.
+  void setCommentCount(String postId, int count) {
     final updated = state.posts.map((p) {
-      if (p.id == postId) {
-        final next = (p.commentCount + delta).clamp(0, 1 << 31);
-        return p.copyWith(commentCount: next);
-      }
+      if (p.id == postId) return p.copyWith(commentCount: count);
       return p;
     }).toList();
     state = state.copyWith(posts: updated);

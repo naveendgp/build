@@ -595,7 +595,9 @@ class FeedCard extends ConsumerWidget {
   }
 
   Widget _buildFooter(BuildContext context, WidgetRef ref) {
-    final commentCount = post.commentCount + (ref.watch(commentCountDeltaProvider)[post.id] ?? 0);
+    // The sheet publishes the real count after it loads; until then the post's
+    // own number stands.
+    final commentCount = ref.watch(commentCountProvider)[post.id] ?? post.commentCount;
     final authState = ref.watch(authProvider);
     final isBrand = authState.loggedInRole == UserRole.brand;
 
