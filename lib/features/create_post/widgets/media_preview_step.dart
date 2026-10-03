@@ -18,6 +18,11 @@ class MediaPreviewStep extends StatefulWidget {
   final ValueChanged<int> onChangeMedia;
   final ValueChanged<int> onRemoveMedia;
   final VoidCallback? onAddMore;
+
+  /// Moves a slide within the carousel. The provider could already do this;
+  /// nothing on screen asked it to, so the order a carousel was picked in was
+  /// the order it published in.
+  final void Function(int oldIndex, int newIndex)? onReorder;
   // Fired while a finger is down on the zoomable image, so an ancestor
   // Scrollable (this step is wrapped in one for smaller screens) can
   // disable its own scroll physics and stop stealing single-finger pan
@@ -31,6 +36,7 @@ class MediaPreviewStep extends StatefulWidget {
     required this.onChangeMedia,
     required this.onRemoveMedia,
     this.onAddMore,
+    this.onReorder,
     this.onImageInteractionStart,
     this.onImageInteractionEnd,
   });
@@ -97,12 +103,59 @@ class _MediaPreviewStepState extends State<MediaPreviewStep> with SingleTickerPr
             const SizedBox(height: AppSpacing.md),
             if (widget.media.length > 1) ...[
               _buildPageIndicator(),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
+              if (widget.onReorder != null) _buildReorderBar(),
+              const SizedBox(height: AppSpacing.sm),
             ],
             _buildControlsSection(),
           ],
         ),
       ),
+    );
+  }
+
+  /// Moves the slide on screen one place earlier or later, and follows it so
+  /// the same picture stays in view.
+  Widget _buildReorderBar() {
+    final total = widget.media.length;
+
+    void move(int to) {
+      if (to < 0 || to >= total) return;
+      Haptics.selection();
+      // ReorderableList's convention, which the provider follows: an item
+      // moving later is inserted after the one it passes.
+      widget.onReorder!(_currentPage, to > _currentPage ? to + 1 : to);
+      setState(() => _currentPage = to);
+      _pageController.animateToPage(
+        to,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _ReorderButton(
+          icon: Icons.arrow_back_rounded,
+          label: 'Move earlier',
+          enabled: _currentPage > 0,
+          onTap: () => move(_currentPage - 1),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          child: Text(
+            '${_currentPage + 1} of $total',
+            style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+          ),
+        ),
+        _ReorderButton(
+          icon: Icons.arrow_forward_rounded,
+          label: 'Move later',
+          enabled: _currentPage < total - 1,
+          onTap: () => move(_currentPage + 1),
+        ),
+      ],
     );
   }
 
@@ -653,6 +706,39 @@ class _VideoPreviewWidgetState extends State<_VideoPreviewWidget> {
           height: _controller.value.size.height,
           child: VideoPlayer(_controller),
         ),
+      ),
+    );
+  }
+}
+
+/// One of the two arrows under a carousel preview.
+class _ReorderButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _ReorderButton({
+    required this.icon,
+    required this.label,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: label,
+      onPressed: enabled ? onTap : null,
+      visualDensity: VisualDensity.compact,
+      icon: Icon(
+        icon,
+        size: 18,
+        color: enabled ? context.colors.textPrimary : context.colors.textTertiary,
+      ),
+      style: IconButton.styleFrom(
+        backgroundColor: context.colors.surfaceSecondary,
+        shape: const CircleBorder(),
       ),
     );
   }

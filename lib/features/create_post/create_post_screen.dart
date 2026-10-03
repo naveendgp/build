@@ -132,6 +132,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
               physics: _isInteractingWithImage ? const NeverScrollableScrollPhysics() : null,
               child: MediaPreviewStep(
                 media: state.media,
+                onReorder: notifier.reorderMedia,
                 onImageInteractionStart: () => setState(() => _isInteractingWithImage = true),
                 onImageInteractionEnd: () => setState(() => _isInteractingWithImage = false),
                 onChangeMedia: (index) {
