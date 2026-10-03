@@ -187,10 +187,7 @@ class NotificationService {
 
         // The same tap, when the app was not running at all.
         final launchedBy = await fcm.getInitialMessage();
-        if (launchedBy != null) {
-          // After the first frame, so the router exists to navigate with.
-          WidgetsBinding.instance.addPostFrameCallback((_) => _openFor(launchedBy.data));
-        }
+        if (launchedBy != null) _openAfterSplash(launchedBy.data);
 
         _listenerSetUp = true;
       }
@@ -201,6 +198,25 @@ class NotificationService {
   ///
   /// The backend sends `referenceType` and `referenceId` with every push —
   /// POST, CONVERSATION, BRAND — the same pair the in-app list routes on.
+  /// Waits for the splash screen to finish before opening anything.
+  ///
+  /// On a cold start the splash sends the app to /home with `go`, which
+  /// replaces the whole stack — so a screen opened before that simply
+  /// vanished, and tapping a notification looked like it only opened the app.
+  Future<void> _openAfterSplash(Map<String, dynamic> data) async {
+    for (var i = 0; i < 50; i++) {
+      String path = '';
+      try {
+        path = AppRouter.router.routerDelegate.currentConfiguration.uri.path;
+      } catch (_) {
+        // The router has not resolved a route yet.
+      }
+      if (path.isNotEmpty && path != '/splash') break;
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    _openFor(data);
+  }
+
   void _openFor(Map<String, dynamic> data) {
     final id = data['referenceId']?.toString();
     if (id == null || id.isEmpty) return;

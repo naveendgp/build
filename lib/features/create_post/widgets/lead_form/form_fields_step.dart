@@ -137,8 +137,13 @@ class _AddQuestionSheet extends StatelessWidget {
           children: [
             Text('Add Question', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: AppSpacing.lg),
+            // What a brand can ask for, exactly as the web lists it: the same
+            // ten standard fields and the same three kinds of question. This
+            // app had its own shorter list of standard fields (no name, city,
+            // country, address, pincode or education) and offered Paragraph
+            // and Dropdown as question types, which the web does not.
             Text(
-              'Custom',
+              'User Information',
               style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -146,91 +151,111 @@ class _AddQuestionSheet extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildTypeBtn(
+                _buildPrebuiltBtn(
                   context,
-                  'Short Text',
-                  Icons.short_text_rounded,
+                  'Full name',
+                  Icons.person_outline_rounded,
                   FormFieldType.shortText,
+                  'Full name',
                 ),
-                _buildTypeBtn(context, 'Paragraph', Icons.notes_rounded, FormFieldType.longText),
-                _buildTypeBtn(
-                  context,
-                  'Multiple Choice',
-                  Icons.check_box_rounded,
-                  FormFieldType.multipleChoice,
-                ),
-                _buildTypeBtn(
-                  context,
-                  'Dropdown',
-                  Icons.arrow_drop_down_circle_rounded,
-                  FormFieldType.dropDown,
-                ),
-                // Books something: the person picks a date and a time, stored
-                // as an ISO 8601 string.
-                _buildTypeBtn(
-                  context,
-                  'Appointment',
-                  Icons.event_available_rounded,
-                  FormFieldType.appointment,
-                ),
-              ],
-            ),
-            SizedBox(height: AppSpacing.xl),
-            Text(
-              'Pre-built',
-              style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
                 _buildPrebuiltBtn(
                   context,
                   'Email',
-                  Icons.email_rounded,
+                  Icons.email_outlined,
                   FormFieldType.email,
-                  'email',
+                  'Email',
                 ),
                 _buildPrebuiltBtn(
                   context,
-                  'Phone',
-                  Icons.phone_rounded,
+                  'Phone number',
+                  Icons.phone_outlined,
                   FormFieldType.phone,
-                  'phone',
+                  'Phone number',
                 ),
                 // Read by its label: the form shows a date picker for it, and
                 // nothing later than today can be chosen.
                 _buildPrebuiltBtn(
                   context,
-                  'Date of Birth',
-                  Icons.cake_rounded,
+                  'DOB',
+                  Icons.cake_outlined,
                   FormFieldType.shortText,
-                  'Date of Birth',
+                  'DOB',
                 ),
-                // Single choice is gone as a question type, so gender is a
-                // dropdown of the same options.
                 _buildPrebuiltBtn(
                   context,
                   'Gender',
                   Icons.wc_rounded,
                   FormFieldType.dropDown,
-                  'What is your gender?',
-                  ['Male', 'Female', 'Other', 'Prefer not to say'],
+                  'Gender',
+                  ['Male', 'Female', 'Other'],
                 ),
                 _buildPrebuiltBtn(
                   context,
-                  'Job Title',
-                  Icons.work_rounded,
-                  FormFieldType.shortText,
-                  'What is your job title?',
+                  'Street Address',
+                  Icons.home_outlined,
+                  FormFieldType.longText,
+                  'Street Address',
                 ),
                 _buildPrebuiltBtn(
                   context,
-                  'Company',
-                  Icons.business_rounded,
+                  'City',
+                  Icons.location_city_rounded,
                   FormFieldType.shortText,
-                  'Company Name',
+                  'City',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Pincode',
+                  Icons.markunread_mailbox_outlined,
+                  FormFieldType.shortText,
+                  'Pincode',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Country',
+                  Icons.public_rounded,
+                  FormFieldType.shortText,
+                  'Country',
+                ),
+                _buildPrebuiltBtn(
+                  context,
+                  'Education',
+                  Icons.school_outlined,
+                  FormFieldType.dropDown,
+                  'Education',
+                  ["High School", "Bachelor's", "Master's", 'PhD', 'Other'],
+                ),
+              ],
+            ),
+            SizedBox(height: AppSpacing.xl),
+            Text(
+              'Custom questions (optional)',
+              style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // "Multiple choice" is one answer from several, as on the web
+                // (RADIO), not the checkbox list this app used to add.
+                _buildTypeBtn(
+                  context,
+                  'Multiple choice',
+                  Icons.radio_button_checked_rounded,
+                  FormFieldType.singleChoice,
+                ),
+                _buildTypeBtn(
+                  context,
+                  'Short answer',
+                  Icons.short_text_rounded,
+                  FormFieldType.shortText,
+                ),
+                _buildTypeBtn(
+                  context,
+                  'Appointment request',
+                  Icons.event_available_rounded,
+                  FormFieldType.appointment,
                 ),
               ],
             ),

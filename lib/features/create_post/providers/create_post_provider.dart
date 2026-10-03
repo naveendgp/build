@@ -426,6 +426,12 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         );
         return;
       }
+      // An unnamed form cannot be found again in the library, so it is not
+      // saved without one — the same rule the web applies.
+      if (state.leadForm!.name.trim().isEmpty) {
+        state = state.copyWith(errorMessage: 'Give the lead form a name before posting.');
+        return;
+      }
     }
 
     state = state.copyWith(

@@ -132,7 +132,12 @@ class _LeadFormBuilderState extends State<LeadFormBuilder> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (ctrl.text.isNotEmpty) {
+              if (ctrl.text.trim().isEmpty) {
+                // The button simply did nothing before, which read as broken.
+                AppMessenger.of(context).showError('Give the form a name before saving it.');
+                return;
+              }
+              {
                 widget.onSaveTemplate(ctrl.text.trim(), Icons.star_border_rounded);
                 Navigator.pop(context);
                 AppMessenger.of(context).showSnackBar(
