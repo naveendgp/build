@@ -1,41 +1,41 @@
 {
   "project_info": {
-    "project_number": "799567267925",
-    "project_id": "lyket-32830",
-    "storage_bucket": "lyket-32830.firebasestorage.app"
+    "project_number": "743433669984",
+    "project_id": "lyket-b45a8",
+    "storage_bucket": "lyket-b45a8.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:799567267925:android:43169cfb54c1e37fca6cdc",
+        "mobilesdk_app_id": "1:743433669984:android:b308cc707b26043e0ee205",
         "android_client_info": {
           "package_name": "com.lyket.lyket"
         }
       },
       "oauth_client": [
         {
-          "client_id": "799567267925-d97g8pedt57a8stmlvdtunkm02kt4dcv.apps.googleusercontent.com",
+          "client_id": "743433669984-m6lhp2105nigpql20qdm9o6c8fn7ets7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.lyket.lyket",
-            "certificate_hash": "8091de02c36d08009b54d84ecd2658fd9660624a"
+            "certificate_hash": "0c7665757a025422e22881e7fb40bdd635bebb3d"
           }
         },
         {
-          "client_id": "799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com",
+          "client_id": "743433669984-vcdrpunji3vo1nj8ojjl9mp53ah9clgv.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBKQk7QQnsWnbgbCIaRdgGeQD39njC2ZEo"
+          "current_key": "AIzaSyAdvZcebSjA2m6DIAu-jjmAcAMh1V3bit0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com",
+              "client_id": "743433669984-vcdrpunji3vo1nj8ojjl9mp53ah9clgv.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

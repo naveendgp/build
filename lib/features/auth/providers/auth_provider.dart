@@ -372,7 +372,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   /// against. `/auth/google-client-id` serves it, so switching Google projects
   /// is a server change rather than an app release.
   static const _fallbackGoogleClientId =
-      '799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com';
+      '743433669984-vcdrpunji3vo1nj8ojjl9mp53ah9clgv.apps.googleusercontent.com';
 
   Future<String> _googleServerClientId() async {
     try {
