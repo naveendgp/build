@@ -1,4 +1,9 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart' as http_parser;
+import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -10,6 +15,7 @@ import '../../core/utils/app_messenger.dart';
 import '../../core/utils/haptics.dart';
 import '../brand_dashboard/providers/dashboard_providers.dart';
 import '../home/providers/feed_provider.dart';
+import 'providers/create_post_provider.dart';
 import 'widgets/tag_input.dart';
 
 /// Edit a post the brand already published: its title, description, tags and
@@ -20,7 +26,9 @@ import 'widgets/tag_input.dart';
 /// again — losing its likes, comments and leads. The web has had an edit page
 /// all along (`/brand-dashboard/edit/[id]`, `PUT /posts/:id`).
 ///
-/// The pictures are not editable here; the web form can replace them.
+/// Pictures can be replaced, added, removed and reordered, up to the same five
+/// a carousel holds elsewhere. A video post is left alone: swapping a video is
+/// its own job, and the backend refuses a video alongside anything else.
 class EditPostScreen extends ConsumerStatefulWidget {
   final String postId;
 
@@ -39,8 +47,14 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
   List<String> _tags = [];
   String? _objective;
-  String? _thumbnail;
   String? _category;
+
+  /// The carousel as it stands, existing pictures and newly picked ones alike.
+  List<_EditMedia> _media = [];
+  bool _mediaChanged = false;
+  bool _isVideoPost = false;
+
+  final _picker = ImagePicker();
 
   bool _loading = true;
   bool _saving = false;
@@ -84,9 +98,16 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         _tags = ((data['tags'] as List?) ?? const []).map((t) => t.toString()).toList();
         _objective = data['marketingObjective']?.toString();
         _category = data['category']?.toString();
-        _thumbnail = media.isEmpty
-            ? null
-            : ApiClient.resolveMediaUrl((media.first as Map)['url']?.toString());
+        _media = media
+            .map((m) => Map<String, dynamic>.from(m as Map))
+            .map(
+              (m) => _EditMedia.existing(
+                url: ApiClient.resolveMediaUrl(m['url']?.toString()),
+                type: (m['type'] ?? 'IMAGE').toString().toUpperCase(),
+              ),
+            )
+            .toList();
+        _isVideoPost = _media.any((m) => m.isVideo);
         _loading = false;
       });
     } catch (e) {
@@ -94,6 +115,92 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
       if (mounted) setState(() => _loading = false);
       if (mounted) setState(() => _loadError = 'Could not open this post for editing.');
     }
+  }
+
+
+  // ── The carousel ───────────────────────────────────────────────────
+
+  void _moveMedia(int from, int to) {
+    if (to < 0 || to >= _media.length) return;
+    Haptics.selection();
+    setState(() {
+      final item = _media.removeAt(from);
+      _media.insert(to, item);
+      _mediaChanged = true;
+    });
+  }
+
+  void _removeMedia(int index) {
+    if (_media.length <= 1) {
+      setState(() => _saveError = 'A post needs at least one picture.');
+      return;
+    }
+    Haptics.medium();
+    setState(() {
+      _media.removeAt(index);
+      _mediaChanged = true;
+      _saveError = null;
+    });
+  }
+
+  /// [replaceIndex] swaps one picture; without it the picture is added.
+  Future<void> _pickMedia({int? replaceIndex}) async {
+    if (replaceIndex == null && _media.length >= CreatePostNotifier.maxCarouselImages) {
+      setState(
+        () => _saveError =
+            'A carousel holds ${CreatePostNotifier.maxCarouselImages} pictures.',
+      );
+      return;
+    }
+    final picked = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 92);
+    if (picked == null || !mounted) return;
+    setState(() {
+      final item = _EditMedia.picked(File(picked.path));
+      if (replaceIndex != null) {
+        _media[replaceIndex] = item;
+      } else {
+        _media.add(item);
+      }
+      _mediaChanged = true;
+      _saveError = null;
+    });
+  }
+
+  /// Sends the newly picked files and returns the carousel as the API wants
+  /// it: every picture in order, old and new together.
+  Future<List<Map<String, dynamic>>> _uploadMedia() async {
+    final api = ref.read(apiClientProvider);
+    final out = <Map<String, dynamic>>[];
+
+    for (var i = 0; i < _media.length; i++) {
+      final item = _media[i];
+      if (item.url != null) {
+        out.add({'url': item.url, 'type': item.type, 'order': i});
+        continue;
+      }
+
+      final form = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          item.file!.path,
+          contentType: http_parser.MediaType('image', 'jpeg'),
+        ),
+      });
+      final res = await api.dio.post(
+        '/upload',
+        data: form,
+        queryParameters: {'type': 'post'},
+        options: Options(
+          sendTimeout: const Duration(minutes: 5),
+          receiveTimeout: const Duration(minutes: 5),
+        ),
+      );
+      if (res.statusCode != 200 || res.data?['url'] == null) {
+        throw Exception('upload failed for picture ${i + 1}');
+      }
+      out.add({'url': res.data['url'], 'type': 'IMAGE', 'order': i});
+    }
+
+    return out;
   }
 
   Future<void> _save() async {
@@ -108,6 +215,9 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     });
 
     try {
+      // Only sent when something moved: the server replaces the whole set.
+      final media = _mediaChanged ? await _uploadMedia() : null;
+
       await ref.read(apiClientProvider).dio.put('/posts/${widget.postId}', data: {
         'title': _title.text.trim(),
         'description': _description.text.trim(),
@@ -115,6 +225,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         if (_ctaText.text.trim().isNotEmpty) 'ctaText': _ctaText.text.trim(),
         if (_hasDestination) 'destinationUrl': _destinationUrl.text.trim(),
         if (_isMessaging) 'prefilledMessage': _prefilledMessage.text.trim(),
+        if (media != null) 'media': media,
       });
 
       // Every list holding this post is now out of date.
@@ -188,7 +299,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
           : ListView(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
               children: [
-                if (_thumbnail != null) _buildMediaNote(),
+                if (_media.isNotEmpty) _buildMediaEditor(),
                 _label('Title'),
                 _field(_title, hint: 'What is this post about?', maxLength: 100),
                 const SizedBox(height: AppSpacing.md),
@@ -245,41 +356,190 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     );
   }
 
-  Widget _buildMediaNote() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        borderRadius: AppSpacing.borderRadiusMd,
-        border: Border.all(color: context.colors.borderLight, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: AppSpacing.borderRadiusSm,
-            child: Image.network(
-              _thumbnail!,
-              width: 56,
-              height: 56,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => Container(
-                width: 56,
-                height: 56,
-                color: context.colors.surfaceSecondary,
-                child: Icon(Icons.image_outlined, color: context.colors.textTertiary, size: 20),
+  /// The carousel: tap a picture to swap it, × to drop it, arrows to move it,
+  /// and the last tile to add another — up to five, as everywhere else.
+  Widget _buildMediaEditor() {
+    if (_isVideoPost) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: context.colors.surface,
+          borderRadius: AppSpacing.borderRadiusMd,
+          border: Border.all(color: context.colors.borderLight, width: 0.5),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.videocam_rounded, size: 20, color: context.colors.textSecondary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'The video stays as it is. Everything else can be changed.',
+                style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
               ),
             ),
+          ],
+        ),
+      );
+    }
+
+    final canAdd = _media.length < CreatePostNotifier.maxCarouselImages;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            _label('Pictures'),
+            const Spacer(),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                '${_media.length}/${CreatePostNotifier.maxCarouselImages}',
+                style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(
+          height: 128,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _media.length + (canAdd ? 1 : 0),
+            separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+            itemBuilder: (context, index) {
+              if (index == _media.length) return _buildAddTile();
+              return _buildMediaTile(index);
+            },
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'The pictures stay as they are. Everything else can be changed.',
-              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Tap a picture to replace it. The first one is the cover.',
+          style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+        ),
+        const SizedBox(height: AppSpacing.lg),
+      ],
+    );
+  }
+
+  Widget _buildAddTile() {
+    return GestureDetector(
+      onTap: _saving ? null : () => _pickMedia(),
+      child: Container(
+        width: 96,
+        height: 96,
+        decoration: BoxDecoration(
+          color: context.colors.surfaceSecondary,
+          borderRadius: AppSpacing.borderRadiusMd,
+          border: Border.all(color: context.colors.border),
+        ),
+        child: Icon(Icons.add_photo_alternate_outlined, color: context.colors.textTertiary),
+      ),
+    );
+  }
+
+  Widget _buildMediaTile(int index) {
+    final item = _media[index];
+
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _saving ? null : () => _pickMedia(replaceIndex: index),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: AppSpacing.borderRadiusMd,
+                child: SizedBox(
+                  width: 96,
+                  height: 96,
+                  child: item.file != null
+                      ? Image.file(item.file!, fit: BoxFit.cover)
+                      : Image.network(
+                          item.url!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => Container(
+                            color: context.colors.surfaceSecondary,
+                            child: Icon(
+                              Icons.broken_image_outlined,
+                              color: context.colors.textTertiary,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                ),
+              ),
+              Positioned(
+                top: 4,
+                right: 4,
+                child: GestureDetector(
+                  onTap: _saving ? null : () => _removeMedia(index),
+                  child: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.close_rounded, size: 14, color: Colors.white),
+                  ),
+                ),
+              ),
+              if (index == 0)
+                Positioned(
+                  bottom: 4,
+                  left: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      'Cover',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: Colors.white,
+                        fontSize: 9,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        if (_media.length > 1)
+          SizedBox(
+            width: 96,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  tooltip: 'Move earlier',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: index == 0 || _saving ? null : () => _moveMedia(index, index - 1),
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    size: 16,
+                    color: index == 0 ? context.colors.textTertiary : context.colors.textPrimary,
+                  ),
+                ),
+                IconButton(
+                  tooltip: 'Move later',
+                  visualDensity: VisualDensity.compact,
+                  onPressed: index == _media.length - 1 || _saving
+                      ? null
+                      : () => _moveMedia(index, index + 1),
+                  icon: Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 16,
+                    color: index == _media.length - 1
+                        ? context.colors.textTertiary
+                        : context.colors.textPrimary,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -328,4 +588,21 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
       ),
     );
   }
+}
+
+/// One picture in the edit screen's carousel: either one the post already has
+/// (a URL on the server) or one just picked from the gallery (a local file).
+class _EditMedia {
+  final String? url;
+  final File? file;
+  final String type;
+
+  const _EditMedia._({this.url, this.file, required this.type});
+
+  factory _EditMedia.existing({required String url, required String type}) =>
+      _EditMedia._(url: url, type: type);
+
+  factory _EditMedia.picked(File file) => _EditMedia._(file: file, type: 'IMAGE');
+
+  bool get isVideo => type == 'VIDEO';
 }
