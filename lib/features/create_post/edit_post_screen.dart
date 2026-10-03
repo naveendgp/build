@@ -15,6 +15,7 @@ import '../../core/utils/app_messenger.dart';
 import '../../core/utils/haptics.dart';
 import '../brand_dashboard/providers/dashboard_providers.dart';
 import '../home/providers/feed_provider.dart';
+import 'models/create_post_models.dart';
 import 'providers/create_post_provider.dart';
 import 'widgets/tag_input.dart';
 
@@ -45,9 +46,16 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   final _destinationUrl = TextEditingController();
   final _prefilledMessage = TextEditingController();
 
+  final _highlightMessage = TextEditingController();
+
   List<String> _tags = [];
   String? _objective;
   String? _category;
+
+  /// The action button: which one, and where it goes.
+  PostObjective? _objectiveEnum;
+  CtaType? _ctaType;
+  bool _isHighlighted = false;
 
   /// The carousel as it stands, existing pictures and newly picked ones alike.
   List<_EditMedia> _media = [];
@@ -80,6 +88,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     _ctaText.dispose();
     _destinationUrl.dispose();
     _prefilledMessage.dispose();
+    _highlightMessage.dispose();
     super.dispose();
   }
 
@@ -97,6 +106,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         _prefilledMessage.text = (data['prefilledMessage'] ?? '').toString();
         _tags = ((data['tags'] as List?) ?? const []).map((t) => t.toString()).toList();
         _objective = data['marketingObjective']?.toString();
+        _objectiveEnum = objectiveFromBackend(_objective);
+        _ctaType = ctaTypeFromBackend(data['ctaType']?.toString());
+        _isHighlighted = data['isHighlighted'] == true;
+        _highlightMessage.text = (data['highlightMessage'] ?? '').toString();
         _category = data['category']?.toString();
         _media = media
             .map((m) => Map<String, dynamic>.from(m as Map))
@@ -223,6 +236,9 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         'description': _description.text.trim(),
         'tags': _tags,
         if (_ctaText.text.trim().isNotEmpty) 'ctaText': _ctaText.text.trim(),
+        if (_ctaType != null) 'ctaType': ctaTypeToBackend[_ctaType],
+        'isHighlighted': _isHighlighted,
+        'highlightMessage': _isHighlighted ? _highlightMessage.text.trim() : '',
         if (_hasDestination) 'destinationUrl': _destinationUrl.text.trim(),
         if (_isMessaging) 'prefilledMessage': _prefilledMessage.text.trim(),
         if (media != null) 'media': media,
@@ -315,19 +331,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                   }),
                   onRemove: (t) => setState(() => _tags = _tags.where((x) => x != t).toList()),
                 ),
-                if (_ctaText.text.isNotEmpty || _hasDestination || _isMessaging) ...[
-                  const SizedBox(height: AppSpacing.lg),
-                  _label('Action button'),
-                  _field(_ctaText, hint: 'Button text, e.g. Learn More', maxLength: 30),
-                  if (_hasDestination) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _field(_destinationUrl, hint: 'https://…', keyboard: TextInputType.url),
-                  ],
-                  if (_isMessaging) ...[
-                    const SizedBox(height: AppSpacing.sm),
-                    _field(_prefilledMessage, hint: 'Message people start with', maxLines: 3),
-                  ],
-                ],
+                const SizedBox(height: AppSpacing.lg),
+                _buildHighlightSection(),
+                const SizedBox(height: AppSpacing.lg),
+                _buildCtaSection(),
                 if (_saveError != null) ...[
                   const SizedBox(height: AppSpacing.md),
                   Container(
@@ -358,6 +365,127 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
   /// The carousel: tap a picture to swap it, × to drop it, arrows to move it,
   /// and the last tile to add another — up to five, as everywhere else.
+
+  /// The marquee above a post. The create flow offers it; editing had no way
+  /// to switch it off again, or to fix its wording.
+  Widget _buildHighlightSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: context.colors.surface,
+            borderRadius: AppSpacing.borderRadiusMd,
+            border: Border.all(color: context.colors.borderLight, width: 0.5),
+          ),
+          child: SwitchListTile(
+            title: Text(
+              'Highlight Post',
+              style: AppTypography.bodyMedium.copyWith(
+                color: context.colors.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              'A scrolling banner above the post',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+            ),
+            value: _isHighlighted,
+            activeThumbColor: context.colors.primaryAccent,
+            onChanged: _saving
+                ? null
+                : (val) {
+                    Haptics.selection();
+                    setState(() => _isHighlighted = val);
+                  },
+          ),
+        ),
+        if (_isHighlighted) ...[
+          const SizedBox(height: AppSpacing.sm),
+          _field(_highlightMessage, hint: 'Highlight text, e.g. 20% OFF', maxLength: 50),
+        ],
+      ],
+    );
+  }
+
+  /// The action button: which one, and where it points. Editing showed this
+  /// only when the post already had button text, so most posts could not
+  /// change their button at all.
+  Widget _buildCtaSection() {
+    final meta = _objectiveEnum == null
+        ? null
+        : ObjectiveMeta.all.where((m) => m.objective == _objectiveEnum).firstOrNull;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Action button'),
+        if (meta != null) ...[
+          Text(
+            'Objective: ${meta.title}. Pick the button people see.',
+            style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: meta.availableCtas.map((type) {
+              final selected = _ctaType == type;
+              final label = CtaData(type: type).displayLabel;
+              return GestureDetector(
+                onTap: _saving
+                    ? null
+                    : () {
+                        Haptics.selection();
+                        setState(() {
+                          _ctaType = type;
+                          // The label is what the post stores and shows.
+                          _ctaText.text = label;
+                        });
+                      },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: selected
+                        ? context.colors.primaryAccent.withValues(alpha: 0.12)
+                        : Colors.transparent,
+                    borderRadius: AppSpacing.borderRadiusFull,
+                    border: Border.all(
+                      color: selected
+                          ? context.colors.primaryAccent.withValues(alpha: 0.5)
+                          : context.colors.border,
+                      width: selected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Text(
+                    label,
+                    style: AppTypography.labelLarge.copyWith(
+                      color: selected ? context.colors.primaryAccent : context.colors.textSecondary,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        _label('Button text'),
+        _field(_ctaText, hint: 'e.g. Learn More', maxLength: 30),
+        if (_hasDestination) ...[
+          const SizedBox(height: AppSpacing.md),
+          _label('Where it goes'),
+          _field(_destinationUrl, hint: 'https://…', keyboard: TextInputType.url),
+        ],
+        if (_isMessaging) ...[
+          const SizedBox(height: AppSpacing.md),
+          _label('Message people start with'),
+          _field(_prefilledMessage, hint: 'Hi, I would like to know more…', maxLines: 3),
+        ],
+      ],
+    );
+  }
+
   Widget _buildMediaEditor() {
     if (_isVideoPost) {
       return Container(
@@ -402,20 +530,26 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
           ],
         ),
         SizedBox(
-          height: 128,
+          height: _media.length > 1 ? 136 : 104,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: _media.length + (canAdd ? 1 : 0),
             separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
             itemBuilder: (context, index) {
-              if (index == _media.length) return _buildAddTile();
-              return _buildMediaTile(index);
+              // Children of a horizontal list are stretched to its height, so
+              // each tile is wrapped in a top-aligned column of its own —
+              // otherwise the Add tile grew taller than the pictures.
+              final child = index == _media.length ? _buildAddTile() : _buildMediaTile(index);
+              return Align(alignment: Alignment.topCenter, child: child);
             },
           ),
         ),
         const SizedBox(height: 6),
         Text(
-          'Tap a picture to replace it. The first one is the cover.',
+          _media.length > 1
+              ? 'Tap a picture to replace it. The first one is the cover.'
+              : 'Tap the picture to replace it, or add up to '
+                    '${CreatePostNotifier.maxCarouselImages} to make a carousel.',
           style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
         ),
         const SizedBox(height: AppSpacing.lg),
@@ -424,18 +558,33 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   }
 
   Widget _buildAddTile() {
-    return GestureDetector(
-      onTap: _saving ? null : () => _pickMedia(),
-      child: Container(
-        width: 96,
-        height: 96,
-        decoration: BoxDecoration(
-          color: context.colors.surfaceSecondary,
-          borderRadius: AppSpacing.borderRadiusMd,
-          border: Border.all(color: context.colors.border),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: _saving ? null : () => _pickMedia(),
+          child: Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              color: context.colors.surfaceSecondary,
+              borderRadius: AppSpacing.borderRadiusMd,
+              border: Border.all(color: context.colors.border),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.add_rounded, size: 22, color: context.colors.textSecondary),
+                const SizedBox(height: 4),
+                Text(
+                  'Add',
+                  style: AppTypography.labelSmall.copyWith(color: context.colors.textSecondary),
+                ),
+              ],
+            ),
+          ),
         ),
-        child: Icon(Icons.add_photo_alternate_outlined, color: context.colors.textTertiary),
-      ),
+      ],
     );
   }
 

@@ -58,6 +58,64 @@ enum UploadStage { idle, compressing, uploading, processing, complete, failed }
 
 // â”€â”€â”€ Objective Metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+/// What each CTA is called in the API, in one place: the publish flow wrote
+/// this as a 24-case switch of its own, and the edit screen needs the same
+/// names to read a post back and save it again.
+const ctaTypeToBackend = <CtaType, String>{
+  CtaType.visitProfile: 'VISIT_PROFILE',
+  CtaType.followUs: 'FOLLOW_US',
+  CtaType.noButton: 'NO_BUTTON',
+  CtaType.seeMore: 'SEE_MORE',
+  CtaType.discover: 'DISCOVER',
+  CtaType.visitWebsite: 'VISIT_WEBSITE',
+  CtaType.learnMore: 'LEARN_MORE',
+  CtaType.shopNow: 'SHOP_NOW',
+  CtaType.getOffer: 'GET_OFFER',
+  CtaType.viewDetails: 'VIEW_DETAILS',
+  CtaType.explore: 'EXPLORE',
+  CtaType.bookNow: 'BOOK_NOW',
+  CtaType.signUp: 'SIGN_UP',
+  CtaType.getQuote: 'GET_QUOTE',
+  CtaType.enquireNow: 'ENQUIRE_NOW',
+  CtaType.buyNow: 'BUY_NOW',
+  CtaType.getStarted: 'GET_STARTED',
+  CtaType.getDirections: 'GET_DIRECTIONS',
+  CtaType.visitUs: 'VISIT_US',
+  CtaType.locateUs: 'LOCATE_US',
+  CtaType.sendMessage: 'SEND_MESSAGE',
+  CtaType.chatNow: 'CHAT_NOW',
+  CtaType.askQuestion: 'ASK_QUESTION',
+  CtaType.contactUs: 'CONTACT_US',
+};
+
+CtaType? ctaTypeFromBackend(String? value) {
+  if (value == null || value.isEmpty) return null;
+  final wanted = value.toUpperCase();
+  for (final entry in ctaTypeToBackend.entries) {
+    if (entry.value == wanted) return entry.key;
+  }
+  return null;
+}
+
+/// The objectives as the API names them.
+const objectiveToBackend = <PostObjective, String>{
+  PostObjective.awareness: 'AWARENESS',
+  PostObjective.traffic: 'TRAFFIC',
+  PostObjective.leadGeneration: 'LEAD_GENERATION',
+  PostObjective.conversions: 'CONVERSIONS',
+  PostObjective.getDirections: 'GET_DIRECTIONS',
+  PostObjective.messaging: 'MESSAGING',
+};
+
+PostObjective? objectiveFromBackend(String? value) {
+  if (value == null || value.isEmpty) return null;
+  final wanted = value.toUpperCase();
+  for (final entry in objectiveToBackend.entries) {
+    if (entry.value == wanted) return entry.key;
+  }
+  return null;
+}
+
 class ObjectiveMeta {
   final PostObjective objective;
   final String title;

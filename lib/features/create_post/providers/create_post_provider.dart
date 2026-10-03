@@ -518,84 +518,9 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
         }
       }
 
-      // Map CTA type
-      String? backendCtaType;
-      if (state.cta != null) {
-        switch (state.cta!.type) {
-          case CtaType.visitProfile:
-            backendCtaType = 'VISIT_PROFILE';
-            break;
-          case CtaType.followUs:
-            backendCtaType = 'FOLLOW_US';
-            break;
-          case CtaType.noButton:
-            backendCtaType = 'NO_BUTTON';
-            break;
-          case CtaType.seeMore:
-            backendCtaType = 'SEE_MORE';
-            break;
-          case CtaType.discover:
-            backendCtaType = 'DISCOVER';
-            break;
-          case CtaType.visitWebsite:
-            backendCtaType = 'VISIT_WEBSITE';
-            break;
-          case CtaType.learnMore:
-            backendCtaType = 'LEARN_MORE';
-            break;
-          case CtaType.shopNow:
-            backendCtaType = 'SHOP_NOW';
-            break;
-          case CtaType.getOffer:
-            backendCtaType = 'GET_OFFER';
-            break;
-          case CtaType.viewDetails:
-            backendCtaType = 'VIEW_DETAILS';
-            break;
-          case CtaType.explore:
-            backendCtaType = 'EXPLORE';
-            break;
-          case CtaType.bookNow:
-            backendCtaType = 'BOOK_NOW';
-            break;
-          case CtaType.signUp:
-            backendCtaType = 'SIGN_UP';
-            break;
-          case CtaType.getQuote:
-            backendCtaType = 'GET_QUOTE';
-            break;
-          case CtaType.enquireNow:
-            backendCtaType = 'ENQUIRE_NOW';
-            break;
-          case CtaType.buyNow:
-            backendCtaType = 'BUY_NOW';
-            break;
-          case CtaType.getStarted:
-            backendCtaType = 'GET_STARTED';
-            break;
-          case CtaType.getDirections:
-            backendCtaType = 'GET_DIRECTIONS';
-            break;
-          case CtaType.visitUs:
-            backendCtaType = 'VISIT_US';
-            break;
-          case CtaType.locateUs:
-            backendCtaType = 'LOCATE_US';
-            break;
-          case CtaType.sendMessage:
-            backendCtaType = 'SEND_MESSAGE';
-            break;
-          case CtaType.chatNow:
-            backendCtaType = 'CHAT_NOW';
-            break;
-          case CtaType.askQuestion:
-            backendCtaType = 'ASK_QUESTION';
-            break;
-          case CtaType.contactUs:
-            backendCtaType = 'CONTACT_US';
-            break;
-        }
-      }
+      // One table, shared with the edit screen, rather than a switch here.
+      final String? backendCtaType =
+          state.cta == null ? null : ctaTypeToBackend[state.cta!.type];
 
       // If Lead Generation objective, create the Lead Form and fields BEFORE creating the post
       String? leadFormId;
