@@ -8,6 +8,7 @@ import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../home/models/feed_models.dart';
 import '../../home/widgets/feed_card.dart';
+import '../../home/widgets/reminder_sheet.dart';
 import '../../home/providers/feed_provider.dart';
 import '../../home/widgets/save_to_collection_sheet.dart';
 import '../../comments/widgets/comment_sheet.dart';
@@ -83,6 +84,13 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
     ref.read(feedProvider.notifier).toggleLike(_post!.id);
   }
 
+  /// Follows or unfollows this post's brand. The button used to do nothing.
+  void _handleFollow() {
+    if (_post == null) return;
+    setState(() => _post = _post!.copyWith(isFollowing: !_post!.isFollowing));
+    ref.read(feedProvider.notifier).toggleFollow(_post!.id);
+  }
+
   void _handleBookmark() {
     if (_post == null) return;
     final wasBookmarked = _post!.isBookmarked;
@@ -121,112 +129,6 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
         ),
       );
     }
-  }
-
-  void _showReminderSheet(BuildContext parentContext) {
-    if (_post == null) return;
-    final notifier = ref.read(feedProvider.notifier);
-    showModalBottomSheet(
-      context: parentContext,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        decoration: BoxDecoration(
-          color: context.colors.card,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: context.colors.border,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text('Set Reminder', style: AppTypography.titleLarge),
-            ),
-            _buildReminderOption(sheetContext, '3 days', const Duration(days: 3), notifier),
-            _buildReminderOption(sheetContext, '7 days', const Duration(days: 7), notifier),
-            _buildReminderOption(sheetContext, '14 days', const Duration(days: 14), notifier),
-            _buildReminderOption(sheetContext, '30 days', const Duration(days: 30), notifier),
-            ListTile(
-              title: Text('Custom date & time', style: AppTypography.bodyLarge),
-              trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
-              onTap: () async {
-                Navigator.pop(sheetContext);
-                final date = await showAdaptiveDatePicker(
-                  parentContext,
-                  initialDate: DateTime.now().add(const Duration(days: 1)),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
-                );
-                if (date != null && parentContext.mounted) {
-                  final time = await showAdaptiveTimePicker(
-                    parentContext,
-                    initialTime: TimeOfDay.now(),
-                  );
-                  if (time != null && parentContext.mounted) {
-                    final dateTime = DateTime(
-                      date.year,
-                      date.month,
-                      date.day,
-                      time.hour,
-                      time.minute,
-                    );
-                    final set = await notifier.setReminder(_post!.id, dateTime);
-                    if (!parentContext.mounted) return;
-                    if (set) {
-                      AppMessenger.of(parentContext).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
-                          ),
-                        ),
-                      );
-                    } else {
-                      AppMessenger.of(
-                        parentContext,
-                      ).showError('Could not set that reminder. Please try again.');
-                    }
-                  }
-                }
-              },
-            ),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReminderOption(
-    BuildContext context,
-    String label,
-    Duration duration,
-    FeedNotifier notifier,
-  ) {
-    return ListTile(
-      title: Text(label, style: AppTypography.bodyLarge),
-      trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
-      onTap: () async {
-        Navigator.pop(context);
-        final dateTime = DateTime.now().add(duration);
-        final set = await notifier.setReminder(_post!.id, dateTime);
-        if (!context.mounted) return;
-        if (set) {
-          AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
-        } else {
-          AppMessenger.of(context).showError('Could not set that reminder. Please try again.');
-        }
-      },
-    );
   }
 
   @override
@@ -338,8 +240,8 @@ class _ExplorePostDetailScreenState extends ConsumerState<ExplorePostDetailScree
                                 brandName: _post!.brandName,
                               ),
                               onBookmark: _handleBookmark,
-                              onFollow: () {},
-                              onReminder: () => _showReminderSheet(context),
+                              onFollow: _handleFollow,
+                              onReminder: () => showPostReminderSheet(context, ref, _post!.id),
                               onTap: () {},
                               isDetailMode: true,
                             ),

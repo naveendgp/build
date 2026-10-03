@@ -4,6 +4,8 @@ import 'package:http_parser/http_parser.dart' as http_parser;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_client.dart';
+import '../../home/providers/feed_provider.dart';
+import '../../user_profile/providers/user_profile_provider.dart';
 import '../models/brand_profile_models.dart';
 
 enum BrandLoadState { initial, loading, loaded, error }
@@ -67,7 +69,11 @@ class BrandProfileState {
 class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
   final ApiClient apiClient;
 
-  BrandProfileNotifier(this.apiClient) : super(const BrandProfileState());
+  /// Kept so following here can tell the feed and the person's own profile,
+  /// which hold their own copies of who is followed.
+  final Ref _ref;
+
+  BrandProfileNotifier(this.apiClient, this._ref) : super(const BrandProfileState());
 
   Future<void> loadBrand(String brandId) async {
     state = state.copyWith(loadState: BrandLoadState.loading);
@@ -163,6 +169,10 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       } else {
         await apiClient.dio.delete('/follow/${p.id}');
       }
+      // The feed holds its own copy of each post's isFollowing, and the person's
+      // Following list is its own fetch; both went stale after following here.
+      _ref.read(feedProvider.notifier).markBrandFollowed(p.id, newFollowing);
+      _ref.invalidate(userProfileProvider);
     } catch (e) {
       // Revert on error
       if (mounted) {
@@ -405,5 +415,5 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
 final brandProfileProvider = StateNotifierProvider.autoDispose
     .family<BrandProfileNotifier, BrandProfileState, String>((ref, id) {
       final apiClient = ref.watch(apiClientProvider);
-      return BrandProfileNotifier(apiClient)..loadBrand(id);
+      return BrandProfileNotifier(apiClient, ref)..loadBrand(id);
     });

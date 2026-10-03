@@ -278,6 +278,16 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   /// Returns false when the reminder was not stored, so the screen can stop
   /// telling the person it was set.
+  /// Marks every post by a brand as followed or not, after the brand's own
+  /// screen changed it. The feed keeps its own copy per post.
+  void markBrandFollowed(String brandId, bool isFollowing) {
+    state = state.copyWith(
+      posts: state.posts
+          .map((p) => p.brandId == brandId ? p.copyWith(isFollowing: isFollowing) : p)
+          .toList(),
+    );
+  }
+
   Future<bool> setReminder(String postId, DateTime reminderTime) async {
     try {
       await _apiClient.dio.post(

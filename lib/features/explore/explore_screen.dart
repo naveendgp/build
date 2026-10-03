@@ -22,6 +22,7 @@ import 'widgets/recommended_for_you_row.dart';
 import 'widgets/explore_section_header.dart';
 import '../home/models/feed_models.dart';
 import '../home/widgets/feed_card.dart';
+import '../home/widgets/reminder_sheet.dart';
 import '../home/providers/feed_provider.dart';
 import '../sharing/services/share_service.dart';
 
@@ -298,7 +299,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> with SingleTicker
                   title: post.title,
                   brandName: post.brandName,
                 ),
-                onReminder: () {},
+                onReminder: () => showPostReminderSheet(context, ref, post.id),
                 onTap: () => context.push('/explore/post', extra: post),
               ),
             ),

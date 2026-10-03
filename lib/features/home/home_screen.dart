@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'widgets/reminder_sheet.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
-import '../../core/adaptive/adaptive.dart';
 import '../../core/theme/app_typography.dart';
 import '../auth/providers/auth_provider.dart';
 import '../user_profile/providers/user_profile_provider.dart';
@@ -103,155 +104,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(feedProvider.notifier).refreshFeed();
   }
 
-  void _showReminderSheet(String postId, FeedNotifier notifier) {
-    final parentContext = context; // capture the HomeScreen context
-    showModalBottomSheet(
-      context: parentContext,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(sheetContext).size.height * 0.85),
-        decoration: BoxDecoration(
-          color: context.colors.card,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(sheetContext).padding.bottom),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: context.colors.border,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text('Set Reminder', style: AppTypography.titleLarge),
-              ),
-              ListTile(
-                title: Text('Custom date & time', style: AppTypography.bodyLarge),
-                trailing: Icon(Icons.calendar_today_rounded, color: context.colors.textSecondary),
-                onTap: () async {
-                  Navigator.pop(sheetContext);
-                  final date = await showAdaptiveDatePicker(
-                    parentContext,
-                    initialDate: DateTime.now().add(const Duration(days: 1)),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  );
-                  if (date != null && parentContext.mounted) {
-                    final time = await showAdaptiveTimePicker(
-                      parentContext,
-                      initialTime: TimeOfDay.now(),
-                    );
-                    if (time != null && parentContext.mounted) {
-                      final dateTime = DateTime(
-                        date.year,
-                        date.month,
-                        date.day,
-                        time.hour,
-                        time.minute,
-                      );
-                      // "Reminder set" used to appear whether or not the
-                      // server took it.
-                      final set = await notifier.setReminder(postId, dateTime);
-                      if (!parentContext.mounted) return;
-                      if (set) {
-                        AppMessenger.of(parentContext).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Reminder set for ${dateTime.month}/${dateTime.day}/${dateTime.year} at ${time.format(parentContext)}',
-                            ),
-                          ),
-                        );
-                      } else {
-                        AppMessenger.of(
-                          parentContext,
-                        ).showError('Could not set that reminder. Please try again.');
-                      }
-                    }
-                  }
-                },
-              ),
-              _buildReminderOption(
-                sheetContext,
-                'Tomorrow',
-                postId,
-                notifier,
-                const Duration(days: 1),
-              ),
-              _buildReminderOption(
-                sheetContext,
-                '3 days after',
-                postId,
-                notifier,
-                const Duration(days: 3),
-              ),
-              _buildReminderOption(
-                sheetContext,
-                '7 days after',
-                postId,
-                notifier,
-                const Duration(days: 7),
-              ),
-              _buildReminderOption(
-                sheetContext,
-                '14 days after',
-                postId,
-                notifier,
-                const Duration(days: 14),
-              ),
-              _buildReminderOption(
-                sheetContext,
-                '30 days after',
-                postId,
-                notifier,
-                const Duration(days: 30),
-              ),
-              const SizedBox(height: 32),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildReminderOption(
-    BuildContext context,
-    String label,
-    String postId,
-    FeedNotifier notifier,
-    Duration duration,
-  ) {
-    return ListTile(
-      title: Text(label, style: AppTypography.bodyLarge),
-      trailing: Icon(Icons.notifications_active_outlined, color: context.colors.textSecondary),
-      onTap: () async {
-        Navigator.pop(context);
-        final dateTime = DateTime.now().add(duration);
-        final set = await notifier.setReminder(postId, dateTime);
-        if (!context.mounted) return;
-        if (set) {
-          AppMessenger.of(context).showSnackBar(SnackBar(content: Text('Reminder set for $label')));
-        } else {
-          AppMessenger.of(context).showError('Could not set that reminder. Please try again.');
-        }
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(feedProvider);
     final notifier = ref.read(feedProvider.notifier);
 
-    final topPad = MediaQuery.of(context).padding.top;
     final activeCtrl = state.viewMode == FeedViewMode.grid ? _gridScrollCtrl : _listScrollCtrl;
 
     return Scaffold(
@@ -405,7 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               title: post.title,
               brandName: post.brandName,
             ),
-            onReminder: () => _showReminderSheet(post.id, notifier),
+            onReminder: () => showPostReminderSheet(context, ref, post.id),
             onTap: () {},
           );
         },

@@ -179,8 +179,6 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
     }
   }
 
-  @override
-
   /// What the gallery is for. Opened from the ⓘ on the add tile.
   void _showGalleryInfo(BuildContext context) {
     showDialog(
@@ -216,6 +214,7 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
       ),
     );
   }
+  @override
   Widget build(BuildContext context) {
     final gallery = widget.gallery;
     final isOwner = widget.isOwner;

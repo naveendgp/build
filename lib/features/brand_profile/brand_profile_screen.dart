@@ -169,9 +169,9 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                             Haptics.selection();
                             context.push('/brand-dashboard');
                           },
-                          onFollowToggled: () {
-                            // TODO: implement follow API call
-                          },
+                          onFollowToggled: () => ref
+                              .read(brandProfileProvider(widget.brandId).notifier)
+                              .toggleFollow(),
                           onMessageTap: () async {
                             try {
                               final api = ref.read(apiClientProvider);
