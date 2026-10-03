@@ -334,8 +334,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final data = response.data;
         await SecureStorage.saveToken(data['token']);
         await SecureStorage.saveRole(data['role']?.toString().toLowerCase() ?? 'user');
+        // Signing in with Google stored no id at all, so everything that asks
+        // "is this mine?" — chat bubbles above all — had nothing to compare.
+        final userId = data['userId']?.toString();
+        if (userId != null) await SecureStorage.saveUserId(userId);
 
-        state = state.copyWith(status: AuthStatus.success, loggedInRole: UserRole.user);
+        state = state.copyWith(
+          status: AuthStatus.success,
+          loggedInRole: UserRole.user,
+          userId: userId,
+        );
 
         // Initialize push notifications after successful Google login
         NotificationService().initialize();

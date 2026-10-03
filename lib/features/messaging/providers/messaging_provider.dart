@@ -116,7 +116,11 @@ class InboxNotifier extends StateNotifier<InboxState> {
 final inboxProvider = StateNotifierProvider.autoDispose<InboxNotifier, InboxState>((ref) {
   final api = ref.read(apiClientProvider);
   final authState = ref.watch(authProvider);
-  final userId = authState.userId ?? authState.brandId ?? 'mock_user_id';
+  // A brand's own id first when signed in as a brand: its messages are
+  // recorded against brandId, and 'mock_user_id' silently matched nothing.
+  final userId = authState.loggedInRole == UserRole.brand
+      ? (authState.brandId ?? authState.userId ?? '')
+      : (authState.userId ?? authState.brandId ?? '');
   final socketClient = ref.read(socketClientProvider);
 
   final notifier = InboxNotifier(api, userId);
@@ -338,7 +342,11 @@ final chatProvider = StateNotifierProvider.family<ChatNotifier, ChatState, Strin
 ) {
   final api = ref.read(apiClientProvider);
   final authState = ref.watch(authProvider);
-  final userId = authState.userId ?? authState.brandId ?? 'mock_user_id';
+  // A brand's own id first when signed in as a brand: its messages are
+  // recorded against brandId, and 'mock_user_id' silently matched nothing.
+  final userId = authState.loggedInRole == UserRole.brand
+      ? (authState.brandId ?? authState.userId ?? '')
+      : (authState.userId ?? authState.brandId ?? '');
   final socketClient = ref.read(socketClientProvider);
 
   final notifier = ChatNotifier(api, conversationId, userId);

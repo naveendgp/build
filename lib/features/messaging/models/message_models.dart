@@ -54,6 +54,11 @@ class Message {
   final String id;
   final String conversationId;
   final String senderId;
+
+  /// Who sent it, as the API states it: exactly one of these is set. Matching
+  /// on the right one is what tells a message of mine from one of theirs.
+  final String? senderUserId;
+  final String? senderBrandId;
   final String content; // JSON string if complex
   final DateTime createdAt;
   final bool isRead;
@@ -66,6 +71,8 @@ class Message {
     required this.id,
     required this.conversationId,
     required this.senderId,
+    this.senderUserId,
+    this.senderBrandId,
     required this.content,
     required this.createdAt,
     this.isRead = false,
@@ -77,6 +84,8 @@ class Message {
     String? id,
     String? conversationId,
     String? senderId,
+    String? senderUserId,
+    String? senderBrandId,
     String? content,
     DateTime? createdAt,
     bool? isRead,
@@ -87,6 +96,8 @@ class Message {
       id: id ?? this.id,
       conversationId: conversationId ?? this.conversationId,
       senderId: senderId ?? this.senderId,
+      senderUserId: senderUserId ?? this.senderUserId,
+      senderBrandId: senderBrandId ?? this.senderBrandId,
       content: content ?? this.content,
       createdAt: createdAt ?? this.createdAt,
       isRead: isRead ?? this.isRead,
@@ -114,6 +125,8 @@ class Message {
       conversationId: json['conversationId']?.toString() ?? '',
       senderId:
           (json['senderId'] ?? json['senderUserId'] ?? json['senderBrandId'])?.toString() ?? '',
+      senderUserId: json['senderUserId']?.toString(),
+      senderBrandId: json['senderBrandId']?.toString(),
       content: content,
       createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
       isRead: _parseBool(json['isRead']),

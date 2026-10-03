@@ -80,7 +80,30 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final chatState = ref.watch(chatProvider(widget.conversationId));
     final notifier = ref.read(chatProvider(widget.conversationId).notifier);
     final authState = ref.watch(authProvider);
-    final currentUserId = authState.userId ?? authState.brandId ?? 'mock_user_id';
+    // Which side a bubble sits on is decided against the id of whoever is
+    // signed in. A brand's messages carry senderBrandId and a person's carry
+    // senderUserId, so each is matched against its own — falling back to one
+    // id for both put a message on the wrong side whenever the other was the
+    // one set. The old default of 'mock_user_id' matched nothing, so with no
+    // id stored (Google sign-in stored none) every message read as received.
+    final isBrandAccount = authState.loggedInRole == UserRole.brand;
+    final myBrandId = authState.brandId;
+    final myUserId = authState.userId;
+
+    bool isMine(Message msg) {
+      if (isBrandAccount) {
+        if (myBrandId != null && msg.senderBrandId != null) {
+          return msg.senderBrandId == myBrandId;
+        }
+      } else {
+        if (myUserId != null && msg.senderUserId != null) {
+          return msg.senderUserId == myUserId;
+        }
+      }
+      // An optimistic message, or an older payload with only senderId.
+      final mine = isBrandAccount ? (myBrandId ?? myUserId) : (myUserId ?? myBrandId);
+      return mine != null && msg.senderId == mine;
+    }
 
     final participant =
         chatState.participant ?? const ChatParticipant(id: 'unknown', name: 'Loading...');
@@ -115,9 +138,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         itemCount: chatState.messages.length,
                         itemBuilder: (context, index) {
                           final msg = chatState.messages[index];
-                          // Check if msg.senderId matches the current user's ID
-                          final isMe = msg.senderId == currentUserId;
-                          return MessageBubble(message: msg, isMe: isMe);
+                          return MessageBubble(message: msg, isMe: isMine(msg));
                         },
                       ),
               ),
