@@ -50,6 +50,20 @@ enum CtaType {
   chatNow,
   askQuestion,
   contactUs,
+
+  // Buttons the web has always offered and this app did not. The lists below
+  // now match it objective for objective; the entries above that the web does
+  // not offer are kept so posts already carrying them still read back.
+  viewCollection,
+  readMore,
+  requestInformation,
+  joinWaitlist,
+  subscribe,
+  addToCart,
+  download,
+  orderNow,
+  findUs,
+  navigate,
 }
 
 enum PublishMode { now, scheduled }
@@ -86,6 +100,16 @@ const ctaTypeToBackend = <CtaType, String>{
   CtaType.chatNow: 'CHAT_NOW',
   CtaType.askQuestion: 'ASK_QUESTION',
   CtaType.contactUs: 'CONTACT_US',
+  CtaType.viewCollection: 'VIEW_COLLECTION',
+  CtaType.readMore: 'READ_MORE',
+  CtaType.requestInformation: 'REQUEST_INFORMATION',
+  CtaType.joinWaitlist: 'JOIN_WAITLIST',
+  CtaType.subscribe: 'SUBSCRIBE',
+  CtaType.addToCart: 'ADD_TO_CART',
+  CtaType.download: 'DOWNLOAD',
+  CtaType.orderNow: 'ORDER_NOW',
+  CtaType.findUs: 'FIND_US',
+  CtaType.navigate: 'NAVIGATE',
 };
 
 CtaType? ctaTypeFromBackend(String? value) {
@@ -146,12 +170,11 @@ class ObjectiveMeta {
       // instead of a distinct hue each — was previously indigo here.
       accentColor: ThemeTokens.primaryAccent,
       availableCtas: [
-        CtaType.visitProfile,
-        CtaType.followUs,
-        CtaType.noButton,
-        CtaType.seeMore,
         CtaType.learnMore,
         CtaType.discover,
+        CtaType.seeMore,
+        CtaType.viewCollection,
+        CtaType.noButton,
       ],
     ),
     ObjectiveMeta(
@@ -163,12 +186,10 @@ class ObjectiveMeta {
       accentColor: ThemeTokens.primaryAccent,
       availableCtas: [
         CtaType.visitWebsite,
-        CtaType.learnMore,
+        CtaType.readMore,
         CtaType.shopNow,
-        CtaType.getOffer,
+        CtaType.learnMore,
         CtaType.viewDetails,
-        CtaType.visitProfile,
-        CtaType.explore,
       ],
     ),
     ObjectiveMeta(
@@ -179,11 +200,11 @@ class ObjectiveMeta {
       icon: Icons.person_add_rounded,
       accentColor: ThemeTokens.primaryAccent,
       availableCtas: [
-        CtaType.bookNow,
         CtaType.signUp,
         CtaType.getQuote,
-        CtaType.enquireNow,
-        CtaType.learnMore,
+        CtaType.requestInformation,
+        CtaType.joinWaitlist,
+        CtaType.subscribe,
       ],
     ),
     ObjectiveMeta(
@@ -195,11 +216,11 @@ class ObjectiveMeta {
       accentColor: ThemeTokens.primaryAccent,
       availableCtas: [
         CtaType.buyNow,
-        CtaType.shopNow,
+        CtaType.addToCart,
         CtaType.bookNow,
-        CtaType.signUp,
-        CtaType.getOffer,
+        CtaType.download,
         CtaType.getStarted,
+        CtaType.orderNow,
       ],
     ),
     ObjectiveMeta(
@@ -209,7 +230,11 @@ class ObjectiveMeta {
       outcome: 'More store visits & foot traffic',
       icon: Icons.location_on_rounded,
       accentColor: ThemeTokens.primaryAccent,
-      availableCtas: [CtaType.getDirections, CtaType.visitUs, CtaType.locateUs],
+      availableCtas: [
+        CtaType.getDirections,
+        CtaType.findUs,
+        CtaType.navigate,
+      ],
     ),
     ObjectiveMeta(
       objective: PostObjective.messaging,
@@ -220,11 +245,9 @@ class ObjectiveMeta {
       accentColor: ThemeTokens.primaryAccent,
       availableCtas: [
         CtaType.sendMessage,
-        CtaType.enquireNow,
         CtaType.chatNow,
         CtaType.askQuestion,
         CtaType.contactUs,
-        CtaType.getQuote,
       ],
     ),
   ];
@@ -348,6 +371,26 @@ class CtaData {
         return 'Ask a Question';
       case CtaType.contactUs:
         return 'Contact Us';
+      case CtaType.viewCollection:
+        return 'View Collection';
+      case CtaType.readMore:
+        return 'Read More';
+      case CtaType.requestInformation:
+        return 'Request Information';
+      case CtaType.joinWaitlist:
+        return 'Join Waitlist';
+      case CtaType.subscribe:
+        return 'Subscribe';
+      case CtaType.addToCart:
+        return 'Add to Cart';
+      case CtaType.download:
+        return 'Download';
+      case CtaType.orderNow:
+        return 'Order Now';
+      case CtaType.findUs:
+        return 'Find Us';
+      case CtaType.navigate:
+        return 'Navigate';
     }
   }
 

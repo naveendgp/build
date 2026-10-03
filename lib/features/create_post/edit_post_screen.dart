@@ -107,7 +107,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         _tags = ((data['tags'] as List?) ?? const []).map((t) => t.toString()).toList();
         _objective = data['marketingObjective']?.toString();
         _objectiveEnum = objectiveFromBackend(_objective);
-        _ctaType = ctaTypeFromBackend(data['ctaType']?.toString());
+        // A post made on the web carries the button's text and no type, so
+        // fall back to matching the label — otherwise nothing was selected on
+        // a post that plainly has a button.
+        _ctaType =
+            ctaTypeFromBackend(data['ctaType']?.toString()) ??
+            _ctaTypeForLabel(_objectiveEnum, (data['ctaText'] ?? '').toString());
         _isHighlighted = data['isHighlighted'] == true;
         _highlightMessage.text = (data['highlightMessage'] ?? '').toString();
         _category = data['category']?.toString();
@@ -214,6 +219,23 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     }
 
     return out;
+  }
+
+  /// The button whose own label matches what the post stores.
+  static CtaType? _ctaTypeForLabel(PostObjective? objective, String label) {
+    if (label.trim().isEmpty) return null;
+    final wanted = label.trim().toLowerCase();
+    final pool = objective == null
+        ? CtaType.values
+        : (ObjectiveMeta.all
+                  .where((m) => m.objective == objective)
+                  .firstOrNull
+                  ?.availableCtas ??
+              CtaType.values);
+    for (final type in pool) {
+      if (CtaData(type: type).displayLabel.toLowerCase() == wanted) return type;
+    }
+    return null;
   }
 
   Future<void> _save() async {
@@ -422,7 +444,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         _label('Action button'),
         if (meta != null) ...[
           Text(
-            'Objective: ${meta.title}. Pick the button people see.',
+            'Objective: ${meta.title}. These are the buttons it allows.',
             style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -437,9 +459,12 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
                     ? null
                     : () {
                         Haptics.selection();
+                        // The chip is the button: its own label is what the
+                        // post stores and shows. Typing a different one was
+                        // offered here and nowhere else, so a post could end
+                        // up with a button the create flow cannot produce.
                         setState(() {
                           _ctaType = type;
-                          // The label is what the post stores and shows.
                           _ctaText.text = label;
                         });
                       },
@@ -470,8 +495,6 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
         ],
-        _label('Button text'),
-        _field(_ctaText, hint: 'e.g. Learn More', maxLength: 30),
         if (_hasDestination) ...[
           const SizedBox(height: AppSpacing.md),
           _label('Where it goes'),
