@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/ambient_glow.dart';
@@ -66,21 +67,28 @@ class _AnimatedLogoState extends State<AnimatedLogo> with SingleTickerProviderSt
                   opacity: 0.18,
                   animate: true,
                 ),
-                // Logo text
-                Text(
-                  'Lyket',
-                  style: AppTypography.displayLarge.copyWith(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -1.5,
-                    foreground: Paint()
-                      ..shader = LinearGradient(
-                        colors: [
-                          context.colors.textPrimary,
-                          context.colors.textPrimary.withValues(alpha: 0.7),
-                        ],
-                      ).createShader(const Rect.fromLTWH(0, 0, 200, 60)),
-                  ),
+                // The mark, then the name. This was the word alone, so the
+                // app's own logo appeared nowhere inside it.
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      'assets/logo/lyket-mark.svg',
+                      width: 96,
+                      height: 96,
+                      semanticsLabel: 'Lyket',
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Lyket',
+                      style: AppTypography.displayLarge.copyWith(
+                        fontSize: 40,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -1.5,
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

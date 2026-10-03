@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
@@ -37,16 +38,24 @@ class FeedHeader extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              // Logo
+              // Logo: the mark, then the name. The header carried the word
+              // alone, in red, standing in for a logo the app never showed.
               Opacity(
                 opacity: opacity,
-                child: Text(
-                  'Lyket',
-                  style: AppTypography.titleLarge.copyWith(
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    color: context.colors.primaryAccent,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset('assets/logo/lyket-mark.svg', width: 26, height: 26),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Lyket',
+                      style: AppTypography.titleLarge.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                        color: context.colors.textPrimary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const Spacer(),
