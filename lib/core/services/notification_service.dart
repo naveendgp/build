@@ -3,8 +3,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
 import '../../features/messaging/providers/messaging_provider.dart';
 import '../network/api_client.dart';
+import '../router/app_router.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -55,7 +58,18 @@ class NotificationService {
         macOS: initializationSettingsDarwin,
       );
 
-      await _localNotifications.initialize(settings: initializationSettings);
+      await _localNotifications.initialize(
+        settings: initializationSettings,
+        onDidReceiveNotificationResponse: (response) {
+          final payload = response.payload;
+          if (payload == null || payload.isEmpty) return;
+          try {
+            _openFor(Map<String, dynamic>.from(jsonDecode(payload) as Map));
+          } catch (e) {
+            debugPrint('[NotificationService] Could not read the tapped payload: $e');
+          }
+        },
+      );
 
       const AndroidNotificationChannel channel = AndroidNotificationChannel(
         'high_importance_channel',
@@ -148,6 +162,9 @@ class NotificationService {
               id: notification.hashCode,
               title: notification.title,
               body: notification.body,
+              // So a tap on this one lands in the same place a tap on a
+              // background notification does.
+              payload: jsonEncode(message.data),
               notificationDetails: const NotificationDetails(
                 android: AndroidNotificationDetails(
                   'high_importance_channel',
@@ -163,8 +180,44 @@ class NotificationService {
           }
         });
 
+        // A tap on a notification used to do nothing but bring the app
+        // forward, wherever it had been left. It now opens what the
+        // notification is about — the post, the chat, the brand.
+        FirebaseMessaging.onMessageOpenedApp.listen((message) => _openFor(message.data));
+
+        // The same tap, when the app was not running at all.
+        final launchedBy = await fcm.getInitialMessage();
+        if (launchedBy != null) {
+          // After the first frame, so the router exists to navigate with.
+          WidgetsBinding.instance.addPostFrameCallback((_) => _openFor(launchedBy.data));
+        }
+
         _listenerSetUp = true;
       }
+    }
+  }
+
+  /// Opens whatever a notification refers to.
+  ///
+  /// The backend sends `referenceType` and `referenceId` with every push —
+  /// POST, CONVERSATION, BRAND — the same pair the in-app list routes on.
+  void _openFor(Map<String, dynamic> data) {
+    final id = data['referenceId']?.toString();
+    if (id == null || id.isEmpty) return;
+    final type = (data['referenceType'] ?? data['type'] ?? '').toString().toUpperCase();
+
+    try {
+      final router = AppRouter.router;
+      if (type.contains('CONVERSATION') || type.contains('MESSAGE')) {
+        router.push('/messages/$id');
+      } else if (type.contains('BRAND')) {
+        router.push('/brand/$id');
+      } else {
+        // NEW_POST, REMINDER, likes and comments all point at a post.
+        router.push('/explore/post', extra: id);
+      }
+    } catch (e) {
+      debugPrint('[NotificationService] Could not open the notification target: $e');
     }
   }
 
