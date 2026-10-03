@@ -290,79 +290,6 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     );
   }
 
-  Widget _buildProfileCompleteness(double percent, List<String> missing) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.colors.surfaceSecondary,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Profile Completion',
-                style: AppTypography.labelLarge.copyWith(
-                  color: context.colors.textPrimary,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                '${(percent * 100).toInt()}%',
-                style: AppTypography.labelLarge.copyWith(
-                  color: context.colors.primaryAccent,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LinearProgressIndicator(
-              value: percent,
-              minHeight: 8,
-              backgroundColor: context.colors.background,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                percent == 1.0 ? context.colors.success : context.colors.primaryAccent,
-              ),
-            ),
-          ),
-          if (missing.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: context.colors.warning.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: context.colors.warning.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning_rounded, color: context.colors.warning, size: 20),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      'Complete your profile. Missing information may affect personalization.',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: context.colors.textPrimary,
-                        height: 1.3,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   Widget _buildField({
     required String label,
     required String value,
@@ -475,9 +402,6 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
     if (profile == null)
       return const Scaffold(body: Center(child: CircularProgressIndicator.adaptive()));
 
-    final completion = profile.completionPercentage;
-    final missing = profile.missingFields;
-
     return Scaffold(
       backgroundColor: context.colors.background,
       appBar: AppBar(
@@ -515,7 +439,6 @@ class _AccountInformationScreenState extends ConsumerState<AccountInformationScr
                           color: context.colors.textSecondary,
                         ),
                       ),
-                      _buildProfileCompleteness(completion, missing),
                     ],
                   ),
                 ),
