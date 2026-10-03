@@ -299,7 +299,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final googleSignIn = GoogleSignIn(
         scopes: ['email', 'profile'],
-        serverClientId: '799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com',
+        // Asked of the backend, which knows which Google project it verifies
+        // tokens against. Hard-coding it here meant moving Firebase project
+        // required a new build; now the server says, and the built-in id is
+        // only the fallback when it cannot be reached.
+        serverClientId: await _googleServerClientId(),
       );
 
       // If user is already signed in (from previous session), sign them out to force account picker
@@ -346,12 +350,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = state.copyWith(status: AuthStatus.error, errorMessage: msg);
       return false;
     } catch (e) {
+      // Play Services answers ApiException: 10 (DEVELOPER_ERROR) when the
+      // certificate this build is signed with is not registered against the
+      // Google project — the commonest cause by far, and "an unexpected
+      // error" sent everyone looking in the wrong place.
+      final text = e.toString();
+      final isUnregistered = text.contains('ApiException: 10') || text.contains('DEVELOPER_ERROR');
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: 'An unexpected error occurred: $e',
+        errorMessage: isUnregistered
+            ? "This build isn't registered for Google sign-in. Use your email and password, "
+                  "or sign in with Google on a registered build."
+            : 'Could not sign in with Google. Please try again.',
       );
+      debugPrint('Google sign-in failed: $e');
       return false;
     }
+  }
+
+  /// The Google OAuth **web** client id that the backend verifies ID tokens
+  /// against. `/auth/google-client-id` serves it, so switching Google projects
+  /// is a server change rather than an app release.
+  static const _fallbackGoogleClientId =
+      '799567267925-04kaengl0teimcj5k0colbabfkn8q8g5.apps.googleusercontent.com';
+
+  Future<String> _googleServerClientId() async {
+    try {
+      final res = await _apiClient.dio.get('/auth/google-client-id');
+      final id = res.data is Map ? res.data['clientId']?.toString() : null;
+      if (id != null && id.endsWith('.apps.googleusercontent.com')) return id;
+    } catch (e) {
+      debugPrint('Falling back to the built-in Google client id: $e');
+    }
+    return _fallbackGoogleClientId;
   }
 
   Future<bool> changePassword(String currentPassword, String newPassword) async {
