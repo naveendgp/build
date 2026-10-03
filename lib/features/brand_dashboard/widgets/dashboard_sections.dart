@@ -686,6 +686,17 @@ class DashboardPostsSection extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
+              leading: Icon(Icons.edit_outlined, color: context.colors.textPrimary),
+              title: Text(
+                'Edit',
+                style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+              ),
+              onTap: () {
+                Navigator.pop(sheet);
+                context.push('/edit-post/${post.id}');
+              },
+            ),
+            ListTile(
               leading: Icon(Icons.open_in_new_rounded, color: context.colors.textPrimary),
               title: Text(
                 'View post',

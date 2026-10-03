@@ -13,6 +13,7 @@ import '../../features/home/models/feed_models.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/brand_profile/brand_profile_screen.dart';
 import '../../features/create_post/create_post_screen.dart';
+import '../../features/create_post/edit_post_screen.dart';
 import '../../features/user_profile/user_profile_screen.dart';
 import '../../features/user_profile/screens/reminders_screen.dart';
 import '../../features/messaging/screens/messaging_home_screen.dart';
@@ -215,6 +216,22 @@ class AppRouter {
           transitionsBuilder: (_, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      ),
+      // The brand's own post, opened for editing from the three-dot menu.
+      GoRoute(
+        path: '/edit-post/:id',
+        pageBuilder: (context, state) => CustomTransitionPage(
+          key: state.pageKey,
+          child: EditPostScreen(postId: state.pathParameters['id']!),
+          transitionsBuilder: (_, animation, secondaryAnimation, child) => SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+            child: child,
+          ),
           transitionDuration: const Duration(milliseconds: 300),
         ),
       ),

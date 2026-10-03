@@ -282,6 +282,20 @@ class FeedCard extends ConsumerWidget {
 
               if (isOwner) ...[
                 ListTile(
+                  leading: Icon(Icons.edit_outlined, color: context.colors.textPrimary),
+                  title: Text(
+                    'Edit Post',
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/edit-post/${post.id}');
+                  },
+                ),
+                ListTile(
                   leading: Icon(Icons.bar_chart_rounded, color: context.colors.textPrimary),
                   title: Text(
                     'View Analytics',
