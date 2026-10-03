@@ -12,7 +12,6 @@ class BrandActionButtons extends StatelessWidget {
   final VoidCallback onFollowToggled;
   final VoidCallback onMessageTap;
   final VoidCallback onWebsiteTap;
-  final bool isBrand;
   final bool isOwner;
   final VoidCallback? onEditProfileTap;
   final VoidCallback? onLeadCenterTap;
@@ -27,7 +26,6 @@ class BrandActionButtons extends StatelessWidget {
     required this.onFollowToggled,
     required this.onMessageTap,
     required this.onWebsiteTap,
-    this.isBrand = false,
     this.isOwner = false,
     this.onEditProfileTap,
     this.onLeadCenterTap,
@@ -100,8 +98,7 @@ class BrandActionButtons extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          if (!isBrand)
-            Expanded(
+          Expanded(
               child: GestureDetector(
                 onTap: () {
                   Haptics.light();
@@ -125,7 +122,7 @@ class BrandActionButtons extends StatelessWidget {
                 ),
               ),
             ),
-          if (!isBrand) const SizedBox(width: 8),
+          const SizedBox(width: 8),
           Expanded(
             child: GestureDetector(
               onTap: () {
@@ -152,39 +149,11 @@ class BrandActionButtons extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          if (isBrand)
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  Haptics.light();
-                  await Clipboard.setData(ClipboardData(text: '@${profile.username}'));
-                  if (context.mounted) {
-                    AppMessenger.of(
-                      context,
-                    ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
-                  }
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: context.colors.surface,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: context.colors.borderLight),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    'Share Profile',
-                    style: AppTypography.bodyMedium.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: context.colors.textPrimary,
-                    ),
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            if (profile.isFollowing && onNotificationsToggled != null) ...[
+          // Whoever is looking at someone else's brand sees the same row:
+          // Follow, Message, the bell once following, and share. A brand got
+          // a different, lesser version of this screen — no way to follow at
+          // all — though the server has always allowed it.
+          if (profile.isFollowing && onNotificationsToggled != null) ...[
               GestureDetector(
                 onTap: () {
                   Haptics.light();
@@ -219,30 +188,29 @@ class BrandActionButtons extends StatelessWidget {
               ),
               const SizedBox(width: 8),
             ],
-            GestureDetector(
-              onTap: () async {
-                Haptics.light();
-                await Clipboard.setData(ClipboardData(text: '@${profile.username}'));
-                if (context.mounted) {
-                  AppMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
-                }
-              },
-              behavior: HitTestBehavior.opaque,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: context.colors.surface,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: context.colors.borderLight),
-                ),
-                alignment: Alignment.center,
-                child: Icon(Icons.share_outlined, size: 20, color: context.colors.textPrimary),
+          GestureDetector(
+            onTap: () async {
+              Haptics.light();
+              await Clipboard.setData(ClipboardData(text: '@${profile.username}'));
+              if (context.mounted) {
+                AppMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
+              }
+            },
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: context.colors.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: context.colors.borderLight),
               ),
+              alignment: Alignment.center,
+              child: Icon(Icons.share_outlined, size: 20, color: context.colors.textPrimary),
             ),
-          ],
+          ),
         ],
       ),
     );

@@ -129,8 +129,6 @@ class FeedCard extends ConsumerWidget {
   Widget _buildHeader(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final isOwner = authState.loggedInRole == UserRole.brand && authState.brandId == post.brandId;
-    final isBrand = authState.loggedInRole == UserRole.brand;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 10, 8),
       child: Row(
@@ -218,8 +216,9 @@ class FeedCard extends ConsumerWidget {
               ),
             ),
           ),
-          // Follow
-          if (!isBrand)
+          // Follow — for anyone but the post's own brand. A brand looking at
+          // another brand's post had no way to follow it.
+          if (!isOwner)
             GestureDetector(
               onTap: onFollow,
               child: AnimatedContainer(
@@ -612,9 +611,6 @@ class FeedCard extends ConsumerWidget {
     // The sheet publishes the real count after it loads; until then the post's
     // own number stands.
     final commentCount = ref.watch(commentCountProvider)[post.id] ?? post.commentCount;
-    final authState = ref.watch(authProvider);
-    final isBrand = authState.loggedInRole == UserRole.brand;
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
       child: Column(
@@ -622,7 +618,7 @@ class FeedCard extends ConsumerWidget {
         children: [
           ExpandablePostDescription(post: post),
           const SizedBox(height: 12),
-          // Interaction bar. The comment count follows the shared delta, so
+          // Interaction bar. The comment count comes from the shared map, so
           // a comment left from the detail screen - which keeps its own copy
           // of the post - shows up straight away.
           InteractionBar(

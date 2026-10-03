@@ -115,8 +115,6 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
     final profile = state.profile!;
     final showQuicksite = state.quicksite != null;
 
-    final authState = ref.watch(authProvider);
-    final isBrand = authState.loggedInRole == UserRole.brand;
 
     final tabs = ['Posts', 'Gallery'];
     if (showQuicksite) tabs.add('Quicksite');
@@ -156,7 +154,6 @@ class _BrandProfileScreenState extends ConsumerState<BrandProfileScreen> {
                       children: [
                         BrandActionButtons(
                           profile: profile,
-                          isBrand: isBrand,
                           onNotificationsToggled: () => ref
                               .read(brandProfileProvider(widget.brandId).notifier)
                               .togglePostNotifications(),
