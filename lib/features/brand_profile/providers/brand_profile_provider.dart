@@ -385,6 +385,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
     List<String>? tags,
     String? category,
     String? subCategory,
+    String? location,
   }) async {
     try {
       final updateData = <String, dynamic>{};
@@ -394,6 +395,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       // What the brand does, shown under its name and used to find it.
       if (category != null) updateData['category'] = category;
       if (subCategory != null) updateData['subCategory'] = subCategory;
+      if (location != null) updateData['location'] = location;
 
       if (updateData.isEmpty) return true;
 
@@ -406,6 +408,7 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
               tags: tags,
               category: category,
               subCategory: subCategory,
+              location: location,
             ),
             quicksite: quicksite != null
                 ? BrandQuicksiteData.fromJson({'quicksite': quicksite})

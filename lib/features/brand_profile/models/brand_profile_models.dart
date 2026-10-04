@@ -15,6 +15,9 @@ class BrandProfile {
 
   /// What sits under the category, when the brand has chosen one.
   final String? subCategory;
+
+  /// The brand's city and state, as "City, State".
+  final String? location;
   final bool isVerified;
   final bool isFollowing;
 
@@ -56,6 +59,7 @@ class BrandProfile {
     required this.coverUrl,
     required this.category,
     this.subCategory,
+    this.location,
     this.isVerified = false,
     this.isFollowing = false,
     this.notifyOnPosts = true,
@@ -91,6 +95,7 @@ class BrandProfile {
     List<String>? tags,
     String? category,
     String? subCategory,
+    String? location,
   }) {
     return BrandProfile(
       id: id,
@@ -102,6 +107,7 @@ class BrandProfile {
       coverUrl: coverUrl ?? this.coverUrl,
       category: category ?? this.category,
       subCategory: subCategory ?? this.subCategory,
+      location: location ?? this.location,
       isVerified: isVerified,
       isFollowing: isFollowing ?? this.isFollowing,
       notifyOnPosts: notifyOnPosts ?? this.notifyOnPosts,
@@ -149,6 +155,7 @@ class BrandProfile {
           : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
       category: (json['category'] ?? '').toString(),
       subCategory: json['subCategory']?.toString(),
+      location: json['location']?.toString(),
       isVerified:
           json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
       isFollowing: parseBool(json['isFollowing']),

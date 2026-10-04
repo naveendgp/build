@@ -563,35 +563,31 @@ class FeedCard extends ConsumerWidget {
         );
       }
     } else if (post.ctaType == 'OPEN_URL') {
-      final url = post.ctaPayload?['url'];
-      if (url != null) {
-        try {
-          final uri = Uri.parse(url);
-          if (await canLaunchUrl(uri)) {
-            await launchUrl(uri, mode: LaunchMode.externalApplication);
-          } else {
-            if (context.mounted) {
-              AppMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Could not open link: $url',
-                    style: TextStyle(color: context.colors.textPrimary),
-                  ),
-                ),
-              );
-            }
-          }
-        } catch (_) {
+      final raw = post.ctaPayload?['url']?.toString().trim() ?? '';
+
+      // An Awareness post's button points at the brand, and the server writes
+      // that as "/username" — a path, not a link. Uri.parse gives it no
+      // scheme, canLaunchUrl says no, and the failure message is one the
+      // snackbar helper suppresses: the button did nothing, silently.
+      if (raw.isEmpty || raw.startsWith('/')) {
+        context.push('/brand/${post.brandId}');
+        return;
+      }
+
+      // "lyket.in" is a link a person would type and not one a browser can
+      // open; it was refused for want of a scheme.
+      final normalised = raw.contains('://') ? raw : 'https://$raw';
+
+      try {
+        final uri = Uri.parse(normalised);
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
           if (context.mounted) {
-            AppMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Invalid link format',
-                  style: TextStyle(color: context.colors.textPrimary),
-                ),
-              ),
-            );
+            AppMessenger.of(context).showError("Couldn't open $normalised");
           }
+        }
+      } catch (_) {
+        if (context.mounted) {
+          AppMessenger.of(context).showError("That link doesn't look right: $raw");
         }
       }
     } else {

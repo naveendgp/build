@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/brand_categories.dart';
+import '../../../core/constants/india_locations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -54,6 +55,14 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   /// A brand whose category is "Others" writes its own.
   late TextEditingController _otherCategoryController;
 
+  /// Where the brand is. Held apart from the street address: the profile and
+  /// search read this, and it is stored as "City, State".
+  String? _state;
+  String? _city;
+
+  /// A town that is not in the list is typed instead.
+  late TextEditingController _otherCityController;
+
   /// Brand details open read-only, with an Edit button, the way Account does.
   /// Everything is still on screen; it just can't be changed by a stray tap.
   bool _isEditing = false;
@@ -70,6 +79,12 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     _category = storedCategory.isEmpty ? null : (known ? storedCategory : otherBrandCategory);
     _otherCategoryController.text = known || storedCategory.isEmpty ? '' : storedCategory;
     _subCategory = profile?.subCategory;
+
+    final place = parseLocation(profile?.location);
+    _state = place.state.isEmpty ? null : place.state;
+    final listed = citiesOf(_state).contains(place.city);
+    _city = place.city.isEmpty ? null : (listed ? place.city : null);
+    _otherCityController.text = listed ? '' : place.city;
     _descController.text = settings.businessDescription ?? '';
     _websiteController.text = settings.website ?? '';
     _emailController.text = settings.contactEmail ?? '';
@@ -94,6 +109,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     super.initState();
     _bioController = TextEditingController()..addListener(_markChanged);
     _otherCategoryController = TextEditingController()..addListener(_markChanged);
+    _otherCityController = TextEditingController()..addListener(_markChanged);
     _descController = TextEditingController()..addListener(_markChanged);
     _websiteController = TextEditingController()..addListener(_markChanged);
     _emailController = TextEditingController()..addListener(_markChanged);
@@ -110,6 +126,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   void dispose() {
     _bioController.dispose();
     _otherCategoryController.dispose();
+    _otherCityController.dispose();
     _descController.dispose();
     _websiteController.dispose();
     _emailController.dispose();
@@ -332,6 +349,109 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     return _category;
   }
 
+
+  /// The city as it should be stored: the one picked, or the one typed when
+  /// the town is not in the list.
+  String? get _effectiveCity {
+    final typed = _otherCityController.text.trim();
+    if (typed.isNotEmpty) return typed;
+    return _city;
+  }
+
+  /// State and city, the pair the profile and search read. This was one free
+  /// text box that also doubled as the street address, so "chennai",
+  /// "Chennai, TN" and a shop's full address all landed in the same field.
+  Widget _buildStateCityPicker(BuildContext context) {
+    final cities = citiesOf(_state);
+
+    return Column(
+      children: [
+        SettingsItem(
+          title: 'State',
+          icon: Icons.map_outlined,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 150),
+                child: Text(
+                  _state ?? 'Select state',
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: _state == null
+                        ? context.colors.textTertiary
+                        : context.colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (_isEditing)
+                Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
+            ],
+          ),
+          onTap: _isEditing
+              ? () => _pickFromList(
+                  title: 'State',
+                  options: indiaStates,
+                  selected: _state,
+                  onSelected: (value) => setState(() {
+                    _state = value;
+                    // The old city belongs to the old state.
+                    _city = null;
+                    _otherCityController.clear();
+                    _markChanged();
+                  }),
+                )
+              : null,
+        ),
+        if (_state != null)
+          SettingsItem(
+            title: 'City',
+            icon: Icons.location_city_rounded,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 150),
+                  child: Text(
+                    _effectiveCity ?? 'Select city',
+                    textAlign: TextAlign.right,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: _effectiveCity == null
+                          ? context.colors.textTertiary
+                          : context.colors.textPrimary,
+                    ),
+                  ),
+                ),
+                if (_isEditing)
+                  Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
+              ],
+            ),
+            onTap: _isEditing
+                ? () => _pickFromList(
+                    title: 'City',
+                    // Not every town is listed, so one can be typed instead.
+                    options: [...cities, 'Other'],
+                    selected: _city,
+                    onSelected: (value) => setState(() {
+                      if (value == 'Other') {
+                        _city = null;
+                      } else {
+                        _city = value;
+                        _otherCityController.clear();
+                      }
+                      _markChanged();
+                    }),
+                  )
+                : null,
+          ),
+        if (_state != null && _city == null)
+          _buildTextField(context, 'City (not listed)', _otherCityController),
+      ],
+    );
+  }
+
   Widget _buildCategoryPicker(BuildContext context) {
     final label = _category == null
         ? 'Choose a category'
@@ -519,6 +639,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
               quicksite: quicksiteMap,
               category: _effectiveCategory,
               subCategory: _subCategory,
+              location: formatLocation(_effectiveCity ?? '', _state ?? ''),
             );
         if (mounted) {
           AppMessenger.of(
@@ -693,7 +814,8 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                   _buildTextField(context, 'Website', _websiteController),
                   _buildTextField(context, 'Contact Email', _emailController),
                   _buildTextField(context, 'Contact Phone', _phoneController),
-                  _buildTextField(context, 'Business Address', _addressController, maxLines: 2),
+                  _buildTextField(context, 'Address', _addressController, maxLines: 2),
+                  _buildStateCityPicker(context),
                   SettingsItem(
                     title: 'Brand Tags',
                     icon: Icons.local_offer_outlined,
