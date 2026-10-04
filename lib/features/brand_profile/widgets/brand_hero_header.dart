@@ -235,6 +235,34 @@ class BrandHeroHeader extends ConsumerWidget {
                   '@${profile.username}',
                   style: AppTypography.bodyMedium.copyWith(color: context.colors.textSecondary),
                 ),
+                // What the brand does. It was stored and never shown, so a
+                // visitor had no idea what kind of business this is.
+                if (profile.category.trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.storefront_outlined,
+                        size: 14,
+                        color: context.colors.textTertiary,
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          profile.subCategory == null || profile.subCategory!.trim().isEmpty
+                              ? profile.category
+                              : '${profile.category} · ${profile.subCategory}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.labelSmall.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,

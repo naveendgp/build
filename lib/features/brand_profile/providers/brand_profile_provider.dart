@@ -383,12 +383,17 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
     String? bio,
     Map<String, dynamic>? quicksite,
     List<String>? tags,
+    String? category,
+    String? subCategory,
   }) async {
     try {
       final updateData = <String, dynamic>{};
       if (bio != null) updateData['bio'] = bio;
       if (quicksite != null) updateData['quicksite'] = quicksite;
       if (tags != null) updateData['tags'] = tags;
+      // What the brand does, shown under its name and used to find it.
+      if (category != null) updateData['category'] = category;
+      if (subCategory != null) updateData['subCategory'] = subCategory;
 
       if (updateData.isEmpty) return true;
 
@@ -396,7 +401,12 @@ class BrandProfileNotifier extends StateNotifier<BrandProfileState> {
       if (res.statusCode == 200) {
         if (state.profile != null) {
           state = state.copyWith(
-            profile: state.profile!.copyWith(bio: bio, tags: tags),
+            profile: state.profile!.copyWith(
+              bio: bio,
+              tags: tags,
+              category: category,
+              subCategory: subCategory,
+            ),
             quicksite: quicksite != null
                 ? BrandQuicksiteData.fromJson({'quicksite': quicksite})
                 : state.quicksite,

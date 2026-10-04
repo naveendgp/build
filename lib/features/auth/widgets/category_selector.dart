@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/constants/brand_categories.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
@@ -10,18 +11,31 @@ class CategorySelector extends StatelessWidget {
 
   const CategorySelector({super.key, required this.selectedCategory, required this.onSelect});
 
-  static const List<Map<String, dynamic>> categories = [
-    {'label': 'Fashion & Apparel', 'icon': Icons.checkroom_rounded},
-    {'label': 'Technology', 'icon': Icons.devices_rounded},
-    {'label': 'Food & Beverage', 'icon': Icons.restaurant_rounded},
-    {'label': 'Health & Wellness', 'icon': Icons.favorite_rounded},
-    {'label': 'Education', 'icon': Icons.school_rounded},
-    {'label': 'Entertainment', 'icon': Icons.movie_rounded},
-    {'label': 'Real Estate', 'icon': Icons.apartment_rounded},
-    {'label': 'Automotive', 'icon': Icons.directions_car_rounded},
-    {'label': 'Finance', 'icon': Icons.account_balance_rounded},
-    {'label': 'Retail', 'icon': Icons.storefront_rounded},
-    {'label': 'Other', 'icon': Icons.more_horiz_rounded},
+  /// The categories the whole product uses. This screen had eleven of its
+  /// own — Technology, Entertainment, Finance, Other — none of which the web
+  /// offers, so a brand signing up here picked something Settings could not
+  /// show back to it.
+  static const Map<String, IconData> _icons = {
+    'Retail & Shopping': Icons.storefront_rounded,
+    'Food & Beverages': Icons.restaurant_rounded,
+    'Health & Wellness': Icons.favorite_rounded,
+    'Education & Learning': Icons.school_rounded,
+    'Travel & Hospitality': Icons.flight_takeoff_rounded,
+    'Professional & Business Services': Icons.work_outline_rounded,
+    'Automobiles': Icons.directions_car_rounded,
+    'Real Estate': Icons.apartment_rounded,
+    'Art, Craft & Culture': Icons.palette_rounded,
+    'Kids & Parenting': Icons.child_care_rounded,
+    'Pets': Icons.pets_rounded,
+    'Local Services': Icons.handyman_rounded,
+    'Spiritual & Religious': Icons.self_improvement_rounded,
+    'Tech & Startups': Icons.devices_rounded,
+    'Others': Icons.more_horiz_rounded,
+  };
+
+  static List<Map<String, dynamic>> get categories => [
+    for (final name in brandCategoryNames)
+      {'label': name, 'icon': _icons[name] ?? Icons.storefront_rounded},
   ];
 
   void _showSheet(BuildContext context) {

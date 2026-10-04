@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+
+import '../../../core/constants/brand_categories.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -44,6 +46,14 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   List<BrandService> _services = [];
   bool _hasChanges = false;
 
+  /// What the brand does. Shown under its name on the public profile, and
+  /// there was no way to set or change it after signup.
+  String? _category;
+  String? _subCategory;
+
+  /// A brand whose category is "Others" writes its own.
+  late TextEditingController _otherCategoryController;
+
   /// Brand details open read-only, with an Edit button, the way Account does.
   /// Everything is still on screen; it just can't be changed by a stray tap.
   bool _isEditing = false;
@@ -55,6 +65,11 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     final profile = profileState.profile;
     final qs = profileState.quicksite;
     _bioController.text = profile?.bio ?? '';
+    final storedCategory = profile?.category ?? '';
+    final known = brandCategoryNames.contains(storedCategory);
+    _category = storedCategory.isEmpty ? null : (known ? storedCategory : otherBrandCategory);
+    _otherCategoryController.text = known || storedCategory.isEmpty ? '' : storedCategory;
+    _subCategory = profile?.subCategory;
     _descController.text = settings.businessDescription ?? '';
     _websiteController.text = settings.website ?? '';
     _emailController.text = settings.contactEmail ?? '';
@@ -78,6 +93,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   void initState() {
     super.initState();
     _bioController = TextEditingController()..addListener(_markChanged);
+    _otherCategoryController = TextEditingController()..addListener(_markChanged);
     _descController = TextEditingController()..addListener(_markChanged);
     _websiteController = TextEditingController()..addListener(_markChanged);
     _emailController = TextEditingController()..addListener(_markChanged);
@@ -93,6 +109,7 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   @override
   void dispose() {
     _bioController.dispose();
+    _otherCategoryController.dispose();
     _descController.dispose();
     _websiteController.dispose();
     _emailController.dispose();
@@ -303,6 +320,162 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     );
   }
 
+
+  /// The category as it should be stored: the brand's own words when it chose
+  /// "Others", otherwise the one it picked.
+  String? get _effectiveCategory {
+    if (_category == null) return null;
+    if (_category == otherBrandCategory) {
+      final typed = _otherCategoryController.text.trim();
+      return typed.isEmpty ? otherBrandCategory : typed;
+    }
+    return _category;
+  }
+
+  Widget _buildCategoryPicker(BuildContext context) {
+    final label = _category == null
+        ? 'Choose a category'
+        : (_category == otherBrandCategory && _otherCategoryController.text.trim().isNotEmpty
+              ? _otherCategoryController.text.trim()
+              : _category!);
+
+    return Column(
+      children: [
+        SettingsItem(
+          title: 'Category',
+          icon: Icons.category_outlined,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 150),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.right,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.bodyMedium.copyWith(
+                    color: _category == null
+                        ? context.colors.textTertiary
+                        : context.colors.textPrimary,
+                  ),
+                ),
+              ),
+              if (_isEditing)
+                Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
+            ],
+          ),
+          onTap: _isEditing
+              ? () => _pickFromList(
+                  title: 'Category',
+                  options: brandCategoryNames,
+                  selected: _category,
+                  onSelected: (value) => setState(() {
+                    _category = value;
+                    // The old subcategory belongs to the old category.
+                    _subCategory = null;
+                    _markChanged();
+                  }),
+                )
+              : null,
+        ),
+        if (_category == otherBrandCategory)
+          _buildTextField(context, 'Your business category', _otherCategoryController),
+      ],
+    );
+  }
+
+  Widget _buildSubCategoryPicker(BuildContext context) {
+    final options = subCategoriesOf(_category);
+    if (options.isEmpty || _category == otherBrandCategory) return const SizedBox.shrink();
+
+    return SettingsItem(
+      title: 'Subcategory',
+      icon: Icons.subdirectory_arrow_right_rounded,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 150),
+            child: Text(
+              _subCategory ?? 'Optional',
+              textAlign: TextAlign.right,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.bodyMedium.copyWith(
+                color: _subCategory == null
+                    ? context.colors.textTertiary
+                    : context.colors.textPrimary,
+              ),
+            ),
+          ),
+          if (_isEditing)
+            Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
+        ],
+      ),
+      onTap: _isEditing
+          ? () => _pickFromList(
+              title: 'Subcategory',
+              options: options,
+              selected: _subCategory,
+              onSelected: (value) => setState(() {
+                _subCategory = value;
+                _markChanged();
+              }),
+            )
+          : null,
+    );
+  }
+
+  void _pickFromList({
+    required String title,
+    required List<String> options,
+    required String? selected,
+    required ValueChanged<String> onSelected,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.colors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheet) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(sheet).size.height * 0.7),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                child: Text(
+                  title,
+                  style: AppTypography.titleMedium.copyWith(
+                    color: context.colors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              ...options.map(
+                (option) => ListTile(
+                  title: Text(
+                    option,
+                    style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                  ),
+                  trailing: option == selected
+                      ? Icon(Icons.check_rounded, color: context.colors.primaryAccent, size: 20)
+                      : null,
+                  onTap: () {
+                    Navigator.pop(sheet);
+                    onSelected(option);
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _save(BrandSettings currentSettings) async {
     if (_formKey.currentState?.validate() ?? false) {
       final updated = currentSettings.copyWith(
@@ -341,7 +514,12 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
 
         await ref
             .read(brandProfileProvider('me').notifier)
-            .updateBrandDetails(bio: _bioController.text, quicksite: quicksiteMap);
+            .updateBrandDetails(
+              bio: _bioController.text,
+              quicksite: quicksiteMap,
+              category: _effectiveCategory,
+              subCategory: _subCategory,
+            );
         if (mounted) {
           AppMessenger.of(
             context,
@@ -509,6 +687,8 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
               SettingsGroup(
                 title: 'Business Information',
                 children: [
+                  _buildCategoryPicker(context),
+                  _buildSubCategoryPicker(context),
                   _buildTextField(context, 'Business Description', _descController, maxLines: 3),
                   _buildTextField(context, 'Website', _websiteController),
                   _buildTextField(context, 'Contact Email', _emailController),

@@ -12,6 +12,9 @@ class BrandProfile {
   final String logoUrl;
   final String coverUrl;
   final String category;
+
+  /// What sits under the category, when the brand has chosen one.
+  final String? subCategory;
   final bool isVerified;
   final bool isFollowing;
 
@@ -52,6 +55,7 @@ class BrandProfile {
     required this.logoUrl,
     required this.coverUrl,
     required this.category,
+    this.subCategory,
     this.isVerified = false,
     this.isFollowing = false,
     this.notifyOnPosts = true,
@@ -85,6 +89,8 @@ class BrandProfile {
     String? coverUrl,
     String? bio,
     List<String>? tags,
+    String? category,
+    String? subCategory,
   }) {
     return BrandProfile(
       id: id,
@@ -94,7 +100,8 @@ class BrandProfile {
       bio: bio ?? this.bio,
       logoUrl: logoUrl ?? this.logoUrl,
       coverUrl: coverUrl ?? this.coverUrl,
-      category: category,
+      category: category ?? this.category,
+      subCategory: subCategory ?? this.subCategory,
       isVerified: isVerified,
       isFollowing: isFollowing ?? this.isFollowing,
       notifyOnPosts: notifyOnPosts ?? this.notifyOnPosts,
@@ -141,6 +148,7 @@ class BrandProfile {
           ? ApiClient.resolveMediaUrl(json['coverImageUrl'].toString())
           : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80',
       category: (json['category'] ?? '').toString(),
+      subCategory: json['subCategory']?.toString(),
       isVerified:
           json['verificationStatus'] == 'VERIFIED' || json['verificationStatus'] == 'Verified',
       isFollowing: parseBool(json['isFollowing']),
