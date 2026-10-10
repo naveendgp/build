@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../models/brand_profile_models.dart';
 import '../providers/brand_profile_provider.dart';
@@ -25,49 +26,185 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
 
   /// Asks for the photo's caption. Returns null if the brand backs out, so an
   /// upload can be abandoned at this point without adding anything.
-  Future<String?> _askForDescription({String initial = '', required String title}) {
+  ///
+  /// This was a bare AlertDialog: a red-outlined box, a counter adrift beneath
+  /// it and two text buttons in the corner, with nothing to show which photo
+  /// was being described. It is a sheet now, with the photo in it.
+  Future<String?> _askForDescription({
+    String initial = '',
+    required String title,
+    String? subtitle,
+    File? preview,
+    String? previewUrl,
+  }) {
     final controller = TextEditingController(text: initial);
-    return showDialog<String>(
+
+    return showModalBottomSheet<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: context.colors.card,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          title,
-          style: AppTypography.titleMedium.copyWith(
-            fontWeight: FontWeight.bold,
-            color: context.colors.textPrimary,
-          ),
+      isScrollControlled: true,
+      backgroundColor: context.colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) => Padding(
+        padding: EdgeInsets.only(
+          left: AppSpacing.lg,
+          right: AppSpacing.lg,
+          top: AppSpacing.sm,
+          bottom: MediaQuery.of(sheetContext).viewInsets.bottom + AppSpacing.lg,
         ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: 3,
-          minLines: 1,
-          maxLength: 280,
-          textCapitalization: TextCapitalization.sentences,
-          style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Say what this photo shows',
-            hintStyle: AppTypography.bodyMedium.copyWith(color: context.colors.textTertiary),
-          ),
+        child: StatefulBuilder(
+          builder: (sheetContext, setSheetState) {
+            final length = controller.text.characters.length;
+
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                    decoration: BoxDecoration(
+                      color: context.colors.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    if (preview != null || previewUrl != null) ...[
+                      ClipRRect(
+                        borderRadius: AppSpacing.borderRadiusMd,
+                        child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: preview != null
+                              ? Image.file(preview, fit: BoxFit.cover)
+                              : Image.network(previewUrl!, fit: BoxFit.cover),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.md),
+                    ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: AppTypography.titleMedium.copyWith(
+                              color: context.colors.textPrimary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle ?? 'Say what this photo shows. People read it on your profile.',
+                            style: AppTypography.labelSmall.copyWith(
+                              color: context.colors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.lg),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  maxLines: 4,
+                  minLines: 2,
+                  maxLength: 280,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (_) => setSheetState(() {}),
+                  style: AppTypography.bodyMedium.copyWith(color: context.colors.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: 'A new arrival, the shop front, the team at work…',
+                    hintStyle: AppTypography.bodyMedium.copyWith(
+                      color: context.colors.textTertiary,
+                    ),
+                    // The built-in counter sits outside the field; this one is
+                    // in the corner of it.
+                    counterText: '',
+                    filled: true,
+                    fillColor: context.colors.background,
+                    contentPadding: const EdgeInsets.all(AppSpacing.md),
+                    border: OutlineInputBorder(
+                      borderRadius: AppSpacing.borderRadiusMd,
+                      borderSide: BorderSide(color: context.colors.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: AppSpacing.borderRadiusMd,
+                      borderSide: BorderSide(color: context.colors.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppSpacing.borderRadiusMd,
+                      borderSide: BorderSide(color: context.colors.primaryAccent, width: 1.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    '$length/280',
+                    style: AppTypography.labelSmall.copyWith(
+                      color: length > 260
+                          ? context.colors.primaryAccent
+                          : context.colors.textTertiary,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.md),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(sheetContext),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                          side: BorderSide(color: context.colors.border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppSpacing.borderRadiusMd,
+                          ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: AppTypography.button.copyWith(
+                            color: context.colors.textSecondary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      flex: 2,
+                      child: FilledButton(
+                        onPressed: () => Navigator.pop(sheetContext, controller.text.trim()),
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(0, 48),
+                          backgroundColor: context.colors.primaryAccent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: AppSpacing.borderRadiusMd,
+                          ),
+                        ),
+                        child: Text(
+                          'Save',
+                          style: AppTypography.button.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
-              'Cancel',
-              style: AppTypography.button.copyWith(color: context.colors.textSecondary),
-            ),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text.trim()),
-            child: Text(
-              'Save',
-              style: AppTypography.button.copyWith(color: context.colors.primaryAccent),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -76,6 +213,8 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
     final description = await _askForDescription(
       initial: item.description,
       title: 'Photo description',
+      subtitle: 'Shown under this photo on your profile.',
+      previewUrl: item.imageUrl,
     );
     if (description == null || !mounted) return;
     final saved = await ref
@@ -156,7 +295,10 @@ class _BrandGalleryTabState extends ConsumerState<BrandGalleryTab> {
 
     // The caption is asked for first, so a photo never lands in the grid
     // without one.
-    final description = await _askForDescription(title: 'Add a description');
+    final description = await _askForDescription(
+      title: 'Add a description',
+      preview: File(image.path),
+    );
     if (description == null || !mounted) return;
 
     setState(() => _isUploading = true);
