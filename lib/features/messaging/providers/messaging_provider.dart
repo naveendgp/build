@@ -44,6 +44,45 @@ class InboxNotifier extends StateNotifier<InboxState> {
 
   InboxNotifier(this._api, this._currentUserId) : super(const InboxState());
 
+  /// Takes a message request. The conversation stops being a request and
+  /// joins the ordinary list — the one for whoever sent it.
+  ///
+  /// The backend has had `/conversations/:id/accept` all along; nothing in the
+  /// app called it, so a brand could see a request and had no way to take it
+  /// other than replying.
+  Future<bool> acceptRequest(String conversationId) async {
+    final previous = state.conversations;
+    state = state.copyWith(
+      conversations: state.conversations
+          .map((c) => c.id == conversationId ? c.copyWith(isRequest: false) : c)
+          .toList(),
+    );
+    try {
+      await _api.dio.post('/conversations/$conversationId/accept');
+      return true;
+    } catch (e) {
+      debugPrint('Accepting the request failed: $e');
+      state = state.copyWith(conversations: previous);
+      return false;
+    }
+  }
+
+  /// Turns a message request down. The conversation and its messages go.
+  Future<bool> declineRequest(String conversationId) async {
+    final previous = state.conversations;
+    state = state.copyWith(
+      conversations: state.conversations.where((c) => c.id != conversationId).toList(),
+    );
+    try {
+      await _api.dio.post('/conversations/$conversationId/decline');
+      return true;
+    } catch (e) {
+      debugPrint('Declining the request failed: $e');
+      state = state.copyWith(conversations: previous);
+      return false;
+    }
+  }
+
   Future<void> loadInbox() async {
     state = state.copyWith(isLoading: true, clearError: true);
 
@@ -149,6 +188,9 @@ class ChatState {
   /// replaced with a plain notice rather than a button.
   final bool blockedMe;
 
+  /// Still a message request: whoever is reading it has not accepted yet.
+  final bool isRequest;
+
   bool get isBlocked => blockedByMe || blockedMe;
 
   const ChatState({
@@ -159,6 +201,7 @@ class ChatState {
     this.participant,
     this.blockedByMe = false,
     this.blockedMe = false,
+    this.isRequest = false,
   });
 
   ChatState copyWith({
@@ -169,6 +212,7 @@ class ChatState {
     ChatParticipant? participant,
     bool? blockedByMe,
     bool? blockedMe,
+    bool? isRequest,
     bool clearError = false,
   }) {
     return ChatState(
@@ -179,6 +223,7 @@ class ChatState {
       participant: participant ?? this.participant,
       blockedByMe: blockedByMe ?? this.blockedByMe,
       blockedMe: blockedMe ?? this.blockedMe,
+      isRequest: isRequest ?? this.isRequest,
     );
   }
 }
@@ -245,12 +290,25 @@ class ChatNotifier extends StateNotifier<ChatState> {
         participant: conversation.otherParticipant,
         blockedByMe: details['blockedByMe'] == true,
         blockedMe: details['blockedMe'] == true,
+        isRequest: conversation.isRequest,
       );
 
       // Mark as read immediately when loaded
       _api.dio.post('/conversations/$_conversationId/read').then((_) {}, onError: (_) {});
     } catch (e) {
       state = state.copyWith(isLoading: false, error: 'Failed to load messages');
+    }
+  }
+
+  /// Takes this message request, from inside the conversation.
+  Future<bool> acceptRequest() async {
+    try {
+      await _api.dio.post('/conversations/$_conversationId/accept');
+      state = state.copyWith(isRequest: false);
+      return true;
+    } catch (e) {
+      debugPrint('Accepting the request failed: $e');
+      return false;
     }
   }
 

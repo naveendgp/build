@@ -145,6 +145,23 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
               // Composer, or the notice that takes its place once either side
               // has blocked the other - the server refuses messages then.
+              // A request opened from the inbox can be taken here too. The
+              // composer still works, because replying accepts it as well.
+              if (chatState.isRequest && !chatState.isBlocked)
+                _RequestNotice(
+                  name: participant.name,
+                  onAccept: () async {
+                    final ok = await notifier.acceptRequest();
+                    if (!context.mounted) return;
+                    if (ok) {
+                      AppMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Accepted. ${participant.name} can message you.')),
+                      );
+                    } else {
+                      AppMessenger.of(context).showError("Couldn't accept that request.");
+                    }
+                  },
+                ),
               if (chatState.isBlocked)
                 _BlockedNotice(
                   blockedByMe: chatState.blockedByMe,
@@ -205,6 +222,52 @@ class _BlockedNotice extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The bar above the composer while a conversation is still a request.
+class _RequestNotice extends StatelessWidget {
+  final String name;
+  final VoidCallback onAccept;
+
+  const _RequestNotice({required this.name, required this.onAccept});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.md, 10, AppSpacing.md, 10),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        border: Border(top: BorderSide(color: context.colors.border, width: 0.5)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '$name wants to message you.',
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          FilledButton(
+            onPressed: onAccept,
+            style: FilledButton.styleFrom(
+              backgroundColor: context.colors.primaryAccent,
+              padding: const EdgeInsets.symmetric(horizontal: 18),
+              minimumSize: const Size(0, 36),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: Text(
+              'Accept',
+              style: AppTypography.labelLarge.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
         ],
       ),
     );

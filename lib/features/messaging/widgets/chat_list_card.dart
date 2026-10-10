@@ -11,7 +11,11 @@ import 'package:timeago/timeago.dart' as timeago;
 class ChatListCard extends StatelessWidget {
   final Conversation conversation;
 
-  const ChatListCard({super.key, required this.conversation});
+  /// Accept / Decline under the row, for a message request.
+  final VoidCallback? onAccept;
+  final VoidCallback? onDecline;
+
+  const ChatListCard({super.key, required this.conversation, this.onAccept, this.onDecline});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +23,7 @@ class ChatListCard extends StatelessWidget {
     final lastMessage = conversation.lastMessage;
     final isUnread = conversation.unreadCount > 0;
 
-    return GestureDetector(
+    final row = GestureDetector(
       onTap: () => context.push('/messages/${conversation.id}'),
       behavior: HitTestBehavior.opaque,
       child: Container(
@@ -156,6 +160,59 @@ class ChatListCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+
+    if (onAccept == null && onDecline == null) return row;
+
+    // A request is answered from the list, so taking one does not mean
+    // opening it and replying.
+    return Column(
+      children: [
+        row,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.sm),
+          child: Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onDecline,
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: context.colors.border),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text(
+                    'Decline',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: context.colors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: FilledButton(
+                  onPressed: onAccept,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: context.colors.primaryAccent,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  child: Text(
+                    'Accept',
+                    style: GoogleFonts.inter(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Divider(height: 1, color: context.colors.border),
+      ],
     );
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../../core/adaptive/adaptive_dialogs.dart';
+import '../../../core/utils/app_messenger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -205,7 +207,37 @@ class MessagingHomeScreen extends ConsumerWidget {
         padding: const EdgeInsets.only(top: AppSpacing.sm, bottom: 100),
         itemBuilder: (context, index) {
           final conv = filtered[index];
-          return ChatListCard(conversation: conv);
+          // Only a request can be accepted or turned down.
+          if (!conv.isRequest) return ChatListCard(conversation: conv);
+          return ChatListCard(
+            conversation: conv,
+            onAccept: () async {
+              final ok = await notifier.acceptRequest(conv.id);
+              if (!context.mounted) return;
+              if (ok) {
+                AppMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Accepted. ${conv.otherParticipant.name} can message you.')),
+                );
+              } else {
+                AppMessenger.of(context).showError("Couldn't accept that request. Try again.");
+              }
+            },
+            onDecline: () async {
+              final ok = await showAdaptiveConfirmDialog(
+                context,
+                title: 'Decline this request?',
+                message: 'The conversation and its messages are removed.',
+                confirmLabel: 'Decline',
+                isDestructive: true,
+              );
+              if (ok != true) return;
+              final done = await notifier.declineRequest(conv.id);
+              if (!context.mounted) return;
+              if (!done) {
+                AppMessenger.of(context).showError("Couldn't decline that request. Try again.");
+              }
+            },
+          );
         },
       ),
     );
