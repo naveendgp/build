@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/session/session_reset.dart';
 import '../../../core/storage/secure_storage.dart';
 import '../../home/services/lead_form_memory.dart';
 import '../../../core/services/notification_service.dart';
@@ -54,9 +55,13 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
+  /// Kept so signing in or out can throw away whatever the last account
+  /// loaded — the profile, the feed, the inbox and the rest.
+  final Ref _ref;
+
   final ApiClient _apiClient;
 
-  AuthNotifier(this._apiClient) : super(const AuthState());
+  AuthNotifier(this._apiClient, this._ref) : super(const AuthState());
 
   void selectRole(UserRole role) {
     state = state.copyWith(selectedRole: role);
@@ -121,6 +126,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
 
         // Initialize push notifications after successful login
+        // Nothing from a previous account on this phone should be on screen
+        // after someone else signs in.
+        resetSessionState(_ref);
+
         NotificationService().initialize();
 
         return true;
@@ -177,6 +186,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
 
         // Initialize push notifications when session is restored
+        // Nothing from a previous account on this phone should be on screen
+        // after someone else signs in.
+        resetSessionState(_ref);
+
         NotificationService().initialize();
       }
     } catch (e) {
@@ -347,6 +360,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
 
         // Initialize push notifications after successful Google login
+        // Nothing from a previous account on this phone should be on screen
+        // after someone else signs in.
+        resetSessionState(_ref);
+
         NotificationService().initialize();
 
         return true;
@@ -547,11 +564,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await SecureStorage.clearSession();
     // Answers remembered for lead forms belong to whoever was signed in.
     await LeadFormMemory.clear();
+    // So does everything else that was loaded: the profile, the feed, the
+    // inbox. Without this the next person to sign in on this phone saw the
+    // previous account's screens.
+    resetSessionState(_ref);
     state = const AuthState();
   }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  return AuthNotifier(apiClient);
+  return AuthNotifier(apiClient, ref);
 });

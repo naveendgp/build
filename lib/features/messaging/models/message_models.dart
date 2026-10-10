@@ -194,10 +194,17 @@ class Conversation {
 
     bool isBrand = false;
     if (participantJson != null) {
-      if (participantJson['type'] == 'BRAND' ||
-          participantJson.containsKey('logoUrl') ||
-          participantJson.containsKey('lastLogin')) {
+      // The API says which kind of account this is. It was guessed instead —
+      // partly from whether a `logoUrl` key was present — and the list always
+      // carries that key, null for a person, so every thread counted as a
+      // brand: the Users tab stayed empty and everyone wore a verified badge.
+      final type = (participantJson['type'] ?? '').toString().toUpperCase();
+      if (type == 'BRAND') {
         isBrand = true;
+      } else if (type.isEmpty) {
+        // Older payloads without a type: a brand is the one with a logo.
+        final logo = participantJson['logoUrl'];
+        isBrand = logo != null && logo.toString().trim().isNotEmpty;
       }
       participantJson['isBrand'] = isBrand;
 

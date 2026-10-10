@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
+import '../../home/widgets/video_player_widget.dart';
 import '../models/explore_models.dart';
 
 /// Trending Now — Full-bleed hero carousel with parallax glow and badge overlays
@@ -162,8 +163,29 @@ class _HeroCardState extends State<_HeroCard> with SingleTickerProviderStateMixi
             child: Stack(
               fit: StackFit.expand,
               children: [
-                // Image
-                if (post.mediaUrl.isNotEmpty)
+                // A video post plays here, as it does in the feed. The card
+                // only ever drew an image, and a video has none, so a trending
+                // video was a blank card with a title on it.
+                if (post.videoUrl != null && post.videoUrl!.isNotEmpty)
+                  FittedBox(
+                    fit: BoxFit.cover,
+                    clipBehavior: Clip.hardEdge,
+                    child: SizedBox(
+                      width: 1000 * post.aspectRatio,
+                      height: 1000,
+                      child: VideoPlayerWidget(
+                        videoUrl: post.videoUrl!,
+                        aspectRatio: post.aspectRatio,
+                        placeholderUrl: post.mediaUrl,
+                        initialPosition: post.bestFrameTimestamp,
+                        // The card is a glimpse, not a player: tapping it
+                        // opens the post.
+                        allowInteraction: false,
+                        showControls: false,
+                      ),
+                    ),
+                  )
+                else if (post.mediaUrl.isNotEmpty)
                   CachedNetworkImage(
                     imageUrl: post.mediaUrl,
                     fit: BoxFit.cover,
