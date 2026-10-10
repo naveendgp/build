@@ -759,10 +759,13 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                 title: 'Services & Pricing',
                 children: [
                   ..._buildServicesList(context),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: InkWell(
-                      onTap: _isEditing ? () => _showServiceDialog(context) : null,
+                  // Shown only while editing: it used to sit there read-only,
+                  // inviting a tap that did nothing.
+                  if (_isEditing)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: InkWell(
+                        onTap: () => _showServiceDialog(context),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
@@ -1088,24 +1091,29 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
                   ),
               ],
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(Icons.edit_outlined, color: context.colors.textSecondary),
-                  onPressed: () => _showServiceDialog(context, index: index, service: service),
-                ),
-                IconButton(
-                  icon: Icon(Icons.delete_outline, color: context.colors.error),
-                  onPressed: () {
-                    setState(() {
-                      _services.removeAt(index);
-                      _hasChanges = true;
-                    });
-                  },
-                ),
-              ],
-            ),
+            // The pencil and the bin belong to editing, like every other
+            // control on this screen.
+            trailing: !_isEditing
+                ? null
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit_outlined, color: context.colors.textSecondary),
+                        onPressed: () =>
+                            _showServiceDialog(context, index: index, service: service),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: context.colors.error),
+                        onPressed: () {
+                          setState(() {
+                            _services.removeAt(index);
+                            _hasChanges = true;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
           ),
         ),
       );
