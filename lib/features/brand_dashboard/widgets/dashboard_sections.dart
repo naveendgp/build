@@ -8,6 +8,7 @@ import '../../../core/adaptive/adaptive.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/widgets/video_thumbnail.dart';
 import '../../../core/utils/app_messenger.dart';
 import '../../../core/utils/haptics.dart';
 import '../models/dashboard_models.dart';
@@ -875,12 +876,16 @@ class _Thumb extends StatelessWidget {
       child: SizedBox(
         width: size,
         height: size,
-        child: url == null || url.isEmpty || post.isVideo
+        // A video shows its own first frame; it used to be a camera icon on
+        // a grey tile, which told the brand nothing about which post it was.
+        child: url != null && url.isNotEmpty && post.isVideo
+            ? VideoThumbnail(url: url, size: size)
+            : url == null || url.isEmpty
             ? Container(
                 color: context.colors.surfaceSecondary,
                 alignment: Alignment.center,
                 child: Icon(
-                  post.isVideo ? Icons.videocam_rounded : Icons.image_outlined,
+                  Icons.image_outlined,
                   size: 18,
                   color: context.colors.textTertiary,
                 ),

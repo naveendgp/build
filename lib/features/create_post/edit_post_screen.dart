@@ -258,6 +258,7 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         'description': _description.text.trim(),
         'tags': _tags,
         if (_ctaText.text.trim().isNotEmpty) 'ctaText': _ctaText.text.trim(),
+        if (_objective != null) 'marketingObjective': _objective,
         if (_ctaType != null) 'ctaType': ctaTypeToBackend[_ctaType],
         'isHighlighted': _isHighlighted,
         'highlightMessage': _isHighlighted ? _highlightMessage.text.trim() : '',
@@ -433,6 +434,24 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   /// The action button: which one, and where it points. Editing showed this
   /// only when the post already had button text, so most posts could not
   /// change their button at all.
+  /// Changes the campaign. The buttons belong to it, so one that the new
+  /// campaign does not allow is dropped rather than left selected.
+  void _setObjective(PostObjective next) {
+    Haptics.selection();
+    final allowed = ObjectiveMeta.all
+        .where((m) => m.objective == next)
+        .firstOrNull
+        ?.availableCtas;
+    setState(() {
+      _objectiveEnum = next;
+      _objective = objectiveToBackend[next];
+      if (allowed == null || _ctaType == null || !allowed.contains(_ctaType)) {
+        _ctaType = null;
+        _ctaText.clear();
+      }
+    });
+  }
+
   Widget _buildCtaSection() {
     final meta = _objectiveEnum == null
         ? null
@@ -441,10 +460,61 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // The campaign this post runs. It was fixed at creation, and with no
+        // objective stored the Action button heading sat above nothing at all.
+        _label('Campaign'),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: ObjectiveMeta.all.map((option) {
+            final selected = _objectiveEnum == option.objective;
+            return GestureDetector(
+              onTap: _saving ? null : () => _setObjective(option.objective),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: selected
+                      ? context.colors.primaryAccent.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  borderRadius: AppSpacing.borderRadiusFull,
+                  border: Border.all(
+                    color: selected
+                        ? context.colors.primaryAccent.withValues(alpha: 0.5)
+                        : context.colors.border,
+                    width: selected ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      option.icon,
+                      size: 14,
+                      color: selected
+                          ? context.colors.primaryAccent
+                          : context.colors.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      option.title,
+                      style: AppTypography.labelLarge.copyWith(
+                        color: selected
+                            ? context.colors.primaryAccent
+                            : context.colors.textSecondary,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: AppSpacing.lg),
         _label('Action button'),
         if (meta != null) ...[
           Text(
-            'Objective: ${meta.title}. These are the buttons it allows.',
+            'The buttons ${meta.title} allows.',
             style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
           ),
           const SizedBox(height: AppSpacing.sm),
@@ -494,7 +564,14 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
             }).toList(),
           ),
           const SizedBox(height: AppSpacing.md),
-        ],
+        ] else
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Text(
+              'Pick a campaign above to choose a button.',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+            ),
+          ),
         if (_hasDestination) ...[
           const SizedBox(height: AppSpacing.md),
           _label('Where it goes'),
