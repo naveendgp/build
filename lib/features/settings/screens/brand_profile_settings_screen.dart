@@ -366,29 +366,11 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
 
     return Column(
       children: [
-        SettingsItem(
-          title: 'State',
-          icon: Icons.map_outlined,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 150),
-                child: Text(
-                  _state ?? 'Select state',
-                  textAlign: TextAlign.right,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: _state == null
-                        ? context.colors.textTertiary
-                        : context.colors.textPrimary,
-                  ),
-                ),
-              ),
-              if (_isEditing)
-                Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
-            ],
-          ),
+        _buildPickerField(
+          context,
+          label: 'State',
+          value: _state,
+          placeholder: 'Select state',
           onTap: _isEditing
               ? () => _pickFromList(
                   title: 'State',
@@ -405,29 +387,11 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
               : null,
         ),
         if (_state != null)
-          SettingsItem(
-            title: 'City',
-            icon: Icons.location_city_rounded,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 150),
-                  child: Text(
-                    _effectiveCity ?? 'Select city',
-                    textAlign: TextAlign.right,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: _effectiveCity == null
-                          ? context.colors.textTertiary
-                          : context.colors.textPrimary,
-                    ),
-                  ),
-                ),
-                if (_isEditing)
-                  Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
-              ],
-            ),
+          _buildPickerField(
+            context,
+            label: 'City',
+            value: _effectiveCity,
+            placeholder: 'Select city',
             onTap: _isEditing
                 ? () => _pickFromList(
                     title: 'City',
@@ -453,37 +417,17 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
   }
 
   Widget _buildCategoryPicker(BuildContext context) {
-    final label = _category == null
-        ? 'Choose a category'
-        : (_category == otherBrandCategory && _otherCategoryController.text.trim().isNotEmpty
-              ? _otherCategoryController.text.trim()
-              : _category!);
+    final shown = _category == otherBrandCategory && _otherCategoryController.text.trim().isNotEmpty
+        ? _otherCategoryController.text.trim()
+        : _category;
 
     return Column(
       children: [
-        SettingsItem(
-          title: 'Category',
-          icon: Icons.category_outlined,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 150),
-                child: Text(
-                  label,
-                  textAlign: TextAlign.right,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: _category == null
-                        ? context.colors.textTertiary
-                        : context.colors.textPrimary,
-                  ),
-                ),
-              ),
-              if (_isEditing)
-                Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
-            ],
-          ),
+        _buildPickerField(
+          context,
+          label: 'Category',
+          value: shown,
+          placeholder: 'Choose a category',
           onTap: _isEditing
               ? () => _pickFromList(
                   title: 'Category',
@@ -508,29 +452,11 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
     final options = subCategoriesOf(_category);
     if (options.isEmpty || _category == otherBrandCategory) return const SizedBox.shrink();
 
-    return SettingsItem(
-      title: 'Subcategory',
-      icon: Icons.subdirectory_arrow_right_rounded,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 150),
-            child: Text(
-              _subCategory ?? 'Optional',
-              textAlign: TextAlign.right,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.bodyMedium.copyWith(
-                color: _subCategory == null
-                    ? context.colors.textTertiary
-                    : context.colors.textPrimary,
-              ),
-            ),
-          ),
-          if (_isEditing)
-            Icon(Icons.chevron_right_rounded, size: 18, color: context.colors.textTertiary),
-        ],
-      ),
+    return _buildPickerField(
+      context,
+      label: 'Subcategory',
+      value: _subCategory,
+      placeholder: 'Optional',
       onTap: _isEditing
           ? () => _pickFromList(
               title: 'Subcategory',
@@ -901,6 +827,63 @@ class _BrandProfileSettingsScreenState extends ConsumerState<BrandProfileSetting
         ),
         loading: () => const Center(child: CircularProgressIndicator.adaptive()),
         error: (e, st) => Center(child: Text('Error loading settings: $e')),
+      ),
+    );
+  }
+
+  /// A row that opens a list, dressed as the text fields around it: label
+  /// above, value in a filled box. These were bare setting rows, so Category
+  /// and State read as headings with grey text rather than fields.
+  Widget _buildPickerField(
+    BuildContext context, {
+    required String label,
+    required String? value,
+    required String placeholder,
+    VoidCallback? onTap,
+  }) {
+    final empty = value == null || value.trim().isEmpty;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: AppTypography.labelMedium.copyWith(color: context.colors.textSecondary),
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onTap,
+            behavior: HitTestBehavior.opaque,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: context.colors.background,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      empty ? placeholder : value,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: empty ? context.colors.textTertiary : context.colors.textPrimary,
+                      ),
+                    ),
+                  ),
+                  if (onTap != null)
+                    Icon(
+                      Icons.expand_more_rounded,
+                      size: 20,
+                      color: context.colors.textSecondary,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

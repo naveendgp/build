@@ -105,7 +105,7 @@ class MessagingHomeScreen extends ConsumerWidget {
   }) {
     // A person only ever writes to brands, so the other two tabs were always
     // empty for them. A brand hears from both, and takes requests.
-    final tabs = isBrand ? ['Brands', 'Profiles', 'Requests'] : ['Brands'];
+    final tabs = isBrand ? ['Brands', 'Users', 'Requests'] : ['Brands'];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),

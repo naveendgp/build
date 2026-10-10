@@ -10,7 +10,7 @@ class InboxState {
   final bool isLoadingMore;
   final List<Conversation> conversations;
   final String? error;
-  final String activeTab; // 'Brands', 'Profiles', 'Requests'
+  final String activeTab; // 'Brands', 'Users', 'Requests'
 
   const InboxState({
     this.isLoading = false,
