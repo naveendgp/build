@@ -6,6 +6,7 @@ import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
 import '../../../core/utils/app_messenger.dart';
+import '../services/lead_form_memory.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/adaptive/adaptive_pickers.dart';
 
@@ -88,27 +89,32 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     }
   }
 
-  /// The answers already given, if any. A failure here is not worth a word to
-  /// anyone: the form simply opens empty, as it always did.
+  /// The answers already given, from this phone's own memory of past forms.
   Future<void> _fetchPrefill() async {
-    try {
-      final res = await ref.read(apiClientProvider).dio.get('/leads/me/prefill');
-      final data = res.data;
-      if (data is Map && mounted) {
-        setState(() {
-          _prefill = data.map((k, v) => MapEntry(k.toString(), v.toString()));
-        });
-      }
-    } catch (e) {
-      debugPrint('No prefill available: $e');
-    }
+    final remembered = await LeadFormMemory.recall();
+    if (remembered.isEmpty || !mounted) return;
+    setState(() => _prefill = remembered);
   }
 
   /// What was answered last time for this question, if anything.
-  String? _previousAnswer(String label) {
-    final key = label.trim().toLowerCase();
-    final value = _prefill[key];
-    return value == null || value.isEmpty ? null : value;
+  String? _previousAnswer(String label) => LeadFormMemory.answerFor(_prefill, label);
+
+  /// Keeps what was just sent, by question, so the next form opens filled in.
+  Future<void> _rememberAnswers() async {
+    final fields = (_formData?['fields'] as List<dynamic>? ?? []);
+    final byQuestion = <String, String>{};
+
+    for (final raw in fields) {
+      final field = Map<String, dynamic>.from(raw as Map);
+      final type = (field['type'] ?? '').toString();
+      if (!LeadFormMemory.isReusable(type)) continue;
+      final label = (field['label'] ?? '').toString();
+      final answer = _answers[(field['id'] ?? '').toString()];
+      if (label.isEmpty || answer == null) continue;
+      byQuestion[label] = answer.toString();
+    }
+
+    await LeadFormMemory.remember(byQuestion);
   }
 
   Future<void> _submitForm() async {
@@ -125,6 +131,8 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
+        // Only answers that reached the brand are worth keeping.
+        await _rememberAnswers();
         setState(() {
           _isSuccess = true;
           _isSubmitting = false;

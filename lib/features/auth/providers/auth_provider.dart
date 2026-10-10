@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../home/services/lead_form_memory.dart';
 import '../../../core/services/notification_service.dart';
 
 enum AuthStatus { idle, loading, success, error }
@@ -544,6 +545,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (_) {}
 
     await SecureStorage.clearSession();
+    // Answers remembered for lead forms belong to whoever was signed in.
+    await LeadFormMemory.clear();
     state = const AuthState();
   }
 }
