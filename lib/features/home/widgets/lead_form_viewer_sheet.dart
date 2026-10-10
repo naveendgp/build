@@ -55,12 +55,17 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
 
   Map<String, dynamic>? _formData;
   final Map<String, dynamic> _answers = {};
+
+  /// What this person has answered before, by question. Used to fill a form
+  /// in rather than asking for the same details again.
+  Map<String, String> _prefill = {};
   final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
     super.initState();
     _fetchForm();
+    _fetchPrefill();
   }
 
   Future<void> _fetchForm() async {
@@ -81,6 +86,29 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
         _isLoading = false;
       });
     }
+  }
+
+  /// The answers already given, if any. A failure here is not worth a word to
+  /// anyone: the form simply opens empty, as it always did.
+  Future<void> _fetchPrefill() async {
+    try {
+      final res = await ref.read(apiClientProvider).dio.get('/leads/me/prefill');
+      final data = res.data;
+      if (data is Map && mounted) {
+        setState(() {
+          _prefill = data.map((k, v) => MapEntry(k.toString(), v.toString()));
+        });
+      }
+    } catch (e) {
+      debugPrint('No prefill available: $e');
+    }
+  }
+
+  /// What was answered last time for this question, if anything.
+  String? _previousAnswer(String label) {
+    final key = label.trim().toLowerCase();
+    final value = _prefill[key];
+    return value == null || value.isEmpty ? null : value;
   }
 
   Future<void> _submitForm() async {
@@ -258,6 +286,29 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
             ),
           ],
 
+          // Says where the filled-in answers came from, so nobody wonders how
+          // the brand already knows them.
+          if (_prefill.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                children: [
+                  Icon(Icons.history_rounded, size: 14, color: context.colors.textTertiary),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Filled in from your last form. Change anything you like.',
+                      style: AppTypography.labelSmall.copyWith(
+                        color: context.colors.textTertiary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           const SizedBox(height: 24),
 
           // Fields
@@ -385,7 +436,13 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     }
 
     if (type == 'SELECT' || type == 'RADIO') {
+      final remembered = _previousAnswer(label);
+      final initial = options.contains(remembered) ? remembered : null;
+      if (initial != null) _answers[fieldId] ??= initial;
+
       return DropdownButtonFormField<String>(
+        key: ValueKey('$fieldId:$initial'),
+        initialValue: _answers[fieldId]?.toString(),
         decoration: InputDecoration(
           labelText: '$label${isRequired ? ' *' : ''}',
           border: OutlineInputBorder(borderRadius: AppSpacing.borderRadiusMd),
@@ -426,7 +483,15 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     }
 
     // Default text input (TEXT, TEXTAREA, EMAIL, PHONE)
+    final previous = _previousAnswer(label);
+    if (previous != null) _answers[fieldId] ??= previous;
+
     return TextFormField(
+      // Filled in from the last time this question was answered; it can be
+      // changed like anything else. Keyed by the question, because every post
+      // carries its own copy of the form and the field ids differ.
+      key: ValueKey('$fieldId:$previous'),
+      initialValue: _answers[fieldId]?.toString(),
       maxLines: type == 'TEXTAREA' ? 3 : 1,
       keyboardType: type == 'EMAIL'
           ? TextInputType.emailAddress

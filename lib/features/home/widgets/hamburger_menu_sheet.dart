@@ -59,18 +59,30 @@ class HamburgerMenuSheet extends ConsumerWidget {
             child: profileAsync.when(
               data: (data) => Row(
                 children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
-                    backgroundImage:
-                        (data['profilePic'] != null &&
-                            data['profilePic'].toString().trim().isNotEmpty)
-                        ? NetworkImage(ApiClient.resolveMediaUrl(data['profilePic'].toString()))
-                        : null,
-                    child:
-                        (data['profilePic'] == null || data['profilePic'].toString().trim().isEmpty)
-                        ? Icon(Icons.person, color: context.colors.primaryAccent)
-                        : null,
+                  // A person's picture is `profilePic`, a brand's is
+                  // `logoUrl` — only the first was read, so a brand always
+                  // got the grey silhouette.
+                  Builder(
+                    builder: (context) {
+                      final picture = [data['profilePic'], data['logoUrl'], data['avatarUrl']]
+                          .map((v) => v?.toString().trim() ?? '')
+                          .firstWhere((v) => v.isNotEmpty, orElse: () => '');
+                      final isBrand = data['role'] == 'BRAND';
+
+                      return CircleAvatar(
+                        radius: 24,
+                        backgroundColor: context.colors.primaryAccent.withValues(alpha: 0.2),
+                        backgroundImage: picture.isEmpty
+                            ? null
+                            : NetworkImage(ApiClient.resolveMediaUrl(picture)),
+                        child: picture.isEmpty
+                            ? Icon(
+                                isBrand ? Icons.storefront_rounded : Icons.person,
+                                color: context.colors.primaryAccent,
+                              )
+                            : null,
+                      );
+                    },
                   ),
                   const SizedBox(width: 16),
                   Expanded(
