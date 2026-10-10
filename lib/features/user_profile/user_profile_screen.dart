@@ -138,11 +138,11 @@ class UserProfileScreen extends ConsumerWidget {
                     ),
                   ),
 
-                  // Action Buttons — Edit Profile + Share Profile
+                  // Action Button — Edit Profile
                   SliverToBoxAdapter(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 16),
-                      child: ProfileActionButtons(profile: profile),
+                      child: const ProfileActionButtons(),
                     ),
                   ),
 

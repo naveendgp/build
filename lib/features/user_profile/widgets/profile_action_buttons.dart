@@ -1,49 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/haptics.dart';
-import '../models/user_profile_models.dart';
-import '../../../core/utils/app_messenger.dart';
 
 class ProfileActionButtons extends StatelessWidget {
-  final UserProfileData profile;
-
-  const ProfileActionButtons({super.key, required this.profile});
+  const ProfileActionButtons({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 48),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildButton(
-              context,
-              label: 'Edit Profile',
-              onTap: () {
-                Haptics.light();
-                context.push('/settings/account');
-              },
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildButton(
-              context,
-              label: 'Share Profile',
-              onTap: () {
-                Haptics.light();
-                Clipboard.setData(ClipboardData(text: '@${profile.username}'));
-                AppMessenger.of(
-                  context,
-                ).showSnackBar(const SnackBar(content: Text('Profile link copied!')));
-              },
-            ),
-          ),
-        ],
+      // Edit Profile alone: a person's profile is their own, and "Share
+      // Profile" only copied their handle to the clipboard.
+      child: _buildButton(
+        context,
+        label: 'Edit Profile',
+        onTap: () {
+          Haptics.light();
+          context.push('/settings/account');
+        },
       ),
     );
   }
