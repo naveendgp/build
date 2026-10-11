@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
@@ -60,6 +61,12 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   /// What this person has answered before, by question. Used to fill a form
   /// in rather than asking for the same details again.
   Map<String, String> _prefill = {};
+
+  /// The brand only receives answers once the person has agreed to send them.
+  /// The questions come first, then this.
+  bool _onConsentStep = false;
+  bool _agreed = false;
+  String? _consentError;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -120,6 +127,19 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
 
+    // The answers are complete: ask for agreement before anything is sent.
+    // The server refuses a submission without it — the app never asked, so
+    // every form came back "Please agree to share your details before
+    // sending" and nothing reached the brand.
+    if (!_onConsentStep) {
+      setState(() => _onConsentStep = true);
+      return;
+    }
+    if (!_agreed) {
+      setState(() => _consentError = 'Please agree before sending.');
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     Haptics.light();
 
@@ -127,7 +147,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       final api = ref.read(apiClientProvider);
       final res = await api.dio.post(
         '/leads/${widget.postId}/forms/${widget.formId}/submit',
-        data: {'answers': _answers},
+        data: {'answers': _answers, 'consent': true},
       );
 
       if (res.statusCode == 200 || res.statusCode == 201) {
@@ -155,7 +175,14 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       // A lead that did not reach the brand has to be said out loud: the
       // ordinary snackbar is suppressed for failures, so this looked like it
       // had been sent.
-      AppMessenger.of(context).showError('Could not submit the form. Please try again.');
+      // The server's own words when it has them: "You've already submitted
+      // this form", "Pick a future time", and so on.
+      final message = e is DioException && e.response?.data is Map
+          ? (e.response!.data['message']?.toString() ?? '')
+          : '';
+      AppMessenger.of(
+        context,
+      ).showError(message.isNotEmpty ? message : 'Could not submit the form. Please try again.');
     }
   }
 
@@ -319,8 +346,11 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
 
           const SizedBox(height: 24),
 
+          // The agreement, once the questions are answered.
+          if (_onConsentStep) Flexible(child: _buildConsentStep()),
+
           // Fields
-          Flexible(
+          if (!_onConsentStep) Flexible(
             child: Form(
               key: _formKey,
               child: ListView.separated(
@@ -338,7 +368,7 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
 
           // The wording is the brand's own, with its policy link beside it,
           // so what a person agrees to is set by whoever collects the answers.
-          Builder(
+          if (!_onConsentStep) Builder(
             builder: (context) {
               final consent = (_formData?['consentText'] ?? '').toString().trim();
               final policyUrl = (_formData?['privacyPolicyUrl'] ?? '').toString().trim();
@@ -387,7 +417,38 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
           // Submit Button
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 34),
-            child: ElevatedButton(
+            child: Row(
+              children: [
+                if (_onConsentStep) ...[
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSubmitting
+                          ? null
+                          : () => setState(() {
+                              _onConsentStep = false;
+                              _consentError = null;
+                            }),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: context.colors.border),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: AppSpacing.borderRadiusMd,
+                        ),
+                      ),
+                      child: Text(
+                        'Back',
+                        style: AppTypography.labelLarge.copyWith(
+                          color: context.colors.textSecondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
               onPressed: _isSubmitting ? null : _submitForm,
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primaryAccent,
@@ -406,13 +467,142 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
                       ),
                     )
                   : Text(
-                      'Submit',
+                      _onConsentStep ? 'Agree and send' : 'Continue',
                       style: AppTypography.labelLarge.copyWith(fontWeight: FontWeight.w600),
                     ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// What the person agrees to before any of it reaches the brand: the
+  /// brand's own wording where it wrote some, Lyket's terms always.
+  Widget _buildConsentStep() {
+    final consent = (_formData?['consentText'] ?? '').toString().trim();
+    final policyUrl = (_formData?['privacyPolicyUrl'] ?? '').toString().trim();
+
+    return ListView(
+      shrinkWrap: true,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: context.colors.surfaceSecondary,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.verified_user_outlined,
+                size: 18,
+                color: context.colors.textSecondary,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Before you send',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: context.colors.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    consent.isNotEmpty
+                        ? consent
+                        : 'Your answers go to ${widget.brandName}, so they can get back to you '
+                              'about this post.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: context.colors.textSecondary,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        GestureDetector(
+          onTap: _isSubmitting
+              ? null
+              : () => setState(() {
+                  _agreed = !_agreed;
+                  if (_agreed) _consentError = null;
+                }),
+          behavior: HitTestBehavior.opaque,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Checkbox(
+                value: _agreed,
+                activeColor: context.colors.primaryAccent,
+                onChanged: _isSubmitting
+                    ? null
+                    : (val) => setState(() {
+                        _agreed = val ?? false;
+                        if (_agreed) _consentError = null;
+                      }),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    'I agree to share these details with ${widget.brandName}.',
+                    style: AppTypography.bodySmall.copyWith(
+                      color: context.colors.textSecondary,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (policyUrl.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 12, top: 4),
+            child: GestureDetector(
+              onTap: () async {
+                final uri = Uri.tryParse(
+                  policyUrl.startsWith('http') ? policyUrl : 'https://$policyUrl',
+                );
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text(
+                'Privacy policy',
+                style: AppTypography.labelMedium.copyWith(
+                  color: context.colors.primaryAccent,
+                  fontWeight: FontWeight.w600,
+                  decoration: TextDecoration.underline,
+                  decorationColor: context.colors.primaryAccent,
+                ),
+              ),
+            ),
+          ),
+        if (_consentError != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Text(
+              _consentError!,
+              style: AppTypography.labelSmall.copyWith(color: context.colors.error),
+            ),
+          ),
+      ],
     );
   }
 
