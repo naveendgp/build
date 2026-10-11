@@ -6,7 +6,6 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/utils/haptics.dart';
-import '../../../core/utils/app_messenger.dart';
 import '../services/lead_form_memory.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/adaptive/adaptive_pickers.dart';
@@ -178,14 +177,20 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       // A lead that did not reach the brand has to be said out loud: the
       // ordinary snackbar is suppressed for failures, so this looked like it
       // had been sent.
-      // The server's own words when it has them: "You've already submitted
-      // this form", "Pick a future time", and so on.
+      // The server's own words when it has them: "Sign in with a personal
+      // account to submit this form", "You've already submitted this form",
+      // and so on.
       final message = e is DioException && e.response?.data is Map
           ? (e.response!.data['message']?.toString() ?? '')
           : '';
-      AppMessenger.of(
-        context,
-      ).showError(message.isNotEmpty ? message : 'Could not submit the form. Please try again.');
+      // Shown in the sheet rather than as a snackbar: the sheet covers the
+      // bottom of the screen, so the notice only appeared once the form had
+      // been closed — by which time it was too late to read it.
+      setState(
+        () => _consentError = message.isNotEmpty
+            ? message
+            : 'Could not submit the form. Please try again.',
+      );
     }
   }
 
@@ -597,12 +602,30 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
               ),
             ),
           ),
+        // A refusal from the server is the only thing standing between the
+        // person and a sent form, so it is given its own panel rather than a
+        // line of small print.
         if (_consentError != null)
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              _consentError!,
-              style: AppTypography.labelSmall.copyWith(color: context.colors.error),
+          Container(
+            margin: const EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.colors.error.withValues(alpha: 0.08),
+              borderRadius: AppSpacing.borderRadiusMd,
+              border: Border.all(color: context.colors.error.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.error_outline_rounded, size: 18, color: context.colors.error),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _consentError!,
+                    style: AppTypography.bodySmall.copyWith(color: context.colors.error),
+                  ),
+                ),
+              ],
             ),
           ),
       ],
@@ -620,7 +643,15 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     // brand reads one value rather than two.
     // Date of birth is a short-text question by type, but nobody should have
     // to type a date: it gets the date picker, and nothing later than today.
-    if (label.toLowerCase() == 'date of birth') {
+    final plain = label.toLowerCase().trim();
+
+    // A date is chosen, never typed. The standard field is called "DOB" now,
+    // and this matched only "date of birth", so it had quietly become a text
+    // box again.
+    if (plain == 'dob' ||
+        plain == 'date of birth' ||
+        plain == 'birth date' ||
+        plain == 'birthday') {
       return _DateOfBirthField(
         label: label,
         isRequired: isRequired,
@@ -683,6 +714,11 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       }
     }
 
+    // A pincode is digits, and a phone number is a phone number whatever the
+    // form calls it: the type alone left both on the ordinary keyboard.
+    final isNumeric = plain == 'pincode' || plain == 'pin code' || plain == 'postcode';
+    final isPhone = plain.contains('phone') || plain.contains('mobile');
+
     // Default text input (TEXT, TEXTAREA, EMAIL, PHONE)
     final previous = _previousAnswer(label);
     if (previous != null) _answers[fieldId] ??= previous;
@@ -696,8 +732,10 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
       maxLines: type == 'TEXTAREA' ? 3 : 1,
       keyboardType: type == 'EMAIL'
           ? TextInputType.emailAddress
-          : type == 'PHONE'
+          : (type == 'PHONE' || isPhone)
           ? TextInputType.phone
+          : isNumeric
+          ? TextInputType.number
           : TextInputType.text,
       decoration: InputDecoration(
         labelText: '$label${isRequired ? ' *' : ''}',
