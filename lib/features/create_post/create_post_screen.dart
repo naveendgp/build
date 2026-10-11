@@ -78,8 +78,15 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> with Widget
         curve: Curves.easeInOut,
       );
     } else {
-      // Publish
+      // Publish. The screen used to close two seconds later whatever
+      // happened: publish() does not throw — it records the failure in the
+      // state — so a post that never went out took its own error message off
+      // screen with it, and the app simply returned to the feed.
       notifier.publish().then((_) {
+        if (!mounted) return;
+        final stage = ref.read(createPostProvider).uploadStage;
+        if (stage != UploadStage.complete) return;
+
         // Wait a moment for the success animation then close
         Future.delayed(const Duration(seconds: 2), () {
           if (mounted) {
