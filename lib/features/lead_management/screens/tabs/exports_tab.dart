@@ -5,6 +5,7 @@ import '../../../../../core/theme/app_theme.dart';
 import '../../../../../core/theme/app_spacing.dart';
 import '../../../../../core/network/api_client.dart';
 import '../../providers/lead_api_provider.dart';
+import '../../widgets/google_sheet_section.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
@@ -45,9 +46,19 @@ class _ExportsTabState extends ConsumerState<ExportsTab> {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.lg),
       children: [
+        const GoogleSheetSection(),
+        const SizedBox(height: AppSpacing.xxl),
+        Divider(height: 1, color: context.colors.borderLight.withValues(alpha: 0.3)),
+        const SizedBox(height: AppSpacing.xxl),
+
         Text(
           'Export Leads',
           style: AppTypography.headlineSmall.copyWith(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          'A one-off file of what you have collected.',
+          style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.lg),
 

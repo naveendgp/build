@@ -34,6 +34,33 @@ class LeadApiService {
     );
   }
 
+  // --- Google Sheet ---
+
+  /// How the brand's sheet stands: connected or not, how many leads are
+  /// waiting, and what went wrong last time if anything did.
+  Future<BrandLeadSheet> getSheet() async {
+    final res = await _apiClient.dio.get('/leads/brand/sheet');
+    return BrandLeadSheet.fromJson(Map<String, dynamic>.from(res.data as Map));
+  }
+
+  /// Connects a sheet by its link. The server checks it can actually write
+  /// there before saving, and says what to fix when it cannot — so the
+  /// message it returns is shown as it was written.
+  Future<Map<String, dynamic>> connectSheet(String url) async {
+    final res = await _apiClient.dio.put('/leads/brand/sheet', data: {'url': url});
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  /// Writes whatever is waiting, rather than leaving it to the next run.
+  Future<Map<String, dynamic>> syncSheet() async {
+    final res = await _apiClient.dio.post('/leads/brand/sheet/sync');
+    return Map<String, dynamic>.from(res.data as Map);
+  }
+
+  Future<void> disconnectSheet() async {
+    await _apiClient.dio.delete('/leads/brand/sheet');
+  }
+
   String getExportCsvUrl(String postId) {
     // Return the URL that can be launched in a browser for download
     return '${_apiClient.dio.options.baseUrl}/leads/$postId/export/csv';
@@ -107,4 +134,10 @@ final postLeadsProvider = FutureProvider.family<List<LeadSubmission>, LeadsQuery
 final brandFormsProvider = FutureProvider<List<FormTemplate>>((ref) async {
   final api = ref.watch(leadApiServiceProvider);
   return api.getBrandForms();
+});
+
+/// The brand's Google Sheet connection.
+final brandLeadSheetProvider = FutureProvider<BrandLeadSheet>((ref) async {
+  final api = ref.watch(leadApiServiceProvider);
+  return api.getSheet();
 });

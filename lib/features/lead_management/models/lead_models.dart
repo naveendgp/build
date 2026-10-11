@@ -93,3 +93,46 @@ class BrandLeadStats {
     );
   }
 }
+
+/// The Google Sheet a brand sends its leads to.
+///
+/// The server holds the connection and writes to the sheet itself; the app
+/// only reads this and asks it to connect, sync or disconnect.
+class BrandLeadSheet {
+  final bool connected;
+  final String? url;
+  final String? tab;
+  final DateTime? connectedAt;
+
+  /// What went wrong the last time the server tried to write, if anything.
+  final String? lastError;
+
+  /// Leads collected but not yet written. A cron writes them about a minute
+  /// after they arrive, so a few pending is ordinary.
+  final int pending;
+
+  /// The address the sheet has to be shared with, when the server names one.
+  final String? shareWith;
+
+  const BrandLeadSheet({
+    this.connected = false,
+    this.url,
+    this.tab,
+    this.connectedAt,
+    this.lastError,
+    this.pending = 0,
+    this.shareWith,
+  });
+
+  factory BrandLeadSheet.fromJson(Map<String, dynamic> json) {
+    return BrandLeadSheet(
+      connected: json['connected'] == true,
+      url: json['url']?.toString(),
+      tab: json['tab']?.toString(),
+      connectedAt: DateTime.tryParse(json['connectedAt']?.toString() ?? '')?.toLocal(),
+      lastError: json['lastError']?.toString(),
+      pending: json['pending'] is int ? json['pending'] as int : int.tryParse('${json['pending']}') ?? 0,
+      shareWith: json['shareWith']?.toString(),
+    );
+  }
+}
