@@ -9,7 +9,8 @@ final socketClientProvider = Provider<SocketClient>((ref) {
 
 class SocketClient {
   // Same domain as API, but without /api path
-  static const String baseUrl = 'https://internal.lyket.in';
+  // Follows the API; see ApiClient.baseUrl.
+  static const String baseUrl = 'http://52.66.206.193:3001';
   io.Socket? _socket;
   final Map<String, List<Function(dynamic)>> _listeners = {};
 

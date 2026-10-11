@@ -5,8 +5,12 @@ import '../storage/secure_storage.dart';
 final apiClientProvider = Provider<ApiClient>((ref) => ApiClient());
 
 class ApiClient {
-  // Configured to use internal.lyket.in backend
-  static const String baseUrl = 'https://internal.lyket.in/api';
+  // The API moved to its own machine, and internal.lyket.in still resolves to
+  // the old one — which is why search kept answering with trending posts while
+  // the web, pointed at the new server, was fine. Pointed straight at the new
+  // box until that name is moved across with a certificate of its own; this is
+  // plain HTTP, so it is a stopgap, not where this should stay.
+  static const String baseUrl = 'http://52.66.206.193:3001/api';
   late final Dio _dio;
 
   ApiClient() {
@@ -53,7 +57,7 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  static const String _origin = 'https://internal.lyket.in';
+  static const String _origin = 'http://52.66.206.193:3001';
 
   /// Hosts that older backend builds baked into stored media URLs. Anything
   /// still pointing at one of these is rebuilt onto [_origin]; S3 and other
@@ -66,6 +70,7 @@ class ApiClient {
     '13.233.207.224',
     '3.109.152.20',
     '13.232.115.69',
+    '52.66.248.222',
     'internal.lyket.in',
   };
 
