@@ -125,7 +125,10 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
   }
 
   Future<void> _submitForm() async {
-    if (!_formKey.currentState!.validate()) return;
+    // The questions are only in the tree on the first step, so the form's
+    // state is null on the second — `!_formKey.currentState!.validate()`
+    // threw there, and "Agree and send" did nothing at all.
+    if (!_onConsentStep && !(_formKey.currentState?.validate() ?? false)) return;
 
     // The answers are complete: ask for agreement before anything is sent.
     // The server refuses a submission without it — the app never asked, so

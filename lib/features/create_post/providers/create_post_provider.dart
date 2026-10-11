@@ -419,8 +419,12 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
 
   Future<void> publish() async {
     if (state.objective == PostObjective.leadGeneration) {
+      // These refusals set a message and nothing else, and the overlay that
+      // shows it only appears once the stage leaves idle — so publishing
+      // stopped with no sign of why. They are failures; they now say so.
       if (state.leadForm == null || state.leadForm!.fields.isEmpty) {
         state = state.copyWith(
+          uploadStage: UploadStage.failed,
           errorMessage:
               'A lead form with at least one question is required for the Lead Generation objective.',
         );
@@ -429,7 +433,10 @@ class CreatePostNotifier extends StateNotifier<CreatePostState> {
       // An unnamed form cannot be found again in the library, so it is not
       // saved without one — the same rule the web applies.
       if (state.leadForm!.name.trim().isEmpty) {
-        state = state.copyWith(errorMessage: 'Give the lead form a name before posting.');
+        state = state.copyWith(
+          uploadStage: UploadStage.failed,
+          errorMessage: 'Give the lead form a name before posting.',
+        );
         return;
       }
     }
