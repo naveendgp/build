@@ -47,6 +47,17 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   final _destinationUrl = TextEditingController();
   final _prefilledMessage = TextEditingController();
 
+  // Where a Get Directions button goes when no plain link is given: the
+  // server falls back to these, and neither could be edited here.
+  final _googleMapsUrl = TextEditingController();
+  final _appleMapsUrl = TextEditingController();
+
+  // Carried on the link for Traffic and Conversions, and added by the server
+  // when someone opens it.
+  final _utmSource = TextEditingController();
+  final _utmMedium = TextEditingController();
+  final _utmCampaign = TextEditingController();
+
   final _highlightMessage = TextEditingController();
 
   List<String> _tags = [];
@@ -84,6 +95,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
 
   bool get _isMessaging => _objective == 'MESSAGING';
 
+  bool get _isDirections => _objective == 'GET_DIRECTIONS';
+
+  /// Only a link the brand owns is worth tagging.
+  bool get _hasTracking => _objective == 'TRAFFIC' || _objective == 'CONVERSIONS';
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +113,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     _ctaText.dispose();
     _destinationUrl.dispose();
     _prefilledMessage.dispose();
+    _googleMapsUrl.dispose();
+    _appleMapsUrl.dispose();
+    _utmSource.dispose();
+    _utmMedium.dispose();
+    _utmCampaign.dispose();
     _highlightMessage.dispose();
     super.dispose();
   }
@@ -113,6 +134,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         _ctaText.text = (data['ctaText'] ?? '').toString();
         _destinationUrl.text = (data['destinationUrl'] ?? '').toString();
         _prefilledMessage.text = (data['prefilledMessage'] ?? '').toString();
+        _googleMapsUrl.text = (data['googleMapsUrl'] ?? '').toString();
+        _appleMapsUrl.text = (data['appleMapsUrl'] ?? '').toString();
+        _utmSource.text = (data['utmSource'] ?? '').toString();
+        _utmMedium.text = (data['utmMedium'] ?? '').toString();
+        _utmCampaign.text = (data['utmCampaign'] ?? '').toString();
         _tags = ((data['tags'] as List?) ?? const []).map((t) => t.toString()).toList();
         _objective = data['marketingObjective']?.toString();
         _objectiveEnum = objectiveFromBackend(_objective);
@@ -279,7 +305,20 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         if (_ctaType != null) 'ctaType': ctaTypeToBackend[_ctaType],
         'isHighlighted': _isHighlighted,
         'highlightMessage': _isHighlighted ? _highlightMessage.text.trim() : '',
-        if (_hasDestination) 'destinationUrl': _destinationUrl.text.trim(),
+        if (_hasDestination) ...{
+          'destinationUrl': _destinationUrl.text.trim(),
+          // The server keeps the link under its own field as well.
+          'utmWebsite': _destinationUrl.text.trim(),
+        },
+        if (_isDirections) ...{
+          'googleMapsUrl': _googleMapsUrl.text.trim(),
+          'appleMapsUrl': _appleMapsUrl.text.trim(),
+        },
+        if (_hasTracking) ...{
+          'utmSource': _utmSource.text.trim(),
+          'utmMedium': _utmMedium.text.trim(),
+          'utmCampaign': _utmCampaign.text.trim(),
+        },
         if (_isMessaging) 'prefilledMessage': _prefilledMessage.text.trim(),
         if (media != null) 'media': media,
       });
@@ -706,6 +745,41 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
           const SizedBox(height: AppSpacing.md),
           _label('Where it goes'),
           _field(_destinationUrl, hint: 'https://…', keyboard: TextInputType.url),
+        ],
+        // Directions fall back to a maps link when no plain one is given,
+        // and neither of those could be changed here.
+        if (_isDirections) ...[
+          const SizedBox(height: AppSpacing.md),
+          _label('Google Maps link'),
+          _field(_googleMapsUrl, hint: 'https://maps.google.com/…', keyboard: TextInputType.url),
+          const SizedBox(height: AppSpacing.md),
+          _label('Apple Maps link'),
+          _field(_appleMapsUrl, hint: 'https://maps.apple.com/…', keyboard: TextInputType.url),
+        ],
+        if (_hasTracking) ...[
+          const SizedBox(height: AppSpacing.md),
+          _label('Campaign tracking (optional)'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              'Added to the link when someone opens it.',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+            ),
+          ),
+          _field(_utmSource, hint: 'Source, e.g. lyket'),
+          const SizedBox(height: AppSpacing.sm),
+          _field(_utmMedium, hint: 'Medium, e.g. social'),
+          const SizedBox(height: AppSpacing.sm),
+          _field(_utmCampaign, hint: 'Campaign, e.g. summer_sale'),
+        ],
+        // An Awareness button opens the brand's own profile, so there is no
+        // link to set: said plainly rather than left as a gap.
+        if (_objective == 'AWARENESS') ...[
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'An Awareness button opens your profile, so it needs no link.',
+            style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+          ),
         ],
         if (_isMessaging) ...[
           const SizedBox(height: AppSpacing.md),
