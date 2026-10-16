@@ -143,7 +143,7 @@ class _AddQuestionSheet extends StatelessWidget {
             // country, address, pincode or education) and offered Paragraph
             // and Dropdown as question types, which the web does not.
             Text(
-              'User Information',
+              'Prefilled questions',
               style: TextStyle(color: context.colors.textSecondary, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: AppSpacing.sm),

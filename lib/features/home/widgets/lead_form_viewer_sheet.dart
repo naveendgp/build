@@ -194,17 +194,31 @@ class _LeadFormViewerSheetState extends ConsumerState<LeadFormViewerSheet> {
     }
   }
 
+  /// The standard questions, which sit under the brand's own.
+  ///
+  /// This listed three wordings that no longer exist — "What is your gender?"
+  /// and the rest — so after the standard set was aligned with the web, every
+  /// one of them counted as custom and the order meant nothing.
+  static const _standardQuestions = {
+    'full name',
+    'email',
+    'phone number',
+    'phone',
+    'dob',
+    'date of birth',
+    'gender',
+    'street address',
+    'city',
+    'pincode',
+    'country',
+    'education',
+  };
+
   bool _isPrebuiltField(dynamic field) {
     final type = field['type']?.toString().toUpperCase();
-    final label = field['label']?.toString();
-
     if (type == 'EMAIL' || type == 'PHONE') return true;
-    if (label == 'What is your gender?' ||
-        label == 'What is your job title?' ||
-        label == 'Company Name')
-      return true;
-
-    return false;
+    final label = field['label']?.toString().trim().toLowerCase() ?? '';
+    return _standardQuestions.contains(label);
   }
 
   @override
@@ -794,6 +808,9 @@ class _AppointmentField extends StatefulWidget {
 class _AppointmentFieldState extends State<_AppointmentField> {
   DateTime? _picked;
 
+  /// Set when a time that has already passed was chosen.
+  bool _pastTime = false;
+
   String _format(DateTime value) {
     const months = [
       'Jan',
@@ -833,7 +850,19 @@ class _AppointmentFieldState extends State<_AppointmentField> {
     if (time == null || !mounted) return;
 
     final value = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    setState(() => _picked = value);
+
+    // The day could not be in the past, but the time could: today at nine in
+    // the morning, chosen in the afternoon, was accepted here and refused by
+    // the server afterwards.
+    if (!value.isAfter(DateTime.now())) {
+      setState(() => _pastTime = true);
+      return;
+    }
+
+    setState(() {
+      _picked = value;
+      _pastTime = false;
+    });
     widget.onChanged(value.toIso8601String());
   }
 
@@ -841,7 +870,13 @@ class _AppointmentFieldState extends State<_AppointmentField> {
   Widget build(BuildContext context) {
     return FormField<DateTime>(
       validator: (_) {
+        if (_pastTime) return 'That time has already passed. Pick a later one.';
         if (widget.isRequired && _picked == null) return 'Pick a date and time';
+        // A form left open for a while can carry a time that was in the
+        // future when it was picked and is not any more.
+        if (_picked != null && !_picked!.isAfter(DateTime.now())) {
+          return 'That time has already passed. Pick a later one.';
+        }
         return null;
       },
       builder: (state) => Column(

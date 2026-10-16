@@ -14,6 +14,7 @@ import '../../core/theme/app_typography.dart';
 import '../../core/utils/app_messenger.dart';
 import '../../core/utils/haptics.dart';
 import '../brand_dashboard/providers/dashboard_providers.dart';
+import '../lead_management/providers/lead_api_provider.dart';
 import '../home/providers/feed_provider.dart';
 import 'models/create_post_models.dart';
 import 'providers/create_post_provider.dart';
@@ -56,6 +57,14 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
   PostObjective? _objectiveEnum;
   CtaType? _ctaType;
   bool _isHighlighted = false;
+
+  /// The form a Lead Generation post collects with. Editing could switch a
+  /// post to Lead Generation and leave it with no way to attach one.
+  String? _leadFormId;
+  /// The form the post had when it was opened, so an unchanged one is not
+  /// sent back and copied over itself.
+  String? _originalLeadFormId;
+  bool get _leadFormChanged => _leadFormId != _originalLeadFormId;
 
   /// The carousel as it stands, existing pictures and newly picked ones alike.
   List<_EditMedia> _media = [];
@@ -114,6 +123,11 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
             ctaTypeFromBackend(data['ctaType']?.toString()) ??
             _ctaTypeForLabel(_objectiveEnum, (data['ctaText'] ?? '').toString());
         _isHighlighted = data['isHighlighted'] == true;
+        final form = data['leadForm'];
+        if (form is Map) {
+          _leadFormId = form['id']?.toString();
+          _originalLeadFormId = _leadFormId;
+        }
         _highlightMessage.text = (data['highlightMessage'] ?? '').toString();
         _category = data['category']?.toString();
         _media = media
@@ -259,6 +273,9 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
         'tags': _tags,
         if (_ctaText.text.trim().isNotEmpty) 'ctaText': _ctaText.text.trim(),
         if (_objective != null) 'marketingObjective': _objective,
+        // Only when it changed: attaching copies the form onto the post, and
+        // the server refuses to replace one that already has responses.
+        if (_leadFormChanged && _leadFormId != null) 'leadFormId': _leadFormId,
         if (_ctaType != null) 'ctaType': ctaTypeToBackend[_ctaType],
         'isHighlighted': _isHighlighted,
         'highlightMessage': _isHighlighted ? _highlightMessage.text.trim() : '',
@@ -452,6 +469,115 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
     });
   }
 
+  /// The form this post collects with, chosen from the brand's own.
+  ///
+  /// Building a new one belongs to the Lead Form Builder, which the create
+  /// flow and Lead Center both open; here it is a matter of which existing
+  /// form this post uses.
+  Widget _buildLeadFormPicker() {
+    final formsAsync = ref.watch(brandFormsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _label('Lead form'),
+        Text(
+          'The questions people answer when they tap the button.',
+          style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+        ),
+        const SizedBox(height: AppSpacing.sm),
+        formsAsync.when(
+          loading: () => const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
+            child: Center(child: CircularProgressIndicator.adaptive()),
+          ),
+          error: (err, _) {
+            debugPrint('[edit post] could not load forms: $err');
+            return Text(
+              'Could not load your forms.',
+              style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+            );
+          },
+          data: (forms) {
+            final usable = forms.where((f) => !f.isArchived).toList();
+            if (usable.isEmpty) {
+              return Text(
+                'You have no forms yet. Build one while creating a post, or in '
+                'Lead Center, and it can be attached here.',
+                style: AppTypography.bodySmall.copyWith(color: context.colors.textSecondary),
+              );
+            }
+
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: usable.map((form) {
+                final selected = form.id == _leadFormId;
+                final name = (form.name?.trim().isNotEmpty == true)
+                    ? form.name!.trim()
+                    : form.title;
+                return GestureDetector(
+                  onTap: _saving
+                      ? null
+                      : () {
+                          Haptics.selection();
+                          setState(() => _leadFormId = form.id);
+                        },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: selected
+                          ? context.colors.primaryAccent.withValues(alpha: 0.12)
+                          : Colors.transparent,
+                      borderRadius: AppSpacing.borderRadiusFull,
+                      border: Border.all(
+                        color: selected
+                            ? context.colors.primaryAccent.withValues(alpha: 0.5)
+                            : context.colors.border,
+                        width: selected ? 1.5 : 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.description_outlined,
+                          size: 14,
+                          color: selected
+                              ? context.colors.primaryAccent
+                              : context.colors.textSecondary,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          name,
+                          style: AppTypography.labelLarge.copyWith(
+                            color: selected
+                                ? context.colors.primaryAccent
+                                : context.colors.textSecondary,
+                            fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            );
+          },
+        ),
+        if (_leadFormChanged && _originalLeadFormId != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              // The server refuses this rather than losing answers.
+              'A form that has already collected responses cannot be replaced.',
+              style: AppTypography.labelSmall.copyWith(color: context.colors.textTertiary),
+            ),
+          ),
+      ],
+    );
+  }
+
   Widget _buildCtaSection() {
     final meta = _objectiveEnum == null
         ? null
@@ -511,6 +637,10 @@ class _EditPostScreenState extends ConsumerState<EditPostScreen> {
           }).toList(),
         ),
         const SizedBox(height: AppSpacing.lg),
+        if (_objectiveEnum == PostObjective.leadGeneration) ...[
+          _buildLeadFormPicker(),
+          const SizedBox(height: AppSpacing.lg),
+        ],
         _label('Action button'),
         if (meta != null) ...[
           Text(
